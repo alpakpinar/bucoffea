@@ -23,6 +23,401 @@ from collections import defaultdict
 def plot_settings():
     plot_settings = defaultdict(lambda: defaultdict(lambda : None),
     {
+        'cr_2m_vbf' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'dimuon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'met' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_phi0' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'muon_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'dimuon_mass' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'dimuon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_chf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'drmuonjet' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e5)
+            },
+            'dpfcalo' : {
+                'xlim' : (-0.75,0.75),
+                'ylim' : (1e1,1e7)
+            },
+            'dphijr' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+            'dphijm' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+		},
+        'cr_2e_vbf' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'dimuon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'met' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_phi0' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'muon_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'dimuon_mass' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'dimuon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_chf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'drmuonjet' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e5)
+            },
+            'dpfcalo' : {
+                'xlim' : (-0.75,0.75),
+                'ylim' : (1e1,1e7)
+            },
+            'dphijr' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+            'dphijm' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+		},
+        'cr_1m_vbf' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'dimuon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'met' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_phi0' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'muon_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'dimuon_mass' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'dimuon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_chf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'drmuonjet' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e5)
+            },
+            'dpfcalo' : {
+                'xlim' : (-0.75,0.75),
+                'ylim' : (1e1,1e7)
+            },
+            'dphijr' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+            'dphijm' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+		},
+        'cr_1e_vbf' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'dimuon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'met' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_phi0' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'muon_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'dimuon_mass' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'dimuon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_chf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'drmuonjet' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e5)
+            },
+            'dpfcalo' : {
+                'xlim' : (-0.75,0.75),
+                'ylim' : (1e1,1e7)
+            },
+            'dphijr' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+            'dphijm' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+		},		
+        'cr_g_vbf'  : {
+            'recoil' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'dimuon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'muon_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'met' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_phi0' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'muon_phi' : {
+                'ylim' : (1e1,1e5)
+            },
+            'dimuon_mass' : {
+                'ylim' : (1e1,1e5)
+            },
+            'ak4_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'muon_eta0' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'dimuon_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e3,1e5)
+            },
+            'ak4_chf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e2,1e6)
+            },
+            'drmuonjet' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e5)
+            },
+            'dpfcalo' : {
+                'xlim' : (-0.75,0.75),
+                'ylim' : (1e1,1e7)
+            },
+            'dphijr' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+            'dphijm' : {
+                'xlim' : (0,2),
+                'ylim' : (1e1,1e5)
+            },
+		},
         'cr_2m_j' : {
             'recoil' : {
                 'ylim' : (1e-3,1e3)
