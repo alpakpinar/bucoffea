@@ -59,7 +59,7 @@ def plot_settings():
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e2,1e5)
             },
             'ak4_eta' : {
                 'xlim' : (-3,3),
@@ -67,7 +67,7 @@ def plot_settings():
             },
             'muon_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e2,1e5)
             },
             'muon_eta0' : {
                 'xlim' : (-3,3),
@@ -75,7 +75,7 @@ def plot_settings():
             },
             'dimuon_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e2,1e5)
             },
             'ak4_chf0' : {
                 'xlim' : (0,1),
@@ -101,12 +101,12 @@ def plot_settings():
                 'xlim' : (0,2),
                 'ylim' : (1e1,1e5)
             },
-		},
+        },
         'cr_2e_vbf' : {
             'recoil' : {
                 'ylim' : (1e-3,1e3)
             },
-            'dimuon_pt' : {
+            'dielectron_pt' : {
                 'ylim' : (1e-3,1e3)
             },
             'ak4_pt0' : {
@@ -115,10 +115,10 @@ def plot_settings():
             'ak4_pt' : {
                 'ylim' : (1e-3,1e3)
             },
-            'muon_pt' : {
+            'electron_pt' : {
                 'ylim' : (1e-3,1e3)
             },
-            'muon_pt0' : {
+            'electron_pt0' : {
                 'ylim' : (1e-3,1e3)
             },
             'met' : {
@@ -130,31 +130,41 @@ def plot_settings():
             'ak4_phi' : {
                 'ylim' : (1e1,1e5)
             },
-            'muon_phi' : {
+            'electron_phi' : {
                 'ylim' : (1e1,1e5)
             },
-            'dimuon_mass' : {
+            'electron_tightid1' : {
+                'ylim' : None
+            },
+            'dielectron_mass' : {
+                'ylim' : (1e1,1e5)
+            },
+            'electron_dxy' : {
+                'ylim' : (1e1,1e7),
+                'xlim' : (0,0.15)
+            },
+            'electron_dz' : {
                 'ylim' : (1e1,1e5)
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e2,1e5)
             },
             'ak4_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e2,1e5)
             },
-            'muon_eta' : {
+            'electron_eta' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e2,1e5)
+            },
+            'electron_eta0' : {
                 'xlim' : (-3,3),
                 'ylim' : (1e3,1e5)
             },
-            'muon_eta0' : {
+            'dielectron_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
-            },
-            'dimuon_eta' : {
-                'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e2,1e5)
             },
             'ak4_chf0' : {
                 'xlim' : (0,1),
@@ -164,7 +174,7 @@ def plot_settings():
                 'xlim' : (0,1),
                 'ylim' : (1e2,1e6)
             },
-            'drmuonjet' : {
+            'drelejet' : {
                 'xlim' : (0,1),
                 'ylim' : (1e1,1e5)
             },
@@ -183,65 +193,52 @@ def plot_settings():
 		},
         'cr_1m_vbf' : {
             'recoil' : {
-                'ylim' : (1e-3,1e3)
-            },
-            'dimuon_pt' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'ak4_pt0' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'ak4_pt' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'muon_pt' : {
-                'ylim' : (1e-3,1e3)
-            },
-            'muon_pt0' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'met' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'ak4_phi0' : {
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e3,1e5)
             },
             'ak4_phi' : {
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e4,1e5)
             },
             'muon_phi' : {
-                'ylim' : (1e1,1e5)
-            },
-            'dimuon_mass' : {
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e3,1e5)
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e3,1e6)
             },
             'ak4_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e3,1e6)
             },
             'muon_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
-            },
-            'muon_eta0' : {
-                'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
-            },
-            'dimuon_eta' : {
-                'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e3,1e6)
             },
             'ak4_chf0' : {
                 'xlim' : (0,1),
-                'ylim' : (1e2,1e6)
+                'ylim' : (1e3,1e8)
             },
             'ak4_nhf0' : {
                 'xlim' : (0,1),
-                'ylim' : (1e2,1e6)
+                'ylim' : (1e3,1e8)
+            },
+            'muon_mt' : {
+                'xlim' : (0,180),
+                'ylim' : (1e1,1e5)
             },
             'drmuonjet' : {
                 'xlim' : (0,1),
@@ -262,67 +259,61 @@ def plot_settings():
 		},
         'cr_1e_vbf' : {
             'recoil' : {
-                'ylim' : (1e-3,1e3)
-            },
-            'dimuon_pt' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'ak4_pt0' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'ak4_pt' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
-            'muon_pt' : {
-                'ylim' : (1e-3,1e3)
-            },
-            'muon_pt0' : {
-                'ylim' : (1e-3,1e3)
+            'electron_pt' : {
+                'ylim' : (1e-3,1e5)
             },
             'met' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'ak4_phi0' : {
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e3,1e5)
             },
             'ak4_phi' : {
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e4,1e5)
             },
-            'muon_phi' : {
-                'ylim' : (1e1,1e5)
+            'electron_phi' : {
+                'ylim' : (1e3,1e5)
             },
-            'dimuon_mass' : {
+            'electron_dxy' : {
+                'ylim' : (1e1,1e7),
+                'xlim' : (0,0.15)
+            },
+            'electron_dz' : {
                 'ylim' : (1e1,1e5)
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e3,1e6)
             },
             'ak4_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e3,1e6)
             },
-            'muon_eta' : {
+            'electron_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
-            },
-            'muon_eta0' : {
-                'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
-            },
-            'dimuon_eta' : {
-                'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e3,1e6)
             },
             'ak4_chf0' : {
                 'xlim' : (0,1),
-                'ylim' : (1e2,1e6)
+                'ylim' : (1e3,1e8)
             },
             'ak4_nhf0' : {
                 'xlim' : (0,1),
-                'ylim' : (1e2,1e6)
+                'ylim' : (1e3,1e8)
             },
-            'drmuonjet' : {
+            'electron_mt' : {
+                'xlim' : (0,180),
+                'ylim' : (1e1,1e5)
+            },
+            'drelejet' : {
                 'xlim' : (0,1),
                 'ylim' : (1e1,1e5)
             },
@@ -338,70 +329,57 @@ def plot_settings():
                 'xlim' : (0,2),
                 'ylim' : (1e1,1e5)
             },
+            'gen_dilepton_mult' : {
+                'xlim' : (0,5),
+                'ylim' : (0.1,1e7)
+            }
 		},		
         'cr_g_vbf'  : {
             'recoil' : {
-                'ylim' : (1e-3,1e3)
-            },
-            'dimuon_pt' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'ak4_pt0' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'ak4_pt' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
-            'muon_pt' : {
-                'ylim' : (1e-3,1e3)
-            },
-            'muon_pt0' : {
-                'ylim' : (1e-3,1e3)
+            'photon_pt' : {
+                'ylim' : (1e-3,1e5)
             },
             'met' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e5)
             },
             'ak4_phi0' : {
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e3,1e5)
             },
             'ak4_phi' : {
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e4,1e5)
             },
-            'muon_phi' : {
-                'ylim' : (1e1,1e5)
-            },
-            'dimuon_mass' : {
-                'ylim' : (1e1,1e5)
+            'photon_phi' : {
+                'ylim' : (1e4,1e5)
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e3,1e6)
             },
             'ak4_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e3,1e6)
             },
-            'muon_eta' : {
+            'photon_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
-            },
-            'muon_eta0' : {
-                'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
-            },
-            'dimuon_eta' : {
-                'xlim' : (-3,3),
-                'ylim' : (1e3,1e5)
+                'ylim' : (1e4,1e6)
             },
             'ak4_chf0' : {
                 'xlim' : (0,1),
-                'ylim' : (1e2,1e6)
+                'ylim' : (1e2,1e8)
             },
             'ak4_nhf0' : {
                 'xlim' : (0,1),
-                'ylim' : (1e2,1e6)
+                'ylim' : (1e3,1e8)
             },
-            'drmuonjet' : {
+            'drphotonjet' : {
                 'xlim' : (0,1),
                 'ylim' : (1e1,1e5)
             },
