@@ -101,6 +101,9 @@ def plot_settings():
                 'xlim' : (0,2),
                 'ylim' : (1e1,1e5)
             },
+            'mjj' : {
+                'ylim' : (1e2,1e5)
+            }
         },
         'cr_2e_vbf' : {
             'recoil' : {
@@ -190,6 +193,9 @@ def plot_settings():
                 'xlim' : (0,2),
                 'ylim' : (1e1,1e5)
             },
+            'mjj' : {
+                'ylim' : (1e2, 1e5)
+            }
 		},
         'cr_1m_vbf' : {
             'recoil' : {
@@ -256,6 +262,9 @@ def plot_settings():
                 'xlim' : (0,2),
                 'ylim' : (1e1,1e5)
             },
+            'mjj' : {
+                'ylim' : (1e2, 1e5)
+            }
 		},
         'cr_1e_vbf' : {
             'recoil' : {
@@ -332,6 +341,9 @@ def plot_settings():
             'gen_dilepton_mult' : {
                 'xlim' : (0,5),
                 'ylim' : (0.1,1e7)
+            },
+            'mjj' : {
+                'ylim' : (1e2,1e5)
             }
 		},		
         'cr_g_vbf'  : {
@@ -395,6 +407,9 @@ def plot_settings():
                 'xlim' : (0,2),
                 'ylim' : (1e1,1e5)
             },
+            'mjj' : {
+                'ylim' : (1e2,1e5)
+            }
 		},
         'cr_2m_j' : {
             'recoil' : {
