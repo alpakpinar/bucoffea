@@ -54,10 +54,11 @@ class Style():
             'photon_pt0' : hist.Bin('pt','pt',list(range(200,600,20)) + list(range(600,1000,20)) ),
             'dielectron_pt' : hist.Bin('dilepton_pt','dilepton_pt',list(range(100,1000,20))),
             'dimuon_pt' : hist.Bin('dilepton_pt','dilepton_pt',list(range(100,1000,20))),
+            'mjj' : hist.Bin('mjj', 'mjj', list(range(0,5000,100)))
         }
 
 
-def make_plot(acc, region, distribution, year,  data, mc, outdir='./output/stack/', integrate=None, ylim=None, xlim=None, rylim=None, tag=None):
+def make_plot(acc, region, distribution, year,  data, mc, outdir='./output/stack/', integrate=None, ylim=None, xlim=None, rylim=None, tag=None, output_format="pdf"):
     """Creates a data vs MC comparison plot
 
     :param acc: Accumulator (processor output)
@@ -207,7 +208,7 @@ def make_plot(acc, region, distribution, year,  data, mc, outdir='./output/stack
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    outpath = pjoin(outdir, f"{region}_{distribution}{inte_tag}_{tag + '_' if tag else ''}{year}.pdf")
+    outpath = pjoin(outdir, f"{region}_{distribution}{inte_tag}_{tag + '_' if tag else ''}{year}.{output_format}")
     fig.savefig(outpath)
     print(f"Saved plot file in {outpath}")
     plt.close('all')
