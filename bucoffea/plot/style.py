@@ -344,7 +344,7 @@ def plot_settings():
             'ak4_pt' : {
                 'ylim' : (1e-3,1e5)
             },
-            'photon_pt' : {
+            'photon_pt0' : {
                 'ylim' : (1e-3,1e5)
             },
             'met' : {
@@ -356,8 +356,8 @@ def plot_settings():
             'ak4_phi' : {
                 'ylim' : (1e4,1e5)
             },
-            'photon_phi' : {
-                'ylim' : (1e4,1e5)
+            'photon_phi0' : {
+                'ylim' : (1e3,1e5)
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
@@ -367,9 +367,9 @@ def plot_settings():
                 'xlim' : (-3,3),
                 'ylim' : (1e3,1e6)
             },
-            'photon_eta' : {
+            'photon_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e4,1e6)
+                'ylim' : (1e3,1e6)
             },
             'ak4_chf0' : {
                 'xlim' : (0,1),
