@@ -34,7 +34,14 @@ default:
         mt : 160
       singleel:
         mt: 160
-  
+  sf:
+    ewk_nlo_w:
+      histogram: TH2F_kFactor
+      file: kfactor_vjet_ewk/kFactor_WToLNu_pT_Mjj.root
+    ewk_nlo_z:
+      histogram: TH2F_kFactor
+      file: kfactor_vjet_ewk/kFactor_ZToNuNu_pT_Mjj.root
+
   run:
     sync: False
     save:
