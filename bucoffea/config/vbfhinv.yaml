@@ -4,12 +4,12 @@ default:
   test: false
   selection:
     signal:
-      recoil: 250    # min
+      met: 250    # min
       dijet:
         mass: 200
         dphi: 1.3
         deta: 1
-      leadak4:
+      leadingak4:
         pt: 80   # min
         eta: 4.7  # max
         nhf: 0.8  # max
@@ -33,14 +33,15 @@ default:
       singlemu:
         mt : 160
       singleel:
+        met: 50 # min
         mt: 160
   sf:
     ewk_nlo_w:
       histogram: TH2F_kFactor
-      file: kfactor_vjet_ewk/kFactor_WToLNu_pT_Mjj.root
+      file: data/sf/theory/kFactor_WToLNu_pT_Mjj.root
     ewk_nlo_z:
       histogram: TH2F_kFactor
-      file: kfactor_vjet_ewk/kFactor_ZToNuNu_pT_Mjj.root
+      file: data/sf/theory/kFactor_ZToNuNu_pT_Mjj.root
 
   run:
     sync: False
