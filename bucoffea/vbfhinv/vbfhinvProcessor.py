@@ -166,8 +166,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # AK4 dijet
         diak4 = ak4[:,:2].distincts()
         leadak4_pt_eta = (diak4.i0.pt > cfg.SELECTION.SIGNAL.LEADINGAK4.PT) & (np.abs(diak4.i0.eta) < cfg.SELECTION.SIGNAL.LEADINGAK4.ETA)
-        print('Lead AK4 eta req: {}'.format(cfg.SELECTION.SIGNAL.LEADINGAK4.ETA))
-        print('Lead AK4 pt req: {}'.format(cfg.SELECTION.SIGNAL.LEADINGAK4.PT))
         trailak4_pt_eta = (diak4.i1.pt > cfg.SELECTION.SIGNAL.TRAILAK4.PT) & (np.abs(diak4.i1.eta) < cfg.SELECTION.SIGNAL.TRAILAK4.ETA)
         hemisphere = (diak4.i0.eta * diak4.i1.eta < 0).any()
 
@@ -257,8 +255,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             weights = candidate_weights(weights, df, evaluator, muons, electrons, photons)
             weights = pileup_weights(weights, df, evaluator, cfg)
             weights = theory_weights(weights, df, evaluator, gen_v_pt)
-
-            print('Adding theory EWK NLO SF from: {} and {}'.format(cfg.SF.EWK_NLO_W, cfg.SF.EWK_NLO_Z))
 
         # Save per-event values for synchronization
         if cfg.RUN.KINEMATICS.SAVE:
