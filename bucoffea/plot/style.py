@@ -55,7 +55,7 @@ def plot_settings():
                 'ylim' : (1e1,1e6)
             },
             'dimuon_mass' : {
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e-1,1e5)
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
@@ -111,6 +111,9 @@ def plot_settings():
             'detajj' : {
                 'ylim' : (1e-3,1e4) 
             }
+            'dphijj' : {
+                'ylim' : (1e-3,1e4) 
+            }
         },
         'cr_2e_vbf' : {
             'recoil' : {
@@ -147,7 +150,7 @@ def plot_settings():
                 'ylim' : None
             },
             'dielectron_mass' : {
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e-1,1e5)
             },
             'electron_dxy' : {
                 'ylim' : (1e1,1e7),
@@ -209,6 +212,9 @@ def plot_settings():
             },
             'detajj' : {
                 'ylim' : (1e-3, 1e4)
+            }
+            'dphijj' : {
+                'ylim' : (1e-3,1e4) 
             }
 		},
         'cr_1m_vbf' : {
@@ -285,6 +291,9 @@ def plot_settings():
             },
             'detajj' : {
                 'ylim' : (1e-3,1e4)
+            }
+            'dphijj' : {
+                'ylim' : (1e-3,1e4) 
             }
 		},
         'cr_1e_vbf' : {
@@ -373,6 +382,9 @@ def plot_settings():
             'detajj' : {
                 'ylim' : (1e-3,1e4)
             }
+            'dphijj' : {
+                'ylim' : (1e-3,1e4) 
+            }
 		},		
         'cr_g_vbf'  : {
             'recoil' : {
@@ -444,6 +456,9 @@ def plot_settings():
             },
             'detajj' : {
                 'ylim' : (1e-3,1e4)
+            }
+            'dphijj' : {
+                'ylim' : (1e-3,1e4) 
             }
 		},
         'cr_2m_j' : {
