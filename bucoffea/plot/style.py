@@ -59,7 +59,11 @@ def plot_settings():
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e-3,1e5)
+            },
+            'ak4_eta1' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e0,1e6)
             },
             'ak4_eta1' : {
                 'xlim' : (-3,3),
@@ -158,7 +162,11 @@ def plot_settings():
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e-3,1e5)
+            },
+            'ak4_eta1' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e0,1e6)
             },
             'ak4_eta1' : {
                 'xlim' : (-3,3),
@@ -238,7 +246,11 @@ def plot_settings():
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e2,1e6)
+                'ylim' : (1e-3,1e6)
+            },
+            'ak4_eta1' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e0,1e6)
             },
             'ak4_eta1' : {
                 'xlim' : (-3,3),
@@ -321,7 +333,11 @@ def plot_settings():
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e2,1e7)
+                'ylim' : (1e-3,1e7)
+            },
+            'ak4_eta1' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e0,1e6)
             },
             'ak4_eta1' : {
                 'xlim' : (-3,3),
@@ -401,7 +417,11 @@ def plot_settings():
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e3,1e6)
+                'ylim' : (1e-3,1e6)
+            },
+            'ak4_eta1' : {
+                'xlim' : (-3,3),
+                'ylim' : (1e0,1e6)
             },
             'ak4_eta1' : {
                 'xlim' : (-3,3),
