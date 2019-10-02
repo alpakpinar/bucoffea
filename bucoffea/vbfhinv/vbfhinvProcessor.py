@@ -254,7 +254,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
             weights = candidate_weights(weights, df, evaluator, muons, electrons, photons)
             weights = pileup_weights(weights, df, evaluator, cfg)
-            weights = theory_weights(weights, df, evaluator, gen_v_pt)
+            weights = theory_weights(weights, df, evaluator, gen_v_pt, df['mjj'])
 
         # Save per-event values for synchronization
         if cfg.RUN.KINEMATICS.SAVE:
@@ -408,15 +408,15 @@ class vbfhinvProcessor(processor.ProcessorABC):
             if '_2m_' in region:
                 w_dimu = weight_shape(dimuons.pt[mask], weights.weight()[mask])
 
-                ezfill('muon_pt0',   pt=dimuons.i0.pt[mask].flatten(),    weight=w_allmu )
-                ezfill('muon_pt1',   pt=dimuons.i1.pt[mask].flatten(),    weight=w_allmu )
-                ezfill('muon_eta0',  eta=dimuons.i0.eta[mask].flatten(),  weight=w_allmu)
-                ezfill('muon_eta1',  eta=dimuons.i1.eta[mask].flatten(),  weight=w_allmu)
-                ezfill('muon_phi0',  phi=dimuons.i0.phi[mask].flatten(),  weight=w_allmu)
-                ezfill('muon_phi1',  phi=dimuons.i1.phi[mask].flatten(),  weight=w_allmu)
+                ezfill('muon_pt0',   pt=dimuons.i0.pt[mask].flatten(),    weight=w_dimu)
+                ezfill('muon_pt1',   pt=dimuons.i1.pt[mask].flatten(),    weight=w_dimu)
+                ezfill('muon_eta0',  eta=dimuons.i0.eta[mask].flatten(),  weight=w_dimu)
+                ezfill('muon_eta1',  eta=dimuons.i1.eta[mask].flatten(),  weight=w_dimu)
+                ezfill('muon_phi0',  phi=dimuons.i0.phi[mask].flatten(),  weight=w_dimu)
+                ezfill('muon_phi1',  phi=dimuons.i1.phi[mask].flatten(),  weight=w_dimu)
                 ezfill('dimuon_pt',     pt=dimuons.pt[mask].flatten(),              weight=w_dimu)
                 ezfill('dimuon_eta',    eta=dimuons.eta[mask].flatten(),            weight=w_dimu)
-                ezfill('dimuon_mass',   dilepton_mass=dimuons.mass[mask].flatten(), weight=w_dimu )
+                ezfill('dimuon_mass',   dilepton_mass=dimuons.mass[mask].flatten(), weight=w_dimu)
 
             # Electrons
             if '_1e_' in region or '_2e_' in region:
@@ -429,12 +429,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
             # Dielectron
             if '_2e_' in region:
                 w_diel = weight_shape(dielectrons.pt[mask], weights.weight()[mask])
-                ezfill('electron_pt0',   pt=dielectrons.i0.pt[mask].flatten(),    weight=w_allmu )
-                ezfill('electron_pt1',   pt=dielectrons.i1.pt[mask].flatten(),    weight=w_allmu )
-                ezfill('electron_eta0',  eta=dielectrons.i0.eta[mask].flatten(),  weight=w_allmu)
-                ezfill('electron_eta1',  eta=dielectrons.i1.eta[mask].flatten(),  weight=w_allmu)
-                ezfill('electron_phi0',  phi=dielectrons.i0.phi[mask].flatten(),  weight=w_allmu)
-                ezfill('electron_phi1',  phi=dielectrons.i1.phi[mask].flatten(),  weight=w_allmu)
+                ezfill('electron_pt0',   pt=dielectrons.i0.pt[mask].flatten(),    weight=w_diel )
+                ezfill('electron_pt1',   pt=dielectrons.i1.pt[mask].flatten(),    weight=w_diel )
+                ezfill('electron_eta0',  eta=dielectrons.i0.eta[mask].flatten(),  weight=w_diel)
+                ezfill('electron_eta1',  eta=dielectrons.i1.eta[mask].flatten(),  weight=w_diel)
+                ezfill('electron_phi0',  phi=dielectrons.i0.phi[mask].flatten(),  weight=w_diel)
+                ezfill('electron_phi1',  phi=dielectrons.i1.phi[mask].flatten(),  weight=w_diel)
                 ezfill('dielectron_pt',     pt=dielectrons.pt[mask].flatten(),                  weight=w_diel)
                 ezfill('dielectron_eta',    eta=dielectrons.eta[mask].flatten(),                weight=w_diel)
                 ezfill('dielectron_mass',   dilepton_mass=dielectrons.mass[mask].flatten(),     weight=w_diel)
