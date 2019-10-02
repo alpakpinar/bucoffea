@@ -15,7 +15,7 @@ def commandline():
 def main():
     args = commandline()
     acc = load(args.file)
-    debug_plot_output(acc, args.region, args.outpath)
+    debug_plot_output(acc, args.region, args.outpath, logscaley=False)
 
 if __name__ == "__main__":
     main()
