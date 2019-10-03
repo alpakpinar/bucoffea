@@ -39,7 +39,7 @@ def debug_plot_output(output, region='inclusive', outdir='out', logscaley=True):
             ax.set_yscale('log')
             ax.set_ylim(0.1, 1e8)
         else:
-            ax.set_ylim(0.1, 1e3)
+            ax.set_ylim(0.1, 5e2)
 
         fig.savefig(os.path.join(outdir, f"{region}_{name}.pdf"))
         plt.close(fig)
