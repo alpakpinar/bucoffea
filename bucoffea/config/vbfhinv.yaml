@@ -1,15 +1,15 @@
 default:
   dynaconf_include:
-    - monojet.yaml
+    - common.yaml
   test: false
   selection:
     signal:
-      met: 250    # min
+      recoil: 250    # min
       dijet:
         mass: 200
         dphi: 1.3
         deta: 1
-      leadingak4:
+      leadak4:
         pt: 80   # min
         eta: 4.7  # max
         nhf: 0.8  # max
