@@ -182,9 +182,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('hemisphere', hemisphere)
         selection.add('leadak4_id',leadak4_id.any())
         selection.add('trailak4_id',trailak4_id.any())
-        selection.add('mjj', df['mjj'] > cfg.SELECTION.SIGNAL.CUT_BASED.DIJET.MASS)
-        selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.CUT_BASED.DIJET.DPHI)
-        selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.CUT_BASED.DIJET.DETA)
+        selection.add('mjj', df['mjj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.MASS)
+        selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
+        selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
 
         # Dimuon CR
         leadmuon_index=muons.pt.argmax()
