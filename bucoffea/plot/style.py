@@ -110,7 +110,7 @@ def plot_settings():
             },
             'detajj' : {
                 'ylim' : (1e-3,1e4) 
-            }
+            },
             'dphijj' : {
                 'ylim' : (1e-3,1e4) 
             }
@@ -212,7 +212,7 @@ def plot_settings():
             },
             'detajj' : {
                 'ylim' : (1e-3, 1e4)
-            }
+            },
             'dphijj' : {
                 'ylim' : (1e-3,1e4) 
             }
@@ -291,7 +291,7 @@ def plot_settings():
             },
             'detajj' : {
                 'ylim' : (1e-3,1e4)
-            }
+            },
             'dphijj' : {
                 'ylim' : (1e-3,1e4) 
             }
@@ -381,7 +381,7 @@ def plot_settings():
             },
             'detajj' : {
                 'ylim' : (1e-3,1e4)
-            }
+            },
             'dphijj' : {
                 'ylim' : (1e-3,1e4) 
             }
@@ -456,7 +456,7 @@ def plot_settings():
             },
             'detajj' : {
                 'ylim' : (1e-3,1e4)
-            }
+            },
             'dphijj' : {
                 'ylim' : (1e-3,1e4) 
             }
