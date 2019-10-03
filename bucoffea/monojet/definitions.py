@@ -203,7 +203,7 @@ def setup_candidates(df, cfg):
     if df['is_data']:
         jes_suffix = ''
     else:
-        jes_suffix = ''
+        jes_suffix = '_nom'
 
     muons = JaggedCandidateArray.candidatesfromcounts(
         df['nMuon'],
