@@ -54,9 +54,10 @@ def trigger_selection(selection, df, cfg):
     else:
         if df['is_data']:
             selection.add('filt_met', mask_and(df, cfg.FILTERS.DATA))
+            selection.add('trig_met', mask_or(df, cfg.TRIGGERS.MET))
         else:
             selection.add('filt_met', mask_and(df, cfg.FILTERS.MC))
-        selection.add('trig_met', mask_or(df, cfg.TRIGGERS.MET))
+            selection.add('trig_met', pass_all)
 
         # Electron trigger overlap
         if df['is_data']:
@@ -71,6 +72,7 @@ def trigger_selection(selection, df, cfg):
                 trig_ele = mask_or(df, cfg.TRIGGERS.ELECTRON.SINGLE_BACKUP) | mask_or(df, cfg.TRIGGERS.ELECTRON.SINGLE)
             else:
                 trig_ele = pass_none
+ 
         else:
             trig_ele = mask_or(df, cfg.TRIGGERS.ELECTRON.SINGLE_BACKUP) | mask_or(df, cfg.TRIGGERS.ELECTRON.SINGLE)
 
