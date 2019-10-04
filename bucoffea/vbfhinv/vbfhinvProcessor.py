@@ -168,8 +168,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
         leadak4_pt_eta = (diak4.i0.pt > cfg.SELECTION.SIGNAL.LEADAK4.PT) & (np.abs(diak4.i0.eta) < cfg.SELECTION.SIGNAL.LEADAK4.ETA)
         trailak4_pt_eta = (diak4.i1.pt > cfg.SELECTION.SIGNAL.TRAILAK4.PT) & (np.abs(diak4.i1.eta) < cfg.SELECTION.SIGNAL.TRAILAK4.ETA)
         hemisphere = (diak4.i0.eta * diak4.i1.eta < 0).any()
-        
-        leadak4_id = diak4.i0.puid & diak4.i0.tightId & (diak4.i0.chf > cfg.SELECTION.SIGNAL.LEADAK4.CHF) &  (diak4.i0.nhf < cfg.SELECTION.SIGNAL.LEADAK4.NHF)
+        has_track = np.abs(diak4.i0.eta) <= 2.5        
+
+        leadak4_id = diak4.i0.puid & diak4.i0.tightId & (has_track*((diak4.i0.chf > cfg.SELECTION.SIGNAL.LEADAK4.CHF) & (diak4.i0.nhf < cfg.SELECTION.SIGNAL.LEADAK4.NHF)) + ~has_track*1)
         trailak4_id = (diak4.i1.chf > cfg.SELECTION.SIGNAL.TRAILAK4.CHF) &  (diak4.i1.nhf < cfg.SELECTION.SIGNAL.TRAILAK4.NHF)
 
         df['mjj'] = diak4.mass.max()
