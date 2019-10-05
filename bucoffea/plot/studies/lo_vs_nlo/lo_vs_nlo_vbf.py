@@ -37,8 +37,8 @@ def plot(inpath):
         # that are not yet defined, but I want to
         # use the same settings as for an existing one
         # so I just copy them.
-        settings['cr_2e_j_bare'] = settings['cr_2e_j']
-        settings['cr_2e_j_vbare'] = settings['cr_2e_j']
+        settings['cr_2e_vbf_bare'] = settings['cr_2e_vbf']
+        settings['cr_2e_vbf_vbare'] = settings['cr_2e_vbf']
 
         # Separate plots per year
         for year in [2017,2018]:
@@ -46,40 +46,42 @@ def plot(inpath):
             # Muon regions use MET,
             # electron+photon regions use EGamma
             # ( EGamma = SingleElectron+SinglePhoton for 2017)
+            if year == 2018: break
+
             data = {
-                'cr_1m_j' : f'MET_{year}',
-                'cr_2m_j' : f'MET_{year}',
-                'cr_1e_j' : f'EGamma_{year}',
-                'cr_2e_j' : f'EGamma_{year}',
-                'cr_2e_j_bare' : f'EGamma_{year}',
-                'cr_2e_j_vbare' : f'EGamma_{year}',
-                'cr_g_j' : f'EGamma_{year}',
+                'cr_1m_vbf' : f'MET_{year}',
+                'cr_2m_vbf' : f'MET_{year}',
+                'cr_1e_vbf' : f'EGamma_{year}',
+                'cr_2e_vbf' : f'EGamma_{year}',
+#                'cr_2e_vbf_bare' : f'EGamma_{year}',
+#                'cr_2e_vbf_vbare' : f'EGamma_{year}',
+                'cr_g_vbf' : f'EGamma_{year}',
             }
 
             # Same for MC selection
             # Match datasets by regular expressions
             # Here for LO V samples (HT binned)
             mc_lo = {
-                'cr_1m_j' : re.compile(f'(TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*|.*W.*HT.*).*{year}'),
-                'cr_1e_j' : re.compile(f'(TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*|.*W.*HT.*).*{year}'),
-                'cr_2m_j' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
-                'cr_2e_j' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
-                'cr_2e_j_bare' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
-                'cr_2e_j_vbare' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
-                'cr_g_j' : re.compile(f'(GJets.*|QCD_HT.*|W.*HT.*).*{year}'),
+                'cr_1m_vbf' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*|.*W.*HT.*).*{year}'),
+                'cr_1e_vbf' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*|.*W.*HT.*).*{year}'),
+                'cr_2m_vbf' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
+                'cr_2e_vbf' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
+#                'cr_2e_vbf_bare' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
+#                'cr_2e_vbf_vbare' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
+                'cr_g_vbf' : re.compile(f'(GJets.*|QCD_HT.*|W.*HT.*).*{year}'),
             }
 
             # Want to compare LO and NLO,
             # so do same thing for NLO V samples
             # All non-V samples remain the same
             mc_nlo = {
-                    'cr_1m_j' : re.compile(f'(TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*|.*W.*FXFX.*).*{year}'),
-                    'cr_1e_j' : re.compile(f'(TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*|.*W.*FXFX.*).*{year}'),
-                    'cr_2m_j' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*).*{year}'),
-                    'cr_2e_j' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*).*{year}'),
-                    'cr_2e_j_bare' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*).*{year}'),
-                    'cr_2e_j_vbare' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*).*{year}'),
-                    'cr_g_j' : re.compile(f'(GJets.*|QCD_HT.*|W.*FXFX.*).*{year}'),
+                    'cr_1m_vbf' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*|.*W.*FXFX.*).*{year}'),
+                    'cr_1e_vbf' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*|.*W.*FXFX.*).*{year}'),
+                    'cr_2m_vbf' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*).*{year}'),
+                    'cr_2e_vbf' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*).*{year}'),
+#                    'cr_2e_vbf_bare' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*).*{year}'),
+#                    'cr_2e_vbf_vbare' : re.compile(f'(EW.*|TTJets.*FXFX.*|Diboson.*|ST.*|QCD_HT.*|.*DY.*FXFX.*).*{year}'),
+                    'cr_g_vbf' : re.compile(f'(GJets.*|QCD_HT.*|W.*FXFX.*).*{year}'),
             }
 
 
@@ -87,8 +89,8 @@ def plot(inpath):
             # LO and NLO. Can be skipped if you only
             # want data / MC agreement plots.
             outdir = f'./output/{os.path.basename(indir)}/ratios'
-            cr_ratio_plot(acc, year=year,tag='losf',outdir=outdir, mc=mc_lo)
-            cr_ratio_plot(acc, year=year,tag='nlo',outdir=outdir, mc=mc_nlo)
+            #cr_ratio_plot(acc, year=year,tag='losf',outdir=outdir, mc=mc_lo)
+            #cr_ratio_plot(acc, year=year,tag='nlo',outdir=outdir, mc=mc_nlo)
 
             # Data / MC plots are made here
             # Loop over all regions
@@ -103,6 +105,7 @@ def plot(inpath):
                 for distribution in plotset.keys():
                     if not distribution in acc.keys():
                         print(f"WARNING: Distribution {distribution} not found in input files.")
+                        continue
                     # The heavy lifting of making a plot is hidden
                     # in make_plot. We call it once using the LO MC
                     make_plot(acc,
@@ -113,7 +116,8 @@ def plot(inpath):
                             mc=mc_lo[region],
                             ylim=plotset[distribution]['ylim'],
                             tag = 'losf',
-                            outdir=f'./output/{os.path.basename(indir)}/{region}')
+                            outdir=f'./output/{os.path.basename(indir)}/{region}',
+                            output_format='png')
 
                     # And then we also call it for the NLO MC
                     # The output files will be named according to the 'tag'
@@ -126,7 +130,8 @@ def plot(inpath):
                             mc=mc_nlo[region],
                             ylim=plotset[distribution]['ylim'],
                             tag = 'nlo',
-                            outdir=f'./output/{os.path.basename(indir)}/{region}')
+                            outdir=f'./output/{os.path.basename(indir)}/{region}',
+                            output_format='png')
 
 
 def main():
