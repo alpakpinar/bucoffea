@@ -71,11 +71,11 @@ def plot_settings():
             },
             'muon_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e1,1e5)
+                'ylim' : (1e1,1e7)
             },
             'muon_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e-3,1e6)
+                'ylim' : (1e-1,1e8)
             },
             'dimuon_eta' : {
                 'xlim' : (-3,3),
@@ -177,7 +177,7 @@ def plot_settings():
             },
             'electron_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e-3,1e6)
+                'ylim' : (1e-1,1e8)
             },
             'dielectron_eta' : {
                 'xlim' : (-3,3),
@@ -244,15 +244,15 @@ def plot_settings():
             },
             'ak4_eta0' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e0,1e8)
+                'ylim' : (1e0,1e9)
             },
             'ak4_eta1' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e0,1e8)
+                'ylim' : (1e0,1e9)
             },
             'ak4_eta' : {
                 'xlim' : (-3,3),
-                'ylim' : (1e2,1e7)
+                'ylim' : (1e2,1e8)
             },
             'muon_eta' : {
                 'xlim' : (-3,3),
