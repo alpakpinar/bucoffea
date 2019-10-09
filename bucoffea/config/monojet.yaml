@@ -33,13 +33,6 @@ default:
       singleel:
         mt: 160
         met: 50
-  sf:
-    ewk_nlo_w:
-      histogram: kfactor_monojet_ewk
-      file: data/sf/theory/merged_kfactors_wjets.root
-    ewk_nlo_z:
-      histogram: kfactor_monojet_ewk
-      file: data/sf/theory/merged_kfactors_zjets.root
   run:
     sync: False
     save:
