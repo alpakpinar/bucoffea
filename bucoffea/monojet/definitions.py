@@ -304,7 +304,7 @@ def setup_candidates(df, cfg):
         mass=df[f'Jet_mass{jes_suffix}'],
         looseId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight
         tightId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight
-        puid=((df['Jet_puId']&2>0) | df['Jet_pt']>50), # medium PU ID 
+        puid=((df['Jet_puId']&2>0) | (df['Jet_pt']>50)), # medium PU ID 
         csvv2=df["Jet_btagCSVV2"],
         deepcsv=df['Jet_btagDeepB'],
         # nef=df['Jet_neEmEF'],
@@ -529,17 +529,17 @@ def monojet_regions(cfg):
 
 def theory_weights(weights, df, evaluator, gen_v_pt, mjj):
     if df['is_lo_w']:
-        weights.add("theory", evaluator["qcd_nlo_w_2017"](gen_v_pt) * evaluator["qcd_nnlo_w"](gen_v_pt) * evaluator["ewk_nlo_w"](gen_v_pt, mjj))
+        weights.add("theory", evaluator["qcd_nlo_w_2017"](gen_v_pt) * evaluator["qcd_nnlo_w"](gen_v_pt) * evaluator["ewk_nlo_w"](gen_v_pt))
     elif df['is_lo_w_ewk']:
-        weights.add("theory", evaluator["qcd_nlo_w_2017"](gen_v_pt) * evaluator["qcd_nnlo_w"](gen_v_pt) * evaluator["ewk_nlo_w"](gen_v_pt, mjj))
+        weights.add("theory", evaluator["qcd_nlo_w_ewk"](gen_v_pt, mjj))
     elif df['is_lo_z']:
-        weights.add("theory", evaluator["qcd_nlo_z_2017"](gen_v_pt) * evaluator["qcd_nnlo_z"](gen_v_pt) * evaluator["ewk_nlo_z"](gen_v_pt, mjj))
+        weights.add("theory", evaluator["qcd_nlo_z_2017"](gen_v_pt) * evaluator["qcd_nnlo_z"](gen_v_pt) * evaluator["ewk_nlo_z"](gen_v_pt))
     elif df['is_lo_z_ewk']:
-        weights.add("theory", evaluator["qcd_nlo_w_2017"](gen_v_pt) * evaluator["qcd_nnlo_w"](gen_v_pt) * evaluator["ewk_nlo_w"](gen_v_pt, mjj))
+        weights.add("theory", evaluator["qcd_nlo_z_ewk"](gen_v_pt, mjj))
     elif df['is_nlo_w']:
-        weights.add("theory", evaluator["qcd_nnlo_w"](gen_v_pt) * evaluator["ewk_nlo_w"](gen_v_pt, mjj))
+        weights.add("theory", evaluator["qcd_nnlo_w"](gen_v_pt) * evaluator["ewk_nlo_w"](gen_v_pt))
     elif df['is_nlo_z']:
-        weights.add("theory", evaluator["qcd_nnlo_z"](gen_v_pt) * evaluator["ewk_nlo_z"](gen_v_pt, mjj))
+        weights.add("theory", evaluator["qcd_nnlo_z"](gen_v_pt) * evaluator["ewk_nlo_z"](gen_v_pt))
     elif df['is_lo_g']:
         weights.add("theory", evaluator["ewk_nlo_g"](gen_v_pt) * evaluator["qcd_nlo_g"](gen_v_pt) * evaluator["qcd_nnlo_g"](gen_v_pt))
     else:
