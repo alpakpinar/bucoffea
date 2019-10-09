@@ -41,10 +41,10 @@ default:
         met: 50 # min
         mt: 160
   sf:
-    ewk_nlo_w:
+    qcd_nlo_w_ewk:
       histogram: TH2F_kFactor
       file: data/sf/theory/kFactor_WToLNu_pT_Mjj.root
-    ewk_nlo_z:
+    qcd_nlo_z_ewk:
       histogram: TH2F_kFactor
       file: data/sf/theory/kFactor_ZToNuNu_pT_Mjj.root
 
