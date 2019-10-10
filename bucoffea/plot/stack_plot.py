@@ -40,6 +40,11 @@ class Style():
             'cr_1e_j' : 'Single-e CR, monojet',
             'cr_2e_j' : 'Di-e CR, monojet',
             'cr_g_j' : 'Single-Photon CR, monojet',
+            'cr_1m_vbf' : 'Single-$\mu$ CR, vbfhinv',
+            'cr_2m_vbf' : 'Di-$\mu$ CR, vbfhinv',
+            'cr_1e_vbf' : 'Single-e CR, vbfhinv',
+            'cr_2e_vbf' : 'Di-e CR, vbfhinv',
+            'cr_g_vbf' : 'Single-Photon CR, vbfhinv',
         }
         self.rebin_axes = {
             'dimuon_mass' : hist.Bin('dilepton_mass','dilepton_mass',30,60,120),
@@ -48,13 +53,18 @@ class Style():
             'recoil' : hist.Bin('recoil','Recoil (GeV)',[ 250.,  280.,  310.,  340.,  370.,  400.,  430.,  470.,  510., 550.,  590.,  640.,  690.,  740.,  790.,  840.,  900.,  960., 1020., 1090., 1160., 1250., 1400., 1600., 1800., 2000.]),
             'met' : hist.Bin('met','met',list(range(0,500,50)) + list(range(500,1000,100)) + list(range(1000,2000,250))),
             'ak4_pt0' : hist.Bin('jetpt','jetpt',list(range(100,600,20)) + list(range(600,1000,20)) ),
+            'ak4_pt1' : hist.Bin('jetpt','jetpt',list(range(100,600,20)) + list(range(600,1000,20)) ),
             'ak4_pt' : hist.Bin('jetpt','jetpt',list(range(100,600,20)) + list(range(600,1000,20)) ),
             'ak4_ptraw0' : hist.Bin('jetpt','jetpt',list(range(100,600,20)) + list(range(600,1000,20)) ),
             'ak4_pt0_eta0' : hist.Bin('jetpt','jetpt',list(range(100,600,20)) + list(range(600,1000,20)) ),
             'photon_pt0' : hist.Bin('pt','pt',list(range(200,600,20)) + list(range(600,1000,20)) ),
-            'dielectron_pt' : hist.Bin('dilepton_pt','dilepton_pt',list(range(100,1000,20))),
-            'dimuon_pt' : hist.Bin('dilepton_pt','dilepton_pt',list(range(100,1000,20))),
-            'mjj' : hist.Bin('mjj', 'mjj', list(range(0,5000,100)))
+            'dielectron_pt' : hist.Bin('dilepton_pt','dilepton_pt',list(range(100,1000,30))),
+            'dimuon_pt' : hist.Bin('dilepton_pt','dilepton_pt',list(range(100,1000,30))),
+            'mjj' : hist.Bin('mjj', 'mjj', list(range(0,5000,100))),
+            'muon_pt' : hist.Bin('pt','pt',list(range(200,600,20)) + list(range(600,1000,20)) ),
+            'muon_pt0' : hist.Bin('pt','pt',list(range(200,600,20)) + list(range(600,1000,20)) ),
+            'electron_pt' : hist.Bin('pt','pt',list(range(200,600,20)) + list(range(600,1000,20)) ),
+            'electron_pt0' : hist.Bin('pt','pt',list(range(200,600,20)) + list(range(600,1000,20)) ),
         }
 
 
