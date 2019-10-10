@@ -89,8 +89,9 @@ def plot(inpath):
             # LO and NLO. Can be skipped if you only
             # want data / MC agreement plots.
             outdir = f'./output/{os.path.basename(indir)}/ratios'
-            #cr_ratio_plot(acc, year=year,tag='losf',outdir=outdir, mc=mc_lo)
-            #cr_ratio_plot(acc, year=year,tag='nlo',outdir=outdir, mc=mc_nlo)
+            regions = list(mc_lo.keys())
+            cr_ratio_plot(acc, year=year, regions=regions, tag='losf', outdir=outdir, mc=mc_lo)
+            cr_ratio_plot(acc, year=year, regions=regions, tag='nlo',  outdir=outdir, mc=mc_nlo)
 
             # Data / MC plots are made here
             # Loop over all regions
