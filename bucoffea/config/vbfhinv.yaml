@@ -50,7 +50,7 @@ default:
       tight:
         pt: 215
         pttrig: 215
-        eta: 1.4442
+        eta: 1.0
     branch:
       id: Photon_cutBasedBitmap
   muon:
