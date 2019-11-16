@@ -292,7 +292,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # Photon CR
         leadphoton_index=photons.pt.argmax()
 
-        df['is_tight_photon'] = photons.mediumId \
+        df['is_tight_photon'] = photons.tightId \
                          & (photons.abseta < cfg.PHOTON.CUTS.TIGHT.ETA)
 
         selection.add('one_photon', photons.counts==1)
