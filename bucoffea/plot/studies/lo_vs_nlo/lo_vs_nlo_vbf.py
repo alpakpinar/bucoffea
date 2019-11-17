@@ -12,7 +12,7 @@ from bucoffea.plot.style import plot_settings
 from collections import defaultdict
 from klepto.archives import dir_archive
 
-def plot(inpath, region=None):
+def plot(inpath, region=None, ylog=True):
         indir=os.path.abspath(inpath)
 
         # The processor output is stored in an
@@ -38,8 +38,6 @@ def plot(inpath, region=None):
         settings = plot_settings()
 
         merged = set()
-            
-
 
         # Separate plots per year
         for year in [2017,2018]:
@@ -90,7 +88,6 @@ def plot(inpath, region=None):
             else:
                 regions = list(mc_lo.keys())
 
-            print('hey', regions)
             # Load ingredients from cache
             acc.load('mjj')
             acc.load('sumw')
@@ -135,7 +132,8 @@ def plot(inpath, region=None):
                                 tag = 'losf',
                                 outdir=f'./output/{os.path.basename(indir)}/{region}',
                                 output_format='pdf',
-                                ratio=ratio)
+                                ratio=ratio,
+                                ylog=ylog)
 
                         # And then we also call it for the NLO MC
                         # The output files will be named according to the 'tag'
@@ -151,19 +149,23 @@ def plot(inpath, region=None):
                                 tag = 'nlo',
                                 outdir=f'./output/{os.path.basename(indir)}/{region}',
                                 output_format='pdf',
-                                ratio=ratio)
+                                ratio=ratio,
+                                ylog=ylog)
                    
                     except KeyError:
                         continue
 
 def main():
-    inpath = sys.argv[1]
+    args = sys.argv
+    inpath = args[1]
     # Get the additional arguments if they are passed in
-    if len(sys.argv) == 3:
-        region = sys.argv[2]
-        print(region)
-        plot(inpath, region)
-
+    if len(args) == 4:
+        region = args[2]
+        if args[3] == 'ylog':
+            ylog = True
+        elif args[3] == 'ylin':
+            ylog = False 
+        plot(inpath, region, ylog)
 
     else:
         plot(inpath)

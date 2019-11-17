@@ -105,7 +105,7 @@ class Style():
             return self.binnings['default'][distribution]
 
 
-def make_plot(acc, region, distribution, year,  data, mc, signal=None, outdir='./output/stack/', integrate=None, ylim=None, xlim=None, rylim=None, tag=None, output_format='pdf', ratio=True):
+def make_plot(acc, region, distribution, year,  data, mc, signal=None, outdir='./output/stack/', integrate=None, ylim=None, xlim=None, rylim=None, tag=None, output_format='pdf', ratio=True, ylog=True):
     """Creates a data vs MC comparison plot
 
     :param acc: Accumulator (processor output)
@@ -239,7 +239,8 @@ def make_plot(acc, region, distribution, year,  data, mc, signal=None, outdir='.
                 transform=ax.transAxes
                )
     # Aesthetics
-    ax.set_yscale("log")
+    if ylog:
+        ax.set_yscale("log")
     ax.set_ylabel('Events / Bin width')
     plot_settings=style.plot_settings()
     if region in plot_settings.keys(): 
