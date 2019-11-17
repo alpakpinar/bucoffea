@@ -39,12 +39,6 @@ def plot(inpath, region=None):
 
         merged = set()
             
-        if region:
-            regions = [region]
-        else:
-            regions = list(mc_lo.keys())
-
-        print('hey', regions)
 
 
         # Separate plots per year
@@ -91,6 +85,12 @@ def plot(inpath, region=None):
             # want data / MC agreement plots.
             outdir = f'./output/{os.path.basename(indir)}/ratios'
 
+            if region:
+                regions = [region]
+            else:
+                regions = list(mc_lo.keys())
+
+            print('hey', regions)
             # Load ingredients from cache
             acc.load('mjj')
             acc.load('sumw')
