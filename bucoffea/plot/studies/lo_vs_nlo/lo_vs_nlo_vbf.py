@@ -12,7 +12,7 @@ from bucoffea.plot.style import plot_settings
 from collections import defaultdict
 from klepto.archives import dir_archive
 
-def plot(inpath):
+def plot(inpath, region=None):
         indir=os.path.abspath(inpath)
 
         # The processor output is stored in an
@@ -38,6 +38,14 @@ def plot(inpath):
         settings = plot_settings()
 
         merged = set()
+            
+        if region:
+            regions = [region]
+        else:
+            regions = list(mc_lo.keys())
+
+        print('hey', regions)
+
 
         # Separate plots per year
         for year in [2017,2018]:
@@ -78,8 +86,6 @@ def plot(inpath):
                     'cr_g_vbf' : re.compile(f'(GJets_(?!Mjj).*|AGJets.*|QCD_HT.*|W.*FXFX.*).*{year}'),
             }
 
-            regions = list(mc_lo.keys())
-
             # Make control region ratio plots for both
             # LO and NLO. Can be skipped if you only
             # want data / MC agreement plots.
@@ -90,12 +96,12 @@ def plot(inpath):
             acc.load('sumw')
             acc.load('sumw_pileup')
             acc.load('nevents')
-            cr_ratio_plot(acc, year=year,tag='losf',outdir=outdir, mc=mc_lo, regions=regions, distribution='mjj')
-            cr_ratio_plot(acc, year=year,tag='nlo',outdir=outdir, mc=mc_nlo, regions=regions, distribution='mjj')
+            #cr_ratio_plot(acc, year=year,tag='losf',outdir=outdir, mc=mc_lo, regions=regions, distribution='mjj')
+            #cr_ratio_plot(acc, year=year,tag='nlo',outdir=outdir, mc=mc_nlo, regions=regions, distribution='mjj')
 
             # Data / MC plots are made here
             # Loop over all regions
-            for region in mc_lo.keys():
+            for region in regions:
                 ratio = True if region != 'sr_vbf' else False 
                 # Make separate output direcotry for each region
                 outdir = f'./output/{os.path.basename(indir)}/{region}'
@@ -152,8 +158,15 @@ def plot(inpath):
 
 def main():
     inpath = sys.argv[1]
-    plot(inpath)
+    # Get the additional arguments if they are passed in
+    if len(sys.argv) == 3:
+        region = sys.argv[2]
+        print(region)
+        plot(inpath, region)
 
+
+    else:
+        plot(inpath)
 
 if __name__ == "__main__":
     main()
