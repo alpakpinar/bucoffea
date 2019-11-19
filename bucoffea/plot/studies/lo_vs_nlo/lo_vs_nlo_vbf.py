@@ -19,15 +19,20 @@ def parse_commandline():
     parser.add_argument('-i', '--inpath', help='The directory containing the merged inputs.')
     parser.add_argument('-r', '--region', help='The region to plot.')
     parser.add_argument('-l', '--ylog', help='Plot y-axis in log scale.', action='store_true')
+    parser.add_argument('-d', '--distribution', help='Distribution to plot.') 
+    parser.add_argument('--yrange', help='yrange: ymin and ymax.', type=int, nargs='+') 
     args = parser.parse_args()
 
     return args
 
 def plot(args): 
+        
+        # Get the arguments
         inpath = args.inpath
         region = args.region
-        print(region)
         ylog = args.ylog
+        distribution = args.distribution
+        yrange = tuple(args.yrange)
 
         indir=os.path.abspath(inpath)
 
@@ -121,6 +126,12 @@ def plot(args):
                 # Settings for this region
                 plotset = settings[region]
 
+                # Use manual y-range if provided, else get the y-range from style.py
+                if yrange: 
+                    ylim = yrange[0], yrange[1]
+                else:
+                    ylim = plotset[distribution].get('ylim',None)
+
                 # Loop over the distributions
                 for distribution in plotset.keys():
                     # Load from cache
@@ -143,7 +154,7 @@ def plot(args):
                                 year=year,
                                 data=data[region],
                                 mc=mc_lo[region],
-                                ylim=plotset[distribution].get('ylim',None),
+                                ylim=ylim,
                                 xlim=plotset[distribution].get('xlim',None),
                                 tag = 'losf',
                                 outdir=f'./output/{os.path.basename(indir)}/{region}',
@@ -160,7 +171,7 @@ def plot(args):
                                 year=year,
                                 data=data[region],
                                 mc=mc_nlo[region],
-                                ylim=plotset[distribution].get('ylim',None),
+                                ylim=ylim,
                                 xlim=plotset[distribution].get('xlim',None),
                                 tag = 'nlo',
                                 outdir=f'./output/{os.path.basename(indir)}/{region}',
