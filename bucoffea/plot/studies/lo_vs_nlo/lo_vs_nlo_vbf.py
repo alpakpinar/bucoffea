@@ -32,7 +32,9 @@ def plot(args):
         region = args.region
         ylog = args.ylog
         distribution = args.distribution
-        yrange = tuple(args.yrange)
+
+        if args.yrange:
+            yrange = tuple(args.yrange)
 
         indir=os.path.abspath(inpath)
 
