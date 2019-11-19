@@ -3,6 +3,8 @@
 import os
 import re
 import sys
+import argparse
+
 from pprint import pprint
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi 
 from bucoffea.plot.stack_plot import Style, make_plot
@@ -12,7 +14,21 @@ from bucoffea.plot.style import plot_settings
 from collections import defaultdict
 from klepto.archives import dir_archive
 
-def plot(inpath, region=None, ylog=True):
+def parse_commandline():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--inpath', help='The directory containing the merged inputs.')
+    parser.add_argument('-r', '--region', help='The region to plot.')
+    parser.add_argument('-l', '--ylog', help='Plot y-axis in log scale.', action='store_true')
+    args = parser.parse_args()
+
+    return args
+
+def plot(args): 
+        inpath = args.inpath
+        region = args.region
+        print(region)
+        ylog = args.ylog
+
         indir=os.path.abspath(inpath)
 
         # The processor output is stored in an
@@ -156,19 +172,8 @@ def plot(inpath, region=None, ylog=True):
                         continue
 
 def main():
-    args = sys.argv
-    inpath = args[1]
-    # Get the additional arguments if they are passed in
-    if len(args) == 4:
-        region = args[2]
-        if args[3] == 'ylog':
-            ylog = True
-        elif args[3] == 'ylin':
-            ylog = False 
-        plot(inpath, region, ylog)
-
-    else:
-        plot(inpath)
+    args = parse_commandline()
+    plot(args)
 
 if __name__ == "__main__":
     main()
