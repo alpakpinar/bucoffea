@@ -36,6 +36,8 @@ def plot(args):
         if args.yrange:
             yrange = tuple(args.yrange)
 
+        else: yrange = None
+
         indir=os.path.abspath(inpath)
 
         # The processor output is stored in an
@@ -128,11 +130,6 @@ def plot(args):
                 # Settings for this region
                 plotset = settings[region]
 
-                # Use manual y-range if provided, else get the y-range from style.py
-                if yrange: 
-                    ylim = yrange[0], yrange[1]
-                else:
-                    ylim = plotset[distribution].get('ylim',None)
 
                 # Loop over the distributions
                 for distribution in plotset.keys():
@@ -147,6 +144,13 @@ def plot(args):
                         scale_xs_lumi(acc[distribution]) 
                         acc[distribution] = merge_datasets(acc[distribution])
                         merged.add(distribution)
+                    
+                    # Use manual y-range if provided, else get the y-range from style.py
+                    if yrange: 
+                        ylim = yrange[0], yrange[1]
+                    else:
+                        ylim = plotset[distribution].get('ylim',None)
+                    
                     try:
                         # The heavy lifting of making a plot is hidden
                         # in make_plot. We call it once using the LO MC
