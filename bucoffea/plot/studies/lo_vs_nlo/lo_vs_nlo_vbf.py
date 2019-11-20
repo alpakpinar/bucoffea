@@ -164,7 +164,7 @@ def plot(args):
                                 xlim=plotset[distribution].get('xlim',None),
                                 tag = 'losf',
                                 outdir=f'./output/{os.path.basename(indir)}/{region}',
-                                output_format='pdf',
+                                output_format='png',
                                 ratio=ratio,
                                 ylog=ylog)
 
@@ -181,7 +181,7 @@ def plot(args):
                                 xlim=plotset[distribution].get('xlim',None),
                                 tag = 'nlo',
                                 outdir=f'./output/{os.path.basename(indir)}/{region}',
-                                output_format='pdf',
+                                output_format='png',
                                 ratio=ratio,
                                 ylog=ylog)
                    
