@@ -2,6 +2,7 @@
 from pprint import pprint
 import copy
 import os
+import sys
 import re
 import numpy as np
 from matplotlib import pyplot as plt
@@ -208,7 +209,8 @@ def pdfwgt_sf(vpt):
     return 1/(1.157 + 2.291e-4 * vpt + 6.0612e-7 * vpt**2)
 
 def main():
-    acc = acc_from_dir("./input/2019-10-07_das_lhevpt_dressed_v1")
+    indir = sys.argv[1]
+    acc = acc_from_dir(indir)
 
     outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
     sf_1d(acc, tag='wjet', regex='W.*',outputrootfile=outputrootfile)
