@@ -13,6 +13,8 @@ from bucoffea.plot.util import (acc_from_dir, merge_datasets, merge_extensions,
                                 scale_xs_lumi)
 from bucoffea.helpers.paths import bucoffea_path
 import uproot
+from klepto.archives import dir_archive
+
 pjoin = os.path.join
 
 data_err_opts = {
@@ -129,6 +131,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
 
     for selection in ['vbf']:
         dist = f'gen_vpt_{selection}_{pt_type}'
+        acc.load(dist)
         h = copy.deepcopy(acc[dist])
         print(h)
         h = h.rebin(h.axis('vpt'), vpt_ax)
@@ -210,17 +213,25 @@ def pdfwgt_sf(vpt):
 
 def main():
     indir = sys.argv[1]
-    acc = acc_from_dir(indir)
+
+    acc = dir_archive(
+        indir,
+        serialized=True,
+        compression=0,
+        memsize=1e3
+        )    
+
+    acc.load('sumw')
+    acc.load('sumw2')
 
     outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
-    sf_1d(acc, tag='wjet', regex='W.*',outputrootfile=outputrootfile)
-    sf_1d(acc, tag='dy', regex='.*DY.*',outputrootfile=outputrootfile)
+    #sf_1d(acc, tag='wjet', regex='W.*',outputrootfile=outputrootfile)
+    #sf_1d(acc, tag='dy', regex='.*DY.*',outputrootfile=outputrootfile)
     # # outputrootfile = uproot.recreate(f'test.root')
-    sf_2d(acc, tag='wjet', regex='W.*',pt_type='dress',outputrootfile=outputrootfile)
-    sf_2d(acc, tag='dy', regex='.*DY.*',pt_type='dress',outputrootfile=outputrootfile)
+    #sf_2d(acc, tag='wjet', regex='W.*',pt_type='dress',outputrootfile=outputrootfile)
+    #sf_2d(acc, tag='dy', regex='.*DY.*',pt_type='dress',outputrootfile=outputrootfile)
 
-    acc = acc_from_dir("./input/2019-10-29_photon_kfac_v0/")
-    sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
+    #sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
     # outputrootfile = uproot.recreate('test.root')
 
     sf_2d(acc, tag='gjets',regex='G\d?Jet.*',pt_type='stat1',outputrootfile=outputrootfile)
