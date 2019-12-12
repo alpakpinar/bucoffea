@@ -12,6 +12,7 @@ from coffea import hist
 from bucoffea.plot.util import (acc_from_dir, merge_datasets, merge_extensions,
                                 scale_xs_lumi)
 from bucoffea.helpers.paths import bucoffea_path
+from klepto.archives import dir_archive
 import uproot
 pjoin = os.path.join
 
@@ -53,6 +54,7 @@ def sf_1d(acc, tag, regex, outputrootfile):
     for pt_type in pt_types:
         for selection in ['inclusive','monojet','vbf']:
             dist = f'gen_vpt_{selection}_{pt_type}'
+            acc.load(dist)
             h = copy.deepcopy(acc[dist])
 
             h = h.rebin(h.axis('vpt'), new_ax)
@@ -129,6 +131,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
 
     for selection in ['vbf']:
         dist = f'gen_vpt_{selection}_{pt_type}'
+        acc.load(dist)
         h = copy.deepcopy(acc[dist])
         print(h)
         h = h.rebin(h.axis('vpt'), vpt_ax)
@@ -219,7 +222,12 @@ def main():
     #sf_2d(acc, tag='wjet', regex='W.*',pt_type='dress',outputrootfile=outputrootfile)
     #sf_2d(acc, tag='dy', regex='.*DY.*',pt_type='dress',outputrootfile=outputrootfile)
 
-    acc = acc_from_dir(inpath)
+    acc = dir_archive(
+                      inpath,
+                      serialized=True,
+                      compression=0,
+                      memsize=1e3
+                      )
     sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
     # outputrootfile = uproot.recreate('test.root')
 
