@@ -125,7 +125,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200]+list(range(500,2500,500)))
         clims = 0.5,1.5
     elif tag in ['gjets']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 610, 700])
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 800])
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000])
         clims = 1.0, 1.5
 
