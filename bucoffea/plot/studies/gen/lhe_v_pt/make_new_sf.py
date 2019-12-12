@@ -228,6 +228,9 @@ def main():
                       compression=0,
                       memsize=1e3
                       )
+    acc.load('sumw')
+    acc.load('sumw2')
+
     sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
     # outputrootfile = uproot.recreate('test.root')
 
