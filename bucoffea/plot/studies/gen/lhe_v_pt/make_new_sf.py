@@ -2,6 +2,7 @@
 from pprint import pprint
 import copy
 import os
+import sys
 import re
 import numpy as np
 from matplotlib import pyplot as plt
@@ -122,7 +123,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200]+list(range(500,2500,500)))
         clims = 0.5,1.5
     elif tag in ['gjets']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 800])
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 610, 700])
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000])
         clims = 1.0, 1.5
 
@@ -208,16 +209,17 @@ def pdfwgt_sf(vpt):
     return 1/(1.157 + 2.291e-4 * vpt + 6.0612e-7 * vpt**2)
 
 def main():
-    acc = acc_from_dir("./input/2019-10-07_das_lhevpt_dressed_v1")
+    inpath = sys.argv[1]
+    #acc = acc_from_dir("./input/2019-10-07_das_lhevpt_dressed_v1")
 
     outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
-    sf_1d(acc, tag='wjet', regex='W.*',outputrootfile=outputrootfile)
-    sf_1d(acc, tag='dy', regex='.*DY.*',outputrootfile=outputrootfile)
+    #sf_1d(acc, tag='wjet', regex='W.*',outputrootfile=outputrootfile)
+    #sf_1d(acc, tag='dy', regex='.*DY.*',outputrootfile=outputrootfile)
     # # outputrootfile = uproot.recreate(f'test.root')
-    sf_2d(acc, tag='wjet', regex='W.*',pt_type='dress',outputrootfile=outputrootfile)
-    sf_2d(acc, tag='dy', regex='.*DY.*',pt_type='dress',outputrootfile=outputrootfile)
+    #sf_2d(acc, tag='wjet', regex='W.*',pt_type='dress',outputrootfile=outputrootfile)
+    #sf_2d(acc, tag='dy', regex='.*DY.*',pt_type='dress',outputrootfile=outputrootfile)
 
-    acc = acc_from_dir("./input/2019-10-29_photon_kfac_v0/")
+    acc = acc_from_dir(inpath)
     sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
     # outputrootfile = uproot.recreate('test.root')
 
