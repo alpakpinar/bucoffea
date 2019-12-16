@@ -179,6 +179,11 @@ def merge_datasets(histogram):
         'GJets_HT_MLM_2016' : [x for x in all_datasets if re.match('GJets_HT-(\d+)To.*-MLM_2016',x)],
         'GJets_HT_MLM_2017' : [x for x in all_datasets if re.match('GJets_HT-(\d+)To.*-MLM_2017',x)],
         'GJets_HT_MLM_2018' : [x for x in all_datasets if re.match('GJets_HT-(\d+)To.*-MLM_2018',x)],
+        
+        'GJets_DR-0p4_HT_MLM_2017' : [x for x in all_datasets if re.match('GJets_DR-0p4_HT-(\d+)To.*-MLM_2017',x)],
+        'GJets_DR-0p4_HT_MLM_2018' : [x for x in all_datasets if re.match('GJets_DR-0p4_HT-(\d+)To.*-MLM_2018',x)],
+        'GJets_DR-0p4_HT_MLM_v2_2017' : [x for x in all_datasets if re.match('GJets_DR-0p4_HT-(\d+)To.*-MLM_v2_2017',x)],
+        'GJets_DR-0p4_HT_MLM_v2_2018' : [x for x in all_datasets if re.match('GJets_DR-0p4_HT-(\d+)To.*-MLM_v2_2018',x)],
 
         'AGJets_SM_5f_EWK-mg_2017' : ['GJets_SM_5f_EWK-mg_2017'],
         'AGJets_SM_5f_EWK-mg_2018' : ['GJets_SM_5f_EWK-mg_2017'],
