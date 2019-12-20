@@ -649,7 +649,7 @@ def theory_weights_vbf(weights, df, evaluator, gen_v_pt, mjj):
 
     # Guard against invalid k-factor
     invalid_kfac = np.isinf(theory_weights) | np.isnan(theory_weights)
-    theory_weigths[invalid_kfac] = 1
+    theory_weights[invalid_kfac] = 1
 
     weights.add('theory', theory_weights)
 
