@@ -223,6 +223,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         leadak4_id = diak4.i0.tightId & (has_track0*((diak4.i0.chf > cfg.SELECTION.SIGNAL.LEADAK4.CHF) & (diak4.i0.nhf < cfg.SELECTION.SIGNAL.LEADAK4.NHF)) + ~has_track0)
         trailak4_id = has_track1*((diak4.i1.chf > cfg.SELECTION.SIGNAL.TRAILAK4.CHF) & (diak4.i1.nhf < cfg.SELECTION.SIGNAL.TRAILAK4.NHF)) + ~has_track1
+        jet_at_horn = ((np.abs(ak4.eta) > 2.5).any()) & ((np.abs(ak4.eta) < 3.5).any())
 
         df['mjj'] = diak4.mass.max()
         df['dphijj'] = dphi(diak4.i0.phi.min(), diak4.i1.phi.max())
@@ -237,6 +238,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('mjj', df['mjj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.MASS)
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
+        selection.add('horn_jet_veto', jet_at_horn) 
 
         # Divide into three categories for trigger study
         if cfg.RUN.TRIGGER_STUDY:

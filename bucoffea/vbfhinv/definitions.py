@@ -188,6 +188,7 @@ def vbfhinv_regions(cfg):
         'filt_met',
         'hemveto',
         'mindphijr',
+        'horn_jet_veto',
         'recoil',
         'two_jets',
         'leadak4_pt_eta',
