@@ -75,6 +75,55 @@ def plot_gen_spectrum(acc, tag='stat1', variable='vpt'):
 	fig.savefig(outpath)
 	print(f'Saved histogram in {outpath}')
 
+def plot_2d_gen_spectrum(acc, tag='stat1', sample_order='lo'):
+	'''Plot 2D gen-vpt/mjj spectrum for LO and NLO GJets samples.
+	==============
+	PARAMETERS
+	acc : The coffea accumulator containing all the histograms.
+	tag : Type of pt (stat1 or dress). 
+		  Default is stat1.
+	sample_order : Order of the sample.
+				   Should be specified as 'lo' or 'nlo'.
+				   Default is 'lo'.
+	==============
+	'''
+	if sample_order == 'lo':
+		dataset_name = 'GJets_HT_MLM_2016'
+	elif sample_order == 'nlo':
+		dataset_name = 'G1Jet_Pt-amcatnlo_2016'
+	else:
+		raise ValueError(f'{sample_order}: Invalid argument for sample_order. Should be specified as "lo" or "nlo"')
+
+	dist = f'gen_vpt_vbf_{tag}'
+	acc.load(dist)
+	histogram = acc[dist]
+
+	# Merge datasets/extensions, 
+	# scale the histogram according to x-sec
+	histogram = merge_extensions(histogram, acc, reweight_pu=False)
+	scale_xs_lumi(histogram)
+	histogram = merge_datasets(histogram)
+	
+	histogram = histogram.integrate('dataset', dataset_name).integrate('jpt')
+	
+	# Rebin the vpt and mjj axes
+	new_bin_vpt = REBIN['vpt']
+	new_bin_mjj = REBIN['mjj']
+	histogram = histogram.rebin('vpt', new_bin_vpt)
+	histogram = histogram.rebin('mjj', new_bin_mjj)
+	
+	# Plot the 2D histogram and save the figure
+	fig, ax = plt.subplots(1,1, figsize=(7,5))
+	hist.plot2d(histogram, xaxis='mjj', ax=ax, binwnorm=True)
+
+	ax.set_xlabel(AX_LABELS['mjj'])
+	ax.set_ylabel(AX_LABELS['vpt'])
+	ax.set_title(f'{dataset_name}')
+
+	outpath = f'./output/gen_vpt_mjj_{sample_order}.pdf'
+	fig.savefig(outpath)
+	print(f'Saved histogram in {outpath}')
+
 def main():
 	inpath = sys.argv[1]
 	
@@ -90,7 +139,8 @@ def main():
 
 	plot_gen_spectrum(acc, variable='vpt')
 	plot_gen_spectrum(acc, variable='mjj')
-
+	plot_2d_gen_spectrum(acc, sample_order='lo')
+	plot_2d_gen_spectrum(acc, sample_order='nlo')
 
 if __name__ == '__main__':
 	main()
