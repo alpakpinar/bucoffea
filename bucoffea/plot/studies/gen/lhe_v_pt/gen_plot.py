@@ -11,11 +11,6 @@ from bucoffea.plot.util import (merge_datasets,
 from klepto.archives import dir_archive
 from matplotlib import pyplot as plt
 
-REBIN = {
-	'mjj' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
-	'vpt' : hist.Bin('pt', r'$p_T(V)$ (GeV)', 40, 0, 800) 
-}
-
 AX_LABELS = {
 	'mjj' : r'$M_{jj}$ (GeV)',
 	'vpt' : r'$p_T(V)$ (GeV)'
@@ -52,10 +47,6 @@ def plot_gen_spectrum(acc, tag='stat1', variable='vpt'):
 	histogram = merge_extensions(histogram, acc, reweight_pu=False)
 	scale_xs_lumi(histogram)
 	histogram = merge_datasets(histogram)
-
-	# Rebin the vpt axis
-	new_bin = REBIN['vpt']
-#	histogram = histogram.rebin('vpt', new_bin)
 
 	# LO and NLO GJets samples
 	dataset = re.compile('G\d?Jet.*_(HT|Pt).*')
@@ -105,12 +96,6 @@ def plot_2d_gen_spectrum(acc, tag='stat1', sample_order='lo'):
 	histogram = merge_datasets(histogram)
 	
 	histogram = histogram.integrate('dataset', dataset_name).integrate('jpt')
-	
-	# Rebin the vpt and mjj axes
-	new_bin_vpt = REBIN['vpt']
-	new_bin_mjj = REBIN['mjj']
-	histogram = histogram.rebin('vpt', new_bin_vpt)
-	histogram = histogram.rebin('mjj', new_bin_mjj)
 	
 	# Plot the 2D histogram and save the figure
 	fig, ax = plt.subplots(1,1, figsize=(7,5))
