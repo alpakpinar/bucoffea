@@ -43,7 +43,7 @@ def datasets(year):
 
 def legacy_dataset_name_vbf(dataset):
     patterns = {
-        '.*DY.*' : 'qcdzll',
+        'DY.*' : 'qcdzll',
         'EWK_ZToLL.*' : 'ewkzll',
         'EWK_ZToNuNu.*' : 'ewkzjets',
         'EWK_W.*' : 'ewkwjets',
@@ -55,7 +55,7 @@ def legacy_dataset_name_vbf(dataset):
         'WJ.*' : 'qcdwlnu',
         'ZJ.*' : 'qcdzjets',
         'GJets.*HT' : 'qcdgjets',
-        'AGJets.*' : 'ewkgjets',
+        'GJets.*' : 'ewkgjets',
         'VBF_HToInv.*' : 'vbf',
         'GluGlu_HToInv.*' : 'ggh',
         'ggZH_.*' : 'zh',
