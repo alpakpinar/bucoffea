@@ -10,6 +10,7 @@ from bucoffea.plot.util import (merge_datasets,
                             
 from klepto.archives import dir_archive
 from matplotlib import pyplot as plt
+import uproot
 
 AX_LABELS = {
     'mjj' : r'$M_{jj}$ (GeV)',
@@ -68,6 +69,7 @@ def plot_gen_spectrum(acc, tag='stat1', variable='vpt'):
 
 def plot_2d_gen_spectrum(acc, tag='stat1', sample_order='lo'):
     '''Plot 2D gen-vpt/mjj spectrum for LO and NLO GJets samples.
+    Saves the 2D histogram into a ROOT file.
     ==============
     PARAMETERS
     acc : The coffea accumulator containing all the histograms.
@@ -108,6 +110,17 @@ def plot_2d_gen_spectrum(acc, tag='stat1', sample_order='lo'):
     outpath = f'./output/gen_vpt_mjj_{sample_order}.pdf'
     fig.savefig(outpath)
     print(f'Saved histogram in {outpath}')
+
+    # Crate a ROOT file and save 
+    # the 2D histogram
+    try:
+        f = uproot.open('./output/2d_gen_spectrum.root')
+    except:
+        f = uproot.recreate('./output/2d_gen_spectrum.root')
+    xaxis = histogram.axes()[0]
+    yaxis = histogram.axes()[1]
+    tup = (histogram, xaxis.edges(overflow='over'), yaxis.edges(overflow='over'))
+    f[f'{sample_order}_gen_vpt_mjj'] = tup
 
 def main():
     inpath = sys.argv[1]
