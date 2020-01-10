@@ -67,12 +67,13 @@ def plot_gen_spectrum(acc, tag='stat1', variable='vpt'):
     fig.savefig(outpath)
     print(f'Saved histogram in {outpath}')
 
-def plot_2d_gen_spectrum(acc, tag='stat1', sample_order='lo'):
+def plot_2d_gen_spectrum(acc, outputrootfile, tag='stat1', sample_order='lo'):
     '''Plot 2D gen-vpt/mjj spectrum for LO and NLO GJets samples.
     Saves the 2D histogram into a ROOT file.
     ==============
     PARAMETERS
     acc : The coffea accumulator containing all the histograms.
+    outputrootfile : Name of output ROOT file where the histogram will be saved. 
     tag : Type of pt (stat1 or dress). 
           Default is stat1.
     sample_order : Order of the sample.
@@ -111,16 +112,12 @@ def plot_2d_gen_spectrum(acc, tag='stat1', sample_order='lo'):
     fig.savefig(outpath)
     print(f'Saved histogram in {outpath}')
 
-    # Crate a ROOT file and save 
-    # the 2D histogram
-    try:
-        f = uproot.open('./output/2d_gen_spectrum.root')
-    except:
-        f = uproot.recreate('./output/2d_gen_spectrum.root')
+    # Save to output ROOT file
     xaxis = histogram.axes()[0]
     yaxis = histogram.axes()[1]
-    tup = (histogram, xaxis.edges(overflow='over'), yaxis.edges(overflow='over'))
-    f[f'{sample_order}_gen_vpt_mjj'] = tup
+    w = histogram.values(overflow='over')[()]
+    tup = (w, xaxis.edges(overflow='over'), yaxis.edges(overflow='over'))
+    outputrootfile[f'{sample_order}_gen_vpt_mjj'] = tup
 
 def main():
     inpath = sys.argv[1]
@@ -135,10 +132,13 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
+    filename = './output/2d_gen_vpt_mjj.root'
+    outputrootfile = uproot.recreate(filename)
+
     plot_gen_spectrum(acc, variable='vpt')
     plot_gen_spectrum(acc, variable='mjj')
-    plot_2d_gen_spectrum(acc, sample_order='lo')
-    plot_2d_gen_spectrum(acc, sample_order='nlo')
+    plot_2d_gen_spectrum(acc, sample_order='lo', outputrootfile=outputrootfile)
+    plot_2d_gen_spectrum(acc, sample_order='nlo', outputrootfile=outputrootfile)
 
 if __name__ == '__main__':
     main()
