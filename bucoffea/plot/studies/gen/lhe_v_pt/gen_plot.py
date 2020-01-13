@@ -116,7 +116,6 @@ def plot_2d_gen_spectrum(acc, tag, regex, outputrootfile, pt_type='stat1', sampl
     histogram = histogram.integrate('jpt')
     histogram = histogram.rebin(histogram.axis('vpt'), _REBIN_AX['vpt'])
     histogram = histogram.rebin(histogram.axis('mjj'), _REBIN_AX['mjj'])
-    print(histogram.values())
 
     if sample_order == 'lo':
         histogram = histogram[re.compile('.*HT.*')].integrate('dataset') 
@@ -124,7 +123,6 @@ def plot_2d_gen_spectrum(acc, tag, regex, outputrootfile, pt_type='stat1', sampl
         histogram = histogram[re.compile('.*(LHE|amcat).*')].integrate('dataset') 
     else:
         raise ValueError(f'{sample_order}: Invalid argument for sample_order. Should be specified as "lo" or "nlo"')
-    print(histogram.values())
 
     # Plot the 2D histogram and save the figure
     fig, ax = plt.subplots(1,1, figsize=(7,5))
