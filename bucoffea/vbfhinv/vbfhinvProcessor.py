@@ -40,6 +40,7 @@ from bucoffea.vbfhinv.definitions import (
                                            vbfhinv_accumulator, 
                                            vbfhinv_regions
                                          )
+from coffea.analysis_objects import JaggedCandidateArray
 
 def trigger_selection(selection, df, cfg):
     pass_all = np.zeros(df.size) == 0
@@ -154,6 +155,30 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # Filtering ak4 jets according to pileup ID
         ak4 = ak4[ak4.puid]
         bjets = bjets[bjets.puid]
+
+        ###########################################
+        # LHE information
+        lhe = JaggedCandidateArray.candidatesfromcounts(
+                df['nLHEPart'],
+                pt=df['LHEPart_pt'],
+                eta=df['LHEPart_eta'],
+                phi=df['LHEPart_phi'],
+                mass=df['LHEPart_mass'],
+                pdg=df['LHEPart_pdgId'],
+                abspdg=np.abs(df['LHEPart_pdgId'])
+            )
+
+        is_lhe_photon = lhe.pdg == 22
+        is_lhe_parton = (lhe.abspdg==1)|(lhe.abspdg==2)|(lhe.abspdg==3)|(lhe.abspdg==4)|(lhe.abspdg==5)|(lhe.abspdg==6)|(lhe.abspdg==21)
+        lhe_photon = lhe[is_lhe_photon]
+        lhe_parton = lhe[is_lhe_parton]        
+        
+        # Calculate delta_r for each photon and jet in the event
+        comb_phi = lhe_photon.phi.cross(lhe_parton.phi) 
+        comb_eta = lhe_photon.eta.cross(lhe_parton.eta) 
+        delta_r = np.hypot(dphi(comb_phi.i0, comb_phi.i1), comb_eta.i0-comb_eta.i1)
+
+        ###########################################
 
         # Muons
         df['is_tight_muon'] = muons.tightId \
@@ -513,6 +538,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 ezfill('photon_eta_phi',          eta=photons[leadphoton_index].eta[mask].flatten(), phi=photons[leadphoton_index].phi[mask].flatten(),  weight=w_leading_photon)
 
                 # w_drphoton_jet = weight_shape(df['dRPhotonJet'][mask], weights.weight()[mask])
+
+                # Delta_r histogram for photons/jets
+                ezfill('delta_r', dr=delta_r[mask].flatten(),  weight=w_leading_photon)  
 
 
             # PV
