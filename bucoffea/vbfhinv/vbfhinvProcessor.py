@@ -548,9 +548,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
                 # w_drphoton_jet = weight_shape(df['dRPhotonJet'][mask], weights.weight()[mask])
 
-                # Delta_r histogram for photons/jets
-                w_delta_r = weight_shape(delta_r[mask],weights.weight()[mask])
-                ezfill('delta_r', delta_r=delta_r[mask].flatten(), weight=w_delta_r)
+                # Delta_r histogram for photons/jets (only for MC)
+                if not df['is_data']:
+                    w_delta_r = weight_shape(delta_r[mask],weights.weight()[mask])
+                    ezfill('delta_r', delta_r=delta_r[mask].flatten(), weight=w_delta_r)
                 
                 # Recoil distribution of events with mjj between 2000 and 2750 GeV
                 ezfill('recoil_mjj2000_2750', recoil=df['recoil_pt'][mask], weight=weights.weight()[mask])
