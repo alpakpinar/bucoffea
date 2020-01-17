@@ -7,6 +7,7 @@ import numpy as np
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from klepto.archives import dir_archive
 from coffea import hist
+from matplotlib import pyplot as plt
 
 def plot_recoil(acc, dataset):
     '''Plot the recoil histogram for events with
