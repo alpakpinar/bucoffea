@@ -263,6 +263,15 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
 
+        #################################
+        # Pick the events with mjj in the range of [2000, 2750]
+        # and save the recoil distribution for such events to a new recoil histogram.
+
+        mjj_2000_2750 = (df['mjj'] >= 2000) & (df['mjj'] <= 2750)
+        selection.add('mjj_2000_2750', mjj_2000_2750)
+
+        #################################
+
         # Divide into three categories for trigger study
         if cfg.RUN.TRIGGER_STUDY:
             two_central_jets = (np.abs(diak4.i0.eta) <= 2.4) & (np.abs(diak4.i1.eta) <= 2.4)
@@ -539,7 +548,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 # w_drphoton_jet = weight_shape(df['dRPhotonJet'][mask], weights.weight()[mask])
 
                 # Delta_r histogram for photons/jets
-                ezfill('delta_r', delta_r=delta_r[mask].flatten())
+                w_delta_r = weight_shape(delta_r[mask],weights.weight()[mask])
+                ezfill('delta_r', delta_r=delta_r[mask].flatten(), weight=w_delta_r)
+                
+                # Recoil distribution of events with mjj between 2000 and 2750 GeV
+                ezfill('recoil_mjj2000_2750', recoil=df['recoil_pt'][mask], weight=weights.weight()[mask])
 
 
             # PV
