@@ -157,26 +157,27 @@ class vbfhinvProcessor(processor.ProcessorABC):
         bjets = bjets[bjets.puid]
 
         ###########################################
-        # LHE information
-        lhe = JaggedCandidateArray.candidatesfromcounts(
-                df['nLHEPart'],
-                pt=df['LHEPart_pt'],
-                eta=df['LHEPart_eta'],
-                phi=df['LHEPart_phi'],
-                mass=df['LHEPart_mass'],
-                pdg=df['LHEPart_pdgId'],
-                abspdg=np.abs(df['LHEPart_pdgId'])
-            )
+        if not df['is_data']:
+            # LHE information
+            lhe = JaggedCandidateArray.candidatesfromcounts(
+                    df['nLHEPart'],
+                    pt=df['LHEPart_pt'],
+                    eta=df['LHEPart_eta'],
+                    phi=df['LHEPart_phi'],
+                    mass=df['LHEPart_mass'],
+                    pdg=df['LHEPart_pdgId'],
+                    abspdg=np.abs(df['LHEPart_pdgId'])
+                )
 
-        is_lhe_photon = lhe.pdg == 22
-        is_lhe_parton = (lhe.abspdg==1)|(lhe.abspdg==2)|(lhe.abspdg==3)|(lhe.abspdg==4)|(lhe.abspdg==5)|(lhe.abspdg==6)|(lhe.abspdg==21)
-        lhe_photon = lhe[is_lhe_photon]
-        lhe_parton = lhe[is_lhe_parton]        
-        
-        # Calculate delta_r for each photon and jet in the event
-        comb_phi = lhe_photon.phi.cross(lhe_parton.phi) 
-        comb_eta = lhe_photon.eta.cross(lhe_parton.eta) 
-        delta_r = np.hypot(dphi(comb_phi.i0, comb_phi.i1), comb_eta.i0-comb_eta.i1)
+            is_lhe_photon = lhe.pdg == 22
+            is_lhe_parton = (lhe.abspdg==1)|(lhe.abspdg==2)|(lhe.abspdg==3)|(lhe.abspdg==4)|(lhe.abspdg==5)|(lhe.abspdg==6)|(lhe.abspdg==21)
+            lhe_photon = lhe[is_lhe_photon]
+            lhe_parton = lhe[is_lhe_parton]        
+            
+            # Calculate delta_r for each photon and jet in the event
+            comb_phi = lhe_photon.phi.cross(lhe_parton.phi) 
+            comb_eta = lhe_photon.eta.cross(lhe_parton.eta) 
+            delta_r = np.hypot(dphi(comb_phi.i0, comb_phi.i1), comb_eta.i0-comb_eta.i1)
 
         ###########################################
 
