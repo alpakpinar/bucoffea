@@ -3,6 +3,7 @@
 import os 
 import sys
 import re
+import numpy as np
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from klepto.archives import dir_archive
 from coffea import hist
@@ -37,10 +38,19 @@ def lhe_deltar_plot(acc, dataset):
     
     # Plot and save the histogram 
     fig, ax = plt.subplots(1, 1, figsize=(7,5))
-    hist.plot1d(dist, ax=ax, binwnorm=True)
+    hist.plot1d(dist, ax=ax)
     filepath = f'./output/lhe_deltar_{dataset}.pdf' 
     fig.savefig(filepath)
     print(f'Histogram saved in {filepath}')
+
+    # Calculate the percentage of entries
+    # with deltaR < 0.4
+    smaller_0_4 = np.sum(dist.values()[()][:4])
+    total = np.sum(dist.values()[()])
+    percentage = (smaller_0_4/total)*100
+
+    print('Percentage of entries with deltaR < 0.4 : %.3f%%' % percentage)
+
 
 def main():
     inpath = sys.argv[1]
