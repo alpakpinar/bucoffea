@@ -21,15 +21,15 @@ def plot_recoil(acc, dataset):
     scale_xs_lumi(dist)
     dist = merge_datasets(dist)
 
-    # Choose the region (photon CR) and dataset
-    dist = dist.integrate('region', 'cr_g_vbf').integrate('dataset', dataset)
+    # Choose the region (photon CR with mjj cut) and dataset
+    dist = dist.integrate('region', 'cr_g_vbf_mjjcut').integrate('dataset', dataset)
 
     # Create output directory if it doesn't exists
     if not os.path.exists('./output'):
         os.mkdir('output')
 
     fig, ax = plt.subplots(1,1,figsize=(7,5))
-    hist.plot1d(dist, ax=ax, binwnorm=True)
+    hist.plot1d(dist, ax=ax)
     filepath = f'./output/recoil_mjj2000_2750_{dataset}.pdf'
     fig.savefig(filepath)
     print(f'Histogram saved in {filepath}')        
@@ -43,6 +43,9 @@ def main():
                       compression=0,
                       memsize=1e3
                     )
+
+    acc.load('sumw')
+    acc.load('sumw2')
 
     plot_recoil(acc, dataset='EGamma_2017')
 
