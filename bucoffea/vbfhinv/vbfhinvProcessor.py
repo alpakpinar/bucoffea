@@ -397,7 +397,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
             mask = selection.all(*cuts)
 
-
             # Save the event numbers of events passing this selection
             if cfg.RUN.SAVE.PASSING:
                 output['selected_events'][region] += list(df['event'][mask])
@@ -540,7 +539,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 # w_drphoton_jet = weight_shape(df['dRPhotonJet'][mask], weights.weight()[mask])
 
                 # Delta_r histogram for photons/jets
-                ezfill('delta_r', dr=delta_r[mask].flatten(),  weight=w_leading_photon)  
+                ezfill('delta_r', delta_r=delta_r[mask].flatten())
 
 
             # PV

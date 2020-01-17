@@ -53,6 +53,7 @@ def vbfhinv_accumulator(cfg):
     tagger_ax = Bin("tagger", r"Tagger", 50,-5,5)
 
     dilepton_mass_ax = Bin("dilepton_mass", r"$M(\ell\ell)$ (GeV)", 100,50,150)
+    deltar_ax = Bin("delta_r", r"$\delta R$", 20, 0, 10)
 
     weight_type_ax = Cat("weight_type", "Weight type")
     weight_ax = Bin("weight_value", "Weight",100,0.5,1.5)
@@ -107,6 +108,7 @@ def vbfhinv_accumulator(cfg):
 
     items["recoil_mjj"] = Hist("Counts", dataset_ax, region_ax, recoil_ax, mjj_ax)
     items["photon_eta_phi"] = Hist("Counts", dataset_ax, region_ax, eta_ax_coarse, phi_ax_coarse)
+    items["delta_r"] = Hist("Counts", dataset_ax, region_ax, deltar_ax)
 
     items["dpfcalo"] = Hist("Counts", dataset_ax, region_ax, dpfcalo_ax)
     items["dphijm"] = Hist("min(4 leading jets, MET)", dataset_ax, region_ax, dphi_ax)
