@@ -71,6 +71,7 @@ def vbfhinv_accumulator(cfg):
     items["met"] = Hist("Counts", dataset_ax, region_ax, met_ax)
     items["met_phi"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
     items["recoil"] = Hist("Counts", dataset_ax, region_ax, recoil_ax)
+    items["recoil_mjj2000_2750"] = Hist("Counts", dataset_ax, region_ax, recoil_ax)
     items["recoil_phi"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
 
     items["mjj"] = Hist("Counts", dataset_ax, region_ax, mjj_ax)
@@ -255,6 +256,12 @@ def vbfhinv_regions(cfg):
     cr_g_cuts.remove('veto_photon')
 
     regions['cr_g_vbf'] = cr_g_cuts
+
+    # Photon CR only with events having mjj 
+    # in the range [2000, 2750] GeV
+    cr_g_cuts_mjjcut = cr_g_cuts + ['mjj_2000_2750']
+    
+    regions['cr_g_vbf_mjjcut'] = cr_g_cuts_mjjcut
 
     if cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [
