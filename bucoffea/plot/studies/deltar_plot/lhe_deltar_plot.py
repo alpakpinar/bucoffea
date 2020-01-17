@@ -34,7 +34,7 @@ def lhe_deltar_plot(acc, dataset):
     # Plot and save the histogram 
     fig, ax = plt.subplots(1, 1, figsize=(7,5))
     hist.plot1d(dist, ax=ax, binwnorm=True)
-    filepath = f'/output/lhe_deltar_{dataset}.pdf' 
+    filepath = f'./output/lhe_deltar_{dataset}.pdf' 
     fig.savefig(filepath)
     print(f'Histogram saved in {filepath}')
 
