@@ -31,6 +31,10 @@ def lhe_deltar_plot(acc, dataset):
     # Choose the dataset/region
     dist = dist.integrate('region', 'cr_g_vbf').integrate('dataset', dataset)
 
+    # Create output directory if it doesn't exists
+    if not os.path.exists('./output'):
+        os.mkdir('output')
+    
     # Plot and save the histogram 
     fig, ax = plt.subplots(1, 1, figsize=(7,5))
     hist.plot1d(dist, ax=ax, binwnorm=True)

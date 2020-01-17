@@ -24,6 +24,10 @@ def plot_recoil(acc, dataset):
     # Choose the region (photon CR) and dataset
     dist = dist.integrate('region', 'cr_g_vbf').integrate('dataset', dataset)
 
+    # Create output directory if it doesn't exists
+    if not os.path.exists('./output'):
+        os.mkdir('output')
+
     fig, ax = plt.subplots(1,1,figsize=(7,5))
     hist.plot1d(dist, ax=ax, binwnorm=True)
     filepath = f'./output/recoil_mjj2000_2750_{dataset}.pdf'
