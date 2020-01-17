@@ -53,7 +53,7 @@ def vbfhinv_accumulator(cfg):
     tagger_ax = Bin("tagger", r"Tagger", 50,-5,5)
 
     dilepton_mass_ax = Bin("dilepton_mass", r"$M(\ell\ell)$ (GeV)", 100,50,150)
-    deltar_ax = Bin("delta_r", r"$\delta R$", 20, 0, 10)
+    deltar_ax = Bin("delta_r", r"$\Delta R$", 20, 0, 10)
 
     weight_type_ax = Cat("weight_type", "Weight type")
     weight_ax = Bin("weight_value", "Weight",100,0.5,1.5)
