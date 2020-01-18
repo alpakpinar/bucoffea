@@ -15,7 +15,8 @@ REBIN = {
     'recoil' : hist.Bin('recoil', r'Recoil (GeV)', recoil_bins_2016),
     'ak4_pt' : hist.Bin('jetpt',r'All AK4 jet $p_{T}$ (GeV)',list(range(100,600,20)) + list(range(600,1000,20)) ),
     'ak4_pt0' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,600,20)) + list(range(600,1000,20)) ),
-    'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) )
+    'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) ),
+    'photon_pt0' : hist.Bin('pt',r'Photon $p_{T}$ (GeV)',list(range(200,600,20)) + list(range(600,1000,20)) )
 }
 
 def plot(acc, distribution):
@@ -76,7 +77,7 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    distributions = ['ak4_pt', 'ak4_pt0', 'ak4_pt1', 'ak4_eta', 'ak4_eta0', 'ak4_eta1', 'ak4_phi', 'recoil', 'detajj', 'dphijj']
+    distributions = ['ak4_pt', 'ak4_pt0', 'ak4_pt1', 'ak4_eta', 'ak4_eta0', 'ak4_eta1', 'ak4_phi', 'recoil', 'detajj', 'dphijj', 'photon_pt0', 'photon_eta0']
 
     for distribution in distributions:
         plot(acc, distribution=distribution)
