@@ -37,6 +37,11 @@ def excess_num_evts(acc, distribution, region):
     mc_counts = h[mc].integrate('dataset').values()[()]
 
     diff_counts = data_counts - mc_counts
+    print('Data:')
+    print(data_counts)
+    print('MC:')
+    print(mc_counts)
+    print('Data/MC:')
     print(data_counts/mc_counts)
     print('Total data - Total MC = %.3f' % np.sum(diff_counts))
 
