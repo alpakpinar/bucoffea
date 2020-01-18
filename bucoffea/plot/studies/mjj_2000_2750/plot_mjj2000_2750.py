@@ -76,9 +76,10 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    distribution = 'ak4_pt'
+    distributions = ['ak4_pt', 'ak4_pt0', 'ak4_pt1', 'ak4_eta', 'ak4_eta0', 'ak4_eta1', 'ak4_phi', 'recoil', 'detajj', 'dphijj']
 
-    plot(acc, distribution=distribution)
+    for distribution in distributions:
+        plot(acc, distribution=distribution)
 
 if __name__ == '__main__':
     main()
