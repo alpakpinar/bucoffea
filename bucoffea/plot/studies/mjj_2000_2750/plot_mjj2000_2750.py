@@ -9,6 +9,15 @@ from klepto.archives import dir_archive
 from coffea import hist
 from matplotlib import pyplot as plt
 
+recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400]
+
+REBIN = {
+    'recoil' : hist.Bin('recoil', r'Recoil (GeV)', recoil_bins_2016),
+    'ak4_pt' : hist.Bin('jetpt',r'All AK4 jet $p_{T}$ (GeV)',list(range(100,600,20)) + list(range(600,1000,20)) ),
+    'ak4_pt0' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,600,20)) + list(range(600,1000,20)) ),
+    'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) )
+}
+
 def plot(acc, distribution):
     '''Plot the distribution for events with
        2000 < mjj < 2750 GeV, from the given accumulator.'''
@@ -28,11 +37,9 @@ def plot(acc, distribution):
     # Choose the region (photon CR with mjj cut) and dataset
     h = h.integrate('region', 'cr_g_vbf_mjjcut')
 
-    # Rebin the recoil histogram 
-    # to 2016 bins
-#    recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400]
-#    recoil_bin = hist.Bin('recoil', r'Recoil (GeV)', recoil_bins_2016)
-#    h = h.rebin('recoil', recoil_bin)
+    # Rebin the histogram if necessary 
+    if distribution in REBIN.keys():
+        h = h.rebin(REBIN[distribution].name, REBIN[distribution])
 
     # Create output directory if it doesn't exists
     if not os.path.exists('./output'):
