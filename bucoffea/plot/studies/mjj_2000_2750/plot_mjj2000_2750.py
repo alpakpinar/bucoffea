@@ -9,6 +9,8 @@ from klepto.archives import dir_archive
 from coffea import hist
 from matplotlib import pyplot as plt
 
+pjoin = os.path.join
+
 recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400]
 
 REBIN = {
@@ -19,7 +21,7 @@ REBIN = {
     'photon_pt0' : hist.Bin('pt',r'Photon $p_{T}$ (GeV)',list(range(200,600,20)) + list(range(600,1000,20)) )
 }
 
-def plot(acc, distribution):
+def plot(acc, distribution, tag):
     '''Plot the distribution for events with
        2000 < mjj < 2750 GeV, from the given accumulator.'''
     acc.load(distribution)
@@ -42,10 +44,6 @@ def plot(acc, distribution):
     if distribution in REBIN.keys():
         h = h.rebin(REBIN[distribution].name, REBIN[distribution])
 
-    # Create output directory if it doesn't exists
-    if not os.path.exists('./output'):
-        os.mkdir('output')
-
     fig, ax = plt.subplots(1,1,figsize=(7,5))
 
     data_err_options = {
@@ -60,12 +58,24 @@ def plot(acc, distribution):
     hist.plot1d(h[data], ax=ax, overlay='dataset', error_opts=data_err_options)
     hist.plot1d(h[mc], ax=ax, overlay='dataset', stack=True, clear=False)
     ax.set_title(r'$2000 < m_{jj} < 2750\ GeV$')
-    filepath = f'./output/{distribution}_mjj2000_2750.pdf'
+    
+    # Create output directory if it doesn't exist
+    # and save the histogram as a .pdf file
+    outpath = f'./output/{tag}'
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+
+    filepath = pjoin(outpath, f'{distribution}_mjj2000_2750.pdf')
     fig.savefig(filepath)
     print(f'Histogram saved in {filepath}')        
 
 def main():
     inpath = sys.argv[1]
+
+    if inpath.endswith('/'):
+        inpath = inpath[:-1]
+
+    tag = inpath.split('/')[-1]
 
     acc = dir_archive(
                       inpath,
@@ -80,7 +90,7 @@ def main():
     distributions = ['ak4_pt', 'ak4_pt0', 'ak4_pt1', 'ak4_eta', 'ak4_eta0', 'ak4_eta1', 'ak4_phi', 'recoil', 'detajj', 'dphijj', 'photon_pt0', 'photon_eta0']
 
     for distribution in distributions:
-        plot(acc, distribution=distribution)
+        plot(acc, distribution=distribution, tag=tag)
 
 if __name__ == '__main__':
     main()
