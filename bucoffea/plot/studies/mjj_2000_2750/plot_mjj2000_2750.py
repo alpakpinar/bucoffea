@@ -9,11 +9,11 @@ from klepto.archives import dir_archive
 from coffea import hist
 from matplotlib import pyplot as plt
 
-def plot_recoil(acc):
-    '''Plot the recoil histogram for events with
+def plot(acc, distribution):
+    '''Plot the distribution for events with
        2000 < mjj < 2750 GeV, from the given accumulator.'''
-    acc.load('recoil_mjj2000_2750')
-    h = acc['recoil_mjj2000_2750']
+    acc.load(distribution)
+    h = acc[distribution]
 
     # Define data and MC samples for 2017
     data = 'EGamma_2017'
@@ -30,9 +30,9 @@ def plot_recoil(acc):
 
     # Rebin the recoil histogram 
     # to 2016 bins
-    recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400]
-    recoil_bin = hist.Bin('recoil', r'Recoil (GeV)', recoil_bins_2016)
-    h = h.rebin('recoil', recoil_bin)
+#    recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400]
+#    recoil_bin = hist.Bin('recoil', r'Recoil (GeV)', recoil_bins_2016)
+#    h = h.rebin('recoil', recoil_bin)
 
     # Create output directory if it doesn't exists
     if not os.path.exists('./output'):
@@ -52,7 +52,7 @@ def plot_recoil(acc):
     hist.plot1d(h[data], ax=ax, overlay='dataset', error_opts=data_err_options)
     hist.plot1d(h[mc], ax=ax, overlay='dataset', stack=True, clear=False)
     ax.set_title(r'$2000 < m_{jj} < 2750\ GeV$')
-    filepath = f'./output/recoil_mjj2000_2750.pdf'
+    filepath = f'./output/{distribution}_mjj2000_2750.pdf'
     fig.savefig(filepath)
     print(f'Histogram saved in {filepath}')        
 
@@ -69,7 +69,9 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    plot_recoil(acc)
+    distribution = 'ak4_pt'
+
+    plot(acc, distribution=distribution)
 
 if __name__ == '__main__':
     main()
