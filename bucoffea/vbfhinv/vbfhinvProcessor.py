@@ -553,9 +553,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     w_delta_r = weight_shape(delta_r[mask],weights.weight()[mask])
                     ezfill('delta_r', delta_r=delta_r[mask].flatten(), weight=w_delta_r)
                 
-                # Recoil distribution of events with mjj between 2000 and 2750 GeV
-                ezfill('recoil_mjj2000_2750', recoil=df['recoil_pt'][mask], weight=weights.weight()[mask])
-
 
             # PV
             ezfill('npv', nvtx=df['PV_npvs'][mask], weight=weights.weight()[mask])
