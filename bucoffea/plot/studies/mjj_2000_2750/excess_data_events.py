@@ -44,12 +44,16 @@ def excess_num_evts(acc, distribution, region, tag, mjjcut):
     if distribution in REBIN.keys():
         h = h.rebin(REBIN[distribution].name, REBIN[distribution])
 
-    data_counts = h[data].integrate('dataset').values()[()]
-    mc_counts = h[mc].integrate('dataset').values()[()]
+    data = h[data].integrate('dataset')
+    mc = h[mc].integrate('dataset')
+
+    bin_centers = data.axes()[0].centers()
+
+    data_counts = data.values()[()]
+    mc_counts = mc.values()[()]
 
     ratio = data_counts/mc_counts
     diff = data_counts - mc_counts
-    bin_centers = REBIN[distribution].centers()
 
     stack = np.column_stack(
         (bin_centers,
@@ -60,7 +64,7 @@ def excess_num_evts(acc, distribution, region, tag, mjjcut):
         )
     )
 
-    headers = ['Recoil', 'Data', 'MC', 'Data-MC', 'Data/MC']
+    headers = [f'{distribution.capitalize()}', 'Data', 'MC', 'Data-MC', 'Data/MC']
 
     # Tabulate the values
     table = tabulate(stack, headers, tablefmt='fancy_grid', numalign='right', floatfmt=('.1f','.1f','.3f','.3f','.3f'))
