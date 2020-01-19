@@ -28,7 +28,7 @@ def main():
         cmd = ['./excess_data_events.py', '-i', inpath, '-r', region, '-d', dist]
 
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        print(p.communicate())
+        print(p.communicate()[0].decode())
         
 
 
