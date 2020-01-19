@@ -22,6 +22,17 @@ REBIN = {
     'mjj' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
 }
 
+def get_tag(inpath):
+    '''From the submission directory name, get the tag
+       for saving the output files.'''
+    if inpath.endswith('/'):
+        inpath = inpath[:-1]
+
+    tag = inpath.split('/')[-1]
+    
+    return tag
+
+
 def plot(acc, distribution, tag):
     '''Plot the distribution for events with
        2000 < mjj < 2750 GeV, from the given accumulator.'''
@@ -72,11 +83,8 @@ def plot(acc, distribution, tag):
 
 def main():
     inpath = sys.argv[1]
-
-    if inpath.endswith('/'):
-        inpath = inpath[:-1]
-
-    tag = inpath.split('/')[-1]
+    
+    tag = get_tag(inpath)
 
     acc = dir_archive(
                       inpath,
