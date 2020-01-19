@@ -20,7 +20,7 @@ print_options = {
 }
 np.set_printoptions(**print_options)
 
-def excess_num_evts(acc, distribution, region, tag):
+def excess_num_evts(acc, distribution, region, tag, mjjcut):
     '''Given the accumulator, distribution and region,
        calculate the number of excess events in data,
        compared to MC.'''
@@ -65,8 +65,21 @@ def excess_num_evts(acc, distribution, region, tag):
     # Tabulate the values
     table = tabulate(stack, headers, tablefmt='fancy_grid', numalign='right', floatfmt=('.1f','.1f','.3f','.3f','.3f'))
 
-    print(table)
+    # Dump the table into a .txt file
+    outdir = f'./output/{tag}/data_mc'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
     
+    if mjjcut:
+        filename = f'data_mc_{distribution}_mjj2000_2750.txt'
+    else:
+        filename = f'data_mc_{distribution}.txt'
+    outpath = pjoin(outdir, filename) 
+    with open(f'{outpath}', 'w+') as f:
+        f.write(table)
+
+    print(f'Output saved in {outpath}')
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--inpath', help='Path containing the merged directory.')
@@ -75,6 +88,8 @@ def main():
     args = parser.parse_args()
 
     tag = get_tag(args.inpath)
+
+    mjjcut = 'mjj2000_2750' in tag
 
     acc = dir_archive(
                         args.inpath,
@@ -89,7 +104,8 @@ def main():
     excess_num_evts(acc, 
                     distribution=args.distribution,
                     region=args.region,
-                    tag=tag
+                    tag=tag,
+                    mjjcut=mjjcut
                     )
 
 if __name__ == '__main__':
