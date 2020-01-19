@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import re
 import argparse
 import numpy as np
@@ -7,9 +8,18 @@ from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from klepto.archives import dir_archive
 from coffea import hist
 from matplotlib import pyplot as plt
-from plot_mjj2000_2750 import REBIN
+from plot_mjj2000_2750 import REBIN, get_tag
 
-def excess_num_evts(acc, distribution, region):
+pjoin = os.path.join
+
+# Set print options for numpy
+print_options = {
+    'precision' : 3,
+    'suppress' : True
+}
+np.set_printoptions(**print_options)
+
+def excess_num_evts(acc, distribution, region, tag):
     '''Given the accumulator, distribution and region,
        calculate the number of excess events in data,
        compared to MC.'''
@@ -52,6 +62,8 @@ def main():
     parser.add_argument('-d', '--distribution', help='The distribution to investigate.')
     args = parser.parse_args()
 
+    tag = get_tag(args.inpath)
+
     acc = dir_archive(
                         args.inpath,
                         serialized=True,
@@ -64,7 +76,8 @@ def main():
     
     excess_num_evts(acc, 
                     distribution=args.distribution,
-                    region=args.region
+                    region=args.region,
+                    tag=tag
                     )
 
 if __name__ == '__main__':
