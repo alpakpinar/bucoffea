@@ -4,6 +4,7 @@ import os
 import re
 import argparse
 import numpy as np
+from tabulate import tabulate
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from klepto.archives import dir_archive
 from coffea import hist
@@ -46,15 +47,26 @@ def excess_num_evts(acc, distribution, region, tag):
     data_counts = h[data].integrate('dataset').values()[()]
     mc_counts = h[mc].integrate('dataset').values()[()]
 
-    diff_counts = data_counts - mc_counts
-    print('Data:')
-    print(data_counts)
-    print('MC:')
-    print(mc_counts)
-    print('Data/MC:')
-    print(data_counts/mc_counts)
-    print('Total data - Total MC = %.3f' % np.sum(diff_counts))
+    ratio = data_counts/mc_counts
+    diff = data_counts - mc_counts
+    bin_centers = REBIN[distribution].centers()
 
+    stack = np.column_stack(
+        (bin_centers,
+        data_counts,
+        mc_counts,
+        diff,
+        ratio
+        )
+    )
+
+    headers = ['Recoil', 'Data', 'MC', 'Data-MC', 'Data/MC']
+
+    # Tabulate the values
+    table = tabulate(stack, headers, tablefmt='fancy_grid', numalign='right', floatfmt=('.1f','.1f','.3f','.3f','.3f'))
+
+    print(table)
+    
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--inpath', help='Path containing the merged directory.')
