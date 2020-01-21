@@ -33,7 +33,7 @@ def get_tag(inpath):
     return tag
 
 
-def plot(acc, distribution, tag):
+def plot(acc, distribution, tag, use_dr_gjets_sample=False):
     '''Plot the distribution for events with
        2000 < mjj < 2750 GeV, from the given accumulator.'''
     acc.load(distribution)
@@ -41,7 +41,11 @@ def plot(acc, distribution, tag):
 
     # Define data and MC samples for 2017
     data = 'EGamma_2017'
-    mc = re.compile('(GJets_(HT|SM).*|QCD_HT.*|WJetsToLNu.*HT.*).*2017')
+    if use_dr_gjets_sample:
+        mc = re.compile('(GJets_(DR|SM).*|QCD_HT.*|WJetsToLNu.*HT.*).*2017')
+
+    else:
+        mc = re.compile('(GJets_(HT|SM).*|QCD_HT.*|WJetsToLNu.*HT.*).*2017')
 
     # Merge extensions/datasets, scale w.r.t
     # x-section and lumi
@@ -99,7 +103,7 @@ def main():
     distributions = ['ak4_pt', 'ak4_pt0', 'ak4_pt1', 'ak4_eta', 'ak4_eta0', 'ak4_eta1', 'ak4_phi', 'recoil', 'detajj', 'dphijj', 'photon_pt0', 'photon_eta0']
 
     for distribution in distributions:
-        plot(acc, distribution=distribution, tag=tag)
+        plot(acc, distribution=distribution, tag=tag, use_dr_gjets_sample=True)
 
 if __name__ == '__main__':
     main()
