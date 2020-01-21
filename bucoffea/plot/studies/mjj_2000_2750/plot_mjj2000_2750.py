@@ -60,7 +60,7 @@ def plot(acc, distribution, tag, use_dr_gjets_sample=False):
     if distribution in REBIN.keys():
         h = h.rebin(REBIN[distribution].name, REBIN[distribution])
 
-    fig, ax = plt.subplots(1,1,figsize=(7,5))
+    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True) 
 
     data_err_options = {
         'linestyle' : 'none',
@@ -74,7 +74,22 @@ def plot(acc, distribution, tag, use_dr_gjets_sample=False):
     hist.plot1d(h[data], ax=ax, overlay='dataset', error_opts=data_err_options)
     hist.plot1d(h[mc], ax=ax, overlay='dataset', stack=True, clear=False)
     ax.set_title(r'$2000 < m_{jj} < 2750\ GeV$')
-    
+
+    # Plot ratio plot
+    hist.plotratio(h[data].integrate('dataset'), h[mc].integrate('dataset'),
+                    ax=rax,
+                    denom_fill_opts={},
+                    guide_opts={},
+                    unc='num',
+                    error_opts=data_err_options
+                    )
+
+    # Aesthetics
+    rax.set_ylabel('Data/MC')
+    rax.set_ylim(0.5,2)
+
+
+
     # Create output directory if it doesn't exist
     # and save the histogram as a .pdf file
     outpath = f'./output/{tag}'
