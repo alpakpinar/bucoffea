@@ -20,7 +20,7 @@ print_options = {
 }
 np.set_printoptions(**print_options)
 
-def excess_num_evts(acc, distribution, region, tag, mjjcut):
+def excess_num_evts(acc, distribution, region, tag, mjjcut, binning='coarse'):
     '''Given the accumulator, distribution and region,
        calculate the number of excess events in data,
        compared to MC.'''
@@ -42,7 +42,7 @@ def excess_num_evts(acc, distribution, region, tag, mjjcut):
 
     # Rebin the histogram if necessary 
     if distribution in REBIN.keys():
-        h = h.rebin(REBIN[distribution].name, REBIN[distribution])
+        h = h.rebin(REBIN[distribution][binning].name, REBIN[distribution][binning])
 
     data = h[data].integrate('dataset')
     mc = h[mc].integrate('dataset')

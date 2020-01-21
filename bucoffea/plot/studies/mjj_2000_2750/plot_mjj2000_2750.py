@@ -12,15 +12,40 @@ from matplotlib import pyplot as plt
 pjoin = os.path.join
 
 recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400]
+recoil_bins_coarse = list(range(250, 650, 100)) + list(range(650,1450,200))
 
 REBIN = {
-    'recoil' : hist.Bin('recoil', r'Recoil (GeV)', recoil_bins_2016),
-    'ak4_pt' : hist.Bin('jetpt',r'All AK4 jet $p_{T}$ (GeV)',list(range(100,600,20)) + list(range(600,1000,20)) ),
-    'ak4_pt0' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,600,20)) + list(range(600,1000,20)) ),
-    'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) ),
-    'photon_pt0' : hist.Bin('pt',r'Photon $p_{T}$ (GeV)',list(range(200,600,20)) + list(range(600,1000,20)) ),
-    'mjj' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
-}
+    'recoil' : 
+            {
+                'normal' : hist.Bin('recoil', r'Recoil (GeV)', recoil_bins_2016),
+                'coarse' : hist.Bin('recoil', r'Recoil (GeV)', recoil_bins_coarse)
+            },
+    'ak4_pt' : 
+            {
+                'normal' : hist.Bin('jetpt',r'All AK4 jet $p_{T}$ (GeV)',list(range(80,600,20)) + list(range(600,1000,20)) ),
+                'coarse' : hist.Bin('jetpt',r'All AK4 jet $p_{T}$ (GeV)',list(range(80,380,50)) + list(range(380,1080,100)))
+            },
+    'ak4_pt0' : 
+            {
+                'normal' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)', list(range(80,600,20)) + list(range(600,1000,20)) ),
+                'coarse' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)', list(range(80,380,50)) + list(range(380,1080,100)))
+            },
+    'ak4_pt1' : 
+            {
+                'normal' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)', list(range(40,600,20)) + list(range(600,1000,20)) ),
+                'coarse' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)', list(range(40,340,50)) + list(range(340,1040,100)))
+            },
+    'photon_pt0' : 
+            {
+                'normal' : hist.Bin('pt',r'Photon $p_{T}$ (GeV)', list(range(200,600,20)) + list(range(600,1000,20)) ),
+                'coarse' : hist.Bin('pt',r'Photon $p_{T}$ (GeV)', list(range(200,600,50)) + list(range(600,1000,100)))
+            },
+    'mjj' : 
+            {
+                'normal' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
+                'coarse' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
+            }
+    }    
 
 def get_tag(inpath):
     '''From the submission directory name, get the tag
@@ -33,7 +58,7 @@ def get_tag(inpath):
     return tag
 
 
-def plot(acc, distribution, tag, use_dr_gjets_sample=False):
+def plot(acc, distribution, tag, use_dr_gjets_sample=False, binning='coarse'):
     '''Plot the distribution for events with
        2000 < mjj < 2750 GeV, from the given accumulator.'''
     acc.load(distribution)
@@ -58,7 +83,7 @@ def plot(acc, distribution, tag, use_dr_gjets_sample=False):
 
     # Rebin the histogram if necessary 
     if distribution in REBIN.keys():
-        h = h.rebin(REBIN[distribution].name, REBIN[distribution])
+        h = h.rebin(REBIN[distribution][binning].name, REBIN[distribution][binning])
 
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True) 
 
@@ -87,8 +112,6 @@ def plot(acc, distribution, tag, use_dr_gjets_sample=False):
     # Aesthetics
     rax.set_ylabel('Data/MC')
     rax.set_ylim(0.5,2)
-
-
 
     # Create output directory if it doesn't exist
     # and save the histogram as a .pdf file
