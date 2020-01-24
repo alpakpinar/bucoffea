@@ -271,6 +271,8 @@ def load_xs():
     for dataset, xs_dict in xs_yml.items():
         if 'use' in xs_dict:
             key_to_use = xs_dict['use']
+        elif re.match('(WZ|ZZ)_.*(2017|2018)', dataset):
+            key_to_use = 'nlo'
         else:
             for key in loading_priority:
                 if key in xs_dict:
