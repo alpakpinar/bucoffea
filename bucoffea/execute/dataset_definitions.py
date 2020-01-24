@@ -163,7 +163,7 @@ def find_files_eos(directory, regex):
         if not path.endswith('.root'):
             continue
 
-        dataset = path.split('/')[9]
+        dataset = path.split('/')[10]
         if not re.match(regex, dataset):
             continue
         fileset[dataset].append(re.sub('.*/store','root://cmsxrootd.fnal.gov//store', path))
@@ -199,7 +199,7 @@ def files_from_eos(regex):
                 fileset[key] = fileset_16jul[key]
     elif 'lpc' in host:
         topdir = '/eos/uscms/store/user/aandreas/nanopost/'
-        tag = '06Jan20'
+        tag = 'gen/13Jan20'
         fileset = find_files_eos(pjoin(topdir, tag), regex)
 
     return fileset
