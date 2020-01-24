@@ -159,8 +159,8 @@ def main():
     filename = './output/2d_gen_vpt_mjj.root'
     outputrootfile = uproot.recreate(filename)
 
-#    plot_gen_spectrum(acc, variable='vpt')
-#    plot_gen_spectrum(acc, variable='mjj')
+    plot_gen_spectrum(acc, variable='vpt')
+    plot_gen_spectrum(acc, variable='mjj')
 
     tag_regex_pt = {
         'wjet' : ('WN?JetsToLNu.*', 'dress'),
