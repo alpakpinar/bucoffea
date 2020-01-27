@@ -75,8 +75,14 @@ class lheVProcessor(processor.ProcessorABC):
         jpt_ax = Bin("jpt",r"$p_{T}^{j}$ (GeV)", 50, 0, 2000)
         mjj_ax = Bin("mjj",r"$m(jj)$ (GeV)", 75, 0, 7500)
         res_ax = Bin("res",r"pt: dressed / stat1 - 1", 80,-0.2,0.2)
+        ht_ax = Bin("ht", r"$H_{T}$ (GeV)", 100, 0, 4000)
 
         items = {}
+
+        items['lhe_ht'] = Hist("Counts",
+                                dataset_ax,
+                                ht_ax)
+
         for tag in ['stat1','dress','lhe','combined']:
             items[f"gen_vpt_inclusive_{tag}"] = Hist("Counts",
                                     dataset_ax,
@@ -125,6 +131,9 @@ class lheVProcessor(processor.ProcessorABC):
 
         dijet = genjets[:,:2].distincts()
         mjj = dijet.mass.max()
+
+        output['lhe_ht'].fill(dataset=dataset, ht=df['LHE_HT'])
+
         for tag in tags:
             # Dijet for VBF
 
