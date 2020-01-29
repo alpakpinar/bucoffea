@@ -211,6 +211,11 @@ def vbfhinv_regions(cfg):
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met'] + common_cuts
 
+    # Additional regions for QCD comparison
+    regions['sr_vbf_dpfcalo'] = ['trig_met', 'dpfcalo'] + common_cuts
+    regions['sr_vbf_leadjet_tight'] = ['trig_met', 'leadak4_id_tight'] + common_cuts
+    regions['sr_vbf_leadjetpair_tight'] = ['trig_met', 'leadak4_id_tight', 'trailak4_id_tight'] + common_cuts
+
     # For sync mode
     if cfg.RUN.SYNC:
         regions['cr_sync'] = [

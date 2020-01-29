@@ -224,7 +224,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
         has_track1 = np.abs(diak4.i1.eta) <= 2.5
 
         leadak4_id = diak4.i0.tightId & (has_track0*((diak4.i0.chf > cfg.SELECTION.SIGNAL.LEADAK4.CHF) & (diak4.i0.nhf < cfg.SELECTION.SIGNAL.LEADAK4.NHF)) + ~has_track0)
+        leadak4_id_tight = diak4.i0.tightId & (has_track0*((diak4.i0.chf > 0.1) & (diak4.i0.nhf < 0.8)) + ~has_track0)
         trailak4_id = has_track1*((diak4.i1.chf > cfg.SELECTION.SIGNAL.TRAILAK4.CHF) & (diak4.i1.nhf < cfg.SELECTION.SIGNAL.TRAILAK4.NHF)) + ~has_track1
+        trailak4_id_tight = diak4.i1.tightId & (has_track1*((diak4.i1.chf > 0.1) & (diak4.i1.nhf < 0.8)) + ~has_track1)
 
         df['mjj'] = diak4.mass.max()
         df['dphijj'] = dphi(diak4.i0.phi.min(), diak4.i1.phi.max())
@@ -235,7 +237,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('trailak4_pt_eta', trailak4_pt_eta.any())
         selection.add('hemisphere', hemisphere)
         selection.add('leadak4_id',leadak4_id.any())
+        selection.add('leadak4_id_tight',leadak4_id_tight.any())
         selection.add('trailak4_id',trailak4_id.any())
+        selection.add('trailak4_id_tight',trailak4_id_tight.any())
         selection.add('mjj', df['mjj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.MASS)
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
