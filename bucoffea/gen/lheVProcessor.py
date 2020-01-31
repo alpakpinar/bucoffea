@@ -1,4 +1,5 @@
 import coffea.processor as processor
+from awkward import JaggedArray
 import numpy as np
 from coffea import hist
 import re
@@ -132,18 +133,19 @@ class lheVProcessor(processor.ProcessorABC):
         mjj = dijet.mass.max()
         
         # Get different weights
-        pdf_weights = df['LHEPdfWeight']
-        scale_weights = df['LHEScaleWeight']
-        num_pdf_weights = df['nLHEPdfWeight'][0]
-        num_scale_weights = df['nLHEScaleWeight'][0]
-
-        split_scalew = np.vstack(np.split(scale_weights, len(scale_weights)/num_scale_weights))
-        split_pdfw = np.vstack(np.split(pdf_weights, len(pdf_weights)/num_pdf_weights))
+        pdf_weights = JaggedArray.fromcounts(
+            df['nLHEPdfWeight'],
+            df['LHEPdfWeight']
+        )
+        scale_weights = JaggedArray.fromcounts(
+            df['nLHEScaleWeight'],
+            df['LHEScaleWeight']
+        )
 
         # Correct weights for NLO DY/W
         if re.match('(DY\dJets)|(W\dJets).*', dataset):
-            split_scalew *= 2
-            split_pdfw *= 2
+            pdf_weights *= 2
+            scale_weights *= 2
 
         variations = {
             'nominal' : ['nominal'],
