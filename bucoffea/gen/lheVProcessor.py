@@ -1,6 +1,7 @@
 import coffea.processor as processor
 import numpy as np
 from coffea import hist
+import re
 
 from bucoffea.helpers import min_dphi_jet_met, dphi
 from bucoffea.helpers.dataset import (is_lo_g, is_lo_g_ewk, is_lo_w, is_lo_z,
@@ -70,6 +71,7 @@ class lheVProcessor(processor.ProcessorABC):
 
         # Histogram setup
         dataset_ax = Cat("dataset", "Primary dataset")
+        var_ax = Cat("var", "LHE variation axis")
 
         vpt_ax = Bin("vpt",r"$p_{T}^{V}$ (GeV)", 50, 0, 2000)
         jpt_ax = Bin("jpt",r"$p_{T}^{j}$ (GeV)", 50, 0, 2000)
@@ -80,16 +82,19 @@ class lheVProcessor(processor.ProcessorABC):
         for tag in ['stat1','dress','lhe','combined']:
             items[f"gen_vpt_inclusive_{tag}"] = Hist("Counts",
                                     dataset_ax,
-                                    vpt_ax)
+                                    vpt_ax,
+                                    var_ax)
             items[f"gen_vpt_monojet_{tag}"] = Hist("Counts",
                                     dataset_ax,
                                     jpt_ax,
-                                    vpt_ax)
+                                    vpt_ax,
+                                    var_ax)
             items[f"gen_vpt_vbf_{tag}"] = Hist("Counts",
                                     dataset_ax,
                                     jpt_ax,
                                     mjj_ax,
-                                    vpt_ax)
+                                    vpt_ax,
+                                    var_ax)
         items["resolution"] = Hist("Counts",
                                 dataset_ax,
                                 res_ax)
@@ -125,6 +130,39 @@ class lheVProcessor(processor.ProcessorABC):
 
         dijet = genjets[:,:2].distincts()
         mjj = dijet.mass.max()
+        
+        # Get different weights
+        pdf_weights = df['LHEPdfWeight']
+        scale_weights = df['LHEScaleWeight']
+        num_pdf_weights = df['nLHEPdfWeight'][0]
+        num_scale_weights = df['nLHEScaleWeight'][0]
+
+        split_scalew = np.vstack(np.split(scale_weights, len(scale_weights)/num_scale_weights))
+        split_pdfw = np.vstack(np.split(pdf_weights, len(pdf_weights)/num_pdf_weights))
+
+        # Correct weights for NLO DY/W
+        if re.match('(DY\dJets)|(W\dJets).*', dataset):
+            split_scalew *= 2
+            split_pdfw *= 2
+
+        variations = {
+            'nominal' : ['nominal'],
+            'pdf' : [f'pdf_{idx}' for idx in range(num_pdf_weights)],
+            'scale' : [f'scale_{idx}' for idx in range(num_scale_weights)]
+        }
+        
+        weights = {}
+        weights['nominal'] = {'nominal' : df['Generator_weight']}
+        weights['pdf'] = {}
+        
+        for idx, var in enumerate(variations['pdf']):
+            weights['pdf'][var] = split_pdfw[:, idx]*df['Generator_weight']
+        
+        weights['scale'] = {}
+        
+        for idx, var in enumerate(variations['scale']):
+            weights['scale'][var] = split_scalew[:, idx]*df['Generator_weight']
+
         for tag in tags:
             # Dijet for VBF
 
@@ -132,30 +170,35 @@ class lheVProcessor(processor.ProcessorABC):
             vbf_sel = vbf_selection(df[f'gen_v_phi_{tag}'], dijet, genjets)
             monojet_sel = monojet_selection(df[f'gen_v_phi_{tag}'], genjets)
 
-            nominal = df['Generator_weight']
 
-            output[f'gen_vpt_inclusive_{tag}'].fill(
-                                    dataset=dataset,
-                                    vpt=df[f'gen_v_pt_{tag}'],
-                                    weight=nominal
-                                    )
-            mask_vbf = vbf_sel.all(*vbf_sel.names)
-            output[f'gen_vpt_vbf_{tag}'].fill(
-                                    dataset=dataset,
-                                    vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
-                                    jpt=genjets.pt.max()[mask_vbf],
-                                    mjj = mjj[mask_vbf],
-                                    weight=nominal[mask_vbf]
-                                    )
+            for var_name, var_list in variations.items():
+                print(var_name, var_list)
+                for var in var_list:
+                    output[f'gen_vpt_inclusive_{tag}'].fill(
+                                            dataset=dataset,
+                                            vpt=df[f'gen_v_pt_{tag}'],
+                                            weight=weights[var_name][var],
+                                            var=var
+                                            )
+                    mask_vbf = vbf_sel.all(*vbf_sel.names)
+                    output[f'gen_vpt_vbf_{tag}'].fill(
+                                            dataset=dataset,
+                                            vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
+                                            jpt=genjets.pt.max()[mask_vbf],
+                                            mjj = mjj[mask_vbf],
+                                            weight=weights[var_name][var][mask_vbf],
+                                            var=var
+                                            )
 
-            mask_monojet = monojet_sel.all(*monojet_sel.names)
+                    mask_monojet = monojet_sel.all(*monojet_sel.names)
 
-            output[f'gen_vpt_monojet_{tag}'].fill(
-                                    dataset=dataset,
-                                    vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
-                                    jpt=genjets.pt.max()[mask_monojet],
-                                    weight=nominal[mask_monojet]
-                                    )
+                    output[f'gen_vpt_monojet_{tag}'].fill(
+                                            dataset=dataset,
+                                            vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
+                                            jpt=genjets.pt.max()[mask_monojet],
+                                            weight=weights[var_name][var][mask_monojet],
+                                            var=var
+                                            )
 
         # Keep track of weight sum
         output['sumw'][dataset] +=  df['genEventSumw']
