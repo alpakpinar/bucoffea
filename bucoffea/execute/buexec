@@ -86,7 +86,7 @@ def do_worker(args):
                                   processor_instance=choose_processor(args)(),
                                   executor=processor.futures_executor,
                                   executor_args={'workers': args.jobs, 'flatten': True},
-                                  chunksize=20000,
+                                  chunksize=10000,
                                  )
 
     # Save output
