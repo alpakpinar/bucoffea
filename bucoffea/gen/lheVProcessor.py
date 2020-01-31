@@ -170,9 +170,7 @@ class lheVProcessor(processor.ProcessorABC):
             vbf_sel = vbf_selection(df[f'gen_v_phi_{tag}'], dijet, genjets)
             monojet_sel = monojet_selection(df[f'gen_v_phi_{tag}'], genjets)
 
-
             for var_name, var_list in variations.items():
-                print(var_name, var_list)
                 for var in var_list:
                     output[f'gen_vpt_inclusive_{tag}'].fill(
                                             dataset=dataset,
