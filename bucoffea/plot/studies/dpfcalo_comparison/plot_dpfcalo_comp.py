@@ -70,13 +70,15 @@ def dpfcalo_comp(acc, regex, tag):
         ax.set_title(title)
         ax.set_ylabel('Normalized Counts')
 
+        eff_header = 'Efficiencies w.r.t SR:'
+
         eff_text = dedent(
         f'''
-        Efficiencies w.r.t SR: 
         DPFCalo cut: {efficiencies["sr_vbf_dpfcalo"]:.2f}%
         CHF/NHF cut (lead-j): {efficiencies["sr_vbf_leadjet_tight"]:.2f}%
         CHF/NHF cut (lead-jj): {efficiencies["sr_vbf_leadjetpair_tight"]:.2f}%
         ''')
+        ax.text(0.05, 0.95, eff_header, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, weight='bold') 
         ax.text(0.05, 0.95, eff_text, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes) 
         if not os.path.exists('./output'):
             os.mkdir('output')
