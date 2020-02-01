@@ -9,6 +9,11 @@ from klepto.archives import dir_archive
 from matplotlib import pyplot as plt
 from coffea import hist
 
+TAG_TO_TITLE = {
+    'vbf_hinv' : 'VBF_HToInvisible',
+    'qcd'      : 'QCD_HT'
+}
+
 def dpfcalo_comp(acc, regex, tag):
     '''Given the input accumulator, plot mjj distribution
        with 4 cut cases:
@@ -37,7 +42,8 @@ def dpfcalo_comp(acc, regex, tag):
         hist.plot1d(h_[region_regex], ax=ax, overlay='region', binwnorm=True)
         ax.set_yscale('log')
         ax.set_ylim(1e-5, 1e6)
-        ax.set_title(f'QCD_HT_{year}')
+        title = TAG_TO_TITLE[tag] + f'_{year}'
+        ax.set_title(title)
         ax.set_ylabel('Normalized Counts')
         if not os.path.exists('./output'):
             os.mkdir('output')
