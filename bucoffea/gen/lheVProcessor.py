@@ -72,8 +72,8 @@ class lheVProcessor(processor.ProcessorABC):
 
         # Histogram setup
         dataset_ax = Cat("dataset", "Primary dataset")
-        var_ax = Cat("var", "LHE variation axis")
 
+        var_ax = Bin("var", "LHE variation", 160, 0, 160)
         vpt_ax = Bin("vpt",r"$p_{T}^{V}$ (GeV)", 50, 0, 2000)
         jpt_ax = Bin("jpt",r"$p_{T}^{j}$ (GeV)", 50, 0, 2000)
         mjj_ax = Bin("mjj",r"$m(jj)$ (GeV)", 75, 0, 7500)
@@ -142,28 +142,13 @@ class lheVProcessor(processor.ProcessorABC):
             df['LHEScaleWeight']
         )
 
+        n_scalew = df['nLHEScaleWeight'][0]
+        n_pdfw = df['nLHEPdfWeight'][0]
+
         # Correct weights for NLO DY/W
         if re.match('(DY\dJets)|(W\dJets).*', dataset):
-            pdf_weights *= 2
-            scale_weights *= 2
-
-        variations = {
-            'nominal' : ['nominal'],
-            'pdf' : [f'pdf_{idx}' for idx in range(num_pdf_weights)],
-            'scale' : [f'scale_{idx}' for idx in range(num_scale_weights)]
-        }
-        
-        weights = {}
-        weights['nominal'] = {'nominal' : df['Generator_weight']}
-        weights['pdf'] = {}
-        
-        for idx, var in enumerate(variations['pdf']):
-            weights['pdf'][var] = split_pdfw[:, idx]*df['Generator_weight']
-        
-        weights['scale'] = {}
-        
-        for idx, var in enumerate(variations['scale']):
-            weights['scale'][var] = split_scalew[:, idx]*df['Generator_weight']
+            pdf_weights = pdf_weights*2
+            scale_weights = scale_weights*2
 
         for tag in tags:
             # Dijet for VBF
@@ -171,34 +156,88 @@ class lheVProcessor(processor.ProcessorABC):
             # Selection
             vbf_sel = vbf_selection(df[f'gen_v_phi_{tag}'], dijet, genjets)
             monojet_sel = monojet_selection(df[f'gen_v_phi_{tag}'], genjets)
+            
+            mask_vbf = vbf_sel.all(*vbf_sel.names)
+            mask_monojet = monojet_sel.all(*monojet_sel.names)
 
-            for var_name, var_list in variations.items():
-                for var in var_list:
-                    output[f'gen_vpt_inclusive_{tag}'].fill(
-                                            dataset=dataset,
-                                            vpt=df[f'gen_v_pt_{tag}'],
-                                            weight=weights[var_name][var],
-                                            var=var
-                                            )
-                    mask_vbf = vbf_sel.all(*vbf_sel.names)
-                    output[f'gen_vpt_vbf_{tag}'].fill(
-                                            dataset=dataset,
-                                            vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
-                                            jpt=genjets.pt.max()[mask_vbf],
-                                            mjj = mjj[mask_vbf],
-                                            weight=weights[var_name][var][mask_vbf],
-                                            var=var
-                                            )
+            # First, fill with the nominal weight (var=0)
+            nominal = df['Generator_weight']
 
-                    mask_monojet = monojet_sel.all(*monojet_sel.names)
+            output[f'gen_vpt_inclusive_{tag}'].fill(
+                                    dataset=dataset,
+                                    vpt=df[f'gen_v_pt_{tag}'],
+                                    weight=nominal,
+                                    var=0
+                                    )
+            output[f'gen_vpt_vbf_{tag}'].fill(
+                                    dataset=dataset,
+                                    vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
+                                    jpt=genjets.pt.max()[mask_vbf],
+                                    mjj = mjj[mask_vbf],
+                                    weight=nominal[mask_vbf],
+                                    var=0 
+                                    )
 
-                    output[f'gen_vpt_monojet_{tag}'].fill(
-                                            dataset=dataset,
-                                            vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
-                                            jpt=genjets.pt.max()[mask_monojet],
-                                            weight=weights[var_name][var][mask_monojet],
-                                            var=var
-                                            )
+
+            output[f'gen_vpt_monojet_{tag}'].fill(
+                                    dataset=dataset,
+                                    vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
+                                    jpt=genjets.pt.max()[mask_monojet],
+                                    weight=nominal[mask_monojet],
+                                    var=0
+                                    )
+            
+            # Fill with different scale weights
+            for idx in range(n_scalew):
+                output[f'gen_vpt_inclusive_{tag}'].fill(
+                                        dataset=dataset,
+                                        vpt=df[f'gen_v_pt_{tag}'],
+                                        weight=scale_weights[:,idx],
+                                        var=idx+1
+                                        )
+                output[f'gen_vpt_vbf_{tag}'].fill(
+                                        dataset=dataset,
+                                        vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
+                                        jpt=genjets.pt.max()[mask_vbf],
+                                        mjj = mjj[mask_vbf],
+                                        weight=scale_weights[:,idx][mask_vbf],
+                                        var=idx+1 
+                                        )
+
+
+                output[f'gen_vpt_monojet_{tag}'].fill(
+                                        dataset=dataset,
+                                        vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
+                                        jpt=genjets.pt.max()[mask_monojet],
+                                        weight=scale_weights[:,idx][mask_monojet],
+                                        var=idx+1
+                                        )
+
+            # Fill with different pdf weights
+            for idx in range(n_pdfw):
+                output[f'gen_vpt_inclusive_{tag}'].fill(
+                                        dataset=dataset,
+                                        vpt=df[f'gen_v_pt_{tag}'],
+                                        weight=pdf_weights[:,idx], 
+                                        var=n_scalew+idx+1
+                                        )
+                output[f'gen_vpt_vbf_{tag}'].fill(
+                                        dataset=dataset,
+                                        vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
+                                        jpt=genjets.pt.max()[mask_vbf],
+                                        mjj = mjj[mask_vbf],
+                                        weight=pdf_weights[:,idx][mask_vbf],
+                                        var=n_scalew+idx+1 
+                                        )
+
+
+                output[f'gen_vpt_monojet_{tag}'].fill(
+                                        dataset=dataset,
+                                        vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
+                                        jpt=genjets.pt.max()[mask_monojet],
+                                        weight=pdf_weights[:,idx][mask_monojet],
+                                        var=n_scalew+idx+1
+                                        )
 
         # Keep track of weight sum
         output['sumw'][dataset] +=  df['genEventSumw']
