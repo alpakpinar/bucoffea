@@ -75,7 +75,6 @@ class lheVProcessor(processor.ProcessorABC):
 
         var_ax = Bin("var", "LHE variation", 160, 0, 160)
         vpt_ax = Bin("vpt",r"$p_{T}^{V}$ (GeV)", 50, 0, 2000)
-        jpt_ax = Bin("jpt",r"$p_{T}^{j}$ (GeV)", 50, 0, 2000)
         mjj_ax = Bin("mjj",r"$m(jj)$ (GeV)", 75, 0, 7500)
         res_ax = Bin("res",r"pt: dressed / stat1 - 1", 80,-0.2,0.2)
 
@@ -87,12 +86,10 @@ class lheVProcessor(processor.ProcessorABC):
                                     var_ax)
             items[f"gen_vpt_monojet_{tag}"] = Hist("Counts",
                                     dataset_ax,
-                                    jpt_ax,
                                     vpt_ax,
                                     var_ax)
             items[f"gen_vpt_vbf_{tag}"] = Hist("Counts",
                                     dataset_ax,
-                                    jpt_ax,
                                     mjj_ax,
                                     vpt_ax,
                                     var_ax)
