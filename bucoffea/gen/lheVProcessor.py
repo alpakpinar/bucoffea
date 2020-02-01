@@ -114,12 +114,12 @@ class lheVProcessor(processor.ProcessorABC):
 
         # Dilepton
         gen = setup_gen_candidates(df)
-        tags = ['stat1','lhe']
         if is_lo_w(dataset) or is_nlo_w(dataset) or is_lo_z(dataset) or is_nlo_z(dataset):
             dressed = setup_dressed_gen_candidates(df)
             fill_gen_v_info(df, gen, dressed)
-            tags.extend(['dress','combined'])
+            tags = ['combined']
         elif is_lo_g(dataset) or is_nlo_g(dataset) or is_lo_g_ewk(dataset) or is_nlo_g_ewk(dataset):
+            tags = ['stat1']
             photons = gen[(gen.status==1)&(gen.pdg==22)]
             df['gen_v_pt_stat1'] = photons.pt.max()
             df['gen_v_phi_stat1'] = photons[photons.pt.argmax()].phi.max()
@@ -169,7 +169,6 @@ class lheVProcessor(processor.ProcessorABC):
             output[f'gen_vpt_vbf_{tag}'].fill(
                                     dataset=dataset,
                                     vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
-                                    jpt=genjets.pt.max()[mask_vbf],
                                     mjj = mjj[mask_vbf],
                                     weight=nominal[mask_vbf],
                                     var=0 
@@ -179,7 +178,6 @@ class lheVProcessor(processor.ProcessorABC):
             output[f'gen_vpt_monojet_{tag}'].fill(
                                     dataset=dataset,
                                     vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
-                                    jpt=genjets.pt.max()[mask_monojet],
                                     weight=nominal[mask_monojet],
                                     var=0
                                     )
@@ -195,7 +193,6 @@ class lheVProcessor(processor.ProcessorABC):
                 output[f'gen_vpt_vbf_{tag}'].fill(
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
-                                        jpt=genjets.pt.max()[mask_vbf],
                                         mjj = mjj[mask_vbf],
                                         weight=scale_weights[:,idx][mask_vbf],
                                         var=idx+1 
@@ -205,7 +202,6 @@ class lheVProcessor(processor.ProcessorABC):
                 output[f'gen_vpt_monojet_{tag}'].fill(
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
-                                        jpt=genjets.pt.max()[mask_monojet],
                                         weight=scale_weights[:,idx][mask_monojet],
                                         var=idx+1
                                         )
@@ -221,7 +217,6 @@ class lheVProcessor(processor.ProcessorABC):
                 output[f'gen_vpt_vbf_{tag}'].fill(
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
-                                        jpt=genjets.pt.max()[mask_vbf],
                                         mjj = mjj[mask_vbf],
                                         weight=pdf_weights[:,idx][mask_vbf],
                                         var=n_scalew+idx+1 
@@ -231,7 +226,6 @@ class lheVProcessor(processor.ProcessorABC):
                 output[f'gen_vpt_monojet_{tag}'].fill(
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
-                                        jpt=genjets.pt.max()[mask_monojet],
                                         weight=pdf_weights[:,idx][mask_monojet],
                                         var=n_scalew+idx+1
                                         )
