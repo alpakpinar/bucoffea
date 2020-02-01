@@ -73,13 +73,13 @@ class lheVProcessor(processor.ProcessorABC):
         # Histogram setup
         dataset_ax = Cat("dataset", "Primary dataset")
 
-        var_ax = Bin("var", "LHE variation", 160, 0, 160)
+        var_ax = Bin("var", "LHE variation", 120, 0, 120)
         vpt_ax = Bin("vpt",r"$p_{T}^{V}$ (GeV)", 50, 0, 2000)
         mjj_ax = Bin("mjj",r"$m(jj)$ (GeV)", 75, 0, 7500)
         res_ax = Bin("res",r"pt: dressed / stat1 - 1", 80,-0.2,0.2)
 
         items = {}
-        for tag in ['stat1','dress','lhe','combined']:
+        for tag in ['stat1','combined']:
             items[f"gen_vpt_inclusive_{tag}"] = Hist("Counts",
                                     dataset_ax,
                                     vpt_ax,
