@@ -8,11 +8,31 @@ from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from klepto.archives import dir_archive
 from matplotlib import pyplot as plt
 from coffea import hist
+from textwrap import dedent
 
 TAG_TO_TITLE = {
     'vbf_hinv' : 'VBF_HToInvisible',
     'qcd'      : 'QCD_HT'
 }
+
+def calculate_eff(dist):
+    '''Given the distributions for each region,
+       calculate the total number of predictions
+       for each additional cut.'''
+    # Store the predictions for each region
+    predictions = {}
+    for region, dist in dist.items():
+        region_name = region[0]
+        predictions[region_name] = np.sum(dist)
+
+    # Calculate the efficiencies with
+    # respect to SR with no additional cuts
+    efficiencies = {}
+    sr_prediction = predictions['sr_vbf']
+    for region, prediction in predictions.items():
+        efficiencies[region] = prediction*100/sr_prediction
+    
+    return efficiencies
 
 def dpfcalo_comp(acc, regex, tag):
     '''Given the input accumulator, plot mjj distribution
@@ -37,7 +57,11 @@ def dpfcalo_comp(acc, regex, tag):
     region_regex = re.compile('sr_vbf.*')
     for year in [2017,2018]:
         h_ = h.integrate('dataset', re.compile(regex + f'_{year}'))
-        print(h_[region_regex].values())
+        
+        # Get efficiency for each region
+        dist = h_[region_regex].values()
+        efficiencies = calculate_eff(dist)
+
         fig, ax = plt.subplots(1,1)
         hist.plot1d(h_[region_regex], ax=ax, overlay='region', binwnorm=True)
         ax.set_yscale('log')
@@ -45,6 +69,15 @@ def dpfcalo_comp(acc, regex, tag):
         title = TAG_TO_TITLE[tag] + f'_{year}'
         ax.set_title(title)
         ax.set_ylabel('Normalized Counts')
+
+        eff_text = dedent(
+        f'''
+        Efficiencies w.r.t SR: 
+        DPFCalo cut: {efficiencies["sr_vbf_dpfcalo"]:.2f}%
+        CHF/NHF cut (lead-j): {efficiencies["sr_vbf_leadjet_tight"]:.2f}%
+        CHF/NHF cut (lead-jj): {efficiencies["sr_vbf_leadjetpair_tight"]:.2f}%
+        ''')
+        ax.text(0.05, 0.95, eff_text, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes) 
         if not os.path.exists('./output'):
             os.mkdir('output')
         fig.savefig(f'./output/{tag}_dpfcalo_comparison_{year}.pdf')
