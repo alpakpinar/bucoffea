@@ -72,8 +72,8 @@ class lheVProcessor(processor.ProcessorABC):
 
         # Histogram setup
         dataset_ax = Cat("dataset", "Primary dataset")
+        var_ax = Cat("var", "LHE variation")
 
-        var_ax = Bin("var", "LHE variation", 120, 0, 120)
         vpt_ax = Bin("vpt",r"$p_{T}^{V}$ (GeV)", 50, 0, 2000)
         mjj_ax = Bin("mjj",r"$m(jj)$ (GeV)", 75, 0, 7500)
         res_ax = Bin("res",r"pt: dressed / stat1 - 1", 80,-0.2,0.2)
@@ -129,15 +129,22 @@ class lheVProcessor(processor.ProcessorABC):
         dijet = genjets[:,:2].distincts()
         mjj = dijet.mass.max()
         
+        nominal = df['Generator_weight']
+
         # Get different weights
         pdf_weights = JaggedArray.fromcounts(
             df['nLHEPdfWeight'],
-            df['LHEPdfWeight']
+            df['LHEPdfWeight'] 
         )
         scale_weights = JaggedArray.fromcounts(
             df['nLHEScaleWeight'],
-            df['LHEScaleWeight']
+            df['LHEScaleWeight'] 
         )
+
+        # Get the actual weights by multiplying
+        # with the nominal weight
+        pdf_weights = pdf_weights*nominal
+        scale_weights = scale_weights*nominal
 
         n_scalew = df['nLHEScaleWeight'][0]
         n_pdfw = df['nLHEPdfWeight'][0]
@@ -146,7 +153,7 @@ class lheVProcessor(processor.ProcessorABC):
         if re.match('(DY\dJets)|(W\dJets).*', dataset):
             pdf_weights = pdf_weights*2
             scale_weights = scale_weights*2
-
+        
         for tag in tags:
             # Dijet for VBF
 
@@ -157,21 +164,18 @@ class lheVProcessor(processor.ProcessorABC):
             mask_vbf = vbf_sel.all(*vbf_sel.names)
             mask_monojet = monojet_sel.all(*monojet_sel.names)
 
-            # First, fill with the nominal weight (var=0)
-            nominal = df['Generator_weight']
-
             output[f'gen_vpt_inclusive_{tag}'].fill(
                                     dataset=dataset,
                                     vpt=df[f'gen_v_pt_{tag}'],
                                     weight=nominal,
-                                    var=0
+                                    var='nominal'
                                     )
             output[f'gen_vpt_vbf_{tag}'].fill(
                                     dataset=dataset,
                                     vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
                                     mjj = mjj[mask_vbf],
                                     weight=nominal[mask_vbf],
-                                    var=0 
+                                    var='nominal' 
                                     )
 
 
@@ -179,7 +183,7 @@ class lheVProcessor(processor.ProcessorABC):
                                     dataset=dataset,
                                     vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
                                     weight=nominal[mask_monojet],
-                                    var=0
+                                    var='nominal'
                                     )
             
             # Fill with different scale weights
@@ -188,14 +192,14 @@ class lheVProcessor(processor.ProcessorABC):
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'],
                                         weight=scale_weights[:,idx],
-                                        var=idx+1
+                                        var=f'scale_{idx}'
                                         )
                 output[f'gen_vpt_vbf_{tag}'].fill(
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
                                         mjj = mjj[mask_vbf],
                                         weight=scale_weights[:,idx][mask_vbf],
-                                        var=idx+1 
+                                        var=f'scale_{idx}' 
                                         )
 
 
@@ -203,7 +207,7 @@ class lheVProcessor(processor.ProcessorABC):
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
                                         weight=scale_weights[:,idx][mask_monojet],
-                                        var=idx+1
+                                        var=f'scale_{idx}'
                                         )
 
             # Fill with different pdf weights
@@ -212,14 +216,14 @@ class lheVProcessor(processor.ProcessorABC):
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'],
                                         weight=pdf_weights[:,idx], 
-                                        var=n_scalew+idx+1
+                                        var=f'pdf_{idx}'
                                         )
                 output[f'gen_vpt_vbf_{tag}'].fill(
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
                                         mjj = mjj[mask_vbf],
                                         weight=pdf_weights[:,idx][mask_vbf],
-                                        var=n_scalew+idx+1 
+                                        var=f'pdf_{idx}' 
                                         )
 
 
@@ -227,7 +231,7 @@ class lheVProcessor(processor.ProcessorABC):
                                         dataset=dataset,
                                         vpt=df[f'gen_v_pt_{tag}'][mask_monojet],
                                         weight=pdf_weights[:,idx][mask_monojet],
-                                        var=n_scalew+idx+1
+                                        var=f'pdf_{idx}'
                                         )
 
         # Keep track of weight sum
