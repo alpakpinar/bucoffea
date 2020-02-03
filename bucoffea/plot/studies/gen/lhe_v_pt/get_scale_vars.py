@@ -28,10 +28,14 @@ def get_scale_variations(acc, regex, tag, scale_var, outputrootfile):
 
     # Define rebinning
     if tag in ['wjet', 'dy']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200])
+        vpt_ax_coarse = [0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200]
+        vpt_ax_fine = list(range(0,400,40)) + list(range(400,1200,80))
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)', vpt_ax_fine)
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)', [0,200] + list(range(500,2500,500)))
     elif tag in ['gjets']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640])
+        vpt_ax_coarse = [0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640]
+        vpt_ax_fine = list(range(0,680,40))
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)', vpt_ax_fine)
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000,1500])
 
     # Set the correct pt type
@@ -137,7 +141,7 @@ def plot_ratio_vpt(tup, var, tag):
     outpath = './output/kfac_variations'
     if not os.path.exists(outpath):
         os.makedirs(outpath)
-    outfile = pjoin(outpath, f'{tag}_kfac_ratio_{var}.pdf')
+    outfile = pjoin(outpath, f'{tag}_kfac_ratio_{var}.png')
     fig.savefig(outfile)
 
 
