@@ -54,20 +54,23 @@ def get_scale_variations(acc, regex, tag, scale_var, outputrootfile, old_kfac):
     # Print choose the relevant scale variation (relevant to NLO only)
     # For LO, choose the nominal (i.e. no variation)
     lo = lo.integrate('var', 'nominal')
-    nlo = nlo.integrate('var', scale_var)
+    nlo_var = nlo.integrate('var', scale_var)
     
     sumw_lo, sumw2_lo = lo.values(overflow='over', sumw2=True)[()]
-    sumw_nlo, sumw2_nlo = nlo.values(overflow='over', sumw2=True)[()]
+    sumw_nlo_var, sumw2_nlo_var = nlo_var.values(overflow='over', sumw2=True)[()]
 
-    sf = sumw_nlo / sumw_lo
-    dsf = np.hypot(
-            np.sqrt(sumw2_nlo) / sumw_lo,
-            sumw_nlo * np.sqrt(sumw2_lo) / (sumw_lo**2)
-        )
+    # Scale factor with variation
+    sf_var = sumw_nlo_var / sumw_lo
     
+    # Calculate the scale factor without variation
+    nlo_nom = nlo.integrate('var', 'nominal')
+    sumw_nlo_nom, sumw2_nlo_nom = nlo_nom.values(overflow='over', sumw2=True)[()]
+
+    sf_nom = sumw_nlo_nom / sumw_lo 
+
     # Calculate the ratio of the new k-factors
     # with variation and old nominal k-factors
-    ratio = sf / old_kfac
+    ratio = sf_var / sf_nom 
 
     tup = (ratio, xaxis.edges(overflow='over'), yaxis.edges(overflow='over'))
  
@@ -89,13 +92,22 @@ def main():
     
     outputrootfile = uproot.recreate('vbf_sf_scale_var.root')
 
-    scale_var_list = [
-        'scale_1', #mu_R = 0.5 & mu_F = 1.0
-        'scale_3', #mu_R = 1.0 & mu_F = 0.5
-        'scale_4', #mu_R = 1.0 & mu_F = 1.0 (nominal)
-        'scale_5', #mu_R = 1.0 & mu_F = 2.0
-        'scale_7', #mu_R = 2.0 & mu_F = 1.0
-    ]
+    scale_var_dict = {
+        'gjets' : [
+            'scale_1', #mu_R = 0.5 & mu_F = 1.0
+            'scale_3', #mu_R = 1.0 & mu_F = 0.5
+            'scale_4', #mu_R = 1.0 & mu_F = 1.0 (nominal)
+            'scale_5', #mu_R = 1.0 & mu_F = 2.0
+            'scale_7', #mu_R = 2.0 & mu_F = 1.0
+                ],
+        'wjet/dy' : [
+            'scale_1', #mu_R = 0.5 & mu_F = 1.0
+            'scale_3', #mu_R = 1.0 & mu_F = 0.5
+            'scale_4', #mu_R = 1.0 & mu_F = 2.0
+            'scale_6', #mu_R = 2.0 & mu_F = 1.0    
+                ]
+                
+    }
 
     tag_regex = {
         'wjet'  : 'WN?JetsToLNu.*',
@@ -106,7 +118,9 @@ def main():
     for tag,regex in tag_regex.items():
         # Get the nominal VBF k-factors
         old_kfac = get_old_kfac(tag)
-        
+
+        scale_var_list = scale_var_dict['gjets'] if tag == 'gjets' else scale_var_dict['wjet/dy']
+
         for scale_var in scale_var_list:
             get_scale_variations(acc=acc,
                                  regex=regex,
