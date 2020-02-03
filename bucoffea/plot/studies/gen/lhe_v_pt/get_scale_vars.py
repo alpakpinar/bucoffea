@@ -11,12 +11,14 @@ from coffea import hist
 from klepto.archives import dir_archive
 from matplotlib import pyplot as plt
 
+pjoin = os.path.join
+
 def get_old_kfac(tag):
     '''Given the dataset tag, get the nominal 2D VBF k-factors.'''
     f = uproot.open(bucoffea_path('data/sf/theory/2017_gen_v_pt_qcd_sf.root'))
     return f[f'2d_{tag}_vbf'].values
 
-def get_scale_variations(acc, regex, tag, scale_var, outputrootfile, old_kfac):
+def get_scale_variations(acc, regex, tag, scale_var, outputrootfile):
     '''Calculate the new k-factors with a scale weight variation.
        Dumps the ratio: 
        --- New k-factors with variation / Old (nominal) k-factors
@@ -76,7 +78,55 @@ def get_scale_variations(acc, regex, tag, scale_var, outputrootfile, old_kfac):
  
     # Save to the ROOT file
     outputrootfile[f'2d_{tag}_vbf_{scale_var}'] = tup
+
+    return tup
+
+def plot_ratio_vpt(tup, var, tag):
+    '''Given the tuple contatining the SF ratio (variational/nominal) and 
+       bin edges, plot ratios in each mjj bin as a function of v-pt.'''
+    ratio, x_edges, y_edges = tup
+    vpt_centers = ((y_edges + np.roll(y_edges,0))/2)[:-1]
+    fig, ax = plt.subplots(1,1)
+
+    # Figure out the variation and the relevant title
+    var_title = {
+        'gjets' : {
+            'scale_1' : r'$\mu_R = 0.5$, $\mu_F = 1.0$',
+            'scale_3' : r'$\mu_R = 1.0$, $\mu_F = 0.5$',
+            'scale_5' : r'$\mu_R = 1.0$, $\mu_F = 2.0$',
+            'scale_7' : r'$\mu_R = 2.0$, $\mu_F = 1.0$'
+        },
+        'wjet/dy' : {
+            'scale_1' : r'$\mu_R = 0.5$, $\mu_F = 1.0$',
+            'scale_3' : r'$\mu_R = 1.0$, $\mu_F = 0.5$',
+            'scale_4' : r'$\mu_R = 1.0$, $\mu_F = 2.0$',
+            'scale_6' : r'$\mu_R = 2.0$, $\mu_F = 1.0$'
+        }
+    }
+
+    title_tag = 'gjets' if tag == 'gjets' else 'wjet/dy'
+    fig_title = var_title[title_tag][var] 
+
+    ax.set_xlim(-50.0, vpt_centers[-1]+50.0)
+    ax.set_ylim(0.8, 1.2)
+    ax.set_xlabel(r'$p_T(V) \ (GeV)$')
+    ax.set_ylabel('Varied / Nominal SF')
+    ax.set_title(fig_title)
+    ax.plot([-50.0, vpt_centers[-1]+50.0], [1, 1], 'b')
+    for idx, ratio_list in enumerate(ratio):
+        label = r'${edge0:.0f} < m_{{jj}} < {edge1:.0f}$'.format(edge0=x_edges[idx], edge1=x_edges[idx+1])
+        ax.plot(vpt_centers, ratio_list, 'o', label=label)
+
+    plt.legend()
     
+    # Save the figure
+    outpath = './output/kfac_variations'
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+    outfile = pjoin(outpath, f'{tag}_kfac_ratio_{var}.pdf')
+    fig.savefig(outfile)
+
+
 def main():
     inpath = sys.argv[1]
 
@@ -96,7 +146,6 @@ def main():
         'gjets' : [
             'scale_1', #mu_R = 0.5 & mu_F = 1.0
             'scale_3', #mu_R = 1.0 & mu_F = 0.5
-            'scale_4', #mu_R = 1.0 & mu_F = 1.0 (nominal)
             'scale_5', #mu_R = 1.0 & mu_F = 2.0
             'scale_7', #mu_R = 2.0 & mu_F = 1.0
                 ],
@@ -116,19 +165,17 @@ def main():
     }
     
     for tag,regex in tag_regex.items():
-        # Get the nominal VBF k-factors
-        old_kfac = get_old_kfac(tag)
-
         scale_var_list = scale_var_dict['gjets'] if tag == 'gjets' else scale_var_dict['wjet/dy']
 
         for scale_var in scale_var_list:
-            get_scale_variations(acc=acc,
-                                 regex=regex,
-                                 tag=tag,
-                                 scale_var=scale_var,
-                                 outputrootfile=outputrootfile,
-                                 old_kfac=old_kfac
-                                 )
+            tup = get_scale_variations( acc=acc,
+                                        regex=regex,
+                                        tag=tag,
+                                        scale_var=scale_var,
+                                        outputrootfile=outputrootfile
+                                        )
+
+            plot_ratio_vpt(tup, var=scale_var, tag=tag)
 
 if __name__ == '__main__':
     main()
