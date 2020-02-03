@@ -10,6 +10,8 @@ from matplotlib import pyplot as plt
 from coffea import hist
 from textwrap import dedent
 
+pjoin = os.path.join
+
 TAG_TO_TITLE = {
     'vbf_hinv' : 'VBF_HToInvisible',
     'qcd'      : 'QCD_HT'
@@ -34,7 +36,7 @@ def calculate_eff(dist):
     
     return efficiencies
 
-def dpfcalo_comp(acc, regex, tag):
+def dpfcalo_comp(acc, out_tag, regex, tag):
     '''Given the input accumulator, plot mjj distribution
        with 4 cut cases:
        -- Regular VBF cuts
@@ -68,7 +70,7 @@ def dpfcalo_comp(acc, regex, tag):
         ax.set_ylim(1e-5, 1e6)
         title = TAG_TO_TITLE[tag] + f'_{year}'
         ax.set_title(title)
-        ax.set_ylabel('Normalized Counts')
+        ax.set_ylabel('Counts / Bin Width')
 
         eff_header = 'Efficiencies w.r.t SR:'
 
@@ -80,9 +82,50 @@ def dpfcalo_comp(acc, regex, tag):
         ''')
         ax.text(0.05, 0.95, eff_header, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, weight='bold') 
         ax.text(0.05, 0.95, eff_text, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes) 
-        if not os.path.exists('./output'):
-            os.mkdir('output')
-        fig.savefig(f'./output/{tag}_dpfcalo_comparison_{year}.pdf')
+        
+        # Save the figure
+        outdir = f'./output/{out_tag}'
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        outpath = pjoin(outdir, f'dpfcalo_comparison_{year}.pdf')
+        fig.savefig(outpath)
+
+        print(f'Figure saved at {outpath}')
+
+def plot_dpfcalo_dist(acc, out_tag, regex, tag):
+    '''Given the input accumulator, plot dpfcalo
+       distribution after regular VBF SR cuts.'''
+    acc.load('dpfcalo')
+    h = acc['dpfcalo']
+    
+    h = merge_extensions(h, acc, reweight_pu=False)
+    scale_xs_lumi(h)
+    h = merge_datasets(h)
+
+    h = h.integrate('region', 'sr_vbf')
+    for year in [2017,2018]:
+        h_ = h.integrate('dataset', re.compile(regex +f'_{year}'))
+
+        # Plot the distribution
+        fig, ax  = plt.subplots(1,1)
+        hist.plot1d(h_, ax=ax, binwnorm=True)
+        ax.set_yscale('log')
+        ax.set_ylim(1e-3, 1e6)
+        title = TAG_TO_TITLE[tag] + f'_{year}'
+        ax.set_title(title)
+        ax.set_ylabel('Counts / Bin Width')
+
+        # Vertical line at dpfcalo=0.5
+        ax.plot([0.5, 0.5], [1e-3, 1e6], 'r')
+
+        # Save the figure
+        outdir = f'./output/{out_tag}'
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        outpath = pjoin(outdir, f'dpfcalo_dist_{year}.pdf')
+        fig.savefig(outpath)
+        
+        print(f'Figure saved at {outpath}')
 
 def main():
     inpath = sys.argv[1]
@@ -95,8 +138,15 @@ def main():
 
     acc.load('sumw')
     acc.load('sumw2')
+    
+    # Get the output tag for outdir naming
+    if inpath.endswith('/'):
+        out_tag = inpath.split('/')[-2]
+    else:
+        out_tag = inpath.split('/')[-1]
 
-    dpfcalo_comp(acc, regex='VBF_HToInv.*', tag='vbf_hinv')
+    dpfcalo_comp(acc, out_tag=out_tag, regex='VBF_HToInv.*', tag='vbf_hinv')
+    plot_dpfcalo_dist(acc, out_tag=out_tag, regex='VBF_HToInv.*', tag='vbf_hinv')
 
 if __name__ == '__main__':
     main()
