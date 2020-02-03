@@ -29,7 +29,7 @@ def get_scale_variations(acc, regex, tag, scale_var, outputrootfile):
     # Define rebinning
     if tag in ['wjet', 'dy']:
         vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200])
-        mjj_ax = hist.Bin('mjj','M(jj) (GeV)',list(range(0,2500,500)))
+        mjj_ax = hist.Bin('mjj','M(jj) (GeV)', [0,200] + list(range(500,2500,500)))
     elif tag in ['gjets']:
         vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640])
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000,1500])
@@ -57,68 +57,82 @@ def get_scale_variations(acc, regex, tag, scale_var, outputrootfile):
     # For LO, choose the nominal (i.e. no variation)
     lo = lo.integrate('var', 'nominal')
     nlo_var = nlo.integrate('var', scale_var)
-    
-    sumw_lo, sumw2_lo = lo.values(overflow='over', sumw2=True)[()]
-    sumw_nlo_var, sumw2_nlo_var = nlo_var.values(overflow='over', sumw2=True)[()]
-
-    # Scale factor with variation
-    sf_var = sumw_nlo_var / sumw_lo
-    
-    # Calculate the scale factor without variation
     nlo_nom = nlo.integrate('var', 'nominal')
-    sumw_nlo_nom, sumw2_nlo_nom = nlo_nom.values(overflow='over', sumw2=True)[()]
+
+    # Get 1D LO and NLO weights to calculate the variation
+    if tag in ['wjet', 'dy']:
+        mjj_slice = slice(200,2000)
+    elif tag in ['gjets']:
+        mjj_slice = slice(200,1500)
+    lo_1d = lo.integrate('mjj', mjj_slice, overflow='over')
+    nlo_var_1d = nlo_var.integrate('mjj', mjj_slice, overflow='over')
+    nlo_nom_1d = nlo_nom.integrate('mjj', mjj_slice, overflow='over')
+    
+    sumw_lo_1d = lo_1d.values(overflow='over')[()]
+    sumw_nlo_var_1d = nlo_var_1d.values(overflow='over')[()]
+    sumw_nlo_nom_1d = nlo_nom_1d.values(overflow='over')[()]
+
+    # Calculate 1D scale factors, nominal and varied
+    # as a function of V-pt
+    sf_nom_1d = sumw_nlo_nom_1d / sumw_lo_1d
+    sf_var_1d = sumw_nlo_var_1d / sumw_lo_1d
+
+    # Calculate 1D variation ratio, as a function of V-pt
+    var_ratio = sf_var_1d / sf_nom_1d
+    
+    # Calculate nominal 2D scale factor 
+    sumw_lo = lo.values(overflow='over')[()]
+    sumw_nlo_nom = nlo_nom.values(overflow='over')[()]
 
     sf_nom = sumw_nlo_nom / sumw_lo 
 
-    # Calculate the ratio of the new k-factors
-    # with variation and old nominal k-factors
-    ratio = sf_var / sf_nom 
-
-    tup = (ratio, xaxis.edges(overflow='over'), yaxis.edges(overflow='over'))
+    tup = (var_ratio, yaxis.edges(overflow='over'))
  
     # Save to the ROOT file
-    outputrootfile[f'2d_{tag}_vbf_{scale_var}'] = tup
+    outputrootfile[f'{tag}_vbf_{scale_var}'] = tup
 
     return tup
 
 def plot_ratio_vpt(tup, var, tag):
     '''Given the tuple contatining the SF ratio (variational/nominal) and 
        bin edges, plot ratios in each mjj bin as a function of v-pt.'''
-    ratio, x_edges, y_edges = tup
-    vpt_centers = ((y_edges + np.roll(y_edges,0))/2)[:-1]
+    ratio, x_edges = tup
+    vpt_centers = ((x_edges + np.roll(x_edges,0))/2)[:-1]
     fig, ax = plt.subplots(1,1)
 
     # Figure out the variation and the relevant title
     var_title = {
         'gjets' : {
-            'scale_1' : r'$\mu_R = 0.5$, $\mu_F = 1.0$',
-            'scale_3' : r'$\mu_R = 1.0$, $\mu_F = 0.5$',
-            'scale_5' : r'$\mu_R = 1.0$, $\mu_F = 2.0$',
-            'scale_7' : r'$\mu_R = 2.0$, $\mu_F = 1.0$'
+            'scale_1' : r'$\gamma$ + jets: $\mu_R = 0.5$, $\mu_F = 1.0$',
+            'scale_3' : r'$\gamma$ + jets: $\mu_R = 1.0$, $\mu_F = 0.5$',
+            'scale_5' : r'$\gamma$ + jets: $\mu_R = 1.0$, $\mu_F = 2.0$',
+            'scale_7' : r'$\gamma$ + jets: $\mu_R = 2.0$, $\mu_F = 1.0$'
         },
-        'wjet/dy' : {
-            'scale_1' : r'$\mu_R = 0.5$, $\mu_F = 1.0$',
-            'scale_3' : r'$\mu_R = 1.0$, $\mu_F = 0.5$',
-            'scale_4' : r'$\mu_R = 1.0$, $\mu_F = 2.0$',
-            'scale_6' : r'$\mu_R = 2.0$, $\mu_F = 1.0$'
-        }
+        'wjet' : {
+            'scale_1' : r'$W\rightarrow l \nu$: $\mu_R = 0.5$, $\mu_F = 1.0$',
+            'scale_3' : r'$W\rightarrow l \nu$: $\mu_R = 1.0$, $\mu_F = 0.5$',
+            'scale_4' : r'$W\rightarrow l \nu$: $\mu_R = 1.0$, $\mu_F = 2.0$',
+            'scale_6' : r'$W\rightarrow l \nu$: $\mu_R = 2.0$, $\mu_F = 1.0$'
+        },
+        'dy' : {
+            'scale_1' : r'$Z\rightarrow ll$: $\mu_R = 0.5$, $\mu_F = 1.0$',
+            'scale_3' : r'$Z\rightarrow ll$: $\mu_R = 1.0$, $\mu_F = 0.5$',
+            'scale_4' : r'$Z\rightarrow ll$: $\mu_R = 1.0$, $\mu_F = 2.0$',
+            'scale_6' : r'$Z\rightarrow ll$: $\mu_R = 2.0$, $\mu_F = 1.0$'
+        },
     }
 
-    title_tag = 'gjets' if tag == 'gjets' else 'wjet/dy'
-    fig_title = var_title[title_tag][var] 
+    fig_title = var_title[tag][var] 
 
     ax.set_xlim(-50.0, vpt_centers[-1]+50.0)
     ax.set_ylim(0.8, 1.2)
     ax.set_xlabel(r'$p_T(V) \ (GeV)$')
     ax.set_ylabel('Varied / Nominal SF')
     ax.set_title(fig_title)
-    ax.plot([-50.0, vpt_centers[-1]+50.0], [1, 1], 'b')
-    for idx, ratio_list in enumerate(ratio):
-        label = r'${edge0:.0f} < m_{{jj}} < {edge1:.0f}$'.format(edge0=x_edges[idx], edge1=x_edges[idx+1])
-        ax.plot(vpt_centers, ratio_list, 'o', label=label)
+    ax.plot([-50.0, vpt_centers[-1]+50.0], [1, 1], 'r')
+    ax.plot(vpt_centers, ratio, 'o')
+    ax.grid(True)
 
-    plt.legend()
-    
     # Save the figure
     outpath = './output/kfac_variations'
     if not os.path.exists(outpath):
