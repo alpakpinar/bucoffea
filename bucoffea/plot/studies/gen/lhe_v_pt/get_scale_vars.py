@@ -18,7 +18,7 @@ def get_old_kfac(tag):
     f = uproot.open(bucoffea_path('data/sf/theory/2017_gen_v_pt_qcd_sf.root'))
     return f[f'2d_{tag}_vbf'].values
 
-def get_scale_variations(acc, regex, tag, scale_var, outputrootfile):
+def get_scale_variations(acc, regex, tag, scale_var, scale_var_type, outputrootfile):
     '''Calculate the new k-factors with a scale weight variation.
        Dumps the ratio: 
        --- New k-factors with variation / Old (nominal) k-factors
@@ -34,7 +34,7 @@ def get_scale_variations(acc, regex, tag, scale_var, outputrootfile):
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)', [0,200] + list(range(500,2500,500)))
     elif tag in ['gjets']:
         vpt_ax_coarse = [0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640]
-        vpt_ax_fine = list(range(0,680,40))
+        vpt_ax_fine = list(range(0,400,40)) + list(range(400,1200,80)) 
         vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)', vpt_ax_fine)
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000,1500])
 
@@ -93,7 +93,7 @@ def get_scale_variations(acc, regex, tag, scale_var, outputrootfile):
     tup = (var_ratio, yaxis.edges(overflow='over'))
  
     # Save to the ROOT file
-    outputrootfile[f'{tag}_vbf_{scale_var}'] = tup
+    outputrootfile[f'{tag}_vbf_{scale_var_type}'] = tup
 
     return tup
 
@@ -144,6 +144,56 @@ def plot_ratio_vpt(tup, var, tag):
     outfile = pjoin(outpath, f'{tag}_kfac_ratio_{var}.png')
     fig.savefig(outfile)
 
+def plot_ratio_vpt_combined(tup_combined, tag):
+    '''Given the tup_combinedle contatining the SF ratio (variational/nominal) and 
+       bin edges for all variations for a given process, 
+       plot ratios in each mjj bin as a function of v-pt.'''
+    ratio_combined, x_edges = tup_combined[:,0], tup_combined[0,1]
+    vpt_centers = ((x_edges + np.roll(x_edges,0))/2)[:-1]
+    fig, ax = plt.subplots(1,1)
+
+    # Figure out the variation and the relevant title, and label for the legend
+    var_title_label = {
+        'gjets' : {
+            'scale_1' : (r'$\gamma$ + jets', r'$\mu_R = 0.5$, $\mu_F = 1.0$'),
+            'scale_3' : (r'$\gamma$ + jets', r'$\mu_R = 1.0$, $\mu_F = 0.5$'),
+            'scale_5' : (r'$\gamma$ + jets', r'$\mu_R = 1.0$, $\mu_F = 2.0$'),
+            'scale_7' : (r'$\gamma$ + jets', r'$\mu_R = 2.0$, $\mu_F = 1.0$')
+        },
+        'wjet' : {
+            'scale_1' : (r'$W\rightarrow l \nu$', r'$\mu_R = 0.5$, $\mu_F = 1.0$'),
+            'scale_3' : (r'$W\rightarrow l \nu$', r'$\mu_R = 1.0$, $\mu_F = 0.5$'),
+            'scale_4' : (r'$W\rightarrow l \nu$', r'$\mu_R = 1.0$, $\mu_F = 2.0$'),
+            'scale_6' : (r'$W\rightarrow l \nu$', r'$\mu_R = 2.0$, $\mu_F = 1.0$')
+        },
+        'dy' : {
+            'scale_1' : (r'$Z\rightarrow ll$', r'$\mu_R = 0.5$, $\mu_F = 1.0$'),
+            'scale_3' : (r'$Z\rightarrow ll$', r'$\mu_R = 1.0$, $\mu_F = 0.5$'),
+            'scale_4' : (r'$Z\rightarrow ll$', r'$\mu_R = 1.0$, $\mu_F = 2.0$'),
+            'scale_6' : (r'$Z\rightarrow ll$', r'$\mu_R = 2.0$, $\mu_F = 1.0$')
+        },
+    }
+
+    variations = var_title_label[tag]
+    for idx, var_info in enumerate(variations.values()):
+        ax.plot([-50.0, vpt_centers[-1]+50.0], [1, 1], 'r')
+        ax.plot(vpt_centers, ratio_combined[idx], 'o', label=var_info[1])
+
+    ax.set_xlim(-50.0, vpt_centers[-1]+50.0)
+    ax.set_ylim(0.8, 1.2)
+    ax.set_xlabel(r'$p_T(V) \ (GeV)$')
+    ax.set_ylabel('Varied / Nominal SF')
+    fig_title = variations['scale_1'][0]
+    ax.set_title(fig_title)
+    ax.grid(True)
+    plt.legend()
+
+    # Save the figure
+    outpath = './output/kfac_variations'
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+    outfile = pjoin(outpath, f'{tag}_kfac_ratio_combined.png')
+    fig.savefig(outfile)
 
 def main():
     inpath = sys.argv[1]
@@ -162,16 +212,16 @@ def main():
 
     scale_var_dict = {
         'gjets' : [
-            'scale_1', #mu_R = 0.5 & mu_F = 1.0
-            'scale_3', #mu_R = 1.0 & mu_F = 0.5
-            'scale_5', #mu_R = 1.0 & mu_F = 2.0
-            'scale_7', #mu_R = 2.0 & mu_F = 1.0
+            ('scale_1', 'mu_r_down'),
+            ('scale_3', 'mu_f_down'),
+            ('scale_5', 'mu_f_up'),
+            ('scale_7', 'mu_r_up')
                 ],
         'wjet/dy' : [
-            'scale_1', #mu_R = 0.5 & mu_F = 1.0
-            'scale_3', #mu_R = 1.0 & mu_F = 0.5
-            'scale_4', #mu_R = 1.0 & mu_F = 2.0
-            'scale_6', #mu_R = 2.0 & mu_F = 1.0    
+            ('scale_1', 'mu_r_down'),
+            ('scale_3', 'mu_f_down'),
+            ('scale_4', 'mu_f_up'),
+            ('scale_6', 'mu_r_up')
                 ]
                 
     }
@@ -185,15 +235,23 @@ def main():
     for tag,regex in tag_regex.items():
         scale_var_list = scale_var_dict['gjets'] if tag == 'gjets' else scale_var_dict['wjet/dy']
 
-        for scale_var in scale_var_list:
+        tup_combined = []
+
+        for scale_var, scale_var_type in scale_var_list:
             tup = get_scale_variations( acc=acc,
                                         regex=regex,
                                         tag=tag,
                                         scale_var=scale_var,
+                                        scale_var_type=scale_var_type,
                                         outputrootfile=outputrootfile
                                         )
 
+            tup_combined.append(tup)
+
             plot_ratio_vpt(tup, var=scale_var, tag=tag)
+        
+        tup_combined = np.array(tup_combined)
+        plot_ratio_vpt_combined(tup_combined, tag=tag)
 
 if __name__ == '__main__':
     main()
