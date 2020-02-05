@@ -161,16 +161,16 @@ def plot_ratio_vpt_combined(tup_combined, tag):
             'scale_7' : (r'$\gamma$ + jets', r'$\mu_R = 2.0$, $\mu_F = 1.0$')
         },
         'wjet' : {
-            'scale_1' : (r'$W\rightarrow l \nu$', r'$\mu_R = 0.5$, $\mu_F = 1.0$'),
-            'scale_3' : (r'$W\rightarrow l \nu$', r'$\mu_R = 1.0$, $\mu_F = 0.5$'),
-            'scale_4' : (r'$W\rightarrow l \nu$', r'$\mu_R = 1.0$, $\mu_F = 2.0$'),
-            'scale_6' : (r'$W\rightarrow l \nu$', r'$\mu_R = 2.0$, $\mu_F = 1.0$')
+            'scale_1' : (r'$W\rightarrow \ell \nu$', r'$\mu_R = 0.5$, $\mu_F = 1.0$'),
+            'scale_3' : (r'$W\rightarrow \ell \nu$', r'$\mu_R = 1.0$, $\mu_F = 0.5$'),
+            'scale_4' : (r'$W\rightarrow \ell \nu$', r'$\mu_R = 1.0$, $\mu_F = 2.0$'),
+            'scale_6' : (r'$W\rightarrow \ell \nu$', r'$\mu_R = 2.0$, $\mu_F = 1.0$')
         },
         'dy' : {
-            'scale_1' : (r'$Z\rightarrow ll$', r'$\mu_R = 0.5$, $\mu_F = 1.0$'),
-            'scale_3' : (r'$Z\rightarrow ll$', r'$\mu_R = 1.0$, $\mu_F = 0.5$'),
-            'scale_4' : (r'$Z\rightarrow ll$', r'$\mu_R = 1.0$, $\mu_F = 2.0$'),
-            'scale_6' : (r'$Z\rightarrow ll$', r'$\mu_R = 2.0$, $\mu_F = 1.0$')
+            'scale_1' : (r'$Z\rightarrow \ell \ell$', r'$\mu_R = 0.5$, $\mu_F = 1.0$'),
+            'scale_3' : (r'$Z\rightarrow \ell \ell$', r'$\mu_R = 1.0$, $\mu_F = 0.5$'),
+            'scale_4' : (r'$Z\rightarrow \ell \ell$', r'$\mu_R = 1.0$, $\mu_F = 2.0$'),
+            'scale_6' : (r'$Z\rightarrow \ell \ell$', r'$\mu_R = 2.0$, $\mu_F = 1.0$')
         },
     }
 
