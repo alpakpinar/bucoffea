@@ -22,7 +22,16 @@ def hessian_unc(nom, var):
 
 def mc_unc(nom, var):
     '''Calculate PDF uncertainty for a MC set.'''
-    pass    
+    # Calculate the average of all variations
+    var_avg = np.zeros_like(nom)
+    for variation in var.values():
+        var_avg += variation
+    var_avg /= len(var)
+    # Calculate the MC uncertainty
+    unc = 0
+    for variation in var.values():
+        unc += (nom-var_avg)**2
+    return np.sqrt(unc/(len(var)-1))
 
 def calculate_pdf_unc(nom, var, tag):
     '''Given the nominal and varied weight content,
@@ -32,7 +41,7 @@ def calculate_pdf_unc(nom, var, tag):
     if tag in ['wjet', 'dy']:
         unc = hessian_unc(nom, var)
     elif tag == 'gjets':
-        method = 'mc'
+        unc = mc_unc(nom, var) 
     # Return percent uncertainty
     return unc/nom 
     
@@ -40,12 +49,13 @@ def get_pdf_uncertainty(acc, regex, tag):
     '''Given the input accumulator, calculate the
        PDF uncertainty from all PDF variations.'''
     # Define rebinning
+    vpt_ax_fine = list(range(0,400,40)) + list(range(400,1200,80))
     if tag in ['wjet', 'dy']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200])
-        mjj_ax = hist.Bin('mjj','M(jj) (GeV)',list(range(0,2500,500)))
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)', vpt_ax_fine)
+        mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200]+list(range(500,2500,500)))
     elif tag in ['gjets']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640])
-        mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000,1500])
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)', vpt_ax_fine)
+        mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000,1500,2000])
 
     # Set the correct pt type
     pt_tag = 'combined' if tag != 'gjets' else 'stat1'
@@ -60,9 +70,14 @@ def get_pdf_uncertainty(acc, regex, tag):
     h = merge_datasets(h)
     h = h[re.compile(regex)]
 
+    # Integrate out mjj to get 1D variations 
+    # as a function of V-pt
+    mjj_slice = slice(200,2000)
+    h = h.integrate('mjj', mjj_slice, overflow='over')
+
     # Get NLO distribution
     nlo = h[re.compile('.*(LHE|amcat).*')].integrate('dataset')
-    
+
     # Nominal: NLO with no PDF variation
     nlo_nom = nlo.integrate('var', 'nominal').values(overflow='over')[()]
 
@@ -74,7 +89,13 @@ def get_pdf_uncertainty(acc, regex, tag):
         var_name = var.name
         if 'pdf' not in var_name: 
             continue
+        # Patch for problem in DY samples:
+        # extra PDF variations were added
+        # Just take the usual 33 PDF variations for now.
+        if tag != 'gjets' and var_name in ['pdf_100', 'pdf_101', 'pdf_102']: continue
+        if tag != 'gjets' and var_name == 'pdf_33': break
         nlo_var[var_name] = nlo.integrate('var', var_name).values(overflow='over')[()]
+    print(nlo_var.keys())
 
     unc = calculate_pdf_unc(nlo_nom, nlo_var, tag)
     print(unc)
@@ -92,7 +113,9 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    get_pdf_uncertainty(acc, regex='WN?JetsToLNu.*', tag='wjet')
+    get_pdf_uncertainty(acc, regex='WNJetsToLNu.*', tag='wjet')
+    get_pdf_uncertainty(acc, regex='DYNJetsToLL.*', tag='dy')
+    get_pdf_uncertainty(acc, regex='G1Jet.*', tag='gjets')
 
 if __name__ == '__main__':
     main()
