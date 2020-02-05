@@ -16,7 +16,7 @@ pjoin = os.path.join
 def hessian_unc(nom, var):
     '''Calculate PDF uncertainty for a Hessian set.'''
     unc=np.zeros_like(nom) 
-    for variation in var.values():
+    for idx,variation in enumerate(var.values()):
         unc += (nom - variation)**2
     return np.sqrt(unc)
 
@@ -30,7 +30,7 @@ def mc_unc(nom, var):
     # Calculate the MC uncertainty
     unc = np.zeros_like(nom)
     for variation in var.values():
-        unc += (nom-var_avg)**2
+        unc += (variation-var_avg)**2
     return np.sqrt(unc/(len(var)-1))
 
 def calculate_pdf_unc(nom, var, tag):
@@ -63,7 +63,6 @@ def get_pdf_uncertainty(acc, regex, tag, outputrootfile):
     h = acc[f'gen_vpt_vbf_{pt_tag}']
 
     h = h.rebin('vpt', vpt_ax)
-    h = h.rebin('mjj', mjj_ax)
 
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
@@ -72,7 +71,7 @@ def get_pdf_uncertainty(acc, regex, tag, outputrootfile):
 
     # Integrate out mjj to get 1D variations 
     # as a function of V-pt
-    mjj_slice = slice(200,2000)
+    mjj_slice = slice(200,7500)
     h = h.integrate('mjj', mjj_slice, overflow='over')
 
     # Get NLO distribution
@@ -92,10 +91,9 @@ def get_pdf_uncertainty(acc, regex, tag, outputrootfile):
         # Patch for problem in DY samples:
         # extra PDF variations were added
         # Just take the usual 33 PDF variations for now.
-        true_pdf_list = ['pdf_0', 'pdf_1', 'pdf_10', 'pdf_11', 'pdf_12', 'pdf_13', 'pdf_14', 'pdf_15', 'pdf_16', 'pdf_17', 'pdf_18', 'pdf_19', 'pdf_2', 'pdf_20', 'pdf_21', 'pdf_22', 'pdf_23', 'pdf_24', 'pdf_25', 'pdf_26', 'pdf_27', 'pdf_28', 'pdf_29', 'pdf_3', 'pdf_30', 'pdf_31', 'pdf_32', 'pdf_4', 'pdf_5', 'pdf_6', 'pdf_7', 'pdf_8', 'pdf_9']
+        true_pdf_list = ['pdf_0', 'pdf_1', 'pdf_10', 'pdf_11', 'pdf_12', 'pdf_13', 'pdf_14', 'pdf_15', 'pdf_16', 'pdf_17', 'pdf_18', 'pdf_19', 'pdf_2', 'pdf_20', 'pdf_21', 'pdf_22', 'pdf_23', 'pdf_24', 'pdf_25', 'pdf_26', 'pdf_27', 'pdf_28', 'pdf_29', 'pdf_3', 'pdf_30', 'pdf_4', 'pdf_5', 'pdf_6', 'pdf_7', 'pdf_8', 'pdf_9']
         if tag != 'gjets' and var_name not in true_pdf_list: continue
         nlo_var[var_name] = nlo.integrate('var', var_name).values(overflow='over')[()]
-    print(nlo_var.keys())
 
     unc = calculate_pdf_unc(nlo_nom, nlo_var, tag)
     print(unc)
@@ -117,9 +115,9 @@ def get_pdf_uncertainty(acc, regex, tag, outputrootfile):
     ax.grid(True)
 
     if tag == 'gjets':
-        ax.set_ylim(0,2.5e-3)
+        ax.set_ylim(0,0.05)
     else:
-        ax.set_ylim(0,1)
+        ax.set_ylim(0,0.4)
 
     # Save the figure
     outdir = './output/kfac_variations/pdf'
