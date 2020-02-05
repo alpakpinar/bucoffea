@@ -28,7 +28,7 @@ def mc_unc(nom, var):
         var_avg += variation
     var_avg /= len(var)
     # Calculate the MC uncertainty
-    unc = 0
+    unc = np.zeros_like(nom)
     for variation in var.values():
         unc += (nom-var_avg)**2
     return np.sqrt(unc/(len(var)-1))
