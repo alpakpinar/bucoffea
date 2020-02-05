@@ -45,7 +45,7 @@ def calculate_pdf_unc(nom, var, tag):
     # Return percent uncertainty
     return unc/nom 
     
-def get_pdf_uncertainty(acc, regex, tag):
+def get_pdf_uncertainty(acc, regex, tag, outputrootfile):
     '''Given the input accumulator, calculate the
        PDF uncertainty from all PDF variations.'''
     # Define rebinning
@@ -100,6 +100,38 @@ def get_pdf_uncertainty(acc, regex, tag):
     unc = calculate_pdf_unc(nlo_nom, nlo_var, tag)
     print(unc)
 
+    # Plot the uncertainty as a function of V-pt
+    fig, ax = plt.subplots(1,1)
+    vpt_edges = vpt_ax.edges(overflow='over')
+    vpt_centers = ((vpt_edges + np.roll(vpt_edges, -1))/2)[:-1]
+    ax.plot(vpt_centers, unc, 'o')
+    ax.set_xlabel(r'$p_T(V) \ (GeV)$')
+    ax.set_ylabel(r'$\sigma_{pdf}$ / Nominal Counts')
+    tag_to_title = {
+        'dy'    : r'$Z\rightarrow \ell \ell$',
+        'wjet'  : r'$W\rightarrow \ell \nu$',
+        'gjets' : r'$\gamma$ + jets'
+    }
+    title = tag_to_title[tag]
+    ax.set_title(title)
+    ax.grid(True)
+
+    if tag == 'gjets':
+        ax.set_ylim(0,2.5e-3)
+    else:
+        ax.set_ylim(0,1)
+
+    # Save the figure
+    outdir = './output/kfac_variations/pdf'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outpath = pjoin(outdir, f'{tag}_pdf_unc.pdf')
+    fig.savefig(outpath)
+
+    # Save the uncertainties as a ROOT histogram
+    outputrootfile[f'{tag}_pdf_unc'] = (unc, vpt_ax.edges(overflow='over'))
+
 def main():
     inpath = sys.argv[1]
 
@@ -113,9 +145,13 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    get_pdf_uncertainty(acc, regex='WNJetsToLNu.*', tag='wjet')
-    get_pdf_uncertainty(acc, regex='DYNJetsToLL.*', tag='dy')
-    get_pdf_uncertainty(acc, regex='G1Jet.*', tag='gjets')
+    # Create the output ROOT file to save the 
+    # PDF uncertainties as a function of v-pt
+    outputrootfile = uproot.recreate('vbf_pdf_var.root')
+
+    get_pdf_uncertainty(acc, regex='WNJetsToLNu.*', tag='wjet', outputrootfile=outputrootfile)
+    get_pdf_uncertainty(acc, regex='DYNJetsToLL.*', tag='dy', outputrootfile=outputrootfile)
+    get_pdf_uncertainty(acc, regex='G1Jet.*', tag='gjets', outputrootfile=outputrootfile)
 
 if __name__ == '__main__':
     main()
