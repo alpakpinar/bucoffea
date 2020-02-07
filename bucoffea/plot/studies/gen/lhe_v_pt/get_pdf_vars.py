@@ -13,6 +13,41 @@ from matplotlib import pyplot as plt
 
 pjoin = os.path.join
 
+def plot_variations(nom, var, tag):
+    '''For the nominal weights and each set of
+       variational weights, plot the ratio nom/var
+       as a histogram.'''
+    var_over_nom = []
+    for variation in var.values():
+        for idx in range(len(variation)):
+            ratio = variation[idx]/nom[idx]
+            var_over_nom.append(ratio)
+    
+    # Plot the results
+    fig, ax = plt.subplots(1,1)
+    tag_to_title = {
+        'dy'    : r'PDF variations: $Z\rightarrow \ell \ell$',
+        'wjet'  : r'PDF variations: $W\rightarrow \ell \nu$',
+        'gjets' : r'PDF variations: $\gamma$ + jets'
+    }
+    if tag == 'd':
+        bins = np.linspace(0.2, 1.8)
+    else:
+        bins = np.linspace(0.9, 1.1, 20)
+    ax.hist(var_over_nom, bins=bins)
+    ax.set_xlabel('Var / Nom')
+    ax.set_ylabel('Counts')
+    title = tag_to_title[tag]
+    ax.set_title(title)
+
+    # Save figure
+    outdir = './output/kfac_variations/pdf'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    outpath = pjoin(outdir, f'{tag}_var_nom_weights.pdf')
+    fig.savefig(outpath)
+    print(f'Histogram saved in: {outpath}')
+
 def hessian_unc(nom, var):
     '''Calculate PDF uncertainty for a Hessian set.'''
     unc=np.zeros_like(nom) 
@@ -44,7 +79,7 @@ def calculate_pdf_unc(nom, var, tag):
         unc = mc_unc(nom, var) 
     # Return percent uncertainty
     return unc/nom 
-    
+
 def get_pdf_uncertainty(acc, regex, tag, outputrootfile):
     '''Given the input accumulator, calculate the
        PDF uncertainty from all PDF variations.'''
@@ -97,6 +132,8 @@ def get_pdf_uncertainty(acc, regex, tag, outputrootfile):
 
     unc = calculate_pdf_unc(nlo_nom, nlo_var, tag)
     print(unc)
+
+    plot_variations(nlo_nom, nlo_var, tag)
 
     # Plot the uncertainty as a function of V-pt
     fig, ax = plt.subplots(1,1)
