@@ -251,7 +251,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             bjets = vmap.get_bjets(var)
             ak4 = vmap.get_ak4(var) 
             diak4 = vmap.get_diak4(var) 
-            ak4_pt = vmap.get_ak4_pt(var) 
             met_pt = vmap.get_met_pt(var) 
             met_phi = vmap.get_met_phi(var) 
 
@@ -264,6 +263,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ak4 = ak4[ak4_puid]
             bjets = bjets[bjets_puid] 
 
+            ak4_pt = getattr(ak4, f'pt{var}')
+            
             #########################
             # Test
             #########################
@@ -441,7 +442,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             bjets = vmap.get_bjets(var)
             ak4 = vmap.get_ak4(var) 
             diak4 = vmap.get_diak4(var) 
-            ak4_pt = vmap.get_ak4_pt(var) 
             met_pt = vmap.get_met_pt(var) 
             met_phi = vmap.get_met_phi(var) 
 
