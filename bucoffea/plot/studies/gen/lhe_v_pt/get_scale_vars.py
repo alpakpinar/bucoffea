@@ -5,6 +5,7 @@ import sys
 import re
 import uproot
 import numpy as np
+import pickle
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from bucoffea.helpers.paths import bucoffea_path
 from coffea import hist
@@ -95,7 +96,9 @@ def get_scale_variations(acc, regex, tag, scale_var, scale_var_type, outputrootf
     # Save to the ROOT file
     outputrootfile[f'{tag}_vbf_{scale_var_type}'] = tup
 
-    return tup
+    # Return tuple containing the SF ratios and
+    # NLO weights with and without variation
+    return tup, (sumw_nlo_var_1d, sumw_nlo_nom_1d)
 
 def plot_ratio_vpt(tup, var, tag):
     '''Given the tuple contatining the SF ratio (variational/nominal) and 
@@ -138,14 +141,14 @@ def plot_ratio_vpt(tup, var, tag):
     ax.grid(True)
 
     # Save the figure
-    outpath = './output/kfac_variations'
+    outpath = './output/theory_variations'
     if not os.path.exists(outpath):
         os.makedirs(outpath)
     outfile = pjoin(outpath, f'{tag}_kfac_ratio_{var}.png')
     fig.savefig(outfile)
 
 def plot_ratio_vpt_combined(tup_combined, tag):
-    '''Given the tup_combinedle contatining the SF ratio (variational/nominal) and 
+    '''Given the tup_combined contatining the SF ratio (variational/nominal) and 
        bin edges for all variations for a given process, 
        plot ratios in each mjj bin as a function of v-pt.'''
     ratio_combined, x_edges = tup_combined[:,0], tup_combined[0,1]
@@ -189,11 +192,78 @@ def plot_ratio_vpt_combined(tup_combined, tag):
     plt.legend()
 
     # Save the figure
-    outpath = './output/kfac_variations'
+    outpath = './output/theory_variations'
     if not os.path.exists(outpath):
         os.makedirs(outpath)
     outfile = pjoin(outpath, f'{tag}_kfac_ratio_combined.png')
     fig.savefig(outfile)
+
+def get_ratios(sumw_var, tag, var):
+    '''Get ratio for two physics processes, for a given scale variation.'''
+    # Figure out the processes
+    if tag == 'z_over_w':
+        tag1 = 'dy'
+        tag2 = 'wjet'
+    elif tag == 'g_over_z':
+        tag1 = 'gjets'
+        tag2 = 'dy'
+
+    # Get varied and nominal weights for
+    # the given scale variation
+    sumw1_var, sumw1_nom = sumw_var[tag1][var]    
+    sumw2_var, sumw2_nom = sumw_var[tag2][var]
+    
+    ratio_var = sumw1_var / sumw2_nom
+    ratio_nom = sumw1_nom / sumw2_nom
+    
+    # Return the varied and nominal ratios
+    return ratio_var, ratio_nom 
+
+def plot_ratio(sumw_var, tag, xedges):
+    '''Plot ratio for two processes, for all variations.'''
+    # List of all variations
+    varlist = sumw_var['wjet'].keys()
+
+    xcenters = ((xedges + np.roll(xedges,0))/2)[:-1]
+    
+    tag_to_ylabel = {
+        'z_over_w' : r'$Z\rightarrow \ell \ell$ / $W\rightarrow \ell \nu$ (Nom / Var)',
+        'g_over_z' : r'$\gamma$ + jets / $Z\rightarrow \ell \ell$ (Nom / Var)',
+    }
+
+    var_to_label = {
+        'mu_r_down' : r'$\mu_R = 0.5$, $\mu_F = 1.0$',
+        'mu_r_up' : r'$\mu_R = 2.0$, $\mu_F = 1.0$',
+        'mu_f_down' : r'$\mu_R = 1.0$, $\mu_F = 0.5$',
+        'mu_f_up' : r'$\mu_R = 1.0$, $\mu_F = 2.0$',
+    }
+
+    # Construct the plot
+    fig, ax = plt.subplots(1,1)
+
+    for var in varlist:
+        ratio_var, ratio_nom = get_ratios(sumw_var, tag, var)
+        # Calculate the ratio of ratios!
+        dratio = ratio_var / ratio_nom
+        ax.plot(xcenters, dratio, 'o', label=var_to_label[var])
+    
+    ax.set_xlabel(r'$p_T (V)\ (GeV)$')
+    ax.set_ylabel(tag_to_ylabel[tag])
+    ax.set_ylim(0.9, 1.1)
+    ax.legend()
+    ax.grid(True)
+
+    ax.plot([200,200], [0.9,1.1], 'k')
+
+    # Save figure
+    outdir = './output/theory_variations/scale/ratioplots'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outpath = pjoin(outdir, f'{tag}_scaleunc_ratio.pdf')
+    fig.savefig(outpath)
+
+    print(f'Saved file in {outpath}')
 
 def main():
     inpath = sys.argv[1]
@@ -231,27 +301,53 @@ def main():
         'dy'    : 'DYN?JetsToLL.*',
         'gjets' : 'G\d?Jet.*' 
     }
-    
-    for tag,regex in tag_regex.items():
-        scale_var_list = scale_var_dict['gjets'] if tag == 'gjets' else scale_var_dict['wjet/dy']
 
-        tup_combined = []
+    pkl_dir = './output/theory_variations/scale'
+    if not os.path.exists(pkl_dir):
+        os.makedirs(pkl_dir)
 
-        for scale_var, scale_var_type in scale_var_list:
-            tup = get_scale_variations( acc=acc,
-                                        regex=regex,
-                                        tag=tag,
-                                        scale_var=scale_var,
-                                        scale_var_type=scale_var_type,
-                                        outputrootfile=outputrootfile
-                                        )
+    pkl_file = pjoin(pkl_dir, 'vbf_scale_sumwvar.pkl')
 
-            tup_combined.append(tup)
+    # Load the results from pkl file if it exists
+    # Otherwise, run the code to get scale variations
+    if os.path.exists(pkl_file): 
+        with open(pkl_file, 'rb') as f:
+            tup = pickle.load(f)
+            sumw_var = pickle.load(f)
 
-            plot_ratio_vpt(tup, var=scale_var, tag=tag)
+        xedges = tup[1]
+        plot_ratio(sumw_var, tag='z_over_w', xedges=xedges)
+        plot_ratio(sumw_var, tag='g_over_z', xedges=xedges)
+
+    else:
+        sumw_var = {}
+        for tag,regex in tag_regex.items():
+            scale_var_list = scale_var_dict['gjets'] if tag == 'gjets' else scale_var_dict['wjet/dy']
+            
+            sumw_var[tag] = {}
+            tup_combined = []
+
+            for scale_var, scale_var_type in scale_var_list:
+                tup, sumw_var[tag][scale_var_type] = get_scale_variations( acc=acc,
+                                                                           regex=regex,
+                                                                           tag=tag    ,
+                                                                           scale_var=scale_var,
+                                                                           scale_var_type=scale_var_type,
+                                                                           outputrootfile=outputrootfile
+                                                                          )        
+
+                tup_combined.append(tup)
+
+                plot_ratio_vpt(tup, var=scale_var, tag=tag)
+            
+            tup_combined = np.array(tup_combined)
+            plot_ratio_vpt_combined(tup_combined, tag=tag)
         
-        tup_combined = np.array(tup_combined)
-        plot_ratio_vpt_combined(tup_combined, tag=tag)
+        # Dump contents of sumw_var into pickle file
+        with open(pkl_file, 'wb+') as f:
+            pickle.dump(tup, f)
+            pickle.dump(sumw_var, f)
+
 
 if __name__ == '__main__':
     main()
