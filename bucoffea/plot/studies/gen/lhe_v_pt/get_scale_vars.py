@@ -201,10 +201,10 @@ def plot_ratio_vpt_combined(tup_combined, tag):
 def get_ratios(sumw_var, tag, var):
     '''Get ratio for two physics processes, for a given scale variation.'''
     # Figure out the processes
-    if tag == 'z_over_w':
+    if tag in ['zvar_over_w', 'z_over_wvar']:
         tag1 = 'dy'
         tag2 = 'wjet'
-    elif tag == 'g_over_z':
+    elif tag in ['gvar_over_z', 'g_over_zvar']:
         tag1 = 'gjets'
         tag2 = 'dy'
 
@@ -213,22 +213,26 @@ def get_ratios(sumw_var, tag, var):
     sumw1_var, sumw1_nom = sumw_var[tag1][var]    
     sumw2_var, sumw2_nom = sumw_var[tag2][var]
     
-    ratio_var = sumw1_var / sumw2_nom
+    ratio_var1 = sumw1_var / sumw2_nom
+    ratio_var2 = sumw1_nom / sumw2_var
     ratio_nom = sumw1_nom / sumw2_nom
     
     # Return the varied and nominal ratios
-    return ratio_var, ratio_nom 
+    return (ratio_var1, ratio_var2), ratio_nom 
 
-def plot_ratio(sumw_var, tag, xedges):
-    '''Plot ratio for two processes, for all variations.'''
+def plot_ratio(sumw_var, tag, xedges, varied='num'):
+    '''Plot ratio for two processes, for all variations.
+       Specify which process is to be varied (num or denom).'''
     # List of all variations
     varlist = sumw_var['wjet'].keys()
 
     xcenters = ((xedges + np.roll(xedges,0))/2)[:-1]
     
     tag_to_ylabel = {
-        'z_over_w' : r'$Z\rightarrow \ell \ell$ / $W\rightarrow \ell \nu$ (Nom / Var)',
-        'g_over_z' : r'$\gamma$ + jets / $Z\rightarrow \ell \ell$ (Nom / Var)',
+        'zvar_over_w' : r'$Z\rightarrow \ell \ell$ / $W\rightarrow \ell \nu$ (Var / Nom)',
+        'z_over_wvar' : r'$Z\rightarrow \ell \ell$ / $W\rightarrow \ell \nu$ (Var / Nom)',
+        'gvar_over_z' : r'$\gamma$ + jets / $Z\rightarrow \ell \ell$ (Var / Nom)',
+        'g_over_zvar' : r'$\gamma$ + jets / $Z\rightarrow \ell \ell$ (Var / Nom)',
     }
 
     var_to_label = {
@@ -242,7 +246,15 @@ def plot_ratio(sumw_var, tag, xedges):
     fig, ax = plt.subplots(1,1)
 
     for var in varlist:
-        ratio_var, ratio_nom = get_ratios(sumw_var, tag, var)
+        ratios_var, ratio_nom = get_ratios(sumw_var, tag, var)
+        # Get the ratio with relevant variations
+        if varied == 'num':
+            ratio_var = ratios_var[0]
+        elif varied == 'denom':
+            ratio_var = ratios_var[1]
+        else:
+            raise ValueError('Invalid value for varied argument: Use num or denom.')
+
         # Calculate the ratio of ratios!
         dratio = ratio_var / ratio_nom
         ax.plot(xcenters, dratio, 'o', label=var_to_label[var])
@@ -250,7 +262,13 @@ def plot_ratio(sumw_var, tag, xedges):
     ax.set_xlabel(r'$p_T (V)\ (GeV)$')
     ax.set_ylabel(tag_to_ylabel[tag])
     ax.set_ylim(0.9, 1.1)
-    ax.legend()
+    if 'zvar' in tag:
+        legend_title = r'$Z\rightarrow \ell \ell$ variations'
+    elif 'wvar' in tag:
+        legend_title = r'$W\rightarrow \ell \nu$ variations'
+    elif 'gvar' in tag:
+        legend_title = r'$\gamma$ + jets variations'
+    ax.legend(title=legend_title)
     ax.grid(True)
 
     ax.plot([200,200], [0.9,1.1], 'k')
@@ -316,8 +334,10 @@ def main():
             sumw_var = pickle.load(f)
 
         xedges = tup[1]
-        plot_ratio(sumw_var, tag='z_over_w', xedges=xedges)
-        plot_ratio(sumw_var, tag='g_over_z', xedges=xedges)
+        plot_ratio(sumw_var, tag='zvar_over_w', xedges=xedges, varied='num')
+        plot_ratio(sumw_var, tag='z_over_wvar', xedges=xedges, varied='denom')
+        plot_ratio(sumw_var, tag='gvar_over_z', xedges=xedges, varied='num')
+        plot_ratio(sumw_var, tag='g_over_zvar', xedges=xedges, varied='denom')
 
     else:
         sumw_var = {}
