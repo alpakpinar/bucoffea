@@ -220,7 +220,7 @@ def get_ratios(sumw_var, tag, var):
     # Return the varied and nominal ratios
     return (ratio_var1, ratio_var2), ratio_nom 
 
-def plot_ratio(sumw_var, tag, xedges, varied='num'):
+def plot_ratio(sumw_var, tag, xedges, outputrootfile, varied='num'):
     '''Plot ratio for two processes, for all variations.
        Specify which process is to be varied (num or denom).'''
     # List of all variations
@@ -258,6 +258,10 @@ def plot_ratio(sumw_var, tag, xedges, varied='num'):
         # Calculate the ratio of ratios!
         dratio = ratio_var / ratio_nom
         ax.plot(xcenters, dratio, 'o', label=var_to_label[var])
+        
+        # Save the double ratios in ROOT file
+        tup = (dratio, xedges)
+        outputrootfile[f'{tag}_{var}'] = tup 
     
     ax.set_xlabel(r'$p_T (V)\ (GeV)$')
     ax.set_ylabel(tag_to_ylabel[tag])
@@ -283,6 +287,7 @@ def plot_ratio(sumw_var, tag, xedges, varied='num'):
 
     print(f'Saved file in {outpath}')
 
+
 def main():
     inpath = sys.argv[1]
 
@@ -296,7 +301,7 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
     
-    outputrootfile = uproot.recreate('vbf_sf_scale_var.root')
+    outputrootfile = uproot.recreate('vbf_scale_var.root')
 
     scale_var_dict = {
         'gjets' : [
@@ -334,10 +339,10 @@ def main():
             sumw_var = pickle.load(f)
 
         xedges = tup[1]
-        plot_ratio(sumw_var, tag='zvar_over_w', xedges=xedges, varied='num')
-        plot_ratio(sumw_var, tag='z_over_wvar', xedges=xedges, varied='denom')
-        plot_ratio(sumw_var, tag='gvar_over_z', xedges=xedges, varied='num')
-        plot_ratio(sumw_var, tag='g_over_zvar', xedges=xedges, varied='denom')
+        plot_ratio(sumw_var, tag='zvar_over_w', xedges=xedges, varied='num', outputrootfile=outputrootfile)
+        plot_ratio(sumw_var, tag='z_over_wvar', xedges=xedges, varied='denom', outputrootfile=outputrootfile)
+        plot_ratio(sumw_var, tag='gvar_over_z', xedges=xedges, varied='num', outputrootfile=outputrootfile)
+        plot_ratio(sumw_var, tag='g_over_zvar', xedges=xedges, varied='denom', outputrootfile=outputrootfile)
 
     else:
         sumw_var = {}
