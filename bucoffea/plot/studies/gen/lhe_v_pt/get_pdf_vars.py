@@ -215,8 +215,8 @@ def plot_ratio(noms, uncs, tag, vpt_edges, vpt_centers, outputrootfile):
     # Plot the ratio of ratios
     plt.close('all')
     fig, ax = plt.subplots(1,1)
-    ax.plot(vpt_centers, dratio_up, 'o', label='PDF up / Nominal')
-    ax.plot(vpt_centers, dratio_down, 'o', label='PDF down / Nominal')
+    ax.plot(vpt_centers, dratio_up, marker='o', label='PDF up / Nominal')
+    ax.plot(vpt_centers, dratio_down, marker='o', label='PDF down / Nominal')
     
     ax.set_xlabel(r'$p_T (V)\ (GeV)$')
     ax.set_ylabel(f'{tag_to_label[tag]} (Var / Nom)')
