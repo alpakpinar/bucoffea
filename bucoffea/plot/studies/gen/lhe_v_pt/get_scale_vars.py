@@ -245,6 +245,9 @@ def plot_ratio(sumw_var, tag, xedges, outputrootfile, varied='num'):
     # Construct the plot
     fig, ax = plt.subplots(1,1)
 
+    # Store double ratios in a dict
+    dratios = {}
+
     for var in varlist:
         ratios_var, ratio_nom = get_ratios(sumw_var, tag, var)
         # Get the ratio with relevant variations
@@ -257,8 +260,11 @@ def plot_ratio(sumw_var, tag, xedges, outputrootfile, varied='num'):
 
         # Calculate the ratio of ratios!
         dratio = ratio_var / ratio_nom
-        ax.plot(xcenters, dratio, 'o', label=var_to_label[var])
+
+        ax.plot(xcenters, dratio, marker='o', label=var_to_label[var])
         
+        dratios[var] = dratio
+
         # Save the double ratios in ROOT file
         tup = (dratio, xedges)
         outputrootfile[f'{tag}_{var}'] = tup 
@@ -286,6 +292,52 @@ def plot_ratio(sumw_var, tag, xedges, outputrootfile, varied='num'):
     fig.savefig(outpath)
 
     print(f'Saved file in {outpath}')
+
+    return dratios
+
+def plot_combined_scale_uncs(dratio_dict, xedges):
+    '''Plot combined scale variations for Z/W and photon/W ratios.
+       Combined var: (var_num**2 + var_denom**2)**0.5'''
+    to_be_combined = [('zvar_over_w', 'z_over_wvar'), ('gvar_over_z', 'g_over_zvar')]
+    tags = ['z_over_w', 'g_over_z']
+    var_pairs = [
+        ('mu_r_down', 'mu_r_up'),
+        ('mu_r_up', 'mu_r_down'),
+        ('mu_f_down', 'mu_f_up'),
+        ('mu_f_up', 'mu_f_down')
+    ]
+    var_to_label = {
+        'mu_r_down' : r'$\mu_{R,1}$',
+        'mu_r_up' : r'$\mu_{R,2}$',
+        'mu_f_down' : r'$\mu_{F,1}$',
+        'mu_f_up' : r'$\mu_{F,2}$',
+    }
+    tag_to_ylabel = {
+        'z_over_w' : r'Combined Scale Unc: $Z\rightarrow \ell \ell$ / $W\rightarrow \ell \nu$',
+        'g_over_z' : r'Combined Scale Unc: $\gamma$ + jets / $Z\rightarrow \ell \ell$',
+    }
+    xcenters = ((xedges + np.roll(xedges,0))/2)[:-1]
+    for idx, pair in enumerate(to_be_combined):
+        dratios_num = dratio_dict[pair[0]]
+        dratios_denom = dratio_dict[pair[1]]
+        fig, ax = plt.subplots(1,1)
+        # Combine the variations
+        for var_pair in var_pairs:
+            combined_dratio_unc = 1 + np.sign(1-dratios_num[var_pair[0]]) * np.sqrt( (1-dratios_num[var_pair[0]] )**2 + ( 1-dratios_denom[var_pair[1]] )**2)
+            ax.plot(xcenters, combined_dratio_unc, marker='o', label=var_to_label[var_pair[0]])
+        ax.legend()
+        ax.set_xlabel(r'$p_T(V)\ (GeV)$')
+        ax.set_ylabel(tag_to_ylabel[tags[idx]])
+        ax.grid(True)
+        ax.set_xlim(-50,1200)
+        ax.set_ylim(0.8,1.2)
+        ax.plot([200,200], [0.8,1.2], 'k')
+        ax.plot([-50,1200], [1,1], 'k--')
+        outpath = './output/theory_variations/scale/ratioplots'
+        if not os.path.exists(outpath):
+            os.makedirs(outpath)
+        outfile = pjoin(outpath, f'{tags[idx]}_combined_scaleuncs.pdf')
+        fig.savefig(outfile)
 
 
 def main():
@@ -331,6 +383,9 @@ def main():
 
     pkl_file = pjoin(pkl_dir, 'vbf_scale_sumwvar.pkl')
 
+    # Store double ratios in a dict
+    dratio_dict = {}
+
     # Load the results from pkl file if it exists
     # Otherwise, run the code to get scale variations
     if os.path.exists(pkl_file): 
@@ -339,10 +394,12 @@ def main():
             sumw_var = pickle.load(f)
 
         xedges = tup[1]
-        plot_ratio(sumw_var, tag='zvar_over_w', xedges=xedges, varied='num', outputrootfile=outputrootfile)
-        plot_ratio(sumw_var, tag='z_over_wvar', xedges=xedges, varied='denom', outputrootfile=outputrootfile)
-        plot_ratio(sumw_var, tag='gvar_over_z', xedges=xedges, varied='num', outputrootfile=outputrootfile)
-        plot_ratio(sumw_var, tag='g_over_zvar', xedges=xedges, varied='denom', outputrootfile=outputrootfile)
+        dratio_dict['zvar_over_w'] = plot_ratio(sumw_var, tag='zvar_over_w', xedges=xedges, varied='num', outputrootfile=outputrootfile)
+        dratio_dict['z_over_wvar'] = plot_ratio(sumw_var, tag='z_over_wvar', xedges=xedges, varied='denom', outputrootfile=outputrootfile)
+        dratio_dict['gvar_over_z'] = plot_ratio(sumw_var, tag='gvar_over_z', xedges=xedges, varied='num', outputrootfile=outputrootfile)
+        dratio_dict['g_over_zvar'] = plot_ratio(sumw_var, tag='g_over_zvar', xedges=xedges, varied='denom', outputrootfile=outputrootfile)
+
+        plot_combined_scale_uncs(dratio_dict, xedges)
 
     else:
         sumw_var = {}
