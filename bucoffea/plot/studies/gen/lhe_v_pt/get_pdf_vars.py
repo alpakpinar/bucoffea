@@ -42,7 +42,7 @@ def plot_variations(nom, var, tag):
     ax.set_title(title)
 
     # Save figure
-    outdir = './output/kfac_variations/pdf'
+    outdir = './output/theory_variations/pdf'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     outpath = pjoin(outdir, f'{tag}_var_nom_weights.pdf')
@@ -152,7 +152,7 @@ def get_pdf_uncertainty(acc, regex, tag, outputrootfile, nominal='pdf_0'):
            
 
     # Save the figure
-    outdir = './output/kfac_variations/pdf'
+    outdir = './output/theory_variations/pdf'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
@@ -176,7 +176,7 @@ def plot_ratio(noms, uncs, tag, vpt_edges, vpt_centers, outputrootfile):
 
     # Labels for y-axis
     tag_to_label = {
-        'w_over_z' : r'$W \rightarrow \ell \nu$ / $Z \rightarrow \ell \ell$',
+        'z_over_w' : r'$Z \rightarrow \ell \ell$ / $W \rightarrow \ell \nu$',
         'g_over_z' : r'$\gamma$ + jets / $Z \rightarrow \ell \ell$',
     }
 
@@ -198,7 +198,7 @@ def plot_ratio(noms, uncs, tag, vpt_edges, vpt_centers, outputrootfile):
     ax.plot([200,200], [0,10], 'r')
 
     # Save output
-    outdir = './output/kfac_variations/pdf/ratioplots'
+    outdir = './output/theory_variations/pdf/ratioplots'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
@@ -223,7 +223,7 @@ def plot_ratio(noms, uncs, tag, vpt_edges, vpt_centers, outputrootfile):
     ax.legend()
     ax.grid(True)
 
-    if tag == 'w_over_z':
+    if tag == 'z_over_w':
         ax.set_ylim(0.99,1.01)
     elif tag == 'g_over_z':
         ax.set_ylim(0.95,1.05)
@@ -260,7 +260,7 @@ def main():
     gjets_nom, gjets_unc, vpt_edges, vpt_centers = get_pdf_uncertainty(acc, regex='G1Jet.*', tag='gjets', outputrootfile=outputrootfile)
 
     data_for_ratio = {
-        'w_over_z' : {'noms' : (w_nom, dy_nom), 'uncs' : (w_unc, dy_unc)},
+        'z_over_w' : {'noms' : (dy_nom, w_nom), 'uncs' : (dy_unc, w_unc)},
         'g_over_z' : {'noms' : (gjets_nom, dy_nom), 'uncs' : (gjets_unc, dy_unc)},
     }
     
