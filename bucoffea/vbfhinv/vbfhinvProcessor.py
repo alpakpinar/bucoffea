@@ -151,6 +151,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
             digenjet = genjets[:,:2].distincts()
             df['mjj_gen'] = digenjet.mass.max()
 
+        # Get neutrinos from gen candidates 
+        neutrino_mask = ((np.abs(gen.pdg)==12) | (np.abs(gen.pdg)==14) | (np.abs(gen.pdg)==16)) & (gen.status==1)
+        neutrinos = gen[neutrino_mask]
+
         # Candidates
         # Already pre-filtered!
         # All leptons are at least loose
@@ -243,6 +247,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('mjj', df['mjj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.MASS)
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
+
+        # Add neutrino eta cut
+        neutrino_eta = np.abs(neutrinos.eta) < 2.5
+        selection.add('neutrino_eta', neutrino_eta.all())
 
         # Divide into three categories for trigger study
         if cfg.RUN.TRIGGER_STUDY:
