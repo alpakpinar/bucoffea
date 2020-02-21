@@ -30,6 +30,7 @@ from bucoffea.helpers.gen import (
                                   setup_gen_candidates,
                                   setup_dressed_gen_candidates,
                                   setup_lhe_cleaned_genjets,
+                                    setup_lhe_neutrinos,
                                   fill_gen_v_info
                                  )
 from bucoffea.monojet.definitions import (
@@ -155,9 +156,17 @@ class vbfhinvProcessor(processor.ProcessorABC):
             digenjet = genjets[:,:2].distincts()
             df['mjj_gen'] = digenjet.mass.max()
 
+        # Get LHE-level neutrinos
+        lhe_neutrinos = setup_lhe_neutrinos(df)
+
         # Get neutrinos from gen candidates 
         neutrino_mask = ((np.abs(gen.pdg)==12) | (np.abs(gen.pdg)==14) | (np.abs(gen.pdg)==16)) & (gen.status==1)
         neutrinos = gen[neutrino_mask]
+
+        # Matching for gen-level neutrinos
+        # and LHE-level neutrinos
+        # Only get matched gen-level neutrinos
+        neutrinos = neutrinos[neutrinos.match(lhe_neutrinos, deltaRCut=0.4)]
 
         # Candidates
         # Already pre-filtered!
