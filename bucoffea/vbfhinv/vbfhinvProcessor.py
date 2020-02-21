@@ -138,7 +138,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         # Do not proceed for data samples
         if df['is_data']:
-            return
+            return self.accumulator.identity()
 
         gen_v_pt = None
         if df['is_lo_w'] or df['is_lo_z'] or df['is_nlo_z'] or df['is_nlo_w'] or df['is_lo_z_ewk'] or df['is_lo_w_ewk']:
