@@ -13,6 +13,22 @@ from coffea import hist
 pjoin = os.path.join
 
 tag_to_dataset = {
+	'znunu17' : {
+		'region' : {'with_nu_cut' : 'sr_vbf_nu', 'without_nu_cut' : 'sr_vbf'},
+		'dataset' : re.compile('ZJetsToNuNu.*2017')
+	},
+	'znunu18' : {
+		'region' : {'with_nu_cut' : 'sr_vbf_nu', 'without_nu_cut' : 'sr_vbf'},
+		'dataset' : re.compile('ZJetsToNuNu.*2018')
+	},
+	'wlnu17' : {
+		'region' : {'with_nu_cut' : 'sr_vbf_nu', 'without_nu_cut' : 'sr_vbf'},
+		'dataset' : re.compile('WJetsToLNu.*2017')
+	},
+	'wlnu18' : {
+		'region' : {'with_nu_cut' : 'sr_vbf_nu', 'without_nu_cut' : 'sr_vbf'},
+		'dataset' : re.compile('WJetsToLNu.*2018')
+	},
 	'zmumu17' : {
 		'region' : {'with_nu_cut' : 'cr_2m_vbf_nu', 'without_nu_cut' : 'cr_2m_vbf'},
 		'dataset' : re.compile('DYJetsToLL.*2017')
@@ -48,6 +64,8 @@ tag_to_dataset = {
 }
 
 data_pairs = {
+	'znunu_over_wlnu17' : ('znunu17', 'wlnu17'),
+	'znunu_over_wlnu18' : ('znunu18', 'wlnu18'),
 	'zmumu_over_wmunu17' : ('zmumu17', 'wmunu17'),
 	'zmumu_over_wmunu18' : ('zmumu18', 'wmunu18'),
 	'zee_over_wenu17' : ('zee17', 'wenu17'),
@@ -55,13 +73,15 @@ data_pairs = {
 }
 
 ylabels = {
+	'znunu_over_wlnu17' : r'$Z\rightarrow \nu \nu$ / $W\rightarrow \ell \nu$',
+	'znunu_over_wlnu18' : r'$Z\rightarrow \nu \nu$ / $W\rightarrow \ell \nu$',
 	'zmumu_over_wmunu17' : r'$Z\rightarrow \mu \mu$ / $W\rightarrow \mu \nu$',
 	'zmumu_over_wmunu18' : r'$Z\rightarrow \mu \mu$ / $W\rightarrow \mu \nu$',
 	'zee_over_wenu17' : r'$Z\rightarrow ee$ / $W\rightarrow e \nu$',
 	'zee_over_wenu18' : r'$Z\rightarrow ee$ / $W\rightarrow e \nu$',
 }
 
-def plot_ratio(acc, tag, neutrino_cut='with_nu_cut'):
+def plot_ratio(acc, tag, out_tag, neutrino_cut='with_nu_cut'):
 	'''Plot the ratio of two distributions as a function of mjj.
 	   If neutrino_cut is set to True, looks at data where neutrino
 	   eta is restricted to be lower than 2.5.'''
@@ -73,7 +93,7 @@ def plot_ratio(acc, tag, neutrino_cut='with_nu_cut'):
 	h = merge_datasets(h)
 
 	# Rebin mjj
-	mjjbin = hist.Bin('mjj', r'$M_{jj}\ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
+	mjjbin = hist.Bin('mjj', r'$M_{jj}\ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 3000])
 	h = h.rebin('mjj', mjjbin)
 
 	# Pick data for numerator and denominator
@@ -120,7 +140,7 @@ def plot_ratio(acc, tag, neutrino_cut='with_nu_cut'):
 		verticalalignment='bottom',
 		transform=ax.transAxes
 	)
-	outdir = 'output'
+	outdir = f'output/{out_tag}'
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 	
@@ -130,7 +150,7 @@ def plot_ratio(acc, tag, neutrino_cut='with_nu_cut'):
 
 	return xcenters, rsumw, rsumw_err
 
-def plot_ratio_comparison(r, tag):
+def plot_ratio_comparison(r, tag, out_tag):
 	'''Plot two given ratios on the same pad.'''
 	xcenters1, r1_sumw, r1_sumw_err = r['with_nu_cut']
 	xcenters2, r2_sumw, r2_sumw_err = r['without_nu_cut']
@@ -180,7 +200,7 @@ def plot_ratio_comparison(r, tag):
 	loc = matplotlib.ticker.MultipleLocator(base=0.05)
 	rax.yaxis.set_major_locator(loc)
 
-	outdir = 'output/comparison'
+	outdir = f'output/{out_tag}/comparison'
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 	
@@ -191,6 +211,11 @@ def plot_ratio_comparison(r, tag):
 
 def main():
 	inpath = sys.argv[1]
+
+	if inpath.endswith('/'):
+		out_tag = inpath.split('/')[-2]
+	else:
+		out_tag = inpath.split('/')[-1]
 
 	acc = dir_archive(
 						inpath,
@@ -203,20 +228,18 @@ def main():
 	acc.load('sumw2')
 
 	tags = [
-		'zmumu_over_wmunu17',
-		'zmumu_over_wmunu18',
-		'zee_over_wenu17',
-		'zee_over_wenu18'
+		'znunu_over_wlnu17',
+		'znunu_over_wlnu18',
 	]
 
 	# Store ratios and ratio errors
 	ratio_dict = {}
 	for tag in tags:
 		ratio_dict[tag] = {}
-		ratio_dict[tag]['with_nu_cut'] = plot_ratio(acc, tag=tag, neutrino_cut='with_nu_cut')
-		ratio_dict[tag]['without_nu_cut'] = plot_ratio(acc, tag=tag, neutrino_cut='without_nu_cut')
+		ratio_dict[tag]['with_nu_cut'] = plot_ratio(acc, tag=tag, out_tag=out_tag, neutrino_cut='with_nu_cut')
+		ratio_dict[tag]['without_nu_cut'] = plot_ratio(acc, tag=tag, out_tag=out_tag, neutrino_cut='without_nu_cut')
 
-		plot_ratio_comparison(ratio_dict[tag], tag=tag)
+		plot_ratio_comparison(ratio_dict[tag], tag=tag, out_tag=out_tag)
 
 
 
