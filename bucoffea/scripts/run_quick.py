@@ -18,9 +18,9 @@ def parse_commandline():
 def main():
 
     fileset = {
-        "VBF_HToInvisible_M125_pow_pythia8_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/27Oct19/VBF_HToInvisible_M125_13TeV_TuneCP5_powheg_pythia8/VBF_HToInvisible_M125_pow_pythia8_2017/191027_233758/0000/tree_1.root"
-        ]
+        "AJJ_EWK_amcatnlo_2017" : [
+            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/19Feb20/AJJ_EWK_TuneCP5_13TeV_amcatnlo-pythia8/AJJ_EWK_amcatnlo_2017/200219_223609/0000/tree_1.root"
+        ] 
     }
 
     years = list(set(map(extract_year, fileset.keys())))

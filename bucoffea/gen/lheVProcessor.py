@@ -117,7 +117,7 @@ class lheVProcessor(processor.ProcessorABC):
             fill_gen_v_info(df, gen, dressed)
             tags.extend(['dress','combined'])
         elif is_lo_g(dataset) or is_nlo_g(dataset) or is_lo_g_ewk(dataset) or is_nlo_g_ewk(dataset):
-            photons = gen[(gen.status==1)&(gen.pdg==22)]
+            photons = gen[((gen.flag&1)==1)&(gen.pdg==22)]
             df['gen_v_pt_stat1'] = photons.pt.max()
             df['gen_v_phi_stat1'] = photons[photons.pt.argmax()].phi.max()
             df['gen_v_pt_lhe'] = df['LHE_Vpt']
