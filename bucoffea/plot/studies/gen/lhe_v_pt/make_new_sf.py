@@ -35,8 +35,8 @@ def get_old_kfac(tag):
         f = uproot.open(bucoffea_path('data/sf/theory/merged_kfactors_gjets.root'))
     return f['kfactor_monojet_qcd']
 
-def sf_1d(acc, tag, regex, outputrootfile):
-    outdir = './output/'
+def sf_1d(acc, tag, regex, outputrootfile, outtag):
+    outdir = f'./output/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -107,8 +107,8 @@ def sf_1d(acc, tag, regex, outputrootfile):
             outputrootfile[f'{tag}_{pt_type}_{selection}'] = (sf_y,sf_x)
 
 
-def sf_2d(acc, tag, regex, pt_type, outputrootfile):
-    outdir = './output/2d/'
+def sf_2d(acc, tag, regex, pt_type, outputrootfile, outtag):
+    outdir = f'./output/{outtag}/2d/'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -233,18 +233,23 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
+    if inpath.endswith('/'):
+        outtag = inpath.split('/')[-2]
+    else:
+        outtag = inpath.split('/')[-1]
+    
 
     outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
-    sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile)
-    sf_1d(acc, tag='dy', regex='DYN?JetsToLL.*',outputrootfile=outputrootfile)
+    sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile, outtag=outtag)
+    sf_1d(acc, tag='dy', regex='DYN?JetsToLL.*',outputrootfile=outputrootfile, outtag=outtag)
     # # outputrootfile = uproot.recreate(f'test.root')
-    sf_2d(acc, tag='wjet', regex='WN?JetsToLNu.*',pt_type='combined',outputrootfile=outputrootfile)
-    sf_2d(acc, tag='dy', regex='DYN?JetsToLL.*',pt_type='combined',outputrootfile=outputrootfile)
+    sf_2d(acc, tag='wjet', regex='WN?JetsToLNu.*',pt_type='combined',outputrootfile=outputrootfile, outtag=outtag)
+    sf_2d(acc, tag='dy', regex='DYN?JetsToLL.*',pt_type='combined',outputrootfile=outputrootfile, outtag=outtag)
 
-    sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
+    sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile, outtag=outtag)
     # outputrootfile = uproot.recreate('test.root')
 
-    sf_2d(acc, tag='gjets',regex='G\d?Jet.*',pt_type='stat1',outputrootfile=outputrootfile)
+    sf_2d(acc, tag='gjets',regex='G\d?Jet.*',pt_type='stat1',outputrootfile=outputrootfile, outtag=outtag)
 
 
 if __name__ == "__main__":
