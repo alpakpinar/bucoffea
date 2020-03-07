@@ -249,8 +249,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         ak4 = ak4[ak4.puid]
         bjets = bjets[bjets.puid]
 
-        # Get LHE level parton and photon pairs for photon samples
-        if df['is_lo_g'] or df['is_lo_g_ewk']:
+        # Get LHE level parton and photon pairs for QCD photon samples
+        if df['is_lo_g']:
             lhe_pairs = setup_lhe_parton_photon_pairs(df)
     
             # Calculate minimum deltaR between partons in the 
