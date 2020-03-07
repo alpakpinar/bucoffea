@@ -30,6 +30,7 @@ from bucoffea.helpers.gen import (
                                   setup_gen_candidates,
                                   setup_dressed_gen_candidates,
                                   setup_lhe_cleaned_genjets,
+                                  setup_lhe_parton_photon_pairs,
                                   fill_gen_v_info
                                  )
 from bucoffea.monojet.definitions import (
@@ -247,6 +248,15 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # Filtering ak4 jets according to pileup ID
         ak4 = ak4[ak4.puid]
         bjets = bjets[bjets.puid]
+
+        # Get LHE level parton and photon pairs for photon samples
+        if df['is_lo_g'] or df['is_lo_g_ewk']:
+            lhe_pairs = setup_lhe_parton_photon_pairs(df)
+    
+            # Calculate minimum deltaR between partons in the 
+            # event and the photon.
+            min_dr = lhe_pairs.i0.p4.delta_r(lhe_pairs.i1.p4).min()
+            df['mindr_photon_parton'] = min_dr
 
         # Muons
         df['is_tight_muon'] = muons.tightId \
@@ -664,12 +674,14 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
             # Photon
             if '_g_' in region:
-                w_leading_photon = weight_shape(photons[leadphoton_index].pt[mask],rweight[mask]);
+                w_leading_photon = weight_shape(photons[leadphoton_index].pt[mask],rweight[mask])
                 ezfill('photon_pt0',              pt=photons[leadphoton_index].pt[mask].flatten(),    weight=w_leading_photon)
                 ezfill('photon_eta0',             eta=photons[leadphoton_index].eta[mask].flatten(),  weight=w_leading_photon)
                 ezfill('photon_phi0',             phi=photons[leadphoton_index].phi[mask].flatten(),  weight=w_leading_photon)
                 ezfill('photon_pt0_recoil',       pt=photons[leadphoton_index].pt[mask].flatten(), recoil=df['recoil_pt'][mask&(leadphoton_index.counts>0)],  weight=w_leading_photon)
                 ezfill('photon_eta_phi',          eta=photons[leadphoton_index].eta[mask].flatten(), phi=photons[leadphoton_index].phi[mask].flatten(),  weight=w_leading_photon)
+
+                ezfill('mindr_photon_parton',     dr=df['mindr_photon_parton'][mask],     weight=w_leading_photon)
 
                 # w_drphoton_jet = weight_shape(df['dRPhotonJet'][mask], rweight[mask])
 
