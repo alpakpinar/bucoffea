@@ -7,7 +7,9 @@ from bucoffea.helpers.dataset import (is_lo_g, is_lo_g_ewk, is_lo_w, is_lo_z,
                                       is_nlo_g,is_nlo_g_ewk, is_nlo_w, is_nlo_z,)
 from bucoffea.helpers.gen import (fill_gen_v_info,
                                   setup_dressed_gen_candidates,
-                                  setup_gen_candidates,setup_lhe_cleaned_genjets)
+                                  setup_gen_candidates,
+                                  setup_lhe_cleaned_genjets,
+                                  setup_lhe_parton_photon_pairs)
 
 Hist = hist.Hist
 Bin = hist.Bin
@@ -75,6 +77,7 @@ class lheVProcessor(processor.ProcessorABC):
         jpt_ax = Bin("jpt",r"$p_{T}^{j}$ (GeV)", 50, 0, 2000)
         mjj_ax = Bin("mjj",r"$m(jj)$ (GeV)", 75, 0, 7500)
         res_ax = Bin("res",r"pt: dressed / stat1 - 1", 80,-0.2,0.2)
+        dr_ax = Bin("deltaR", r"$\Delta R$", 50, 0, 2)
 
         items = {}
         for tag in ['stat1','dress','lhe','combined']:
@@ -90,6 +93,9 @@ class lheVProcessor(processor.ProcessorABC):
                                     jpt_ax,
                                     mjj_ax,
                                     vpt_ax)
+            items[f'lhe_mindr_g_parton_{tag}'] = Hist("Counts",
+                                                dataset_ax,
+                                                dr_ax)
         items["resolution"] = Hist("Counts",
                                 dataset_ax,
                                 res_ax)
@@ -123,6 +129,12 @@ class lheVProcessor(processor.ProcessorABC):
             df['gen_v_pt_lhe'] = df['LHE_Vpt']
             df['gen_v_phi_lhe'] = np.zeros(df.size)
 
+            # Get LHE level photon + parton pairs
+            # Calculate minimum deltaR between them in each event
+            pairs = setup_lhe_parton_photon_pairs(df)
+            min_dr = pairs.i0.p4.delta_r(pairs.i1.p4).min()
+            df['lhe_mindr_g_parton'] = min_dr
+
         dijet = genjets[:,:2].distincts()
         mjj = dijet.mass.max()
         for tag in tags:
@@ -139,6 +151,7 @@ class lheVProcessor(processor.ProcessorABC):
                                     vpt=df[f'gen_v_pt_{tag}'],
                                     weight=nominal
                                     )
+                                    
             mask_vbf = vbf_sel.all(*vbf_sel.names)
             output[f'gen_vpt_vbf_{tag}'].fill(
                                     dataset=dataset,
@@ -148,6 +161,14 @@ class lheVProcessor(processor.ProcessorABC):
                                     weight=nominal[mask_vbf]
                                     )
 
+            # Fill the histogram with minimum deltaR between photons
+            # and partons at LHE level
+            output[f'lhe_mindr_g_parton_{tag}'].fill(
+                                        dataset=dataset,
+                                        dr=df['lhe_mindr_g_parton'][mask_vbf],
+                                        weight=nominal[mask_vbf]
+                                        )
+                                    
             mask_monojet = monojet_sel.all(*monojet_sel.names)
 
             output[f'gen_vpt_monojet_{tag}'].fill(
@@ -157,9 +178,11 @@ class lheVProcessor(processor.ProcessorABC):
                                     weight=nominal[mask_monojet]
                                     )
 
+
         # Keep track of weight sum
         output['sumw'][dataset] +=  df['genEventSumw']
         output['sumw2'][dataset] +=  df['genEventSumw2']
+
         return output
 
     def postprocess(self, accumulator):
