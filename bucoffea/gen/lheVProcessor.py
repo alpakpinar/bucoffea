@@ -77,7 +77,7 @@ class lheVProcessor(processor.ProcessorABC):
         jpt_ax = Bin("jpt",r"$p_{T}^{j}$ (GeV)", 50, 0, 2000)
         mjj_ax = Bin("mjj",r"$m(jj)$ (GeV)", 75, 0, 7500)
         res_ax = Bin("res",r"pt: dressed / stat1 - 1", 80,-0.2,0.2)
-        dr_ax = Bin("deltaR", r"$\Delta R$", 50, 0, 2)
+        dr_ax = Bin("dr", r"$\Delta R$", 50, 0, 2)
 
         items = {}
         for tag in ['stat1','dress','lhe','combined']:
@@ -163,11 +163,12 @@ class lheVProcessor(processor.ProcessorABC):
 
             # Fill the histogram with minimum deltaR between photons
             # and partons at LHE level
-            output[f'lhe_mindr_g_parton_{tag}'].fill(
-                                        dataset=dataset,
-                                        dr=df['lhe_mindr_g_parton'][mask_vbf],
-                                        weight=nominal[mask_vbf]
-                                        )
+            if is_lo_g(dataset) or is_nlo_g(dataset) or is_lo_g_ewk(dataset) or is_nlo_g_ewk(dataset):
+                output[f'lhe_mindr_g_parton_{tag}'].fill(
+                                            dataset=dataset,
+                                            dr=df['lhe_mindr_g_parton'][mask_vbf],
+                                            weight=nominal[mask_vbf]
+                                            )
                                     
             mask_monojet = monojet_sel.all(*monojet_sel.names)
 
