@@ -39,6 +39,11 @@ def plot_deltar_dist(acc, regex, tag, outtag):
     fig, ax = plt.subplots(1,1)
     hist.plot1d(h, ax=ax)
 
+    dataset_name = regex.replace('.*', '_')
+    handle, _ = ax.get_legend_handles_labels()
+    handle[0].set_label(dataset_name)
+    ax.legend()
+
     outdir = f'./output/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -67,7 +72,7 @@ def main():
         'gjets_dr_2016'  : 'GJets_DR-0p4.*2016',
         'gjets_dr_2017'  : 'GJets_DR-0p4.*2017',
         'gjets_ht_2017'  : 'GJets_HT.*2017',
-        'gjets_nlo_2016' : 'G1Jet.*2016'
+        'gjets_nlo_2016' : 'G1Jet_Pt-amcatnlo.*2016'
     }
 
     for tag, regex in tag_regex.items():
