@@ -77,7 +77,7 @@ class lheVProcessor(processor.ProcessorABC):
         jpt_ax = Bin("jpt",r"$p_{T}^{j}$ (GeV)", 50, 0, 2000)
         mjj_ax = Bin("mjj",r"$m(jj)$ (GeV)", 75, 0, 7500)
         res_ax = Bin("res",r"pt: dressed / stat1 - 1", 80,-0.2,0.2)
-        dr_ax = Bin("dr", r"$\Delta R$", 50, 0, 2)
+        dr_ax = Bin("dr", r"$\Delta R$", 100, 0, 10)
 
         items = {}
         for tag in ['stat1','dress','lhe','combined']:
