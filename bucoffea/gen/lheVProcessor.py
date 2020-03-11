@@ -96,6 +96,10 @@ class lheVProcessor(processor.ProcessorABC):
             items[f'lhe_mindr_g_parton_{tag}'] = Hist("Counts",
                                                 dataset_ax,
                                                 dr_ax)
+            items[f'lhe_mindr_g_parton_{tag}_noDRreq'] = Hist("Counts",
+                                    dataset_ax,
+                                    dr_ax)
+
         items["resolution"] = Hist("Counts",
                                 dataset_ax,
                                 res_ax)
@@ -164,11 +168,23 @@ class lheVProcessor(processor.ProcessorABC):
             # Fill the histogram with minimum deltaR between photons
             # and partons at LHE level
             if is_lo_g(dataset) or is_nlo_g(dataset) or is_lo_g_ewk(dataset) or is_nlo_g_ewk(dataset):
+                # Add new deltaR requirement:
+                # deltaR > 0.4 for every event
+                dr_mask = df['lhe_mindr_g_parton'] > 0.4
+                full_mask_vbf = mask_vbf*dr_mask
+                
+                # Fill the histogram with the deltaR requirement
                 output[f'lhe_mindr_g_parton_{tag}'].fill(
                                             dataset=dataset,
-                                            dr=df['lhe_mindr_g_parton'][mask_vbf],
-                                            weight=nominal[mask_vbf]
+                                            dr=df['lhe_mindr_g_parton'][full_mask_vbf],
+                                            weight=nominal[full_mask_vbf]
                                             )
+                # Fill the histogram without the deltaR requirement
+                output[f'lhe_mindr_g_parton_{tag}_noDRreq'].fill(
+                                                dataset=dataset,
+                                                dr=df['lhe_mindr_g_parton'][mask_vbf],
+                                                weight=nominal[full_mask_vbf]
+                                                )
                                     
             mask_monojet = monojet_sel.all(*monojet_sel.names)
 
