@@ -123,7 +123,14 @@ def plot_comparison(vals, datasets, tag, outtag):
 
     rax.plot(rax.get_xlim(), [1., 1.])
 
-    fig.savefig('test.pdf')
+    # Save the figure
+    outdir = f'./output/{outtag}/comparisons'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    outpath = pjoin(outdir, f'{tag}_dr_comparison.pdf')
+    fig.savefig(outpath)
+
+    print(f'File saved: {outpath}')
 
 def main():
     inpath = sys.argv[1]
@@ -155,7 +162,16 @@ def main():
         vals[tag] = plot_deltar_dist(acc,regex=regex,tag=tag,outtag=outtag)
 
     # Get the comparison plots
-    plot_comparison(vals, datasets=['gjets_dr_2017', 'gjets_ht_2017'],tag=None,outtag=None)
+    comparisons = {
+        'gjets_dr_16_VS_gjets_ht_17'  : ['gjets_dr_2016', 'gjets_ht_2017'],
+        'gjets_dr_17_VS_gjets_ht_17'  : ['gjets_dr_2017', 'gjets_ht_2017'],
+        'gjets_nlo_16_VS_gjets_ht_17' : ['gjets_nlo_2016', 'gjets_ht_2017'],
+        'gjets_nlo_16_VS_gjets_dr_16' : ['gjets_nlo_2016', 'gjets_dr_2016'],
+        'gjets_nlo_16_VS_gjets_dr_17' : ['gjets_nlo_2016', 'gjets_dr_2017'],
+    }
+
+    for tag, datasets in comparisons.items():
+        plot_comparison(vals, datasets=datasets,tag=tag,outtag=outtag)
 
 if __name__ == '__main__':
     main()
