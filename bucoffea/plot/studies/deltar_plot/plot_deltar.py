@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import numpy as np
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -52,6 +53,66 @@ def plot_deltar_dist(acc, regex, tag, outtag):
     fig.savefig(outpath)
     print(f'Figure saved: {outpath}')
 
+    # Return the histogram values and bin edges
+    tup = ( h.axis('dr').edges(overflow='over'), h.values(overflow='over')[()] )
+    return tup
+
+def plot_comparison(vals, datasets, tag, outtag):
+    '''
+    Given the individual deltaR distributions and two datasets, create the
+    deltaR comparison plot for these two datasets.
+    =============
+    PARAMETERS:
+    =============
+    vals     : Dictionary containing deltaR distributions as arrays for each dataset.
+    datasets : Tag for the datasets to be compared (should be exactly two datasets to compare).
+    tag      : Tag for the output file.
+    outtag   : Tag for the output directory.
+    '''
+    # Should be exactly two datasets to compare
+    assert len(datasets) == 2
+
+    pretty_label = {
+        'gjets_dr_2016'  : 'GJets_DR-0p4_HT_2016',
+        'gjets_dr_2017'  : 'GJets_DR-0p4_HT_2017',
+        'gjets_ht_2017'  : 'GJets_HT_2017',
+        'gjets_nlo_2016' : 'G1Jet_Pt_amcatnlo_2016'
+    }
+
+    # Plot the comparison
+    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
+    for data in datasets:
+        edges, dr_dist = vals[data]
+        ax.step(edges[:-1],dr_dist,where='post',label=pretty_label[data])
+    
+    # Do not include the overflow bin
+    ax.set_xlim(edges[0], edges[-2])
+    ax.set_ylim(0,5e4)
+    ax.set_ylabel('Counts')
+    ax.legend()
+
+    ax_ylim = ax.get_ylim()
+    ax.plot([0.4,0.4], ax_ylim, 'r')
+    ax.set_ylim(ax_ylim)
+
+    # Calculate and plot ratios in the ratio pad
+    ratios = vals[datasets[0]][1] / vals[datasets[1]][1]
+    centers = ((edges + np.roll(edges,-1))/2 )[:-1]
+    rax.plot(centers, ratios, 'o', color='k')
+    rax.set_xlabel(r'$\Delta R_{\gamma,j}$')
+    rax.grid(True)
+    rax.set_ylim(0.8,1.2)
+    rax.set_ylabel('Data 1 / Data 2')
+
+    rax_ylim = rax.get_ylim()
+    rax.plot([0.4,0.4], rax_ylim, 'r--')
+    rax.set_ylim(rax_ylim)
+
+    rax.plot(rax.get_xlim(), [1., 1.])
+
+    fig.savefig('test.pdf')
+
+
 def main():
     inpath = sys.argv[1]
 
@@ -69,14 +130,20 @@ def main():
         outtag = inpath.split('/')[-1]
 
     tag_regex = {
-        'gjets_dr_2016'  : 'GJets_DR-0p4.*2016',
-        'gjets_dr_2017'  : 'GJets_DR-0p4.*2017',
+        'gjets_dr_2016'  : 'GJets_DR-0p4_HT.*2016',
+        'gjets_dr_2017'  : 'GJets_DR-0p4_HT.*2017',
         'gjets_ht_2017'  : 'GJets_HT.*2017',
         'gjets_nlo_2016' : 'G1Jet_Pt-amcatnlo.*2016'
     }
 
+    vals = {}
+
+    # Get individual deltaR distributions for each dataset
     for tag, regex in tag_regex.items():
-        plot_deltar_dist(acc,regex=regex,tag=tag,outtag=outtag)
+        vals[tag] = plot_deltar_dist(acc,regex=regex,tag=tag,outtag=outtag)
+
+    # Get the comparison plots
+    plot_comparison(vals, datasets=['gjets_dr_2017', 'gjets_ht_2017'],tag=None,outtag=None)
 
 if __name__ == '__main__':
     main()
