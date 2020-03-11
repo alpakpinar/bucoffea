@@ -172,7 +172,7 @@ class lheVProcessor(processor.ProcessorABC):
                 # deltaR > 0.4 for every event
                 dr_mask = df['lhe_mindr_g_parton'] > 0.4
                 full_mask_vbf = mask_vbf*dr_mask
-                
+
                 # Fill the histogram with the deltaR requirement
                 output[f'lhe_mindr_g_parton_{tag}'].fill(
                                             dataset=dataset,
@@ -183,7 +183,7 @@ class lheVProcessor(processor.ProcessorABC):
                 output[f'lhe_mindr_g_parton_{tag}_noDRreq'].fill(
                                                 dataset=dataset,
                                                 dr=df['lhe_mindr_g_parton'][mask_vbf],
-                                                weight=nominal[full_mask_vbf]
+                                                weight=nominal[mask_vbf]
                                                 )
                                     
             mask_monojet = monojet_sel.all(*monojet_sel.names)
