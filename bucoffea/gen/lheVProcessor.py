@@ -93,6 +93,11 @@ class lheVProcessor(processor.ProcessorABC):
                                     jpt_ax,
                                     mjj_ax,
                                     vpt_ax)
+            items[f"gen_vpt_vbf_{tag}_withDRreq"] = Hist("Counts",
+                                            dataset_ax,
+                                            jpt_ax,
+                                            mjj_ax,
+                                            vpt_ax)
             items[f'lhe_mindr_g_parton_{tag}'] = Hist("Counts",
                                                 dataset_ax,
                                                 dr_ax)
@@ -185,6 +190,15 @@ class lheVProcessor(processor.ProcessorABC):
                                                 dr=df['lhe_mindr_g_parton'][mask_vbf],
                                                 weight=nominal[mask_vbf]
                                                 )
+                
+                # Fill V-pt and mjj with the deltaR > 0.4 requirement
+                output[f'gen_vpt_vbf_{tag}_withDRreq'].fill(
+                                                        dataset=dataset,
+                                                        vpt=df[f'gen_v_pt_{tag}'][full_mask_vbf],
+                                                        jpt=genjets.pt.max()[full_mask_vbf],
+                                                        mjj=mjj[full_mask_vbf],
+                                                        weight=nominal[full_mask_vbf]
+                                                    )
                                     
             mask_monojet = monojet_sel.all(*monojet_sel.names)
 
