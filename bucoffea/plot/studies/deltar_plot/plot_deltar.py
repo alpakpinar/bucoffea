@@ -29,6 +29,10 @@ def plot_deltar_dist(acc, regex, tag, outtag):
     acc.load(dist)
     h = acc[dist]
 
+    # Rebin deltaR axis
+    new_bin = hist.Bin('dr', r'$\Delta R_{\gamma, j}$', 50, 0, 5)
+    h = h.rebin('dr', new_bin)
+
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
     h = merge_datasets(h)
@@ -53,8 +57,9 @@ def plot_deltar_dist(acc, regex, tag, outtag):
     fig.savefig(outpath)
     print(f'Figure saved: {outpath}')
 
-    # Return the histogram values and bin edges
-    tup = ( h.axis('dr').edges(overflow='over'), h.values(overflow='over')[()] )
+    # Return the histogram values (sumw and sumw2) and bin edges
+    vals =  h.values(overflow='over', sumw2=True)[()]
+    tup = ( h.axis('dr').edges(overflow='over'), vals[0], vals[1])
     return tup
 
 def plot_comparison(vals, datasets, tag, outtag):
@@ -82,12 +87,12 @@ def plot_comparison(vals, datasets, tag, outtag):
     # Plot the comparison
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     for data in datasets:
-        edges, dr_dist = vals[data]
-        ax.step(edges[:-1],dr_dist,where='post',label=pretty_label[data])
+        edges, sumw, _ = vals[data]
+        ax.step(edges[:-1],sumw,where='post',label=pretty_label[data])
     
     # Do not include the overflow bin
     ax.set_xlim(edges[0], edges[-2])
-    ax.set_ylim(0,5e4)
+    ax.set_ylim(0,1e5)
     ax.set_ylabel('Counts')
     ax.legend()
 
@@ -96,9 +101,17 @@ def plot_comparison(vals, datasets, tag, outtag):
     ax.set_ylim(ax_ylim)
 
     # Calculate and plot ratios in the ratio pad
-    ratios = vals[datasets[0]][1] / vals[datasets[1]][1]
+    sumw_data1, sumw2_data1 = vals[datasets[0]][1:] 
+    sumw_data2, sumw2_data2 = vals[datasets[1]][1:] 
+
+    ratios = sumw_data1 / sumw_data2
     centers = ((edges + np.roll(edges,-1))/2 )[:-1]
-    rax.plot(centers, ratios, 'o', color='k')
+    uncs = np.hypot(
+        np.sqrt(sumw2_data1)/sumw_data1,
+        np.sqrt(sumw2_data2)/sumw_data2
+    )
+
+    rax.errorbar(x=centers, y=ratios, yerr=uncs, marker='o', ls='', color='k')
     rax.set_xlabel(r'$\Delta R_{\gamma,j}$')
     rax.grid(True)
     rax.set_ylim(0.8,1.2)
@@ -111,7 +124,6 @@ def plot_comparison(vals, datasets, tag, outtag):
     rax.plot(rax.get_xlim(), [1., 1.])
 
     fig.savefig('test.pdf')
-
 
 def main():
     inpath = sys.argv[1]
