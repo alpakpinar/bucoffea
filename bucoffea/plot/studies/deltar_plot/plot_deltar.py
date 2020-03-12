@@ -70,7 +70,7 @@ def plot_comparison(vals, datasets, tag, outtag):
     PARAMETERS:
     =============
     vals     : Dictionary containing deltaR distributions as arrays for each dataset.
-    datasets : Tag for the datasets to be compared.
+    datasets : Tag for the datasets to be compared (there should be 2 or 3 datasets).
     tag      : Tag for the output file.
     outtag   : Tag for the output directory.
     '''
@@ -94,11 +94,13 @@ def plot_comparison(vals, datasets, tag, outtag):
         'gjets_nlo_2016 / gjets_dr_2016' : 'NLO 2016 / DR 2016',
     }
 
-    # Get number of datasets to compare
+    # Number of datasets to compare (should be 2 or 3)
     ndatasets = len(datasets)
 
+    assert ndatasets == 2 or ndatasets == 3
+
     # Plot the comparison
-    num_ratiopads = int(  (ndatasets*(ndatasets-1)) / 2 )
+    num_ratiopads = int( (ndatasets*(ndatasets-1)) / 2 )
     height_ratios = [3] + [1]*(num_ratiopads)
     figsize = (7,10) if num_ratiopads > 1 else (7,7)
     fig, axes = plt.subplots(num_ratiopads+1, 1, figsize=figsize, gridspec_kw={"height_ratios": height_ratios}, sharex=True)
