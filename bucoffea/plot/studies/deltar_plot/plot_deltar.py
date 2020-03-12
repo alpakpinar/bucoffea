@@ -70,22 +70,40 @@ def plot_comparison(vals, datasets, tag, outtag):
     PARAMETERS:
     =============
     vals     : Dictionary containing deltaR distributions as arrays for each dataset.
-    datasets : Tag for the datasets to be compared (should be exactly two datasets to compare).
+    datasets : Tag for the datasets to be compared.
     tag      : Tag for the output file.
     outtag   : Tag for the output directory.
     '''
-    # Should be exactly two datasets to compare
-    assert len(datasets) == 2
-
     pretty_label = {
         'gjets_dr_2016'  : 'GJets_DR-0p4_HT_2016',
         'gjets_dr_2017'  : 'GJets_DR-0p4_HT_2017',
+        'gjets_ht_2016'  : 'GJets_HT_2016',
         'gjets_ht_2017'  : 'GJets_HT_2017',
         'gjets_nlo_2016' : 'G1Jet_Pt_amcatnlo_2016'
     }
 
+    # Labels for ratio legends
+    pretty_label_ratio = {
+        'gjets_dr_2017 / gjets_ht_2017' : 'DR 2017 / Non-DR 2017',
+        'gjets_dr_2016 / gjets_ht_2017' : 'DR 2016 / Non-DR 2017',
+        'gjets_dr_2017 / gjets_ht_2016' : 'DR 2017 / Non-DR 2016',
+        'gjets_ht_2017 / gjets_ht_2016' : 'Non-DR 2017 / Non-DR 2016',
+        'gjets_nlo_2016 / gjets_ht_2017' : 'NLO 2016 / Non-DR 2017',
+        'gjets_nlo_2016 / gjets_ht_2016' : 'NLO 2016 / Non-DR 2016',
+        'gjets_nlo_2016 / gjets_dr_2017' : 'NLO 2016 / DR 2017',
+        'gjets_nlo_2016 / gjets_dr_2016' : 'NLO 2016 / DR 2016',
+    }
+
+    # Get number of datasets to compare
+    ndatasets = len(datasets)
+
     # Plot the comparison
-    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
+    num_ratiopads = int(  (ndatasets*(ndatasets-1)) / 2 )
+    height_ratios = [3] + [1]*(num_ratiopads)
+    figsize = (7,10) if num_ratiopads > 1 else (7,7)
+    fig, axes = plt.subplots(num_ratiopads+1, 1, figsize=figsize, gridspec_kw={"height_ratios": height_ratios}, sharex=True)
+    ax = axes[0] # Main plot
+    rax = axes[1:] # Ratio pad(s)
     for data in datasets:
         edges, sumw, _ = vals[data]
         ax.step(edges[:-1],sumw,where='post',label=pretty_label[data])
@@ -101,27 +119,47 @@ def plot_comparison(vals, datasets, tag, outtag):
     ax.set_ylim(ax_ylim)
 
     # Calculate and plot ratios in the ratio pad
-    sumw_data1, sumw2_data1 = vals[datasets[0]][1:] 
-    sumw_data2, sumw2_data2 = vals[datasets[1]][1:] 
+    sumw = {}
+    sumw2 = {}
+    for dataset in datasets:
+        sumw[dataset], sumw2[dataset] = vals[dataset][1:] 
 
-    ratios = sumw_data1 / sumw_data2
-    centers = ((edges + np.roll(edges,-1))/2 )[:-1]
-    uncs = np.hypot(
-        np.sqrt(sumw2_data1)/sumw_data1,
-        np.sqrt(sumw2_data2)/sumw_data2
-    )
+    # Ratios between the sum of weights for each dataset
+    ratios = {}
+    # Uncertainties on each ratio (Gaussian error propagation)
+    uncs = {}
+    def calc_unc(data1, data2):
+        '''Calculate uncertainty on the ratio of two datasets.'''
+        return np.hypot(
+            np.sqrt(sumw2[data1])/sumw[data1],
+            np.sqrt(sumw2[data2])/sumw[data2]
+        )
 
-    rax.errorbar(x=centers, y=ratios, yerr=uncs, marker='o', ls='', color='k')
-    rax.set_xlabel(r'$\Delta R_{\gamma,j}$')
-    rax.grid(True)
-    rax.set_ylim(0.8,1.2)
-    rax.set_ylabel('Data 1 / Data 2')
+    for idx1 in range(len(datasets)):
+        data1 = datasets[idx1]
+        for idx2 in range(idx1+1, len(datasets)):
+            data2 = datasets[idx2]
+            ratios[f'{data1} / {data2}'] = sumw[data1] / sumw[data2]
+            uncs[f'{data1} / {data2}'] = calc_unc(data1, data2)
 
-    rax_ylim = rax.get_ylim()
-    rax.plot([0.4,0.4], rax_ylim, 'r--')
-    rax.set_ylim(rax_ylim)
+    centers = (( edges + np.roll(edges,-1) ) / 2 )[:-1]
 
-    rax.plot(rax.get_xlim(), [1., 1.])
+    # Plot ratio pads for each dataset comparison
+    for idx, (key, ratio) in enumerate(ratios.items()):
+        unc = uncs[key]
+        rax[idx].errorbar(x=centers, y=ratio, yerr=unc, marker='o', ls='', color='k', label=pretty_label_ratio[key])
+        if len(rax) > 1:
+            rax[idx].legend()
+        rax[idx].set_xlabel(r'$\Delta R_{\gamma,j}$')
+        rax[idx].grid(True)
+        rax[idx].set_ylim(0.8,1.2)
+        rax[idx].set_ylabel('Ratios')
+    
+        rax_ylim = rax[idx].get_ylim()
+        rax[idx].plot([0.4,0.4], rax_ylim, 'r--')
+        rax[idx].set_ylim(rax_ylim)
+    
+        rax[idx].plot(rax[idx].get_xlim(), [1., 1.])
 
     # Save the figure
     outdir = f'./output/{outtag}/comparisons'
@@ -151,6 +189,7 @@ def main():
     tag_regex = {
         'gjets_dr_2016'  : 'GJets_DR-0p4_HT.*2016',
         'gjets_dr_2017'  : 'GJets_DR-0p4_HT.*2017',
+        'gjets_ht_2016'  : 'GJets_HT.*2016',
         'gjets_ht_2017'  : 'GJets_HT.*2017',
         'gjets_nlo_2016' : 'G1Jet_Pt-amcatnlo.*2016'
     }
@@ -168,6 +207,7 @@ def main():
         'gjets_nlo_16_VS_gjets_ht_17' : ['gjets_nlo_2016', 'gjets_ht_2017'],
         'gjets_nlo_16_VS_gjets_dr_16' : ['gjets_nlo_2016', 'gjets_dr_2016'],
         'gjets_nlo_16_VS_gjets_dr_17' : ['gjets_nlo_2016', 'gjets_dr_2017'],
+        'gjets_dr_17_VS_gjets_ht_17_VS_gjets_ht_16' : ['gjets_dr_2017', 'gjets_ht_2017', 'gjets_ht_2016']
     }
 
     for tag, datasets in comparisons.items():
