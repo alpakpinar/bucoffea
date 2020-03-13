@@ -15,7 +15,7 @@ from coffea import hist
 
 pjoin = os.path.join
 
-def compare_two_gjets_samples(acc, samples, inclusive=True):
+def compare_two_gjets_samples(acc, samples, outtag, inclusive=True):
 	'''
 	Compare the v-pt distribution of several LO GJets samples.
 	List of samples is specified in samples argument.
@@ -103,7 +103,7 @@ def compare_two_gjets_samples(acc, samples, inclusive=True):
 		ax.set_xlabel(vpt_bin.label)
 
 	# Save figure
-	outdir = './output/gjets_comparisons'
+	outdir = f'./output/gjets_comparisons/{outtag}'
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 
@@ -115,6 +115,12 @@ def compare_two_gjets_samples(acc, samples, inclusive=True):
 def main():
 	inpath = sys.argv[1]
 
+	# Get the output tag name for output directory naming
+	if inpath.endswith('/'):
+		outtag = inpath.split('/')[-2]
+	else:
+		outtag = inpath.split('/')[-1]
+
 	acc = dir_archive(
 		inpath,
 		serialized=True,
@@ -125,10 +131,10 @@ def main():
 	acc.load('sumw')
 	acc.load('sumw2')
 
-	compare_two_gjets_samples(acc, samples=['GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=True)
-	compare_two_gjets_samples(acc, samples=['GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=False)
-	compare_two_gjets_samples(acc, samples=['GJets_HT_2016', 'GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=True)
-	compare_two_gjets_samples(acc, samples=['GJets_HT_2016', 'GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=False)
+	compare_two_gjets_samples(acc, samples=['GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=True, outtag=outtag)
+	compare_two_gjets_samples(acc, samples=['GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=False, outtag=outtag)
+	compare_two_gjets_samples(acc, samples=['GJets_HT_2016', 'GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=True, outtag=outtag)
+	compare_two_gjets_samples(acc, samples=['GJets_HT_2016', 'GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=False, outtag=outtag)
 
 if __name__ == '__main__':
 	main()
