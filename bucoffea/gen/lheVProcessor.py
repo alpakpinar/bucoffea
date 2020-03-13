@@ -132,9 +132,25 @@ class lheVProcessor(processor.ProcessorABC):
             fill_gen_v_info(df, gen, dressed)
             tags.extend(['dress','combined'])
         elif is_lo_g(dataset) or is_nlo_g(dataset) or is_lo_g_ewk(dataset) or is_nlo_g_ewk(dataset):
-            photons = gen[(gen.status==1)&(gen.pdg==22)]
-            df['gen_v_pt_stat1'] = photons.pt.max()
-            df['gen_v_phi_stat1'] = photons[photons.pt.argmax()].phi.max()
+            photons = gen[(gen.status==1) & (gen.pdg==22)]
+            prompt_photons = photons[(photons.flag&1 == 1) & (np.abs(photons.eta)<1.442)]
+            # Check if a prompt photon exists in the event
+            good_prompt_photons  = prompt_photons.counts > 0
+
+            # For V-pt and phi, if there is a prompt photon take the values from that photon
+            # Otherwise, use the values from a non-prompt photon (if it exists) 
+            df['gen_v_pt_stat1'] = np.where(
+                good_prompt_photons,
+                prompt_photons.pt.max(),
+                photons.pt.max()
+            )
+
+            df['gen_v_phi_stat1'] = np.where(
+                good_prompt_photons,
+                prompt_photons.phi[prompt_photons.pt.argmax()].max(),
+                photons.phi[photons.pt.argmax()].max()
+            )
+
             df['gen_v_pt_lhe'] = df['LHE_Vpt']
             df['gen_v_phi_lhe'] = np.zeros(df.size)
 
