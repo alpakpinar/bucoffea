@@ -116,7 +116,7 @@ def compare_two_gjets_samples(acc, samples, outtag, distribution='vpt', inclusiv
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 
-	outpath = pjoin(outdir, f"{'_VS_'.join(samples)}_{'inclusive' if inclusive else 'vbf'}.pdf")
+	outpath = pjoin(outdir, f"{'_VS_'.join(samples)}_{'inclusive' if inclusive else 'vbf'}_{distribution}.pdf")
 	fig.savefig(outpath)
 
 	print(f'File saved: {outpath}')
@@ -140,6 +140,9 @@ def main():
 	acc.load('sumw')
 	acc.load('sumw2')
 
+	# Distributions to compare against
+	distributions = ['vpt', 'mjj']
+
 	to_compare = [
 		('GJets_HT_2016', 'GJets_HT_2017'),
 		('GJets_HT_2016', 'GJets_DR-0p4_HT_2017'),
@@ -148,8 +151,9 @@ def main():
 	]
 
 	for samples in to_compare:
-		compare_two_gjets_samples(acc, samples=samples, inclusive=True, outtag=outtag)
-		compare_two_gjets_samples(acc, samples=samples, inclusive=False, outtag=outtag)
+		for distribution in distributions:
+			compare_two_gjets_samples(acc, samples=samples, inclusive=True, outtag=outtag, distribution=distribution)
+			compare_two_gjets_samples(acc, samples=samples, inclusive=False, outtag=outtag, distribution=distribution)
 
 if __name__ == '__main__':
 	main()
