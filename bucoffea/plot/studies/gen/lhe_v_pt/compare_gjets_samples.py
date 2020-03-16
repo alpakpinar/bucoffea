@@ -15,10 +15,11 @@ from coffea import hist
 
 pjoin = os.path.join
 
-def compare_two_gjets_samples(acc, samples, outtag, inclusive=True):
+def compare_two_gjets_samples(acc, samples, outtag, distribution='vpt', inclusive=True):
 	'''
-	Compare the v-pt distribution of several LO GJets samples.
-	List of samples is specified in samples argument.
+	Compare the specified distribution of several LO GJets samples.
+	List of samples is specified in "samples" argument.
+	The distribution to be compared is specified in "distribution" argument.
 
 	If inclusive option is set to True, look at distributions
 	without VBF cuts applied, otherwise look at distributions
@@ -28,26 +29,34 @@ def compare_two_gjets_samples(acc, samples, outtag, inclusive=True):
 	extract_year = lambda name: name.split('_')[-1]
 	years = map(extract_year, samples)
 
-	# V-pt distribution for photon samples
-	dist = 'gen_vpt_inclusive_stat1' if inclusive else 'gen_vpt_vbf_stat1'
+	# Get the distribution
+	# NOTE: For the VBF masked case, both mjj and vpt are stored in "gen_vpt_vbf_stat1" histogram
+	dist = f'gen_{distribution}_inclusive_stat1' if inclusive else 'gen_vpt_vbf_stat1'
 	
 	acc.load(dist)
 	h = acc[dist]
 
-	vpt_bin = hist.Bin('vpt', r'$p_T(V)\ (GeV)$', np.arange(200,1500,50))
-	h = h.rebin('vpt', vpt_bin)
+	rebin = {
+		'vpt' : hist.Bin('vpt', r'$p_T(V)\ (GeV)$', np.arange(200,1500,50)),
+		'mjj' : hist.Bin('mjj', r'$M_{jj}\ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
+	}
 
-	edges = h.axis('vpt').edges(overflow='over')
-	centers = h.axis('vpt').centers(overflow='over')
+	# Rebin
+	distbin = rebin[distribution]
+	h = h.rebin(distribution, distbin)
+
+	edges = h.axis(distribution).edges(overflow='over')
+	centers = h.axis(distribution).centers(overflow='over')
 
 	# Merging and scaling
 	h = merge_extensions(h, acc, reweight_pu=False)
 	scale_xs_lumi(h)
 	h = merge_datasets(h)
-	# Integrate over jet pt and mjj axes if looking at
+	# Integrate over jet pt and mjj or vpt axes if looking at
 	# distributions after VBF cuts are applied
 	if not inclusive:
-		h = h.integrate('jpt').integrate('mjj')
+		integrate_over = 'mjj' if distribution == 'vpt' else 'vpt'
+		h = h.integrate('jpt').integrate(integrate_over)
 
 	# Mapping from sample names to regular expressions
 	# for the relevant dataset names
@@ -97,10 +106,10 @@ def compare_two_gjets_samples(acc, samples, outtag, inclusive=True):
 		xlim = ax.get_xlim()
 		rax.plot(xlim, [1., 1.], 'r--')
 		rax.set_xlim(xlim)
-		rax.set_xlabel(vpt_bin.label)
+		rax.set_xlabel(distbin.label)
 
 	else:
-		ax.set_xlabel(vpt_bin.label)
+		ax.set_xlabel(distbin.label)
 
 	# Save figure
 	outdir = f'./output/gjets_comparisons/{outtag}'
