@@ -131,10 +131,16 @@ def main():
 	acc.load('sumw')
 	acc.load('sumw2')
 
-	compare_two_gjets_samples(acc, samples=['GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=True, outtag=outtag)
-	compare_two_gjets_samples(acc, samples=['GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=False, outtag=outtag)
-	compare_two_gjets_samples(acc, samples=['GJets_HT_2016', 'GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=True, outtag=outtag)
-	compare_two_gjets_samples(acc, samples=['GJets_HT_2016', 'GJets_HT_2017', 'GJets_DR-0p4_HT_2017'], inclusive=False, outtag=outtag)
+	to_compare = [
+		('GJets_HT_2016', 'GJets_HT_2017'),
+		('GJets_HT_2016', 'GJets_DR-0p4_HT_2017'),
+		('GJets_HT_2017', 'GJets_DR-0p4_HT_2017'),
+		('GJets_HT_2016', 'GJets_HT_2017', 'GJets_DR-0p4_HT_2017')
+	]
+
+	for samples in to_compare:
+		compare_two_gjets_samples(acc, samples=samples, inclusive=True, outtag=outtag)
+		compare_two_gjets_samples(acc, samples=samples, inclusive=False, outtag=outtag)
 
 if __name__ == '__main__':
 	main()
