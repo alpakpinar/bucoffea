@@ -79,7 +79,20 @@ def compare_two_gjets_samples(acc, samples, outtag, distribution='vpt', inclusiv
 	
 	ax.legend()
 	ax.set_yscale('log')
-	ax.set_ylim(1e-2, 1e8)
+
+	# y-axis limit for each parameter
+	ylims = {
+		'vpt' : (1e-2,1e8),
+		'mjj' : (1e0, 1e10)
+	}
+
+	# y-axis limits for the ratio pad for each parameter
+	err_ylims = {
+		'vpt' : (0.6,1.4),
+		'mjj' : (1.0,2.0)
+	}
+
+	ax.set_ylim( ylims[distribution] )
 	# Do not include overflow bin
 	ax.set_xlim(edges[0], edges[-2])
 	ax.set_ylabel('Counts')
@@ -101,7 +114,7 @@ def compare_two_gjets_samples(acc, samples, outtag, distribution='vpt', inclusiv
 
 		rax.errorbar(x=centers, y=ratio, yerr=unc, ls='', marker='o', color='k')
 		rax.grid(True)
-		rax.set_ylim(0.6, 1.4)
+		rax.set_ylim(err_ylims[distribution])
 
 		xlim = ax.get_xlim()
 		rax.plot(xlim, [1., 1.], 'r--')
