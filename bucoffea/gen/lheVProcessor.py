@@ -84,6 +84,9 @@ class lheVProcessor(processor.ProcessorABC):
             items[f"gen_vpt_inclusive_{tag}"] = Hist("Counts",
                                     dataset_ax,
                                     vpt_ax)
+            items[f'gen_mjj_inclusive_{tag}'] = Hist("Counts",
+                                        dataset_ax,
+                                        mjj_ax)
             items[f"gen_vpt_monojet_{tag}"] = Hist("Counts",
                                     dataset_ax,
                                     jpt_ax,
@@ -160,11 +163,10 @@ class lheVProcessor(processor.ProcessorABC):
             min_dr = pairs.i0.p4.delta_r(pairs.i1.p4).min()
             df['lhe_mindr_g_parton'] = min_dr
 
+        # Dijet for VBF
         dijet = genjets[:,:2].distincts()
         mjj = dijet.mass.max()
         for tag in tags:
-            # Dijet for VBF
-
             # Selection
             vbf_sel = vbf_selection(df[f'gen_v_phi_{tag}'], dijet, genjets)
             monojet_sel = monojet_selection(df[f'gen_v_phi_{tag}'], genjets)
@@ -176,6 +178,12 @@ class lheVProcessor(processor.ProcessorABC):
                                     vpt=df[f'gen_v_pt_{tag}'],
                                     weight=nominal
                                     )
+            
+            output[f'gen_mjj_inclusive_{tag}'].fill(
+                                    dataset=dataset,
+                                    mjj=mjj,
+                                    weight=nominal
+                                    )
                                     
             mask_vbf = vbf_sel.all(*vbf_sel.names)
             output[f'gen_vpt_vbf_{tag}'].fill(
@@ -185,6 +193,7 @@ class lheVProcessor(processor.ProcessorABC):
                                     mjj = mjj[mask_vbf],
                                     weight=nominal[mask_vbf]
                                     )
+
 
             # Fill the histogram with minimum deltaR between photons
             # and partons at LHE level
@@ -215,7 +224,7 @@ class lheVProcessor(processor.ProcessorABC):
                                                         mjj=mjj[full_mask_vbf],
                                                         weight=nominal[full_mask_vbf]
                                                     )
-                                    
+                                                    
             mask_monojet = monojet_sel.all(*monojet_sel.names)
 
             output[f'gen_vpt_monojet_{tag}'].fill(
