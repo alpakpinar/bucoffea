@@ -69,24 +69,41 @@ def monojet_selection(vphi, genjets):
 
 class lheVProcessor(processor.ProcessorABC):
     def __init__(self):
-
         # Histogram setup
         dataset_ax = Cat("dataset", "Primary dataset")
 
         vpt_ax = Bin("vpt",r"$p_{T}^{V}$ (GeV)", 50, 0, 2000)
         jpt_ax = Bin("jpt",r"$p_{T}^{j}$ (GeV)", 50, 0, 2000)
+        jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
         mjj_ax = Bin("mjj",r"$m(jj)$ (GeV)", 75, 0, 7500)
         res_ax = Bin("res",r"pt: dressed / stat1 - 1", 80,-0.2,0.2)
         dr_ax = Bin("dr", r"$\Delta R$", 100, 0, 10)
+        dphi_ax = Bin("dphi", r"$\Delta\phi$", 50, 0, 3.5)
+        deta_ax = Bin("deta", r"$\Delta\eta$", 50, 0, 10)
 
         items = {}
+        self.distributions = {
+            'vpt' : vpt_ax,
+            'mjj' : mjj_ax,
+            'ak4_pt0'  : jpt_ax,
+            'ak4_pt1'  : jpt_ax,
+            'ak4_eta0' : jet_eta_ax,
+            'ak4_eta1' : jet_eta_ax,
+            'detajj'   : deta_ax,
+            'dphijj'   : dphi_ax
+        }
+
         for tag in ['stat1','dress','lhe','combined']:
             items[f"gen_vpt_inclusive_{tag}"] = Hist("Counts",
-                                    dataset_ax,
-                                    vpt_ax)
-            items[f'gen_mjj_inclusive_{tag}'] = Hist("Counts",
                                         dataset_ax,
-                                        mjj_ax)
+                                        vpt_ax)
+
+            # Histograms for all variables, to be filled with only DR > 0.4 requirement applied
+            for dist, variable_ax in self.distributions.items():
+                items[f"gen_{dist}_inclusive_{tag}_withDRreq"] = Hist("Counts",
+                                        dataset_ax,
+                                        variable_ax)
+
             items[f"gen_vpt_monojet_{tag}"] = Hist("Counts",
                                     dataset_ax,
                                     jpt_ax,
@@ -96,11 +113,13 @@ class lheVProcessor(processor.ProcessorABC):
                                     jpt_ax,
                                     mjj_ax,
                                     vpt_ax)
-            items[f"gen_vpt_vbf_{tag}_withDRreq"] = Hist("Counts",
-                                            dataset_ax,
-                                            jpt_ax,
-                                            mjj_ax,
-                                            vpt_ax)
+            
+            # Histograms for all variables, full VBF selection + DR > 0.4 requirement applied
+            for dist, variable_ax in self.distributions.items():
+                items[f"gen_{dist}_vbf_{tag}_withDRreq"] = Hist("Counts",
+                                                dataset_ax,
+                                                variable_ax)
+                                                
             items[f'lhe_mindr_g_parton_{tag}'] = Hist("Counts",
                                                 dataset_ax,
                                                 dr_ax)
@@ -165,7 +184,15 @@ class lheVProcessor(processor.ProcessorABC):
 
         # Dijet for VBF
         dijet = genjets[:,:2].distincts()
-        mjj = dijet.mass.max()
+        df['mjj'] = dijet.mass.max()
+
+        # Leading and trailing jet pt and etas
+        df['ak4_pt0'], df['ak4_eta0'] = dijet.i0.pt.max(), dijet.i0.eta.max()
+        df['ak4_pt1'], df['ak4_eta1'] = dijet.i1.pt.max(), dijet.i1.eta.max()
+
+        df['detajj'] = np.abs(df['ak4_eta0'] - df['ak4_eta1'])
+        df['dphijj'] = dphi(dijet.i0.phi, dijet.i1.phi).min()
+
         for tag in tags:
             # Selection
             vbf_sel = vbf_selection(df[f'gen_v_phi_{tag}'], dijet, genjets)
@@ -178,19 +205,13 @@ class lheVProcessor(processor.ProcessorABC):
                                     vpt=df[f'gen_v_pt_{tag}'],
                                     weight=nominal
                                     )
-            
-            output[f'gen_mjj_inclusive_{tag}'].fill(
-                                    dataset=dataset,
-                                    mjj=mjj,
-                                    weight=nominal
-                                    )
                                     
             mask_vbf = vbf_sel.all(*vbf_sel.names)
             output[f'gen_vpt_vbf_{tag}'].fill(
                                     dataset=dataset,
                                     vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
                                     jpt=genjets.pt.max()[mask_vbf],
-                                    mjj = mjj[mask_vbf],
+                                    mjj = df['mjj'][mask_vbf],
                                     weight=nominal[mask_vbf]
                                     )
 
@@ -216,15 +237,37 @@ class lheVProcessor(processor.ProcessorABC):
                                                 weight=nominal[mask_vbf]
                                                 )
                 
-                # Fill V-pt and mjj with the deltaR > 0.4 requirement
-                output[f'gen_vpt_vbf_{tag}_withDRreq'].fill(
+                def ezfill(dist, mask, **kwargs):
+                    '''Function for easier histogram filling.'''
+                    output[f'gen_{dist}_{mask}_stat1_withDRreq'].fill(
                                                         dataset=dataset,
-                                                        vpt=df[f'gen_v_pt_{tag}'][full_mask_vbf],
-                                                        jpt=genjets.pt.max()[full_mask_vbf],
-                                                        mjj=mjj[full_mask_vbf],
-                                                        weight=nominal[full_mask_vbf]
+                                                        **kwargs
                                                     )
-                                                    
+
+                # Fill histograms with no selection + DR > 0.4 requirement
+                ezfill('vpt', mask='inclusive', vpt=df['gen_v_pt_stat1'][dr_mask], weight=nominal[dr_mask])
+                ezfill('mjj', mask='inclusive', mjj=df['mjj'][dr_mask], weight=nominal[dr_mask])
+                
+                ezfill('ak4_pt0', mask='inclusive', jpt=df['ak4_pt0'][dr_mask], weight=nominal[dr_mask])
+                ezfill('ak4_pt1', mask='inclusive', jpt=df['ak4_pt1'][dr_mask], weight=nominal[dr_mask])
+                ezfill('ak4_eta0', mask='inclusive', jeteta=df['ak4_eta0'][dr_mask], weight=nominal[dr_mask])
+                ezfill('ak4_eta1', mask='inclusive', jeteta=df['ak4_eta1'][dr_mask], weight=nominal[dr_mask])
+
+                ezfill('detajj', mask='inclusive', deta=df['detajj'][dr_mask], weight=nominal[dr_mask])
+                ezfill('dphijj', mask='inclusive', dphi=df['dphijj'][dr_mask], weight=nominal[dr_mask])
+
+                # Fill histograms with VBF selection + DR > 0.4 requirement
+                ezfill('vpt', mask='vbf', vpt=df['gen_v_pt_stat1'][full_mask_vbf], weight=nominal[full_mask_vbf])
+                ezfill('mjj', mask='vbf', mjj=df['mjj'][full_mask_vbf], weight=nominal[full_mask_vbf])
+                
+                ezfill('ak4_pt0', mask='vbf', jpt=df['ak4_pt0'][full_mask_vbf], weight=nominal[full_mask_vbf])
+                ezfill('ak4_pt1', mask='vbf', jpt=df['ak4_pt1'][full_mask_vbf], weight=nominal[full_mask_vbf])
+                ezfill('ak4_eta0', mask='vbf', jeteta=df['ak4_eta0'][full_mask_vbf], weight=nominal[full_mask_vbf])
+                ezfill('ak4_eta1', mask='vbf', jeteta=df['ak4_eta1'][full_mask_vbf], weight=nominal[full_mask_vbf])
+
+                ezfill('detajj', mask='vbf', deta=df['detajj'][full_mask_vbf], weight=nominal[full_mask_vbf])
+                ezfill('dphijj', mask='vbf', dphi=df['dphijj'][full_mask_vbf], weight=nominal[full_mask_vbf])
+                                   
             mask_monojet = monojet_sel.all(*monojet_sel.names)
 
             output[f'gen_vpt_monojet_{tag}'].fill(
