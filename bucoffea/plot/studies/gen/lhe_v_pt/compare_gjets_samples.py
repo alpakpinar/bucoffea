@@ -30,37 +30,35 @@ def compare_two_gjets_samples(acc, samples, outtag, distribution='vpt', inclusiv
 	years = map(extract_year, samples)
 
 	# Get the distribution
-	# NOTE: For the VBF masked case, both mjj and vpt are stored in "gen_vpt_vbf_stat1" histogram
-	dist = f'gen_{distribution}_inclusive_stat1' if inclusive else 'gen_vpt_vbf_stat1'
+	dist = f'gen_{distribution}_inclusive_stat1_withDRreq' if inclusive else f'gen_{distribution}_vbf_stat1_withDRreq'
 	
 	acc.load(dist)
 	h = acc[dist]
 
 	rebin = {
 		'vpt' : hist.Bin('vpt', r'$p_T(V)\ (GeV)$', np.arange(200,1500,50)),
-		'mjj' : hist.Bin('mjj', r'$M_{jj}\ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
+		'mjj' : hist.Bin('mjj', r'$M_{jj}\ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
+		'ak4_pt0' : hist.Bin('jpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,1080,50)) ),
+		'ak4_pt1' : hist.Bin('jpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,640,50)) )
 	}
 
-	# Rebin
-	distbin = rebin[distribution]
-	h = h.rebin(distribution, distbin)
+	# Rebin, if neccessary
+	if distribution in rebin.keys():
+		distbin = rebin[distribution]
+		h = h.rebin(distbin.name, distbin)
 
-	edges = h.axis(distribution).edges(overflow='over')
-	centers = h.axis(distribution).centers(overflow='over')
+	xaxis = h.axes()[1]
+
+	edges = xaxis.edges(overflow='over')
+	centers = xaxis.centers(overflow='over')
 
 	# Merging and scaling
 	h = merge_extensions(h, acc, reweight_pu=False)
 	scale_xs_lumi(h)
 	h = merge_datasets(h)
-	# Integrate over jet pt and mjj or vpt axes if looking at
-	# distributions after VBF cuts are applied
-	if not inclusive:
-		integrate_over = 'mjj' if distribution == 'vpt' else 'vpt'
-		h = h.integrate('jpt').integrate(integrate_over)
 
 	# Mapping from sample names to regular expressions
 	# for the relevant dataset names
-	# TODO: Generalize to multiple years
 	sample_to_regex = {s : s.replace(f'{year}',f'.*_{year}') for year, s in zip(years, samples)}
 
 	# Store histograms from each dataset in a dictionary
@@ -80,13 +78,7 @@ def compare_two_gjets_samples(acc, samples, outtag, distribution='vpt', inclusiv
 	ax.legend()
 	ax.set_yscale('log')
 
-	# y-axis limit for each parameter
-	ylims = {
-		'vpt' : (1e-2,1e8),
-		'mjj' : (1e0, 1e10)
-	}
-
-	ax.set_ylim( ylims[distribution] )
+	ax.set_ylim(1e0,1e10)
 	# Do not include overflow bin
 	ax.set_xlim(edges[0], edges[-2])
 	ax.set_ylabel('Counts')
@@ -113,20 +105,22 @@ def compare_two_gjets_samples(acc, samples, outtag, distribution='vpt', inclusiv
 		xlim = ax.get_xlim()
 		rax.plot(xlim, [1., 1.], 'r--')
 		rax.set_xlim(xlim)
-		rax.set_xlabel(distbin.label)
+		rax.set_xlabel(xaxis.label)
 
 	else:
-		ax.set_xlabel(distbin.label)
+		ax.set_xlabel(xaxis.label)
 
 	# Save figure
-	outdir = f'./output/gjets_comparisons/{outtag}'
+	outdir = f'./output/gjets_comparisons/{outtag}/{distribution}'
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 
-	outpath = pjoin(outdir, f"{'_VS_'.join(samples)}_{'inclusive' if inclusive else 'vbf'}_{distribution}.pdf")
+	outpath = pjoin(outdir, f"{'_VS_'.join(samples)}_{'inclusive' if inclusive else 'vbf'}.pdf")
 	fig.savefig(outpath)
 
 	print(f'File saved: {outpath}')
+
+	plt.close()
 
 def main():
 	inpath = sys.argv[1]
@@ -148,7 +142,14 @@ def main():
 	acc.load('sumw2')
 
 	# Distributions to compare against
-	distributions = ['vpt', 'mjj']
+	distributions = ['vpt', 
+			'mjj', 
+			'ak4_pt0', 
+			'ak4_pt1',
+			'ak4_eta0',
+			'ak4_eta1',
+			'detajj',
+			'dphijj']
 
 	to_compare = [
 		('GJets_HT_2016', 'GJets_HT_2017'),
