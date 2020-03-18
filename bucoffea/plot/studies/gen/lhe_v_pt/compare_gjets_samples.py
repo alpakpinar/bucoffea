@@ -68,9 +68,7 @@ def compare_two_gjets_samples(acc, samples, outtag, distribution='vpt', inclusiv
 
     for dataset, histo in histos.items():
         vals = histo.values(overflow='over')[()]
-        total_vals = np.sum(vals)
-        norm_vals = vals / total_vals
-        ax.plot(centers, norm_vals, label=dataset, marker='o')
+        ax.plot(centers, vals, label=dataset, marker='o')
     
     ax.legend()
 
@@ -128,6 +126,7 @@ def main():
             'dphijj']
 
     to_compare = [
+        ('GJets_DR-0p4_HT_2016', 'GJets_DR-0p4_HT_2017'),
         ('GJets_HT_2016', 'GJets_HT_2017'),
         ('GJets_HT_2016', 'GJets_DR-0p4_HT_2017'),
         ('GJets_HT_2017', 'GJets_DR-0p4_HT_2017'),
