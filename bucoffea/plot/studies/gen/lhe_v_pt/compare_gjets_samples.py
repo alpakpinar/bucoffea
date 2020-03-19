@@ -152,6 +152,7 @@ def main():
 			'dphijj']
 
 	to_compare = [
+        ('GJets_DR-0p4_HT_2016', 'GJets_DR-0p4_HT_2017'),
 		('GJets_HT_2016', 'GJets_HT_2017'),
 		('GJets_HT_2016', 'GJets_DR-0p4_HT_2017'),
 		('GJets_HT_2017', 'GJets_DR-0p4_HT_2017'),
