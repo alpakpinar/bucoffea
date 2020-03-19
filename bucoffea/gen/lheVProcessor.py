@@ -48,6 +48,29 @@ def vbf_selection(vphi, dijet, genjets):
 
     return selection
 
+def get_partial_mask_vbf(selection, exclude):
+    '''
+    Return a mask for partial VBF requirements. In the mask,
+    all cuts will be required until the "exclude" cut is seen.
+    '''
+    # Require all cuts if none is going to be excluded
+    if exclude == 'none':
+        mask = selection.all(*selection.names)
+        return mask
+    
+    cutnames = selection.names
+    requirements = {}
+    for cutname in cutnames:
+        if cutname != exclude:
+            requirements[cutname] = True
+        elif cutname == exclude:
+            break
+
+    # Get the mask out of selection object
+    mask = selection.require(**requirements)
+    
+    return mask
+
 def monojet_selection(vphi, genjets):
     selection = processor.PackedSelection()
 
@@ -71,6 +94,7 @@ class lheVProcessor(processor.ProcessorABC):
     def __init__(self):
         # Histogram setup
         dataset_ax = Cat("dataset", "Primary dataset")
+        cut_ax = Cat("cut", "Excluded Cut")
 
         vpt_ax = Bin("vpt",r"$p_{T}^{V}$ (GeV)", 50, 0, 2000)
         jpt_ax = Bin("jpt",r"$p_{T}^{j}$ (GeV)", 50, 0, 2000)
@@ -118,7 +142,8 @@ class lheVProcessor(processor.ProcessorABC):
             for dist, variable_ax in self.distributions.items():
                 items[f"gen_{dist}_vbf_{tag}_withDRreq"] = Hist("Counts",
                                                 dataset_ax,
-                                                variable_ax)
+                                                variable_ax,
+                                                cut_ax)
                                                 
             items[f'lhe_mindr_g_parton_{tag}'] = Hist("Counts",
                                                 dataset_ax,
@@ -138,7 +163,6 @@ class lheVProcessor(processor.ProcessorABC):
     @property
     def accumulator(self):
         return self._accumulator
-
 
     def process(self, df):
         output = self.accumulator.identity()
@@ -207,6 +231,7 @@ class lheVProcessor(processor.ProcessorABC):
                                     )
                                     
             mask_vbf = vbf_sel.all(*vbf_sel.names)
+
             output[f'gen_vpt_vbf_{tag}'].fill(
                                     dataset=dataset,
                                     vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
@@ -256,17 +281,21 @@ class lheVProcessor(processor.ProcessorABC):
                 ezfill('detajj', mask='inclusive', deta=df['detajj'][dr_mask], weight=nominal[dr_mask])
                 ezfill('dphijj', mask='inclusive', dphi=df['dphijj'][dr_mask], weight=nominal[dr_mask])
 
-                # Fill histograms with VBF selection + DR > 0.4 requirement
-                ezfill('vpt', mask='vbf', vpt=df['gen_v_pt_stat1'][full_mask_vbf], weight=nominal[full_mask_vbf])
-                ezfill('mjj', mask='vbf', mjj=df['mjj'][full_mask_vbf], weight=nominal[full_mask_vbf])
-                
-                ezfill('ak4_pt0', mask='vbf', jpt=df['ak4_pt0'][full_mask_vbf], weight=nominal[full_mask_vbf])
-                ezfill('ak4_pt1', mask='vbf', jpt=df['ak4_pt1'][full_mask_vbf], weight=nominal[full_mask_vbf])
-                ezfill('ak4_eta0', mask='vbf', jeteta=df['ak4_eta0'][full_mask_vbf], weight=nominal[full_mask_vbf])
-                ezfill('ak4_eta1', mask='vbf', jeteta=df['ak4_eta1'][full_mask_vbf], weight=nominal[full_mask_vbf])
-
-                ezfill('detajj', mask='vbf', deta=df['detajj'][full_mask_vbf], weight=nominal[full_mask_vbf])
-                ezfill('dphijj', mask='vbf', dphi=df['dphijj'][full_mask_vbf], weight=nominal[full_mask_vbf])
+                # Fill histograms for separate points in the cutflow
+                cuts_to_exclude = vbf_sel.names[1:] + ['none']
+                for cut in cuts_to_exclude:
+                    mask = get_partial_mask_vbf(selection=vbf_sel, exclude=cut) * dr_mask # Include DR > 0.4 requirement
+                    # Fill histograms with (partial) VBF selection + DR > 0.4 requirement
+                    ezfill('vpt', mask='vbf', vpt=df['gen_v_pt_stat1'][mask], cut=cut, weight=nominal[mask])
+                    ezfill('mjj', mask='vbf', mjj=df['mjj'][mask], cut=cut, weight=nominal[mask])
+                    
+                    ezfill('ak4_pt0', mask='vbf', jpt=df['ak4_pt0'][mask], cut=cut, weight=nominal[mask])
+                    ezfill('ak4_pt1', mask='vbf', jpt=df['ak4_pt1'][mask], cut=cut, weight=nominal[mask])
+                    ezfill('ak4_eta0', mask='vbf', jeteta=df['ak4_eta0'][mask], cut=cut, weight=nominal[mask])
+                    ezfill('ak4_eta1', mask='vbf', jeteta=df['ak4_eta1'][mask], cut=cut, weight=nominal[mask])
+    
+                    ezfill('detajj', mask='vbf', deta=df['detajj'][mask], cut=cut, weight=nominal[mask])
+                    ezfill('dphijj', mask='vbf', dphi=df['dphijj'][mask], cut=cut, weight=nominal[mask])
                                    
             mask_monojet = monojet_sel.all(*monojet_sel.names)
 
@@ -276,7 +305,6 @@ class lheVProcessor(processor.ProcessorABC):
                                     jpt=genjets.pt.max()[mask_monojet],
                                     weight=nominal[mask_monojet]
                                     )
-
 
         # Keep track of weight sum
         output['sumw'][dataset] +=  df['genEventSumw']
