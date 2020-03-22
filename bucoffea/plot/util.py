@@ -304,7 +304,7 @@ def lumi(year):
     if year==2018:
         return 59.7
     if year==2017:
-        return 41.5
+        return 35.9
     if year==2016:
         return 35.9
 
