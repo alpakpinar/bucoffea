@@ -122,12 +122,6 @@ class lheVProcessor(processor.ProcessorABC):
                                         dataset_ax,
                                         vpt_ax)
 
-            # Histograms for all variables, to be filled with only DR > 0.4 requirement applied
-            # for dist, variable_ax in self.distributions.items():
-                # items[f"gen_{dist}_inclusive_{tag}_withDRreq"] = Hist("Counts",
-                                        # dataset_ax,
-                                        # variable_ax)
-
             items[f"gen_vpt_monojet_{tag}"] = Hist("Counts",
                                     dataset_ax,
                                     jpt_ax,
