@@ -91,16 +91,20 @@ def compare_two_gjets_samples(acc, samples, outtag, cutlabels, distribution='vpt
     ax.set_xlim(edges[0], edges[-2])
     ax.set_ylabel('Counts')
 
+    # Store 2016/2017 ratios and uncertainties on the ratios in a dictionary
+    ratios_and_uncs = {}
+
     # Compute the ratios for each cut and the uncertainty on the ratio
     for cutlabel in cutlabels:
         sumw_1, sumw2_1 = histos[samples[0]].integrate('cut', cutlabel).values(overflow='over', sumw2=True)[()]
         sumw_2, sumw2_2 = histos[samples[1]].integrate('cut', cutlabel).values(overflow='over', sumw2=True)[()]
-        
         ratio = sumw_1 / sumw_2
         unc = np.hypot(
             np.sqrt(sumw2_1) / sumw_1,
             np.sqrt(sumw2_2) / sumw_2,
         )
+
+        ratios_and_uncs[cutlabel] = {'ratio' : ratio, 'unc' : unc}
 
         rax.errorbar(x=centers, y=ratio, yerr=unc, ls='', marker='o', label=cutlabel)
         rax.grid(True)
@@ -122,6 +126,9 @@ def compare_two_gjets_samples(acc, samples, outtag, cutlabels, distribution='vpt
     print(f'File saved: {outpath}')
 
     plt.close()
+
+    # Return dictionary containing ratios and uncertainties on the ratios
+    return ratios_and_uncs
 
 def main():
     inpath = sys.argv[1]
@@ -168,13 +175,17 @@ def main():
         ('inclusive', 'all_cuts_applied')
     ]
 
+    ratios_and_uncs = {}
+
     # Compare GJets DR samples from 2016 and 2017
     # Ignore runtime warnings (due to invalid ratio) for now
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         for distribution in distributions:
+            ratios_and_uncs[distribution] = {}
             for cutlabels in cutlabels_list:
-                compare_two_gjets_samples(acc, distribution=distribution, samples=to_compare[0], outtag=outtag, cutlabels=cutlabels)
+                d = compare_two_gjets_samples(acc, distribution=distribution, samples=to_compare[0], outtag=outtag, cutlabels=cutlabels)
+                ratios_and_uncs[distribution].update(d)
 
 if __name__ == '__main__':
     main()
