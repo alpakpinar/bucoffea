@@ -19,8 +19,12 @@ pjoin = os.path.join
 rebin = {
     'vpt' : hist.Bin('vpt', r'$p_T(V)\ (GeV)$', np.arange(200,1500,50)),
     'mjj' : hist.Bin('mjj', r'$M_{jj}\ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
-    'ak4_pt0' : hist.Bin('jpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,1080,50)) ),
-    'ak4_pt1' : hist.Bin('jpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,640,50)) )
+    'ak4_pt0'  : hist.Bin('jpt',r'Leading AK4 Jet $p_{T}$ (GeV)',list(range(80,1080,50)) ),
+    'ak4_pt1'  : hist.Bin('jpt',r'Trailing AK4 Jet $p_{T}$ (GeV)',list(range(40,640,50)) ),
+    'ak4_eta0' : hist.Bin('jeteta',r'Leading Jet $\eta$', 50, -5, 5),
+    'ak4_eta1' : hist.Bin('jeteta',r'Trailing Jet $\eta$', 50, -5, 5),
+    'detajj' : hist.Bin('deta', r'$\Delta \eta_{jj}$', 50, 0, 10),
+    'dphijj' : hist.Bin('dphi', r'$\Delta \phi_{jj}$', 50, 0, 3.5)
 }
 
 def compare_two_gjets_samples(acc, samples, outtag, cutlabels, distribution='vpt'):
@@ -78,7 +82,7 @@ def compare_two_gjets_samples(acc, samples, outtag, cutlabels, distribution='vpt
     }
 
     # Plot for all cuts requested
-    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
+    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (2, 1)}, sharex=True)
     for cutlabel in cutlabels:
         for dataset, histo in histos.items():
             h = histo.integrate('cut', cutlabel)
@@ -108,10 +112,10 @@ def compare_two_gjets_samples(acc, samples, outtag, cutlabels, distribution='vpt
 
         rax.errorbar(x=centers, y=ratio, yerr=unc, ls='', marker='o', label=cutlabel)
         rax.grid(True)
-        rax.set_ylim(0.6, 1.4)
+        rax.set_ylim(0.8, 1.2)
         rax.set_ylabel('2016 / 2017')
         rax.set_xlabel(xaxis.label)
-        rax.legend()
+        rax.legend(loc='lower right')
     
     # Save figure
     outdir = f'./output/gjets_comparisons/{outtag}/{"_vs_".join(samples)}/{distribution}'
@@ -129,6 +133,35 @@ def compare_two_gjets_samples(acc, samples, outtag, cutlabels, distribution='vpt
 
     # Return dictionary containing ratios and uncertainties on the ratios
     return ratios_and_uncs
+
+def plot_all_ratios(ratios_and_uncs, samples, distribution, outtag):
+    '''
+    Given the dictionary containing the ratios and uncertainties on the ratios,
+    plot all ratios and uncertainties on the same pad.
+    '''
+    d = ratios_and_uncs[distribution]
+    xcenters = rebin[distribution].centers(overflow='over')
+    fig, ax = plt.subplots(1,1)
+
+    for cutlabel, valuedict in d.items():
+        # Get ratios and uncertainties for each cut label
+        ratios, uncs = valuedict.values()
+        ax.errorbar(x=xcenters, y=ratios, yerr=uncs, label=cutlabel, marker='o', ls='', alpha=0.7)
+    
+    ax.grid(True)
+    ax.set_ylim(0.8, 1.2)
+    ax.set_ylabel('2016 / 2017')
+    ax.set_xlabel(rebin[distribution].label)
+    ax.legend(ncol=2)
+
+    outdir = f'./output/gjets_comparisons/{outtag}/{"_vs_".join(samples)}/{distribution}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    outpath = pjoin(outdir, 'all_ratios.pdf')
+    fig.savefig(outpath)
+
+    print(f'File saved: {outpath}')
 
 def main():
     inpath = sys.argv[1]
@@ -164,7 +197,6 @@ def main():
         ('GJets_HT_2016', 'GJets_HT_2017'),
         ('GJets_HT_2016', 'GJets_DR-0p4_HT_2017'),
         ('GJets_HT_2017', 'GJets_DR-0p4_HT_2017'),
-        ('GJets_HT_2016', 'GJets_HT_2017', 'GJets_DR-0p4_HT_2017')
     ]
 
     # Cut labels for different points in cutflow
@@ -184,8 +216,12 @@ def main():
         for distribution in distributions:
             ratios_and_uncs[distribution] = {}
             for cutlabels in cutlabels_list:
+                # Get 2016 / 2017 GJets ratios and plots for the distributions
                 d = compare_two_gjets_samples(acc, distribution=distribution, samples=to_compare[0], outtag=outtag, cutlabels=cutlabels)
                 ratios_and_uncs[distribution].update(d)
+
+            # Plot 2016 / 2017 GJets ratios for all points in the cutflow
+            plot_all_ratios(ratios_and_uncs, distribution=distribution, samples=to_compare[0], outtag=outtag)
 
 if __name__ == '__main__':
     main()
