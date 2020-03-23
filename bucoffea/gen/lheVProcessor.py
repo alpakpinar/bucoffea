@@ -246,6 +246,8 @@ class lheVProcessor(processor.ProcessorABC):
                 # Add new deltaR requirement:
                 # deltaR > 0.4 for every event
                 dr_mask = df['lhe_mindr_g_parton'] > 0.4
+                # V-pt > 150 for every event
+                vpt_mask = df['gen_v_pt_stat1'] > 150
                 full_mask_vbf = mask_vbf*dr_mask
 
                 # Fill the histogram with the deltaR requirement
@@ -273,10 +275,10 @@ class lheVProcessor(processor.ProcessorABC):
                 cut_labels = ['inclusive'] + [f'up_to_{cut}' for cut in cuts_to_exclude[1:] if cut != 'none'] + ['all_cuts_applied']
 
                 for cut, cutlabel in zip(cuts_to_exclude, cut_labels):
-                    # Get partial VBF masks, also with DR > 0.4 requirement applied
-                    mask = get_partial_mask_vbf(selection=vbf_sel, exclude=cut) * dr_mask 
+                    # Get partial VBF masks, also with DR > 0.4 and V-pt > 150 GeV requirements applied
+                    mask = get_partial_mask_vbf(selection=vbf_sel, exclude=cut) * dr_mask * vpt_mask
 
-                    # Fill histograms with (partial) VBF selection + DR > 0.4 requirement
+                    # Fill histograms with (partial) VBF selection + DR > 0.4 + V-pt > 150 GeV requirements
                     ezfill('vpt', vpt=df['gen_v_pt_stat1'][mask], cut=cutlabel, weight=nominal[mask])
                     ezfill('mjj', mjj=df['mjj'][mask], cut=cutlabel, weight=nominal[mask])
                     
