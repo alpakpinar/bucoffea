@@ -147,9 +147,6 @@ class lheVProcessor(processor.ProcessorABC):
                 items[f'lhe_mindr_g_parton_{tag}'] = Hist("Counts",
                                                     dataset_ax,
                                                     dr_ax)
-                items[f'lhe_mindr_g_parton_{tag}_noDRreq'] = Hist("Counts",
-                                        dataset_ax,
-                                        dr_ax)
 
         items["resolution"] = Hist("Counts",
                                 dataset_ax,
@@ -169,6 +166,8 @@ class lheVProcessor(processor.ProcessorABC):
 
         genjets = setup_lhe_cleaned_genjets(df)
 
+        is_photon_sample = is_lo_g(dataset) | is_nlo_g(dataset) | is_lo_g_ewk(dataset) | is_nlo_g_ewk(dataset)
+
         # Dilepton
         gen = setup_gen_candidates(df)
         tags = ['stat1','lhe']
@@ -176,7 +175,7 @@ class lheVProcessor(processor.ProcessorABC):
             dressed = setup_dressed_gen_candidates(df)
             fill_gen_v_info(df, gen, dressed)
             tags.extend(['dress','combined'])
-        elif is_lo_g(dataset) or is_nlo_g(dataset) or is_lo_g_ewk(dataset) or is_nlo_g_ewk(dataset):
+        elif is_photon_sample:
             photons = gen[(gen.status==1) & (gen.pdg==22)]
             prompt_photons = photons[(photons.flag&1 == 1) & (np.abs(photons.eta)<1.442)]
             # Check if a prompt photon exists in the event
@@ -229,7 +228,13 @@ class lheVProcessor(processor.ProcessorABC):
                                     weight=nominal
                                     )
                                     
-            mask_vbf = vbf_sel.all(*vbf_sel.names)
+            mask_vbf = vbf_sel.all(*vbf_sel.names) 
+
+            # For photons, add DR > 0.4 and V-pt > 150 GeV requirements
+            if is_photon_sample and tag == 'stat1':
+                dr_mask = df['lhe_mindr_g_parton'] > 0.4
+                vpt_mask = df['gen_v_pt_stat1'] > 150
+                mask_vbf *= dr_mask * vpt_mask 
 
             output[f'gen_vpt_vbf_{tag}'].fill(
                                     dataset=dataset,
@@ -241,27 +246,13 @@ class lheVProcessor(processor.ProcessorABC):
 
             # Fill histograms for deltaR distribution between photons and partons at LHE level
             # Also fill some gen-level distributions (only for photons for now)
-            is_photon_sample = is_lo_g(dataset) | is_nlo_g(dataset) | is_lo_g_ewk(dataset) | is_nlo_g_ewk(dataset)
             if is_photon_sample and tag == 'stat1':
-                # Add new deltaR requirement:
-                # deltaR > 0.4 for every event
-                dr_mask = df['lhe_mindr_g_parton'] > 0.4
-                # V-pt > 150 for every event
-                vpt_mask = df['gen_v_pt_stat1'] > 150
-                full_mask_vbf = mask_vbf*dr_mask
-
                 # Fill the histogram with the deltaR requirement
                 output[f'lhe_mindr_g_parton_{tag}'].fill(
                                             dataset=dataset,
-                                            dr=df['lhe_mindr_g_parton'][full_mask_vbf],
-                                            weight=nominal[full_mask_vbf]
+                                            dr=df['lhe_mindr_g_parton'][mask_vbf],
+                                            weight=nominal[mask_vbf]
                                             )
-                # Fill the histogram without the deltaR requirement
-                output[f'lhe_mindr_g_parton_{tag}_noDRreq'].fill(
-                                                dataset=dataset,
-                                                dr=df['lhe_mindr_g_parton'][mask_vbf],
-                                                weight=nominal[mask_vbf]
-                                                )
                 
                 def ezfill(dist, **kwargs):
                     '''Function for easier histogram filling.'''
