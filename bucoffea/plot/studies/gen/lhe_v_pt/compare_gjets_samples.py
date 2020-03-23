@@ -143,10 +143,13 @@ def plot_all_ratios(ratios_and_uncs, samples, distribution, outtag):
     xcenters = rebin[distribution].centers(overflow='over')
     fig, ax = plt.subplots(1,1)
 
-    for cutlabel, valuedict in d.items():
+    # Update cut labels for the ratio plot
+    cutlabels = ['0: inclusive', r'1: $N_{jet} \geq 2$'] + [f'{idx+1}: {idx} + {re.sub("up_to_", "", cutlabel)}' for (idx, cutlabel) in enumerate(d.keys()) if cutlabel.startswith('up_to')]
+
+    for idx, valuedict in enumerate(d.values()):
         # Get ratios and uncertainties for each cut label
         ratios, uncs = valuedict.values()
-        ax.errorbar(x=xcenters, y=ratios, yerr=uncs, label=cutlabel, marker='o', ls='', alpha=0.7)
+        ax.errorbar(x=xcenters, y=ratios, yerr=uncs, label=cutlabels[idx], marker='o', ls='', alpha=0.7)
     
     ax.grid(True)
     ax.set_ylim(0.8, 1.2)
