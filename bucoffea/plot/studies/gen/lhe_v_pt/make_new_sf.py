@@ -122,13 +122,13 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
 
 
     if tag in ['dy', 'wjet']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200])
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[150, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200])
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',list(range(0,2500,500)))
         clims = 0.5,1.5
     elif tag in ['gjets']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640])
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[150, 200, 240, 280, 320, 400, 520, 640])
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000,1500])
-        clims = 1.0, 1.5
+        clims = 1.0, 2.5
 
     for selection in ['vbf']:
         dist = f'gen_vpt_{selection}_{pt_type}'
@@ -144,7 +144,11 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
         h = merge_datasets(h)
         h = h[re.compile(regex)]
 
-        lo = h[re.compile('.*HT.*')].integrate('dataset')
+        # If running over GJets samples, choose DR samples as LO 
+        if tag == 'gjets':
+            lo = h[re.compile('GJets_DR-0p4_HT.*')].integrate('dataset')
+        else:
+            lo = h[re.compile('.*HT.*')].integrate('dataset')
         nlo = h[re.compile('.*(LHE|amcat).*')].integrate('dataset')
 
         sumw_lo, sumw2_lo = lo.values(overflow='over', sumw2=True)[()]
