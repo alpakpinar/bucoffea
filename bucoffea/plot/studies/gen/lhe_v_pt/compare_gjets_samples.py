@@ -17,7 +17,7 @@ from coffea import hist
 pjoin = os.path.join
 
 rebin = {
-    'vpt' : hist.Bin('vpt', r'$p_T(V)\ (GeV)$', np.arange(200,1500,50)),
+    'vpt' : hist.Bin('vpt', r'$p_T(V)\ (GeV)$', np.arange(150,1500,50)),
     'mjj' : hist.Bin('mjj', r'$M_{jj}\ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
     'ak4_pt0'  : hist.Bin('jpt',r'Leading AK4 Jet $p_{T}$ (GeV)',list(range(80,1080,50)) ),
     'ak4_pt1'  : hist.Bin('jpt',r'Trailing AK4 Jet $p_{T}$ (GeV)',list(range(40,640,50)) ),
