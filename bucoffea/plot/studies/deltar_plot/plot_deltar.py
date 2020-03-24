@@ -85,8 +85,10 @@ def plot_comparison(vals, datasets, tag, outtag):
     # Labels for ratio legends
     pretty_label_ratio = {
         'gjets_dr_2017 / gjets_ht_2017' : 'DR 2017 / Non-DR 2017',
-        'gjets_dr_2016 / gjets_ht_2017' : 'DR 2016 / Non-DR 2017',
         'gjets_dr_2017 / gjets_ht_2016' : 'DR 2017 / Non-DR 2016',
+        'gjets_dr_2016 / gjets_ht_2017' : 'DR 2016 / Non-DR 2017',
+        'gjets_dr_2016 / gjets_dr_2017' : 'DR 2016 / DR 2017',
+        'gjets_dr_2016 / gjets_ht_2016' : 'DR 2016 / Non-DR 2016',
         'gjets_ht_2017 / gjets_ht_2016' : 'Non-DR 2017 / Non-DR 2016',
         'gjets_nlo_2016 / gjets_ht_2017' : 'NLO 2016 / Non-DR 2017',
         'gjets_nlo_2016 / gjets_ht_2016' : 'NLO 2016 / Non-DR 2016',
@@ -117,6 +119,7 @@ def plot_comparison(vals, datasets, tag, outtag):
     ax.legend()
 
     ax_ylim = ax.get_ylim()
+    ax.set_xlim(0,2)
     ax.plot([0.4,0.4], ax_ylim, 'r')
     ax.set_ylim(ax_ylim)
 
@@ -204,7 +207,8 @@ def main():
 
     # Get the comparison plots
     comparisons = {
-        'gjets_dr_16_VS_gjets_ht_17'  : ['gjets_dr_2016', 'gjets_ht_2017'],
+        'gjets_dr_16_VS_gjets_ht_16'  : ['gjets_dr_2016', 'gjets_ht_2016'],
+        'gjets_dr_16_VS_gjets_dr_17'  : ['gjets_dr_2016', 'gjets_dr_2017'],
         'gjets_dr_17_VS_gjets_ht_17'  : ['gjets_dr_2017', 'gjets_ht_2017'],
         'gjets_nlo_16_VS_gjets_ht_17' : ['gjets_nlo_2016', 'gjets_ht_2017'],
         'gjets_nlo_16_VS_gjets_dr_16' : ['gjets_nlo_2016', 'gjets_dr_2016'],
