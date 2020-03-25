@@ -13,7 +13,7 @@ from klepto.archives import dir_archive
 
 pjoin = os.path.join
 
-def plot_deltar_dist(acc, regex, tag, outtag):
+def plot_deltar_dist(acc, regex, tag, outtag, case='all_cuts_applied'):
     '''
     Given the input accumulator, plot the LHE-level deltaR distribution between
     photons and partons.
@@ -24,9 +24,17 @@ def plot_deltar_dist(acc, regex, tag, outtag):
     regex  : The regular expression matching the dataset name.
     tag    : Tag for the process.
     outtag : Out tag for naming the output directory.
+    case   : The case for the deltaR distribution.
+        all_cuts_applied --> deltaR distribution with all cuts applied
+        noDRreq --> deltaR distribution with no deltaR cut (>0.4) applied
+        inclusive --> deltaR distribution with no cut applied
     '''
     pt_type = 'stat1'
-    dist = f'lhe_mindr_g_parton_{pt_type}'
+    if case == 'all_cuts_applied':
+        dist = f'lhe_mindr_g_parton_{pt_type}'
+    else:
+        dist = f'lhe_mindr_g_parton_{pt_type}_{case}'
+
     acc.load(dist)
     h = acc[dist]
 
@@ -50,11 +58,16 @@ def plot_deltar_dist(acc, regex, tag, outtag):
     handle[0].set_label(dataset_name)
     ax.legend()
 
+    # Straight line at DR=0.4
+    ylim = ax.get_ylim()
+    ax.plot([0.4, 0.4], ylim, 'r')
+    ax.set_ylim(ylim)
+
     outdir = f'./output/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    outpath = pjoin(outdir, f'{tag}_deltar.pdf')
+    outpath = pjoin(outdir, f'{tag}_deltar_{case}.pdf')
     fig.savefig(outpath)
     print(f'Figure saved: {outpath}')
 
@@ -63,7 +76,7 @@ def plot_deltar_dist(acc, regex, tag, outtag):
     tup = ( h.axis('dr').edges(overflow='over'), vals[0], vals[1])
     return tup
 
-def plot_comparison(vals, datasets, tag, outtag):
+def plot_comparison(vals, datasets, tag, outtag, case='all_cuts_applied'):
     '''
     Given the individual deltaR distributions and two datasets, create the
     deltaR comparison plot for these two datasets.
@@ -74,6 +87,10 @@ def plot_comparison(vals, datasets, tag, outtag):
     datasets : Tags for the datasets to be compared.
     tag      : Tag for the output file.
     outtag   : Tag for the output directory.
+    case   : The case for the deltaR distribution.
+        all_cuts_applied --> deltaR distribution with all cuts applied
+        noDRreq --> deltaR distribution with no deltaR cut (>0.4) applied
+        inclusive --> deltaR distribution with no cut applied
     '''
     pretty_label = {
         'gjets_dr_2016'  : 'GJets_DR-0p4_HT_2016',
@@ -98,7 +115,7 @@ def plot_comparison(vals, datasets, tag, outtag):
         fig, ax = plt.subplots(1,1)
 
     for data in datasets:
-        edges, sumw, _ = vals[data]
+        edges, sumw, _ = vals[data][case]
         ax.step(edges[:-1],sumw,where='post',label=pretty_label[data])
     
     # Do not include the overflow bin
@@ -118,7 +135,7 @@ def plot_comparison(vals, datasets, tag, outtag):
         sumw = {}
         sumw2 = {}
         for dataset in datasets:
-            sumw[dataset], sumw2[dataset] = vals[dataset][1:] 
+            sumw[dataset], sumw2[dataset] = vals[dataset][case][1:] 
     
         def calc_unc(*datasets):
             '''Calculate uncertainty on the ratio of two datasets.'''
@@ -179,11 +196,19 @@ def main():
         'gjets_nlo_2016' : 'G1Jet_Pt-amcatnlo.*2016'
     }
 
-    vals = {}
+    cases = [
+        'all_cuts_applied',
+        'noDRreq',
+        'inclusive'
+    ]
+
+    vals = {tag : {} for tag in tag_regex.keys()}
+    pprint(vals)
 
     # Get individual deltaR distributions for each dataset
     for tag, regex in tag_regex.items():
-        vals[tag] = plot_deltar_dist(acc,regex=regex,tag=tag,outtag=outtag)
+        for case in cases:
+            vals[tag][case] = plot_deltar_dist(acc, regex=regex, tag=tag, outtag=outtag, case=case)
 
     # Get the comparison plots
     comparisons = {
@@ -196,7 +221,8 @@ def main():
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         for tag, datasets in comparisons.items():
-            plot_comparison(vals, datasets=datasets,tag=tag,outtag=outtag)
+            for case in cases:
+                plot_comparison(vals, datasets=datasets, tag=tag, outtag=outtag, case=case)
 
 if __name__ == '__main__':
     main()
