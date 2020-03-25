@@ -143,10 +143,20 @@ class lheVProcessor(processor.ProcessorABC):
                                                     dataset_ax,
                                                     variable_ax,
                                                     cut_ax)
-                                                    
+
+                # Store minDR between partons and photon in the events
+                # Fill the histogram for three cases: Completely inclusive, with VBF cuts (with and without DR cut)     
                 items[f'lhe_mindr_g_parton_{tag}'] = Hist("Counts",
                                                     dataset_ax,
                                                     dr_ax)
+
+                items[f'lhe_mindr_g_parton_{tag}_noDRreq'] = Hist("Counts",
+                                                        dataset_ax,
+                                                        dr_ax)
+
+                items[f'lhe_mindr_g_parton_{tag}_inclusive'] = Hist("Counts",
+                                                        dataset_ax,
+                                                        dr_ax)
 
         items["resolution"] = Hist("Counts",
                                 dataset_ax,
@@ -234,26 +244,40 @@ class lheVProcessor(processor.ProcessorABC):
             if is_photon_sample and tag == 'stat1':
                 dr_mask = df['lhe_mindr_g_parton'] > 0.4
                 vpt_mask = df['gen_v_pt_stat1'] > 150
-                mask_vbf *= dr_mask * vpt_mask 
+                full_mask_vbf = mask_vbf * dr_mask * vpt_mask 
 
             output[f'gen_vpt_vbf_{tag}'].fill(
                                     dataset=dataset,
-                                    vpt=df[f'gen_v_pt_{tag}'][mask_vbf],
-                                    jpt=genjets.pt.max()[mask_vbf],
-                                    mjj = df['mjj'][mask_vbf],
-                                    weight=nominal[mask_vbf]
+                                    vpt=df[f'gen_v_pt_{tag}'][full_mask_vbf],
+                                    jpt=genjets.pt.max()[full_mask_vbf],
+                                    mjj = df['mjj'][full_mask_vbf],
+                                    weight=nominal[full_mask_vbf]
                                     )
 
             # Fill histograms for deltaR distribution between photons and partons at LHE level
             # Also fill some gen-level distributions (only for photons for now)
             if is_photon_sample and tag == 'stat1':
-                # Fill the histogram with the deltaR requirement
+                # Fill the DR histogram with the deltaR requirement
                 output[f'lhe_mindr_g_parton_{tag}'].fill(
-                                            dataset=dataset,
-                                            dr=df['lhe_mindr_g_parton'][mask_vbf],
-                                            weight=nominal[mask_vbf]
-                                            )
+                                    dataset=dataset,
+                                    dr=df['lhe_mindr_g_parton'][full_mask_vbf],
+                                    weight=nominal[full_mask_vbf]
+                                    )
                 
+                # Fill the DR histogram without the deltaR requirement
+                output[f'lhe_mindr_g_parton_{tag}_noDRreq'].fill(
+                                    dataset=dataset,
+                                    dr=df['lhe_mindr_g_parton'][mask_vbf],
+                                    weight=nominal[mask_vbf]
+                                    )
+
+                # Fill the DR histogram for the inclusive case
+                output[f'lhe_mindr_g_parton_{tag}_inclusive'].fill(
+                                    dataset=dataset,
+                                    dr=df['lhe_mindr_g_parton'],
+                                    weight=nominal
+                                    )
+
                 def ezfill(dist, **kwargs):
                     '''Function for easier histogram filling.'''
                     output[f'gen_{dist}_vbf_stat1_withDRreq'].fill(
