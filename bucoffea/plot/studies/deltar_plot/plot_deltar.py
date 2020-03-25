@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import warnings
 import numpy as np
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
@@ -81,20 +82,6 @@ def plot_comparison(vals, datasets, tag, outtag):
         'gjets_ht_2017'  : 'GJets_HT_2017',
         'gjets_nlo_2016' : 'G1Jet_Pt_amcatnlo_2016'
     }
-
-    # Labels for ratio legends
-    # pretty_label_ratio = {
-        # 'gjets_dr_2017 / gjets_ht_2017' : 'DR 2017 / Non-DR 2017',
-        # 'gjets_dr_2017 / gjets_ht_2016' : 'DR 2017 / Non-DR 2016',
-        # 'gjets_dr_2016 / gjets_ht_2017' : 'DR 2016 / Non-DR 2017',
-        # 'gjets_dr_2016 / gjets_dr_2017' : 'DR 2016 / DR 2017',
-        # 'gjets_dr_2016 / gjets_ht_2016' : 'DR 2016 / Non-DR 2016',
-        # 'gjets_ht_2017 / gjets_ht_2016' : 'Non-DR 2017 / Non-DR 2016',
-        # 'gjets_nlo_2016 / gjets_ht_2017' : 'NLO 2016 / Non-DR 2017',
-        # 'gjets_nlo_2016 / gjets_ht_2016' : 'NLO 2016 / Non-DR 2016',
-        # 'gjets_nlo_2016 / gjets_dr_2017' : 'NLO 2016 / DR 2017',
-        # 'gjets_nlo_2016 / gjets_dr_2016' : 'NLO 2016 / DR 2016',
-    # }
 
     # Number of datasets to compare 
     ndatasets = len(datasets)
@@ -206,8 +193,10 @@ def main():
         'all' : ['gjets_dr_2016', 'gjets_dr_2017', 'gjets_ht_2016', 'gjets_ht_2017']
     }
 
-    for tag, datasets in comparisons.items():
-        plot_comparison(vals, datasets=datasets,tag=tag,outtag=outtag)
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        for tag, datasets in comparisons.items():
+            plot_comparison(vals, datasets=datasets,tag=tag,outtag=outtag)
 
 if __name__ == '__main__':
     main()
