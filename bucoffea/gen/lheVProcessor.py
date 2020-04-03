@@ -1,5 +1,6 @@
 import coffea.processor as processor
 import numpy as np
+import awkward
 from coffea import hist
 
 from bucoffea.helpers import min_dphi_jet_met, dphi
@@ -214,6 +215,13 @@ class lheVProcessor(processor.ProcessorABC):
             min_dr = pairs.i0.p4.delta_r(pairs.i1.p4).min()
             df['lhe_mindr_g_parton'] = min_dr
 
+            # Take the partons (before showering) and hadrons (after showering)
+            # from gen-level candidates
+            partons = gen[(gen.status > 70) & (gen.status < 80)]
+            hadrons = gen[
+                    ((gen.abspdg > 400) & (gen.abspdg < 600)) | ((gen.abspdg > 4000) & (gen.abspdg < 6000))
+                ]
+
         # Dijet for VBF
         dijet = genjets[:,:2].distincts()
         df['mjj'] = dijet.mass.max()
@@ -242,6 +250,51 @@ class lheVProcessor(processor.ProcessorABC):
 
             # For photons, add DR > 0.4 and V-pt > 150 GeV requirements
             if is_photon_sample and tag == 'stat1':
+                def photon_isolation_mask(partons, hadrons, photons):
+                    '''
+                    Returns a mask for the photon isolation requirement for every photon.
+                    Requirement is described in https://arxiv.org/pdf/1705.04664.pdf
+                    '''
+                    # Parameters as chosen in https://arxiv.org/pdf/1705.04664.pdf
+                    mz = 91
+                    eps0 = 0.1
+                    # Calculate dynamic radius for the cone, different for each event, depends on photon pt
+                    R_dyn = (mz / (photons.pt * np.sqrt(eps0)))
+                    print(R_dyn)
+
+                    # FIXME: Mismatch between photon array shape and R array shape
+                    def pass_for_givenR(r_array):
+                        '''Return a mask for isolation requirement, given the array of cone sizes R.'''
+                        # Initialize mask with all True
+                        passes_iso = r_arr.ones_like()
+                        print(r_array.shape)
+                        print(photons.shape)
+                        partons_pt_sumv2 = partons[partons.match(photons, deltaRCut=r_array)].pt.sum()
+                        print(partons_pt_sumv2)
+                        for R in r_array:
+                            print(R)
+                            partons_ptsum = partons[partons.match(photons, deltaRCut=R)].pt.sum()
+                            hadrons_ptsum = hadrons[hadrons.match(photons, deltaRCut=R)].pt.sum()
+                            threshold = eps0 * photons.pt * (1-np.cos(R))/(1-np.cos(R_dyn))
+                            passes_iso &= (hadrons_ptsum <= threshold) & (partons_ptsum <= threshold)
+
+                        return passes_iso
+                    
+                    # Scan for different values of cone size R, up to R_dyn
+                    # NOTE: Not sure how to select the range
+                    r_vals_to_scan = awkward.fromiter(np.linspace(0.1,R_dyn,num=10))
+
+                    # Loop over R values
+                    good_photon = np.ones(R_dyn.shape, dtype=bool)
+                    for r_arr in r_vals_to_scan:
+                        print(r_arr)
+                        good_photon &= pass_for_givenR(r_arr)
+
+                    return good_photon
+
+                photon_iso_mask = photon_isolation_mask(partons, hadrons, photons)
+                print(photon_iso_mask)
+
                 dr_mask = df['lhe_mindr_g_parton'] > 0.4
                 vpt_mask = df['gen_v_pt_stat1'] > 150
                 full_mask_vbf = mask_vbf * dr_mask * vpt_mask 
