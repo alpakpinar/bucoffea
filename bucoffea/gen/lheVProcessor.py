@@ -132,15 +132,15 @@ def photon_isolation_mask(partons, hadrons, photons):
         threshold = eps0 * photons.pt * ((1-np.cos(R))/(1-np.cos(R_dyn)))
         mask = total_pt_sum <= threshold
 
-        # FIXME: Bitwise and doesn't work because arrays are nested
-        photon_iso_mask = (photon_iso_mask & mask)
+        # Update the photon isolation mask 
+        photon_iso_mask = np.logical_and(photon_iso_mask, mask)
 
         # Go to the next radius values        
         R = R*2
         Rph = Rph*2
         Rpp = Rpp*2
 
-        return photon_iso_mask
+    return photon_iso_mask
     
 class lheVProcessor(processor.ProcessorABC):
     def __init__(self):
@@ -298,9 +298,8 @@ class lheVProcessor(processor.ProcessorABC):
 
             # For photons, add DR > 0.4 and V-pt > 150 GeV requirements
             if is_photon_sample and tag == 'stat1':
-
+                # Get the photon isolation mask
                 photon_iso_mask = photon_isolation_mask(partons, hadrons, photons)
-                print(photon_iso_mask)
 
                 dr_mask = df['lhe_mindr_g_parton'] > 0.4
                 vpt_mask = df['gen_v_pt_stat1'] > 150
