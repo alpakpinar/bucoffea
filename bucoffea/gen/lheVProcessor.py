@@ -100,47 +100,27 @@ def photon_isolation_mask(partons, hadrons, photons):
     mz = 91
     eps0 = 0.1
 
-    # Create photon-hadron and photon-parton pairs
-    hadron_photon_pairs = hadrons.cross(photons, nested=True)
-    parton_photon_pairs = partons.cross(photons, nested=True)
+    # Calculate dynamic radius for the cone, different for each event, depends on leading photon pt
+    R_dyn = mz / (photons.pt.sum() * np.sqrt(eps0))
+    # print(R_dyn)
 
-    # Calculate dynamic radius for the cone, different for each event, depends on photon pt
-    R_dyn = mz / (photons.pt * np.sqrt(eps0))
-    # Following two arrays do the same calculation, but array shape is modified
-    R_dyn_photon_hadron = mz / (hadron_photon_pairs.i1.pt * np.sqrt(eps0))
-    R_dyn_photon_parton = mz / (parton_photon_pairs.i1.pt * np.sqrt(eps0))
-
-    # Loop over different R values, up to maximum R_dyn value
-    # NOTE: Range + implementation may be changed
-    logcount = 3
-    R = R_dyn / (2**logcount)
-    Rph = R_dyn_photon_hadron / (2**logcount)
-    Rpp = R_dyn_photon_parton / (2**logcount)
-
-    # Initialize photon isolation mask with True values for all photons
-    photon_iso_mask = R_dyn.ones_like()  
-
-    for _ in range(logcount+1):
-        # Take the hadrons and partons that are within the cone with size R, sum their pt
-        hadron_mask = hadrons.match(photons, deltaRCut=Rph)
-        hadron_pt_sum = hadrons[hadron_mask].pt.sum()
-        parton_mask = partons.match(photons, deltaRCut=Rpp)
-        parton_pt_sum = partons[parton_mask].pt.sum()
-
+    def pass_for_givenR(R):
+        print(R)
+        hadron_pt_sum = hadrons[hadrons.match(photons, deltaRCut=R)].pt.sum()
+        parton_pt_sum = partons[partons.match(photons, deltaRCut=R)].pt.sum()
         total_pt_sum = hadron_pt_sum + parton_pt_sum
 
-        threshold = eps0 * photons.pt * ((1-np.cos(R))/(1-np.cos(R_dyn)))
-        mask = total_pt_sum <= threshold
+        threshold = eps0 * photons.pt * (1-np.cos(R))/(1-np.cos(R_dyn))
 
-        # Update the photon isolation mask 
-        photon_iso_mask = np.logical_and(photon_iso_mask, mask)
+        return total_pt_sum <= threshold
 
-        # Go to the next radius values        
-        R = R*2
-        Rph = Rph*2
-        Rpp = Rpp*2
+    # Loop over R values 
+    r_values_to_scan = np.logspace(-2, np.log10(R_dyn), num=10)
+    good_photon = True
+    for R in r_values_to_scan:
+        good_photon = good_photon & pass_for_givenR(R)
 
-    return photon_iso_mask
+    return good_photon
     
 class lheVProcessor(processor.ProcessorABC):
     def __init__(self):
@@ -299,7 +279,10 @@ class lheVProcessor(processor.ProcessorABC):
             # For photons, add DR > 0.4 and V-pt > 150 GeV requirements
             if is_photon_sample and tag == 'stat1':
                 # Get the photon isolation mask
-                photon_iso_mask = photon_isolation_mask(partons, hadrons, photons)
+                leading_photons = photons[photons.pt.argmax()]
+                photon_iso_mask = photon_isolation_mask(partons, hadrons, leading_photons).flatten()
+                print(photon_iso_mask)
+                print(np.count_nonzero(photon_iso_mask)/len(photon_iso_mask))
 
                 dr_mask = df['lhe_mindr_g_parton'] > 0.4
                 vpt_mask = df['gen_v_pt_stat1'] > 150
