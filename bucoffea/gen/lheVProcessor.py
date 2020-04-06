@@ -91,6 +91,57 @@ def monojet_selection(vphi, genjets):
     return selection
 
 
+def photon_isolation_mask(partons, hadrons, photons):
+    '''
+    Returns a mask for the photon isolation requirement for every photon.
+    Requirement is described in https://arxiv.org/pdf/1705.04664.pdf
+    '''
+    # Parameters as chosen in https://arxiv.org/pdf/1705.04664.pdf
+    mz = 91
+    eps0 = 0.1
+
+    # Create photon-hadron and photon-parton pairs
+    hadron_photon_pairs = hadrons.cross(photons, nested=True)
+    parton_photon_pairs = partons.cross(photons, nested=True)
+
+    # Calculate dynamic radius for the cone, different for each event, depends on photon pt
+    R_dyn = mz / (photons.pt * np.sqrt(eps0))
+    # Following two arrays do the same calculation, but array shape is modified
+    R_dyn_photon_hadron = mz / (hadron_photon_pairs.i1.pt * np.sqrt(eps0))
+    R_dyn_photon_parton = mz / (parton_photon_pairs.i1.pt * np.sqrt(eps0))
+
+    # Loop over different R values, up to maximum R_dyn value
+    # NOTE: Range + implementation may be changed
+    logcount = 3
+    R = R_dyn / (2**logcount)
+    Rph = R_dyn_photon_hadron / (2**logcount)
+    Rpp = R_dyn_photon_parton / (2**logcount)
+
+    # Initialize photon isolation mask with True values for all photons
+    photon_iso_mask = R_dyn.ones_like()  
+
+    for _ in range(logcount+1):
+        # Take the hadrons and partons that are within the cone with size R, sum their pt
+        hadron_mask = hadrons.match(photons, deltaRCut=Rph)
+        hadron_pt_sum = hadrons[hadron_mask].pt.sum()
+        parton_mask = partons.match(photons, deltaRCut=Rpp)
+        parton_pt_sum = partons[parton_mask].pt.sum()
+
+        total_pt_sum = hadron_pt_sum + parton_pt_sum
+
+        threshold = eps0 * photons.pt * ((1-np.cos(R))/(1-np.cos(R_dyn)))
+        mask = total_pt_sum <= threshold
+
+        # FIXME: Bitwise and doesn't work because arrays are nested
+        photon_iso_mask = (photon_iso_mask & mask)
+
+        # Go to the next radius values        
+        R = R*2
+        Rph = Rph*2
+        Rpp = Rpp*2
+
+        return photon_iso_mask
+    
 class lheVProcessor(processor.ProcessorABC):
     def __init__(self):
         # Histogram setup
@@ -215,12 +266,9 @@ class lheVProcessor(processor.ProcessorABC):
             min_dr = pairs.i0.p4.delta_r(pairs.i1.p4).min()
             df['lhe_mindr_g_parton'] = min_dr
 
-            # Take the partons (before showering) and hadrons (after showering)
-            # from gen-level candidates
-            partons = gen[(gen.status > 70) & (gen.status < 80)]
-            hadrons = gen[
-                    ((gen.abspdg > 400) & (gen.abspdg < 600)) | ((gen.abspdg > 4000) & (gen.abspdg < 6000))
-                ]
+            # Take the partons (before showering) and hadrons (after showering) from gen-level candidates
+            partons = gen[((gen.status > 70) & (gen.status < 80)) & (gen.abspdg != 22)] # do not include photons
+            hadrons = gen[gen.abspdg > 100]
 
         # Dijet for VBF
         dijet = genjets[:,:2].distincts()
@@ -250,47 +298,6 @@ class lheVProcessor(processor.ProcessorABC):
 
             # For photons, add DR > 0.4 and V-pt > 150 GeV requirements
             if is_photon_sample and tag == 'stat1':
-                def photon_isolation_mask(partons, hadrons, photons):
-                    '''
-                    Returns a mask for the photon isolation requirement for every photon.
-                    Requirement is described in https://arxiv.org/pdf/1705.04664.pdf
-                    '''
-                    # Parameters as chosen in https://arxiv.org/pdf/1705.04664.pdf
-                    mz = 91
-                    eps0 = 0.1
-                    # Calculate dynamic radius for the cone, different for each event, depends on photon pt
-                    R_dyn = (mz / (photons.pt * np.sqrt(eps0)))
-                    print(R_dyn)
-
-                    # FIXME: Mismatch between photon array shape and R array shape
-                    def pass_for_givenR(r_array):
-                        '''Return a mask for isolation requirement, given the array of cone sizes R.'''
-                        # Initialize mask with all True
-                        passes_iso = r_arr.ones_like()
-                        print(r_array.shape)
-                        print(photons.shape)
-                        partons_pt_sumv2 = partons[partons.match(photons, deltaRCut=r_array)].pt.sum()
-                        print(partons_pt_sumv2)
-                        for R in r_array:
-                            print(R)
-                            partons_ptsum = partons[partons.match(photons, deltaRCut=R)].pt.sum()
-                            hadrons_ptsum = hadrons[hadrons.match(photons, deltaRCut=R)].pt.sum()
-                            threshold = eps0 * photons.pt * (1-np.cos(R))/(1-np.cos(R_dyn))
-                            passes_iso &= (hadrons_ptsum <= threshold) & (partons_ptsum <= threshold)
-
-                        return passes_iso
-                    
-                    # Scan for different values of cone size R, up to R_dyn
-                    # NOTE: Not sure how to select the range
-                    r_vals_to_scan = awkward.fromiter(np.linspace(0.1,R_dyn,num=10))
-
-                    # Loop over R values
-                    good_photon = np.ones(R_dyn.shape, dtype=bool)
-                    for r_arr in r_vals_to_scan:
-                        print(r_arr)
-                        good_photon &= pass_for_givenR(r_arr)
-
-                    return good_photon
 
                 photon_iso_mask = photon_isolation_mask(partons, hadrons, photons)
                 print(photon_iso_mask)
