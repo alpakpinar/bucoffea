@@ -102,10 +102,10 @@ def photon_isolation_mask(partons, hadrons, photons):
 
     # Calculate dynamic radius for the cone, different for each event, depends on leading photon pt
     R_dyn = mz / (photons.pt.sum() * np.sqrt(eps0))
-    # print(R_dyn)
+    # Value of the radius is 1 for R > 1
+    R_dyn = np.minimum(1, R_dyn)
 
     def pass_for_givenR(R):
-        print(R)
         hadron_pt_sum = hadrons[hadrons.match(photons, deltaRCut=R)].pt.sum()
         parton_pt_sum = partons[partons.match(photons, deltaRCut=R)].pt.sum()
         total_pt_sum = hadron_pt_sum + parton_pt_sum
@@ -281,8 +281,6 @@ class lheVProcessor(processor.ProcessorABC):
                 # Get the photon isolation mask
                 leading_photons = photons[photons.pt.argmax()]
                 photon_iso_mask = photon_isolation_mask(partons, hadrons, leading_photons).flatten()
-                print(photon_iso_mask)
-                print(np.count_nonzero(photon_iso_mask)/len(photon_iso_mask))
 
                 dr_mask = df['lhe_mindr_g_parton'] > 0.4
                 vpt_mask = df['gen_v_pt_stat1'] > 150
