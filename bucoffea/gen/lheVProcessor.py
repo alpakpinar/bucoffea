@@ -91,37 +91,24 @@ def monojet_selection(vphi, genjets):
     return selection
 
 
-def photon_isolation_mask(partons, hadrons, photons):
-    '''
-    Returns a mask for the photon isolation requirement for every photon.
-    Requirement is described in https://arxiv.org/pdf/1705.04664.pdf
-    '''
+def pass_isolation(partons, photon):
     # Parameters as chosen in https://arxiv.org/pdf/1705.04664.pdf
     mz = 91
     eps0 = 0.1
-
-    # Calculate dynamic radius for the cone, different for each event, depends on leading photon pt
-    R_dyn = mz / (photons.pt.sum() * np.sqrt(eps0))
-    # Value of the radius is 1 for R > 1
-    R_dyn = np.minimum(1, R_dyn)
-
-    def pass_for_givenR(R):
-        hadron_pt_sum = hadrons[hadrons.match(photons, deltaRCut=R)].pt.sum()
-        parton_pt_sum = partons[partons.match(photons, deltaRCut=R)].pt.sum()
-        total_pt_sum = hadron_pt_sum + parton_pt_sum
-
-        threshold = eps0 * photons.pt * (1-np.cos(R))/(1-np.cos(R_dyn))
-
-        return total_pt_sum <= threshold
-
-    # Loop over R values 
-    r_values_to_scan = np.logspace(-2, np.log10(R_dyn), num=10)
-    good_photon = True
+    R0 = np.minimum(1.0, mz / (photon.pt.sum() * np.sqrt(eps0)))
+    # Eq 10 from https://arxiv.org/pdf/1705.04664.pdf
+    def pass_for_given_R(R):
+        ptsum = partons[partons.match(photon,deltaRCut=R)].pt.sum()
+        threshold = eps0 * photon.pt * (1-np.cos(R))/(1-np.cos(R0))
+        return ptsum <= threshold
+    # Arbitrary scan range, to be optimized?
+    r_values_to_scan = np.logspace(-2,np.log10(R0),10)
+    # Loop over R values. Need to pass **each R value**
+    good = True
     for R in r_values_to_scan:
-        good_photon = good_photon & pass_for_givenR(R)
+        good = good & pass_for_given_R(R)
+    return good
 
-    return good_photon
-    
 class lheVProcessor(processor.ProcessorABC):
     def __init__(self):
         # Histogram setup
@@ -218,24 +205,16 @@ class lheVProcessor(processor.ProcessorABC):
             fill_gen_v_info(df, gen, dressed)
             tags.extend(['dress','combined'])
         elif is_photon_sample:
-            photons = gen[(gen.status==1) & (gen.pdg==22)]
-            prompt_photons = photons[(photons.flag&1 == 1) & (np.abs(photons.eta)<1.442)]
-            # Check if a prompt photon exists in the event
-            good_prompt_photons  = prompt_photons.counts > 0
+            # By default, take prompt photons, if there is no prompt photon in the event, take regular photons
+            prompt_photon_mask = (gen.status==1) & (gen.pdg==22) & (gen.flag&1==1) & (np.abs(gen.eta)<1.46)
+            stat1_photon_mask = (gen.status==1) & (gen.pdg==22) & (np.abs(gen.eta)<1.46)
+            photons = gen[prompt_photon_mask | ~(prompt_photon_mask.any()) & stat1_photon_mask]
 
             # For V-pt and phi, if there is a prompt photon take the values from that photon
             # Otherwise, use the values from a non-prompt photon (if it exists) 
-            df['gen_v_pt_stat1'] = np.where(
-                good_prompt_photons,
-                prompt_photons.pt.max(),
-                photons.pt.max()
-            )
+            df['gen_v_pt_stat1'] = photons.pt.max()
 
-            df['gen_v_phi_stat1'] = np.where(
-                good_prompt_photons,
-                prompt_photons.phi[prompt_photons.pt.argmax()].max(),
-                photons.phi[photons.pt.argmax()].max()
-            )
+            df['gen_v_phi_stat1'] = photons.phi[photons.pt.argmax()].max()
 
             df['gen_v_pt_lhe'] = df['LHE_Vpt']
             df['gen_v_phi_lhe'] = np.zeros(df.size)
@@ -246,9 +225,8 @@ class lheVProcessor(processor.ProcessorABC):
             min_dr = pairs.i0.p4.delta_r(pairs.i1.p4).min()
             df['lhe_mindr_g_parton'] = min_dr
 
-            # Take the partons (before showering) and hadrons (after showering) from gen-level candidates
-            partons = gen[((gen.status > 70) & (gen.status < 80)) & (gen.abspdg != 22)] # do not include photons
-            hadrons = gen[gen.abspdg > 100]
+            # Take the partons (before showering) from gen-level candidates
+            partons = gen[((gen.status > 70) & (gen.status < 80))] 
 
         # Dijet for VBF
         dijet = genjets[:,:2].distincts()
@@ -280,11 +258,10 @@ class lheVProcessor(processor.ProcessorABC):
             if is_photon_sample and tag == 'stat1':
                 # Get the photon isolation mask
                 leading_photons = photons[photons.pt.argmax()]
-                photon_iso_mask = photon_isolation_mask(partons, hadrons, leading_photons).flatten()
+                photon_iso_mask = pass_isolation(partons, leading_photons).any()
 
-                dr_mask = df['lhe_mindr_g_parton'] > 0.4
-                vpt_mask = df['gen_v_pt_stat1'] > 150
-                full_mask_vbf = mask_vbf * dr_mask * vpt_mask 
+                # vpt_mask = df['gen_v_pt_stat1'] > 150
+                full_mask_vbf = mask_vbf * photon_iso_mask 
 
             output[f'gen_vpt_vbf_{tag}'].fill(
                                     dataset=dataset,
@@ -331,7 +308,7 @@ class lheVProcessor(processor.ProcessorABC):
 
                 for cut, cutlabel in zip(cuts_to_exclude, cut_labels):
                     # Get partial VBF masks, also with DR > 0.4 and V-pt > 150 GeV requirements applied
-                    mask = get_partial_mask_vbf(selection=vbf_sel, exclude=cut) * dr_mask * vpt_mask
+                    mask = get_partial_mask_vbf(selection=vbf_sel, exclude=cut) 
 
                     # Fill histograms with (partial) VBF selection + DR > 0.4 + V-pt > 150 GeV requirements
                     ezfill('vpt', vpt=df['gen_v_pt_stat1'][mask], cut=cutlabel, weight=nominal[mask])
