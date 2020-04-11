@@ -18,8 +18,8 @@ def parse_commandline():
 def main():
 
     fileset = {
-        "GJets_DR-0p4_HT-100To200-MLM_v2_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/gen/13Jan20/GJets_DR-0p4_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8_v2/GJets_DR-0p4_HT-100To200-MLM_v2_2017/200127_180934/0000/tree_1.root"
+        "GJets_DR-0p4_HT-100To200-MLM_2018" : [
+            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/19Feb20/GJets_DR-0p4_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/GJets_DR-0p4_HT-100To200-MLM_2018/200220_002004/0000/tree_1.root"
         ]
     }
 
