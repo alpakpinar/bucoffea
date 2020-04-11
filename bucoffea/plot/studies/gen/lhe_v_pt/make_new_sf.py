@@ -6,6 +6,7 @@ import sys
 import re
 import numpy as np
 import pickle
+import argparse
 from matplotlib import pyplot as plt
 
 from coffea import hist
@@ -25,6 +26,14 @@ data_err_opts = {
         'elinewidth': 1,
         'emarker': '_'
     }
+
+def parse_commandline():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Input path containing coffea files.')
+    parser.add_argument('--photons_only', help='Only run for several GJets samples.', action='store_true')
+    parser.add_argument('--dr_req', help='Make k-factors using the distributions with DR>0.4', action='store_true')
+    args = parser.parse_args()
+    return args
 
 def get_old_kfac(tag):
     if tag.startswith('w'):
@@ -107,8 +116,8 @@ def sf_1d(acc, tag, regex, outputrootfile):
             outputrootfile[f'{tag}_{pt_type}_{selection}'] = (sf_y,sf_x)
 
 
-def sf_2d(acc, tag, regex, pt_type, outputrootfile):
-    outdir = './output/2d/'
+def sf_2d(acc, tag, regex, pt_type, outputrootfile, output_dir_name=None, outtag=None, photon_run=False, dr_req=False):
+    outdir = f'./output/2d/{output_dir_name}/{outtag}' if outtag else './output/2d'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -122,16 +131,19 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
 
 
     if tag in ['dy', 'wjet']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[150, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200])
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200])
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',list(range(0,2500,500)))
         clims = 0.5,1.5
     elif tag in ['gjets']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[150, 200, 240, 280, 320, 400, 520, 640])
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640])
         mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000,1500])
         clims = 1.0, 2.5
 
     for selection in ['vbf']:
-        dist = f'gen_vpt_{selection}_{pt_type}'
+        if dr_req:
+            dist = f'gen_vpt_{selection}_{pt_type}_withDRreq'
+        else:
+            dist = f'gen_vpt_{selection}_{pt_type}'
         acc.load(dist)
         h = copy.deepcopy(acc[dist])
         print(h)
@@ -144,11 +156,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
         h = merge_datasets(h)
         h = h[re.compile(regex)]
 
-        # If running over GJets samples, choose DR samples as LO 
-        if tag == 'gjets':
-            lo = h[re.compile('GJets_DR-0p4_HT.*')].integrate('dataset')
-        else:
-            lo = h[re.compile('.*HT.*')].integrate('dataset')
+        lo = h[re.compile('.*HT.*')].integrate('dataset')
         nlo = h[re.compile('.*(LHE|amcat).*')].integrate('dataset')
 
         sumw_lo, sumw2_lo = lo.values(overflow='over', sumw2=True)[()]
@@ -161,7 +169,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
             sumw_nlo * np.sqrt(sumw2_lo) / (sumw_lo**2)
         )
         data = (sf, dsf)
-        pkl_filename = f'{tag}_kfac.pkl'
+        pkl_filename = f'{outtag}_kfac.pkl' if outtag else f'{tag}_kfac.pkl'
         with open(pkl_filename, 'wb') as f:
             pickle.dump(data, f)
 
@@ -187,23 +195,16 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
                         color=textcol,
                         fontsize=6
                         )
-        # hist.plotratio(nlo, lo,
-        #     ax=rax,
-        #     denom_fill_opts={},
-        #     guide_opts={},
-        #     unc='num',
-        #     overflow='all',
-        #     error_opts=data_err_opts,
-        #     label='2017 NLO/LO ratio'
-        #     )
-        # old = get_old_kfac(tag)
-        # old_x = 0.5*(old.bins[:,0]+old.bins[:,1])
-        # rax.plot(old_x, old.values,'ob-', label='2016 QCD k fac')
-        # rax.plot(old_x, old.values * pdfwgt_sf(old_x),'or-', label='2016 x ad-hoc DY pdfwgt SF')
-        # ax.set_yscale('log')
-        # ax.set_ylim(1e-3,1e6)
-        # rax.set_ylim(0,2)
-        # rax.legend()
+
+        # Display which LO GJets sample was used
+        if tag == 'gjets' and photon_run:
+            dataset_name = regex.split('|')[1].replace('.*', '_').replace(')', '')
+            text = f'LO GJets: {dataset_name}'
+            ax.text(0,1,text,
+                fontsize=12,
+                verticalalignment='bottom',
+                horizontalalignment='left',
+                transform=ax.transAxes)
 
         ax.set_ylabel('$p_{T}(V)$ (GeV)')
         ax.set_xlabel('M(jj) (GeV)')
@@ -212,21 +213,18 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
         im.set_clim(*clims)
         fig.savefig(pjoin(outdir,f'2d_{tag}_{dist}.pdf'))
 
-        # sf_x = lo.axis('vpt').edges()
-        # sf_y = nlo.values()[()] / lo.values()[()]
-
         tup = (sf, xaxis.edges(overflow='over'),yaxis.edges(overflow='over'))
         print(tup[0].shape)
         print(tup[1].shape)
         print(tup[2].shape)
-        outputrootfile[f'2d_{tag}_{selection}'] =  tup
+        outputrootfile[f'2d_{tag}_{selection}_{outtag}'] =  tup
 
 def pdfwgt_sf(vpt):
     return 1/(1.157 + 2.291e-4 * vpt + 6.0612e-7 * vpt**2)
 
 def main():
-    inpath = sys.argv[1]
-    #acc = acc_from_dir("./input/2019-10-07_das_lhevpt_dressed_v1")
+    args = parse_commandline()
+    inpath = args.inpath
     
     acc = dir_archive(
                       inpath,
@@ -237,18 +235,53 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
+    # Run k-factors only for photons (2D) if requested
+    only_run_photons = args.photons_only
+    
+    # Derive k-factors from distributions with DR > 0.4 
+    dr_req = args.dr_req
 
-    outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
-    sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile)
-    sf_1d(acc, tag='dy', regex='DYN?JetsToLL.*',outputrootfile=outputrootfile)
-    # # outputrootfile = uproot.recreate(f'test.root')
-    sf_2d(acc, tag='wjet', regex='WN?JetsToLNu.*',pt_type='combined',outputrootfile=outputrootfile)
-    sf_2d(acc, tag='dy', regex='DYN?JetsToLL.*',pt_type='combined',outputrootfile=outputrootfile)
 
-    sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
+    if not only_run_photons:
+        outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
+
+        sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile)
+        sf_1d(acc, tag='dy', regex='DYN?JetsToLL.*',outputrootfile=outputrootfile)
+        # # outputrootfile = uproot.recreate(f'test.root')
+        sf_2d(acc, tag='wjet', regex='WN?JetsToLNu.*',pt_type='combined',outputrootfile=outputrootfile)
+        sf_2d(acc, tag='dy', regex='DYN?JetsToLL.*',pt_type='combined',outputrootfile=outputrootfile)
+    
+        sf_1d(acc, tag='gjets', regex=r'G\d?Jet.*',outputrootfile=outputrootfile)
+        sf_2d(acc, tag='gjets', regex=r'G\d?Jet.*',pt_type='stat1',outputrootfile=outputrootfile)
     # outputrootfile = uproot.recreate('test.root')
+    
+    # Only derive 2D k-factors for photons (if specified)
+    # Use several GJets samples as LO samples:
+    # GJets_HT_2016, GJets_HT_2017
+    # GJets_DR-0p4_HT_2016, GJets_DR-0p4_HT_2017
+    else:
+        outputrootfile = uproot.recreate('gjets_sf.root')
 
-    sf_2d(acc, tag='gjets',regex='G\d?Jet.*',pt_type='stat1',outputrootfile=outputrootfile)
+        if inpath.endswith('/'):
+            output_dir_name = inpath.split('/')[-2]
+        else:
+            output_dir_name = inpath.split('/')[-1]
+
+        # Store photon dataset regex for different LO samples
+        regex_dict = {
+            'gjets_dr_16' : '(G1Jet.*2016|GJets_DR-0p4.*2016)',
+            'gjets_dr_17' : '(G1Jet.*2016|GJets_DR-0p4.*2017)',
+            'gjets_ht_16' : '(G1Jet.*2016|GJets_HT.*2016)',
+            'gjets_ht_17' : '(G1Jet.*2016|GJets_HT.*2017)'
+        }
+        for outtag, regex in regex_dict.items():
+            sf_2d(acc, tag='gjets',regex=regex, 
+                outtag=outtag,
+                output_dir_name=output_dir_name, 
+                pt_type='stat1',
+                outputrootfile=outputrootfile, 
+                photon_run=True, 
+                dr_req=dr_req)
 
 
 if __name__ == "__main__":
