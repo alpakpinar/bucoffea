@@ -31,6 +31,7 @@ def parse_commandline():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Input path containing coffea files.')
     parser.add_argument('--photons_only', help='Only run for several GJets samples.', action='store_true')
+    parser.add_argument('--photons_run_1d', help='Only run 1D GJets k-factors.', action='store_true')
     parser.add_argument('--dr_req', help='Make k-factors using the distributions with DR>0.4', action='store_true')
     args = parser.parse_args()
     return args
@@ -58,7 +59,7 @@ def sf_1d(acc, tag, regex, outputrootfile):
         pt_types.extend(['dress', 'combined'])
         new_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',list(range(100,800,100))+list(range(800,1200,200))+list(range(1200,2800,800)))
     else:
-        new_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[200,250]+list(range(300,800,100))+list(range(800,1400,200)))
+        new_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[200,240]+list(range(280,760,80))+list(range(760,1200,160)))
 
     overflow = 'none'
     for pt_type in pt_types:
@@ -240,9 +241,10 @@ def main():
     
     # Derive k-factors from distributions with DR > 0.4 
     dr_req = args.dr_req
+    photons_run_1d = args.photons_run_1d
 
 
-    if not only_run_photons:
+    if not (only_run_photons or photons_run_1d):
         outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
 
         sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile)
@@ -255,6 +257,12 @@ def main():
         sf_2d(acc, tag='gjets', regex=r'G\d?Jet.*',pt_type='stat1',outputrootfile=outputrootfile)
     # outputrootfile = uproot.recreate('test.root')
     
+    # Calculate 1D k-factors as a function of photon pt if specified
+    elif photons_run_1d:
+        outputrootfile = uproot.recreate('gjets_sf.root')
+        sf_1d(acc, tag='gjets', regex=r'(G1Jet|GJets_DR-0p4).*2016',outputrootfile=outputrootfile)
+
+
     # Only derive 2D k-factors for photons (if specified)
     # Use several GJets samples as LO samples:
     # GJets_HT_2016, GJets_HT_2017
