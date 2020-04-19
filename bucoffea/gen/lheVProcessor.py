@@ -94,7 +94,7 @@ def monojet_selection(vphi, genjets):
 def pass_isolation(partons, photon):
     # Parameters as chosen in https://arxiv.org/pdf/1705.04664.pdf
     mz = 91
-    eps0 = 0.1
+    eps0 = 0.4
     R0 = np.minimum(1.0, mz / (photon.pt.sum() * np.sqrt(eps0)))
     # Eq 10 from https://arxiv.org/pdf/1705.04664.pdf
     def pass_for_given_R(R):
@@ -156,26 +156,31 @@ class lheVProcessor(processor.ProcessorABC):
             # the cuts are applied while filling the histogram
             # For now, these studies are only for photons, therefore create these histograms 
             # for only "stat1" pt tag.
-            if tag == 'stat1':
-                for dist, variable_ax in self.distributions.items():
-                    items[f"gen_{dist}_vbf_{tag}_withDRreq"] = Hist("Counts",
-                                                    dataset_ax,
-                                                    variable_ax,
-                                                    cut_ax)
+
+            ##############################
+            # NOT USED, COMMENT OUT FOR NOW
+            ##############################
+
+            # if tag == 'stat1':
+                # for dist, variable_ax in self.distributions.items():
+                    # items[f"gen_{dist}_vbf_{tag}_withDRreq"] = Hist("Counts",
+                                                    # dataset_ax,
+                                                    # variable_ax,
+                                                    # cut_ax)
 
                 # Store minDR between partons and photon in the events
                 # Fill the histogram for three cases: Completely inclusive, with VBF cuts (with and without DR cut)     
-                items[f'lhe_mindr_g_parton_{tag}'] = Hist("Counts",
-                                                    dataset_ax,
-                                                    dr_ax)
+                # items[f'lhe_mindr_g_parton_{tag}'] = Hist("Counts",
+                                                    # dataset_ax,
+                                                    # dr_ax)
 
-                items[f'lhe_mindr_g_parton_{tag}_noDRreq'] = Hist("Counts",
-                                                        dataset_ax,
-                                                        dr_ax)
+                # items[f'lhe_mindr_g_parton_{tag}_noDRreq'] = Hist("Counts",
+                                                        # dataset_ax,
+                                                        # dr_ax)
 
-                items[f'lhe_mindr_g_parton_{tag}_inclusive'] = Hist("Counts",
-                                                        dataset_ax,
-                                                        dr_ax)
+                # items[f'lhe_mindr_g_parton_{tag}_inclusive'] = Hist("Counts",
+                                                        # dataset_ax,
+                                                        # dr_ax)
 
         items["resolution"] = Hist("Counts",
                                 dataset_ax,
@@ -221,9 +226,9 @@ class lheVProcessor(processor.ProcessorABC):
 
             # Get LHE level photon + parton pairs
             # Calculate minimum deltaR between them in each event
-            pairs = setup_lhe_parton_photon_pairs(df)
-            min_dr = pairs.i0.p4.delta_r(pairs.i1.p4).min()
-            df['lhe_mindr_g_parton'] = min_dr
+            # pairs = setup_lhe_parton_photon_pairs(df)
+            # min_dr = pairs.i0.p4.delta_r(pairs.i1.p4).min()
+            # df['lhe_mindr_g_parton'] = min_dr
 
             # Take the partons (before showering) from gen-level candidates
             partons = gen[((gen.status > 70) & (gen.status < 80))] 
@@ -273,54 +278,57 @@ class lheVProcessor(processor.ProcessorABC):
 
             # Fill histograms for deltaR distribution between photons and partons at LHE level
             # Also fill some gen-level distributions (only for photons for now)
-            if is_photon_sample and tag == 'stat1':
+            ##############################
+            # NOT USED, COMMENT OUT FOR NOW
+            ##############################
+            # if is_photon_sample and tag == 'stat1':
                 # Fill the DR histogram with the deltaR requirement
-                output[f'lhe_mindr_g_parton_{tag}'].fill(
-                                    dataset=dataset,
-                                    dr=df['lhe_mindr_g_parton'][full_mask_vbf],
-                                    weight=nominal[full_mask_vbf]
-                                    )
+                # output[f'lhe_mindr_g_parton_{tag}'].fill(
+                                    # dataset=dataset,
+                                    # dr=df['lhe_mindr_g_parton'][full_mask_vbf],
+                                    # weight=nominal[full_mask_vbf]
+                                    # )
                 
-                # Fill the DR histogram without the deltaR requirement
-                output[f'lhe_mindr_g_parton_{tag}_noDRreq'].fill(
-                                    dataset=dataset,
-                                    dr=df['lhe_mindr_g_parton'][mask_vbf],
-                                    weight=nominal[mask_vbf]
-                                    )
+                # # Fill the DR histogram without the deltaR requirement
+                # output[f'lhe_mindr_g_parton_{tag}_noDRreq'].fill(
+                                    # dataset=dataset,
+                                    # dr=df['lhe_mindr_g_parton'][mask_vbf],
+                                    # weight=nominal[mask_vbf]
+                                    # )
 
-                # Fill the DR histogram for the inclusive case
-                output[f'lhe_mindr_g_parton_{tag}_inclusive'].fill(
-                                    dataset=dataset,
-                                    dr=df['lhe_mindr_g_parton'],
-                                    weight=nominal
-                                    )
+                # # Fill the DR histogram for the inclusive case
+                # output[f'lhe_mindr_g_parton_{tag}_inclusive'].fill(
+                                    # dataset=dataset,
+                                    # dr=df['lhe_mindr_g_parton'],
+                                    # weight=nominal
+                                    # )
 
-                def ezfill(dist, **kwargs):
-                    '''Function for easier histogram filling.'''
-                    output[f'gen_{dist}_vbf_stat1_withDRreq'].fill(
-                                                        dataset=dataset,
-                                                        **kwargs
-                                                    )
+                # def ezfill(dist, **kwargs):
+                    # '''Function for easier histogram filling.'''
+                    # output[f'gen_{dist}_vbf_stat1_withDRreq'].fill(
+                                                        # dataset=dataset,
+                                                        # **kwargs
+                                                    # )
 
                 # Fill histograms for separate points in the cutflow
-                cuts_to_exclude = vbf_sel.names + ['none']
-                cut_labels = ['inclusive'] + [f'up_to_{cut}' for cut in cuts_to_exclude[1:] if cut != 'none'] + ['all_cuts_applied']
+                # cuts_to_exclude = vbf_sel.names + ['none']
+                # cut_labels = ['inclusive'] + [f'up_to_{cut}' for cut in cuts_to_exclude[1:] if cut != 'none'] + ['all_cuts_applied']
 
-                for cut, cutlabel in zip(cuts_to_exclude, cut_labels):
-                    # Get partial VBF masks, also with DR > 0.4 and V-pt > 150 GeV requirements applied
-                    mask = get_partial_mask_vbf(selection=vbf_sel, exclude=cut) 
+                # for cut, cutlabel in zip(cuts_to_exclude, cut_labels):
+                    # # Get partial VBF masks, also with DR > 0.4 and V-pt > 150 GeV requirements applied
+                    # mask = get_partial_mask_vbf(selection=vbf_sel, exclude=cut) 
 
-                    # Fill histograms with (partial) VBF selection + DR > 0.4 + V-pt > 150 GeV requirements
-                    ezfill('vpt', vpt=df['gen_v_pt_stat1'][mask], cut=cutlabel, weight=nominal[mask])
-                    ezfill('mjj', mjj=df['mjj'][mask], cut=cutlabel, weight=nominal[mask])
+                    # # Fill histograms with (partial) VBF selection + DR > 0.4 + V-pt > 150 GeV requirements
+                    # ezfill('vpt', vpt=df['gen_v_pt_stat1'][mask], cut=cutlabel, weight=nominal[mask])
+                    # ezfill('mjj', mjj=df['mjj'][mask], cut=cutlabel, weight=nominal[mask])
                     
-                    ezfill('ak4_pt0', jpt=df['ak4_pt0'][mask], cut=cutlabel, weight=nominal[mask])
-                    ezfill('ak4_pt1', jpt=df['ak4_pt1'][mask], cut=cutlabel, weight=nominal[mask])
-                    ezfill('ak4_eta0', jeteta=df['ak4_eta0'][mask], cut=cutlabel, weight=nominal[mask])
-                    ezfill('ak4_eta1', jeteta=df['ak4_eta1'][mask], cut=cutlabel, weight=nominal[mask])
+                    # ezfill('ak4_pt0', jpt=df['ak4_pt0'][mask], cut=cutlabel, weight=nominal[mask])
+                    # ezfill('ak4_pt1', jpt=df['ak4_pt1'][mask], cut=cutlabel, weight=nominal[mask])
+                    # ezfill('ak4_eta0', jeteta=df['ak4_eta0'][mask], cut=cutlabel, weight=nominal[mask])
+                    # ezfill('ak4_eta1', jeteta=df['ak4_eta1'][mask], cut=cutlabel, weight=nominal[mask])
     
-                    ezfill('detajj', deta=df['detajj'][mask], cut=cutlabel, weight=nominal[mask])
-                    ezfill('dphijj', dphi=df['dphijj'][mask], cut=cutlabel, weight=nominal[mask])
+                    # ezfill('detajj', deta=df['detajj'][mask], cut=cutlabel, weight=nominal[mask])
+                    # ezfill('dphijj', dphi=df['dphijj'][mask], cut=cutlabel, weight=nominal[mask])
                                    
             mask_monojet = monojet_sel.all(*monojet_sel.names)
 
