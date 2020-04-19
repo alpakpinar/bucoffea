@@ -31,8 +31,8 @@ def parse_commandline():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Input path containing coffea files.')
     parser.add_argument('--photons_only', help='Only run for several GJets samples.', action='store_true')
-    parser.add_argument('--photons_run_1d', help='Only run 1D GJets k-factors.', action='store_true')
-    parser.add_argument('--dr_req', help='Make k-factors using the distributions with DR>0.4', action='store_true')
+    parser.add_argument('--photons_run_dr16', help='Only run 1D and 2D GJets k-factors with GJets DR 2016 as LO sample.', action='store_true')
+    parser.add_argument('--tag', help='Special tag for output naming.', default=None)
     args = parser.parse_args()
     return args
 
@@ -45,8 +45,8 @@ def get_old_kfac(tag):
         f = uproot.open(bucoffea_path('data/sf/theory/merged_kfactors_gjets.root'))
     return f['kfactor_monojet_qcd']
 
-def sf_1d(acc, tag, regex, outputrootfile):
-    outdir = './output/'
+def sf_1d(acc, tag, regex, outputrootfile, output_dir_name=None):
+    outdir = f'./output/{output_dir_name}' if output_dir_name else './output'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -117,8 +117,8 @@ def sf_1d(acc, tag, regex, outputrootfile):
             outputrootfile[f'{tag}_{pt_type}_{selection}'] = (sf_y,sf_x)
 
 
-def sf_2d(acc, tag, regex, pt_type, outputrootfile, output_dir_name=None, outtag=None, photon_run=False, dr_req=False):
-    outdir = f'./output/2d/{output_dir_name}/{outtag}' if outtag else './output/2d'
+def sf_2d(acc, tag, regex, pt_type, outputrootfile, output_dir_name=None, outtag=None, photon_run=False):
+    outdir = f'./output/2d/{output_dir_name}' if output_dir_name else './output/2d'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -141,10 +141,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile, output_dir_name=None, outtag
         clims = 1.0, 2.5
 
     for selection in ['vbf']:
-        if dr_req:
-            dist = f'gen_vpt_{selection}_{pt_type}_withDRreq'
-        else:
-            dist = f'gen_vpt_{selection}_{pt_type}'
+        dist = f'gen_vpt_{selection}_{pt_type}'
         acc.load(dist)
         h = copy.deepcopy(acc[dist])
         print(h)
@@ -218,7 +215,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile, output_dir_name=None, outtag
         print(tup[0].shape)
         print(tup[1].shape)
         print(tup[2].shape)
-        outputrootfile[f'2d_{tag}_{selection}_{outtag}'] =  tup
+        outputrootfile[f'2d_{tag}_{selection}'] =  tup
 
 def pdfwgt_sf(vpt):
     return 1/(1.157 + 2.291e-4 * vpt + 6.0612e-7 * vpt**2)
@@ -240,11 +237,10 @@ def main():
     only_run_photons = args.photons_only
     
     # Derive k-factors from distributions with DR > 0.4 
-    dr_req = args.dr_req
-    photons_run_1d = args.photons_run_1d
+    photons_run_dr16 = args.photons_run_dr16
 
 
-    if not (only_run_photons or photons_run_1d):
+    if not (only_run_photons or photons_run_dr16):
         outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
 
         sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile)
@@ -258,9 +254,19 @@ def main():
     # outputrootfile = uproot.recreate('test.root')
     
     # Calculate 1D k-factors as a function of photon pt if specified
-    elif photons_run_1d:
-        outputrootfile = uproot.recreate('gjets_sf.root')
-        sf_1d(acc, tag='gjets', regex=r'(G1Jet|GJets_DR-0p4).*2016',outputrootfile=outputrootfile)
+    elif photons_run_dr16:
+        if inpath.endswith('/'):
+            output_dir_name = inpath.split('/')[-2]
+        else:
+            output_dir_name = inpath.split('/')[-1]
+
+        if args.tag:
+            outputrootfile = uproot.recreate(f'gjets_sf_{args.tag}.root')
+        else:
+            outputrootfile = uproot.recreate(f'gjets_sf.root')
+
+        sf_1d(acc, tag='gjets', regex=r'(G1Jet|GJets_DR-0p4).*2016',outputrootfile=outputrootfile, output_dir_name=output_dir_name)
+        sf_2d(acc, tag='gjets', regex=r'(G1Jet|GJets_DR-0p4).*2016',pt_type='stat1',outputrootfile=outputrootfile, output_dir_name=output_dir_name)
 
 
     # Only derive 2D k-factors for photons (if specified)
@@ -288,8 +294,7 @@ def main():
                 output_dir_name=output_dir_name, 
                 pt_type='stat1',
                 outputrootfile=outputrootfile, 
-                photon_run=True, 
-                dr_req=dr_req)
+                photon_run=True)
 
 
 if __name__ == "__main__":
