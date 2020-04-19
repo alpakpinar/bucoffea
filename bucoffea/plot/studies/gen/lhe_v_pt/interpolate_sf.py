@@ -79,6 +79,10 @@ for process in process_list:
                 transform=ax.transAxes
                )
         
+        # Fix y-limit for photon k-factor plots
+        if args.photons_only:
+            ax.set_ylim(1.3, 2.0)
+
         # Save figure
         outdir = f'output/interpolation/{args.outtag}' if args.outtag else 'output/interpolation'
         if not os.path.exists(outdir):
