@@ -638,8 +638,8 @@ def theory_weights_vbf(weights, df, evaluator, gen_v_pt, mjj):
     elif df['is_nlo_z']:
         theory_weights = evaluator["ewk_nlo_z"](gen_v_pt)
     elif df['is_lo_g']:
-        # theory_weights = evaluator["qcd_nlo_g_2017_2d"](mjj, gen_v_pt) * evaluator["ewk_nlo_g"](gen_v_pt)
-        theory_weights = fitfun(gen_v_pt, 1.261, 1.006e-3, 0.896) * evaluator["ewk_nlo_g"](gen_v_pt)
+        theory_weights = evaluator["qcd_nlo_g_2017_2d"](mjj, gen_v_pt) * evaluator["ewk_nlo_g"](gen_v_pt)
+        # theory_weights = fitfun(gen_v_pt, 1.261, 1.006e-3, 0.896) * evaluator["ewk_nlo_g"](gen_v_pt)
     else:
         theory_weights = np.ones(df.size)
 
