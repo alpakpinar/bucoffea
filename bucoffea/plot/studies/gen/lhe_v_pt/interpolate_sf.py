@@ -1,19 +1,36 @@
 #!/usr/bin/env python
 from textwrap import dedent
 import uproot
+import argparse
+import os
 from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
 from bucoffea.helpers import exponential
 import numpy as np
-f = uproot.open('2017_gen_v_pt_qcd_sf.root')
 
+pjoin = os.path.join
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Input file containing k-factors.', default='2017_gen_v_pt_qcd_sf.root')
+    parser.add_argument('--photons_only', help='Only do the fitting for photon k-factors.', action='store_true')
+    parser.add_argument('--outtag', help='Tag for output naming.')
+    args = parser.parse_args()
+    return args
+
+args = parse_cli()
+
+f = uproot.open(args.inpath)
 
 pretty_name = {
     'wjet' : 'W',
     'dy' : 'DY',
     'gjets' : r'$\gamma$+jets'
 }
-for process in ['wjet','dy','gjets']:
+
+process_list = ['gjets'] if args.photons_only else ['wjet','dy','gjets']
+
+for process in process_list:
     x = {}
     y = {}
 
@@ -61,5 +78,12 @@ for process in ['wjet','dy','gjets']:
                 verticalalignment='bottom',
                 transform=ax.transAxes
                )
-        fig.savefig(f'output/interpolation/interpolation_{sel}_{process}.pdf')
+        
+        # Save figure
+        outdir = f'output/interpolation/{args.outtag}' if args.outtag else 'output/interpolation'
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
+        outpath = pjoin(outdir, f'interpolation_{sel}_{process}.pdf')
+        fig.savefig(outpath)
         plt.close(fig)
