@@ -27,6 +27,7 @@ def from_coffea(inpath, outfile):
     acc.load('sumw_pileup')
     acc.load('nevents')
     mjj_ax = hist.Bin('mjj', r'$M_{jj}$ (GeV)', [200, 400, 600, 900, 1200, 1500, 2000, 2750, 3500, 5000])
+    vpt_ax = hist.Bin('vpt', r'$p_T(V) \ (GeV)$', [200, 240, 280, 320, 360, 400, 480, 560, 680, 800, 1000])
     for distribution in ['mjj','mjj_unc', 'mjj_noewk', 'gen_v_pt', 'gen_v_pt_unc', 'gen_v_pt_noewk']:
         acc.load(distribution)
         acc[distribution] = merge_extensions(
@@ -38,6 +39,8 @@ def from_coffea(inpath, outfile):
         acc[distribution] = merge_datasets(acc[distribution])
         if 'mjj' in distribution:
             acc[distribution] = acc[distribution].rebin(acc[distribution].axis('mjj'), mjj_ax)
+        elif 'gen_v_pt' in distribution:
+            acc[distribution] = acc[distribution].rebin(acc[distribution].axis('vpt'), vpt_ax)
 
     pprint(acc[distribution].axis('dataset').identifiers())
     f = uproot.recreate(outfile)
@@ -142,7 +145,7 @@ def make_ratios(infile):
             for dist in ['mjj','gen_v_pt']:
                 denominator = f.Get(f'w_{source}_{dist}_nominal_{year}')
                 for name in map(lambda x:x.GetName(), f.GetListOfKeys()):
-                    if not name.startswith(f'z_{source}'):
+                    if not name.startswith(f'z_{source}_{dist}'):
                         continue
                     if not f"{year}" in name or 'ewkcorr' in name:
                         continue
@@ -150,7 +153,7 @@ def make_ratios(infile):
                     ratio.Divide(denominator)
                     ratio.SetDirectory(of)
                     ratio.Write()
-    
+
     # Z / W ratios (up and down EWK variations)
     for year in [2017,2018]:
         for dist in ['mjj','gen_v_pt']:
@@ -175,7 +178,7 @@ def make_ratios(infile):
             for dist in ['mjj','gen_v_pt']:
                 denominator = f.Get(f'z_{source}_{dist}_nominal_{year}')
                 for name in map(lambda x:x.GetName(), f.GetListOfKeys()):
-                    if not name.startswith(f'gjets_{source}'):
+                    if not name.startswith(f'gjets_{source}_{dist}'):
                         continue
                     if not f"{year}" in name or 'ewkcorr' in name:
                         continue
