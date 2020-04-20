@@ -71,8 +71,8 @@ def from_coffea(inpath, outfile):
             # Get EWK up variation
             h_z_unc_ewk.scale(-1)
             h_z_diff = h_z.copy().add(h_z_unc_ewk)
-            h_z_unc_ewk_down = h_z.add(h_z_diff) 
-            f[f'z_qcd_{dist}_unc_w_ewkcorr_overz_common_up_{year}'] = export1d(h_z_unc_ewk_down)
+            h_z_unc_ewk_up = h_z.add(h_z_diff) 
+            f[f'z_qcd_{dist}_unc_w_ewkcorr_overz_common_up_{year}'] = export1d(h_z_unc_ewk_up)
 
             # EWK variations for QCD W
             # Get EWK down variation first
@@ -82,8 +82,8 @@ def from_coffea(inpath, outfile):
             # Get EWK up variation
             h_w_unc_ewk.scale(-1)
             h_w_diff = h_w.copy().add(h_w_unc_ewk)
-            h_w_unc_ewk_down = h_w.add(h_w_diff)
-            f[f'w_qcd_{dist}_unc_w_ewkcorr_overz_common_up_{year}'] = export1d(h_w_unc_ewk_down)
+            h_w_unc_ewk_up = h_w.add(h_w_diff)
+            f[f'w_qcd_{dist}_unc_w_ewkcorr_overz_common_up_{year}'] = export1d(h_w_unc_ewk_up)
 
             # Scale + PDF variations for QCD photons
             h_ph_unc = acc[f'{dist}_unc'][re.compile(f'GJets_DR-0p4.*HT.*{year}')].integrate('region', 'cr_g_vbf').integrate('dataset')
@@ -101,8 +101,8 @@ def from_coffea(inpath, outfile):
             # Get EWK up variation
             h_ph_unc_ewk.scale(-1)
             h_ph_diff = h_ph.copy().add(h_ph_unc_ewk)
-            h_ph_unc_ewk_down = h_ph.add(h_ph_diff)
-            f[f'gjets_qcd_{dist}_unc_w_ewkcorr_overz_common_up_{year}'] = export1d(h_ph_unc_ewk_down)
+            h_ph_unc_ewk_up = h_ph.add(h_ph_diff)
+            f[f'gjets_qcd_{dist}_unc_w_ewkcorr_overz_common_up_{year}'] = export1d(h_ph_unc_ewk_up)
 
             # EWK V
             h_z = acc[dist][re.compile(f'.*EWKZ.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
