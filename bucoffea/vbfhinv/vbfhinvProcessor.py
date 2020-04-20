@@ -635,11 +635,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
                                     mjj=df["mjj"][mask],
                                     weight=rweight[mask] * w_imp
                                 )
+            # Fill gen V-pt for events in this region
+            if df['has_lhe_v_pt']:
+                ezfill('gen_v_pt', vpt=gen_v_pt[mask], weight=region_weights.weight()[mask])
+            
             # Uncertainty variations for Z
             if df['is_lo_z'] or df['is_nlo_z'] or df['is_lo_z_ewk']:
-                # Fill gen-level V-pt for this region
-                ezfill('gen_v_pt', vpt=gen_v_pt[mask], weight=region_weights.weight()[mask])
-                
                 theory_uncs = [x for x in cfg.SF.keys() if x.startswith('unc') and 'goverz' not in x]
                 for unc in theory_uncs:
                     reweight = evaluator[unc](gen_v_pt)
