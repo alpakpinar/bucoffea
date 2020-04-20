@@ -682,8 +682,18 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         uncertainty=unc,
                         weight=w)
 
-            # Two dimensional
-            ezfill('recoil_mjj',         recoil=df["recoil_pt"][mask], mjj=df["mjj"][mask], weight=rweight[mask] )
+            # Fill mjj and gen V-pt distributions without EWK corrections for LO Z, W and photon samples
+            if df['is_lo_z'] or df['is_lo_w'] or df['is_lo_g']:
+                w_noewk = region_weights.partial_weight(exclude=['theory_ewk'])[mask]
+                ezfill(
+                    'mjj_noewk',
+                    mjj=df['mjj'][mask],
+                    weight=w_noewk)
+                
+                ezfill(
+                    'gen_v_pt_noewk',
+                    vpt=gen_v_pt[mask],
+                    weight=w_noewk)
 
             # Muons
             if '_1m_' in region or '_2m_' in region or 'no_veto' in region:

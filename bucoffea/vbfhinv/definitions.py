@@ -77,6 +77,7 @@ def vbfhinv_accumulator(cfg):
     items["genvpt_check"] = Hist("Counts", dataset_ax, type_ax, vpt_ax)
     items["gen_v_pt"] = Hist("Counts", dataset_ax, vpt_ax, region_ax)
     items["gen_v_pt_unc"] = Hist("Counts", dataset_ax, vpt_ax, region_ax, unc_ax)
+    items["gen_v_pt_noewk"] = Hist("Counts", dataset_ax, vpt_ax, region_ax)
 
     items["lhe_njets"] = Hist("Counts", dataset_ax, multiplicity_ax)
     items["lhe_ht"] = Hist("Counts", dataset_ax, ht_ax)
@@ -89,6 +90,8 @@ def vbfhinv_accumulator(cfg):
     items["mjj"] = Hist("Counts", dataset_ax, region_ax, mjj_ax)
     items["mjj_veto_weight"] = Hist("Counts", dataset_ax, region_ax, variation_ax, mjj_ax)
     items["mjj_unc"] = Hist("Counts", dataset_ax, region_ax, mjj_ax, unc_ax)
+    items["mjj_noewk"] = Hist("Counts", dataset_ax, region_ax, mjj_ax)
+
     items["dphijj"] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
     items["detajj"] = Hist("Counts", dataset_ax, region_ax, deta_ax)
 
