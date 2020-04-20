@@ -73,7 +73,11 @@ def vbfhinv_accumulator(cfg):
     frac_ax = Bin('frac','Fraction', 50, 0, 1)
     Hist = hist.Hist
     items = {}
+    # Histograms for filling GEN-level V-pt (nominal and theory variated)
     items["genvpt_check"] = Hist("Counts", dataset_ax, type_ax, vpt_ax)
+    items["gen_v_pt"] = Hist("Counts", dataset_ax, vpt_ax, region_ax)
+    items["gen_v_pt_unc"] = Hist("Counts", dataset_ax, vpt_ax, region_ax, unc_ax)
+
     items["lhe_njets"] = Hist("Counts", dataset_ax, multiplicity_ax)
     items["lhe_ht"] = Hist("Counts", dataset_ax, ht_ax)
     items["lhe_htinc"] = Hist("Counts", dataset_ax, ht_ax)

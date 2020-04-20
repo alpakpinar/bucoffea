@@ -633,16 +633,50 @@ class vbfhinvProcessor(processor.ProcessorABC):
                                     mjj=df["mjj"][mask],
                                     weight=rweight[mask] * w_imp
                                 )
-
-            # Uncertainty variations
+            # Uncertainty variations for Z
             if df['is_lo_z'] or df['is_nlo_z'] or df['is_lo_z_ewk']:
-                theory_uncs = [x for x in cfg.SF.keys() if x.startswith('unc')]
+                # Fill gen-level V-pt for this region
+                ezfill('gen_v_pt', vpt=gen_v_pt[mask], weight=region_weights.weight()[mask])
+                
+                theory_uncs = [x for x in cfg.SF.keys() if x.startswith('unc') and 'goverz' not in x]
                 for unc in theory_uncs:
                     reweight = evaluator[unc](gen_v_pt)
                     w = (region_weights.weight() * reweight)[mask]
+                    # Fill variated mjj distributions
                     ezfill(
                         'mjj_unc',
                         mjj=df['mjj'][mask],
+                        uncertainty=unc,
+                        weight=w)
+
+                    # Fill variated gen V-pt distributions
+                    ezfill(
+                        'gen_v_pt_unc',
+                        vpt=gen_v_pt[mask],
+                        uncertainty=unc,
+                        weight=w)
+            
+            # Uncertainty variations for photons
+            if df['is_lo_g'] or df['is_lo_g_ewk']:
+                # Fill gen-level V-pt for this region
+                ezfill('gen_v_pt', vpt=gen_v_pt[mask], weight=region_weights.weight()[mask])
+
+                theory_uncs = [x for x in cfg.SF.keys() if x.startswith('unc') and 'zoverw' not in x]
+                for unc in theory_uncs:
+                    reweight = evaluator[unc](gen_v_pt)
+                    w = (region_weights.weight() * reweight)[mask]
+
+                    # Fill variated mjj distributions
+                    ezfill(
+                        'mjj_unc',
+                        mjj=df['mjj'][mask],
+                        uncertainty=unc,
+                        weight=w)
+
+                    # Fill variated gen V-pt distributions
+                    ezfill(
+                        'gen_v_pt_unc',
+                        vpt=gen_v_pt[mask],
                         uncertainty=unc,
                         weight=w)
 
