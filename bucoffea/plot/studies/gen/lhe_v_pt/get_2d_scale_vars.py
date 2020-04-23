@@ -104,19 +104,18 @@ def plot_individual_scale_vars(tup, var, tag, outtag):
     ax.set_title(fig_title)
     ax.set_xlabel(r'$p_T(V) \ (GeV)$')
     ax.set_ylabel(r'$M_{jj} \ (GeV)$')
-    # FIXME: Put text in bins
-    # for ix in range(len(vpt_centers)):
-        # for iy in range(len(mjj_centers)):
-            # # textcol = 'white' if ratio[iy, ix] < 0.5*(clims[0]+clims[1]) else 'black'
-            # ax.text(
-                    # vpt_centers[ix],
-                    # mjj_centers[iy],
-                    # f'{ratio[ix, iy]:.3f}',
-                    # ha='center',
-                    # va='center',
-                    # # color=textcol,
-                    # fontsize=6
-                    # )
+    for ix in range(len(vpt_centers)):
+        for iy in range(len(mjj_centers)):
+            # textcol = 'white' if ratio[iy, ix] < 0.5*(clims[0]+clims[1]) else 'black'
+            ax.text(
+                    vpt_centers[ix],
+                    mjj_centers[iy],
+                    f'{ratio.T[ix, iy]:.3f}',
+                    ha='center',
+                    va='center',
+                    # color=textcol,
+                    fontsize=6
+                    )
 
     cb = fig.colorbar(im)
     cb.set_label('Varied SF / Nominal SF')
@@ -169,11 +168,12 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag):
         ('mu_f_up', 'mu_f_down')
     ]
 
+    # Labels for variations
     var_to_label = {
-        'mu_r_down' : r'$\mu_R = 0.5$, $\mu_F = 1.0$',
-        'mu_r_up' : r'$\mu_R = 2.0$, $\mu_F = 1.0$',
-        'mu_f_down' : r'$\mu_R = 1.0$, $\mu_F = 0.5$',
-        'mu_f_up' : r'$\mu_R = 1.0$, $\mu_F = 2.0$',
+        'mu_r_down' : r'$\mu_R$ down',
+        'mu_r_up' : r'$\mu_R$ up',
+        'mu_f_down' : r'$\mu_F$ down',
+        'mu_f_up' : r'$\mu_F$ up',
     }
 
     # Calculate combined variation on ratio for each variation pair
@@ -197,12 +197,45 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag):
         # Plot the result as a 2D histogram
         fig, ax = plt.subplots()
         im = ax.pcolormesh(mjj_axis.edges(), vpt_axis.edges(), combined_dratio.T)
+        vpt_centers = vpt_axis.centers()
+        mjj_centers = mjj_axis.centers()
+
+        for ix in range(len(mjj_centers)):
+            for iy in range(len(vpt_centers)):
+                # textcol = 'white' if ratio[iy, ix] < 0.5*(clims[0]+clims[1]) else 'black'
+                ax.text(
+                        mjj_centers[ix],
+                        vpt_centers[iy],
+                        f'{combined_dratio.T[iy, ix]:.3f}',
+                        ha='center',
+                        va='center',
+                        # color=textcol,
+                        fontsize=6
+                        )
+
 
         ax.set_ylabel(r'$p_{T}(V) \ (GeV)$')
         ax.set_xlabel(r'$M_{jj} \ (GeV)$')
 
-        fig.colorbar(im)
-        fig.savefig(f'{tag}_{var1}_{var2}test.pdf')
+        if tag == 'zoverw':
+            fig_title = r'$Z(\ell \ell)$ ' + var_to_label[var1] + r' / $W(\ell \nu)$ ' + var_to_label[var2] 
+        elif tag == 'goverz':
+            fig_title = r'$\gamma$ + jets ' + var_to_label[var1] + r' / $Z(\ell \ell)$ ' + var_to_label[var2] 
+
+        ax.set_title(fig_title)
+
+        cb = fig.colorbar(im)
+        cb.set_label('Combined Scale Unc')
+
+        # Save figure
+        outdir = f'./output/theory_variations/{outtag}/scale/ratioplots/combinedunc/2d'
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
+        outpath = pjoin(outdir, f'{tag}_{var1}_{var2}.pdf')
+        fig.savefig(outpath)
+
+        print(f'Figure saved: {outpath}')
 
 def main():
     inpath = sys.argv[1]
