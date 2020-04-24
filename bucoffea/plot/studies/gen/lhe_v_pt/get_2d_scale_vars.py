@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import uproot
 import numpy as np
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from bucoffea.helpers.paths import bucoffea_path
@@ -155,7 +156,7 @@ def get_2d_ratios(sumw_var, tag, var1, var2):
     # Return the varied and nominal ratios
     return (ratio_var1, ratio_var2), ratio_nom 
 
-def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag):
+def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfile):
     # Combination of individual variations works as follows:
     # The opposite scale variations are combined
     # As an example, when combining zvar_over_w and z_over_wvar, we take the following variations and combine them:
@@ -191,12 +192,14 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag):
             1 - dratio_with_denom_varied
             )
         
-        # NOTE: Check calculation of combined ratio
         combined_dratio = 1 + np.sign(1 - dratio_with_num_varied) * combined_dratio
 
         # Plot the result as a 2D histogram
         fig, ax = plt.subplots()
+        mjj_edges = mjj_axis.edges()
+        vpt_edges = vpt_axis.edges()
         im = ax.pcolormesh(mjj_axis.edges(), vpt_axis.edges(), combined_dratio.T)
+        
         vpt_centers = vpt_axis.centers()
         mjj_centers = mjj_axis.centers()
 
@@ -236,6 +239,16 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag):
         fig.savefig(outpath)
 
         print(f'Figure saved: {outpath}')
+
+        # Save 2D variations into ROOT file
+        var_to_roothistname = {
+            'mu_r_down' : 'renScaleDown',
+            'mu_r_up' : 'renScaleUp',
+            'mu_f_down' : 'facScaleDown',
+            'mu_f_up' : 'facScaleUp',
+        }
+
+        outputrootfile[f'{tag}_{var_to_roothistname[var1]}'] = (combined_dratio, mjj_edges, vpt_edges)
 
 def main():
     inpath = sys.argv[1]
@@ -296,11 +309,25 @@ def main():
     # Two ratios: Z/W and photons/Z
     ratio_tags = ['zoverw', 'goverz']
 
+    # Create the output ROOT file to save the 
+    # 2D scale uncertainties on ratios as a function of v-pt and mjj
+    outputrootpath = f'./output/theory_variations/{outtag}/rootfiles'
+    if not os.path.exists(outputrootpath):
+        os.makedirs(outputrootpath)
+    
+    outputrootfile_z_over_w = uproot.recreate( pjoin(outputrootpath, 'zoverw_scale_unc_2d.root') )
+    outputrootfile_g_over_z = uproot.recreate( pjoin(outputrootpath, 'goverz_scale_unc_2d.root') )
+
+    outputrootfiles = {
+        'zoverw' : outputrootfile_z_over_w,
+        'goverz' : outputrootfile_g_over_z
+    }
+
     vpt_axis = BINNING['vpt']
     mjj_axis = BINNING['mjj']
 
     for ratio_tag in ratio_tags:
-        plot_ratio_variation(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag)
+        plot_ratio_variation(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag])
 
 if __name__ == '__main__':
     main()
