@@ -331,13 +331,18 @@ def sf_comparison_plot(tag):
         fig.clear()
         plt.close(fig)
 
-def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_format='pdf'):
+def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_format='pdf', plot_combined=True):
     regions = ['1m', '2m']
     opts = markers('data')
     emarker = opts.pop('emarker', '')
-    outdir = f"./output/{tag}"
-    jeteta_configs = ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central']
-
+    outdir = f"./output/{tag}/29Apr20/scale_factors"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+        
+    jeteta_configs = ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central', 'all']
+    # Input directory containing data in txt format
+    input_dir = f'./output/{tag}/29Apr20'
+    
     for year in [2017,2018]:
         for region in regions:
             fig, ax = plt.subplots(1,1) 
@@ -352,12 +357,12 @@ def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_for
             for jeteta_config in jeteta_configs:
                 print(f'{year}, {region}, {jeteta_config}')
                 if region == '1m': 
-                    fnum = f'output/{tag}/table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt'
-                    fden = f'output/{tag}/table_{region}_recoil_WJetsToLNu_HT_MLM_{year}_{jeteta_config}.txt'
+                    fnum = pjoin(input_dir, f'table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt')
+                    fden = pjoin(input_dir, f'table_{region}_recoil_WJetsToLNu_HT_MLM_{year}_{jeteta_config}.txt')
                     xlabel = f"{distribution} (GeV)"
                 elif region == '2m':
-                    fnum = f'output/{tag}/table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt'
-                    fden = f'output/{tag}/table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}_{jeteta_config}.txt'
+                    fnum = pjoin(input_dir, f'table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt')
+                    fden = pjoin(input_dir, f'table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}_{jeteta_config}.txt')
                     xlabel = f"{distribution} (GeV)"
                 if not os.path.exists(fnum):
                     print(f"File not found {fnum}")
@@ -366,11 +371,11 @@ def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_for
                     print(f"File not found {fden}")
                     continue
                 
-                xnum, xedgnum, ynum[f'{jeteta_config}'], yerrnum[f'{jeteta_config}'] = get_xy(fnum)
-                xden, xedgden, yden[f'{jeteta_config}'], yerrden[f'{jeteta_config}'] = get_xy(fden)
+                xnum, xedgnum, ynum[jeteta_config], yerrnum[jeteta_config] = get_xy(fnum)
+                xden, xedgden, yden[jeteta_config], yerrden[jeteta_config] = get_xy(fden)
                 xsf = xnum
-                ysf[f'{jeteta_config}'] = ynum[f'{jeteta_config}'] / yden[f'{jeteta_config}']
-                ysferr[f'{jeteta_config}'] = ratio_unc(ynum[f'{jeteta_config}'], yden[f'{jeteta_config}'], yerrnum[f'{jeteta_config}'], yerrden[f'{jeteta_config}'])
+                ysf[jeteta_config] = ynum[jeteta_config] / yden[jeteta_config]
+                ysferr[jeteta_config] = ratio_unc(ynum[jeteta_config], yden[jeteta_config], yerrnum[jeteta_config], yerrden[jeteta_config])
 
             # Only consider the values above 250 GeV
             if distribution == 'recoil':
@@ -381,15 +386,20 @@ def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_for
                 ysferr_new['two_central_jets'] = [ ysferr['two_central_jets'][0][recoil_cut], ysferr['two_central_jets'][1][recoil_cut] ] 
                 ysferr_new['two_forward_jets'] = [ ysferr['two_forward_jets'][0][recoil_cut], ysferr['two_forward_jets'][1][recoil_cut] ]
                 ysferr_new['one_jet_forward_one_jet_central'] = [ ysferr['one_jet_forward_one_jet_central'][0][recoil_cut], ysferr['one_jet_forward_one_jet_central'][1][recoil_cut] ]
+                ysferr_new['all'] = [ ysferr['all'][0][recoil_cut], ysferr['all'][1][recoil_cut] ] 
 
-            opts['color'] = 'k'
-            ax.errorbar(xsf, ysf['two_central_jets'][recoil_cut], yerr=ysferr_new['two_central_jets'],label=f'Two central jets', **opts)
-            opts['color'] = 'g'
-            ax.errorbar(xsf, ysf['two_forward_jets'][recoil_cut], yerr=ysferr_new['two_forward_jets'],label=f'Two forward jets', **opts)
-            opts['color'] = 'r'
-            ax.errorbar(xsf, ysf['one_jet_forward_one_jet_central'][recoil_cut], yerr=ysferr_new['one_jet_forward_one_jet_central'],label=f'Mixed', **opts)
-     
-            ax.legend()
+            # Plot three separate SFs if requested, else draw the combined one
+            if not plot_combined:
+                opts['color'] = 'k'
+                ax.errorbar(xsf, ysf['two_central_jets'][recoil_cut], yerr=ysferr_new['two_central_jets'],label=f'Two central jets', **opts)
+                opts['color'] = 'g'
+                ax.errorbar(xsf, ysf['two_forward_jets'][recoil_cut], yerr=ysferr_new['two_forward_jets'],label=f'Two forward jets', **opts)
+                opts['color'] = 'r'
+                ax.errorbar(xsf, ysf['one_jet_forward_one_jet_central'][recoil_cut], yerr=ysferr_new['one_jet_forward_one_jet_central'],label=f'Mixed', **opts)
+                ax.legend()
+            else:
+                ax.errorbar(xsf, ysf['all'][recoil_cut], yerr=ysferr_new['all'], **opts)
+            
             ax.set_ylabel('Data / MC SF') 
             ax.set_xlabel(f'{distribution.capitalize()} (GeV)') 
             ax.set_ylim(ymin,ymax)
@@ -411,7 +421,12 @@ def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_for
                     verticalalignment='bottom',
                     transform=ax.transAxes
                 )
-            fig.savefig(pjoin(outdir, f'scale_factors_{region}_{year}.{output_format}'))
+            if plot_combined:
+                outname = f'scale_factors_{region}_{year}_combined.{output_format}'
+            else:
+                outname = f'scale_factors_{region}_{year}.{output_format}'
+
+            fig.savefig(pjoin(outdir, outname))
             fig.clear()
             plt.close(fig)
 
@@ -622,7 +637,8 @@ def met_trigger_eff(distribution):
         for jeteta_config in ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central', 'all']:
             data_mc_comparison_plot(tag, distribution=distribution, jeteta_config=jeteta_config, output_format='pdf')
 
-        # plot_scalefactors(tag, distribution=distribution)
+        plot_scalefactors(tag, distribution=distribution, plot_combined=False)
+        plot_scalefactors(tag, distribution=distribution, plot_combined=True)
 
 def met_triggers_ht():
         tag = '120pfht_hltmu'
