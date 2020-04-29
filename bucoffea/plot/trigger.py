@@ -85,22 +85,25 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
     elif distribution == 'mjj':
         newbin = hist.Bin(axis_name,r'$M_{jj}$ (GeV)',np.array(list(range(200,600,200)) + list(range(600,1500,300)) + [1500,2000,2750,3500]))
     else:
-        newbin = hist.Bin(axis_name,f"{axis_name} (GeV)",np.array(list(range(0,500,25)) + list(range(500,1100,100))))
+        newbin = hist.Bin(axis_name,f"{axis_name} (GeV)",np.array(list(range(0,500,20)) + list(range(500,1100,100))))
     h = h.rebin(h.axis(axis_name), newbin)
     ds = f'{dataset}_{year}'
 
     # Pick dataset and regions
     h = h.integrate(h.axis('dataset'), ds)
-    if jeteta_config:
+    # Pick a specific jet eta config if requested
+    if jeteta_config != 'all':
         hnum = h.integrate(h.axis('region'),f'tr_{region_tag}_num_{jeteta_config}')
         hden = h.integrate(h.axis('region'),f'tr_{region_tag}_den_{jeteta_config}')
-    else:
-        hnum = h.integrate(h.axis('region'),f'tr_{region_tag}_num')
-        hden = h.integrate(h.axis('region'),f'tr_{region_tag}_den')
+    # If "all" option is specified, aggregate over all three jet configs
+    elif jeteta_config == 'all':
+        hnum = h.integrate(h.axis('region'),re.compile(f'tr_{region_tag}_num.*'))
+        hden = h.integrate(h.axis('region'),re.compile(f'tr_{region_tag}_den.*'))
 
     # Recoil plot
     try:
-        fig, ax,_ = hist.plot1d(hnum, binwnorm=True)
+        fig, ax = plt.subplots()
+        hist.plot1d(hnum, ax=ax, binwnorm=True)
     except KeyError:
         pprint(h.axis('region').identifiers())
         print(f'ERROR: {region_tag}, {dataset}, {year}')
@@ -108,11 +111,11 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
     hist.plot1d(hden, ax=ax, clear=False, binwnorm=True)
     plt.yscale('log')
     plt.gca().set_ylim(0.1,1e6)
-    outdir = f"./output/{tag}"
+    outdir = f"./output/{tag}/29Apr20"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    outname = f'{region_tag}{"_noscale_" if noscale else "_"}{distribution}_{dataset}_{year}{"_"+jeteta_config if jeteta_config else ""}'
+    outname = f'{region_tag}{"_noscale_" if noscale else "_"}{distribution}_{dataset}_{year}_{jeteta_config}'
 
     fig.savefig(pjoin(outdir, f'{outname}.{output_format}'))
     with open(pjoin(outdir,f'table_{outname}.txt'),"w") as f:
@@ -120,7 +123,9 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
     plt.close(fig)
 
     # Efficiency plot
-    fig, ax,_ = hist.plotratio(hnum, hden,
+    fig, ax = plt.subplots()
+    hist.plotratio(hnum, hden,
+                ax=ax,
                 guide_opts={},
                 unc='clopper-pearson',
                 error_opts=markers('data')
@@ -421,31 +426,43 @@ def data_mc_comparison_plot(tag, ymin=0, ymax=1.1, distribution='recoil', jeteta
     # opts['markersize'] = 5
     # opts['fillstyle'] = 'none'
     emarker = opts.pop('emarker', '')
-    outdir = f"./output/{tag}"
-    outpath = pjoin(outdir,f'trig_sf.root')
+    root_outdir = f"./output/{tag}/29Apr20/root_files"
+    figs_outdir = f"./output/{tag}/29Apr20/figures"
+    for d in [root_outdir, figs_outdir]:
+        if not os.path.exists(d):
+            os.makedirs(d)
+
+    if jeteta_config != 'all':
+        outpath = pjoin(root_outdir,f'trig_sf_with_jet_configs.root')
+    else:
+        outpath = pjoin(root_outdir,f'trig_sf_all.root')
+        
     try:
         outfile = uproot.recreate(outpath)
     except OSError:
         outfile = uproot.update(outpath)
 
+    # Input directory containing data in txt format
+    input_dir = f'./output/{tag}/29Apr20'
+
     for year in [2017,2018]:
         for region in regions:
             fig, ax, rax = fig_ratio()
             if '1e' in region:
-                fnum = f'output/{tag}/table_{region}_met_EGamma_{year}.txt'
-                fden = f'output/{tag}/table_{region}_met_WJetsToLNu_HT_MLM_{year}.txt'
+                fnum = pjoin(input_dir, f'table_{region}_met_EGamma_{year}.txt')
+                fden = pjoin(input_dir, f'table_{region}_met_WJetsToLNu_HT_MLM_{year}.txt')
                 xlabel = "$p_{T}^{miss}$ (GeV)"
             elif '1m' in region:
-                fnum = f'output/{tag}/table_{region}_recoil_SingleMuon_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
-                fden = f'output/{tag}/table_{region}_recoil_WJetsToLNu_HT_MLM_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
+                fnum = pjoin(input_dir, f'table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt')
+                fden = pjoin(input_dir, f'table_{region}_recoil_WJetsToLNu_HT_MLM_{year}_{jeteta_config}.txt')
                 xlabel = "Recoil (GeV)"
             elif '2m' in region:
-                fnum = f'output/{tag}/table_{region}_recoil_SingleMuon_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
-                fden = f'output/{tag}/table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
+                fnum = pjoin(input_dir, f'table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt')
+                fden = pjoin(input_dir, f'table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}_{jeteta_config}.txt')
                 xlabel = "Recoil (GeV)"
             elif 'g_' in region:
-                fnum = f'output/{tag}/table_{region}_photon_pt0_JetHT_{year}.txt'
-                fden = f'output/{tag}/table_{region}_photon_pt0_GJets_HT_MLM_{year}.txt'
+                fnum = pjoin(input_dir, f'table_{region}_photon_pt0_JetHT_{year}.txt')
+                fden = pjoin(input_dir, f'table_{region}_photon_pt0_GJets_HT_MLM_{year}.txt')
                 xlabel = "Photon $p_{T}$ (GeV)"
 
             if not os.path.exists(fnum):
@@ -520,14 +537,14 @@ def data_mc_comparison_plot(tag, ymin=0, ymax=1.1, distribution='recoil', jeteta
                     verticalalignment='bottom',
                     transform=ax.transAxes
                 )
-            fig.savefig(pjoin(outdir, f'data_mc_comparison_{region}_{year}{"_"+jeteta_config if jeteta_config else ""}.{output_format}'))
+            fig.savefig(pjoin(figs_outdir, f'data_mc_comparison_{region}_{year}{"_"+jeteta_config if jeteta_config else ""}.{output_format}'))
             fig.clear()
             plt.close(fig)
 
-
+            # Save data/MC scale factors into ROOT file
             vals = np.array(sorted(list(set(list(xedgnum.flatten())))))
             ysf[np.isnan(ysf) | np.isinf(np.abs(ysf))] = 1
-            outfile[f'{tag}_{region}_{year}'] = (ysf, vals)
+            outfile[f'{tag}_{region}_{year}_{jeteta_config}'] = (ysf, vals)
 
 
 def met_triggers():
@@ -563,7 +580,7 @@ def met_trigger_eff(distribution):
             tag = '120pfht_mu_mjj'
         elif distribution == 'recoil':
             tag = '120pfht_mu_recoil'
-            indir = '/afs/cern.ch/user/a/aakpinar/bucoffea/bucoffea/submission/2019-11-13_vbf_trigger_recoil'
+            indir = '/Users/alpakpinar/Desktop/bucoffea/bucoffea/submission/merged_2019-11-13_vbf_trigger_recoil'
 
         acc = dir_archive(
                           indir,
@@ -578,7 +595,7 @@ def met_trigger_eff(distribution):
         acc.load('sumw2')      
 
         for year in [2017, 2018]:
-            for jeteta_config in ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central']:
+            for jeteta_config in ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central', 'all']:
                 # Single muon CR
                 region_tag='1m'
                 for dataset in ['WJetsToLNu_HT_MLM', 'SingleMuon']:
@@ -602,10 +619,10 @@ def met_trigger_eff(distribution):
                                 jeteta_config=jeteta_config,
                                 output_format='pdf')        
 
-        for jeteta_config in ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central']:
+        for jeteta_config in ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central', 'all']:
             data_mc_comparison_plot(tag, distribution=distribution, jeteta_config=jeteta_config, output_format='pdf')
 
-        plot_scalefactors(tag, distribution=distribution)
+        # plot_scalefactors(tag, distribution=distribution)
 
 def met_triggers_ht():
         tag = '120pfht_hltmu'
