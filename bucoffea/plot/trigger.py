@@ -362,7 +362,7 @@ def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_for
                     xlabel = f"{distribution} (GeV)"
                 elif region == '2m':
                     fnum = pjoin(input_dir, f'table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt')
-                    fden = pjoin(input_dir, f'table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}_{jeteta_config}.txt')
+                    fden = pjoin(input_dir, f'table_{region}_recoil_DYJetsToLL_M-50_HT_MLM_{year}_{jeteta_config}.txt')
                     xlabel = f"{distribution} (GeV)"
                 if not os.path.exists(fnum):
                     print(f"File not found {fnum}")
@@ -473,7 +473,7 @@ def data_mc_comparison_plot(tag, ymin=0, ymax=1.1, distribution='recoil', jeteta
                 xlabel = "Recoil (GeV)"
             elif '2m' in region:
                 fnum = pjoin(input_dir, f'table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt')
-                fden = pjoin(input_dir, f'table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}_{jeteta_config}.txt')
+                fden = pjoin(input_dir, f'table_{region}_recoil_DYJetsToLL_M-50_HT_MLM_{year}_{jeteta_config}.txt')
                 xlabel = "Recoil (GeV)"
             elif 'g_' in region:
                 fnum = pjoin(input_dir, f'table_{region}_photon_pt0_JetHT_{year}.txt')
@@ -624,7 +624,7 @@ def met_trigger_eff(distribution):
                                 output_format='pdf')        
                 # Double muon CR
                 region_tag='2m'
-                for dataset in ['VDYJetsToLL_M-50_HT_MLM', 'SingleMuon']:
+                for dataset in ['DYJetsToLL_M-50_HT_MLM', 'SingleMuon']:
                     plot_recoil(acc, region_tag=region_tag,
                                 distribution=distribution,
                                 axis_name=distribution,
