@@ -11,7 +11,9 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+# For rebinning
 vpt_ax = hist.Bin('vpt', r'$p_T(V) \ (GeV)$', [200, 240, 280, 320, 360, 400, 480, 560, 680, 800, 1000])
+mjj_ax = hist.Bin('mjj', r'$M_{jj}$ (GeV)', [200, 400, 600, 900, 1200, 1500, 2000, 2750, 3500, 5000])
 
 def plot_theory_uncs(acc, outtag, dist='gen_v_pt'):
     '''Plot theory uncertainties as a function of given variable (defualt is GEN boson pt)'''
@@ -23,9 +25,14 @@ def plot_theory_uncs(acc, outtag, dist='gen_v_pt'):
         acc[d] = merge_extensions(acc[d], acc, reweight_pu=False)
         scale_xs_lumi(acc[d])
         acc[d] = merge_datasets(acc[d])
+        AX_TO_USE = None
         # Rebin 
         if dist == 'gen_v_pt':
             acc[d] = acc[d].rebin('vpt', vpt_ax)
+            AX_TO_USE = vpt_ax
+        elif dist == 'mjj':
+            acc[d] = acc[d].rebin('mjj', mjj_ax)
+            AX_TO_USE = mjj_ax
 
     for year in [2017, 2018]:
         # Get nominal distributions and plot them
@@ -43,7 +50,7 @@ def plot_theory_uncs(acc, outtag, dist='gen_v_pt'):
             fig, ax = plt.subplots()
             hist.plot1d(h, ax=ax)
             ax.set_title(tag_to_title[tag])
-            fig.savefig(pjoin(nominal_plots_outdir, f'{tag}_nominal.pdf'))
+            fig.savefig(pjoin(nominal_plots_outdir, f'{tag}_nominal_{dist}.pdf'))
             plt.close()
 
         h_z_nom = acc[dist][re.compile(f'ZJetsToNuNu.*HT.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
@@ -76,15 +83,17 @@ def plot_theory_uncs(acc, outtag, dist='gen_v_pt'):
             h = h_ph_unc.integrate(h_ph_unc.axis('uncertainty'), unc)
             # Store ratios of varied and nominal photons for all uncertainties
             # Multiply by 2 due to bug in NanoAOD
-            ph_ratios[unc] = 2 * h.values()[()] / h_ph_nom.values()[()]
+            ph_ratios[unc] = h.values()[()] / h_ph_nom.values()[()]
+            # if dist == 'gen_v_pt':
+                # ph_ratios[unc] *= 2
 
         # Plotter code for var/nom ratios
         def plot_var_over_nom(ratios, tag):
             fig, ax = plt.subplots()
             for unc, ratio_arr in ratios.items():
-                ax.plot(vpt_ax.centers(), ratio_arr, label='_'.join(unc.split('_')[-2:]), marker='o')
+                ax.plot(AX_TO_USE.centers(), ratio_arr, label='_'.join(unc.split('_')[-2:]), marker='o')
             ax.legend(ncol=2)
-            ax.set_xlabel(r'$p_T(V) \ (GeV)$')
+            ax.set_xlabel(AX_TO_USE.label)
             tag_to_ylabel = {
                 f'znunu_{year}' : r'$Z(\nu \nu)_{var} \ / \ Z(\nu \nu)_{nom}$ ' + str(year),
                 f'wlnu_{year}'  : r'$W(\ell \nu)_{var} \ / \ W(\ell \nu)_{nom}$ ' + str(year),
@@ -98,7 +107,7 @@ def plot_theory_uncs(acc, outtag, dist='gen_v_pt'):
             ax.plot(xlim, [1, 1], 'k--')
             ax.set_xlim(xlim)
         
-            outpath = pjoin(ratios_outdir, f'{tag}_varovernom.pdf')
+            outpath = pjoin(ratios_outdir, f'{tag}_varovernom_{dist}.pdf')
             fig.savefig(outpath)
 
         plot_var_over_nom(ratios=z_ratios, tag=f'znunu_{year}')
@@ -121,16 +130,16 @@ def plot_theory_uncs(acc, outtag, dist='gen_v_pt'):
             if 'zoverw' in unc or 'ewkcorr' in unc:
                 continue
             h = h_ph_unc.integrate(h_ph_unc.axis('uncertainty'), unc)
-            varied_ph_over_z = 2 * h.values()[()] / h_z_nom.values()[()]
+            varied_ph_over_z = h.values()[()] / h_z_nom.values()[()]
             ph_over_z_double_ratios[unc] = varied_ph_over_z / nominal_ph_over_z
 
         # Plotter code for var/nom double ratios
         def plot_double_ratio(ratios, tag):
             fig, ax = plt.subplots()
             for unc, ratio_arr in ratios.items():
-                ax.plot(vpt_ax.centers(), ratio_arr, label='_'.join(unc.split('_')[-2:]), marker='o')
+                ax.plot(AX_TO_USE.centers(), ratio_arr, label='_'.join(unc.split('_')[-2:]), marker='o')
             ax.legend(ncol=2)
-            ax.set_xlabel(r'$p_T(V) \ (GeV)$')
+            ax.set_xlabel(AX_TO_USE.label)
             tag_to_ylabel = {
                 f'zoverw_{year}' : r'$Z(\nu \nu)\ / \ W(\ell \nu)$ ' + str(year),
                 f'goverz_{year}' : r'$(\gamma + jets) \ / \ Z(\nu \nu)$ ' + str(year)
@@ -143,7 +152,7 @@ def plot_theory_uncs(acc, outtag, dist='gen_v_pt'):
             ax.plot(xlim, [1, 1], 'k--')
             ax.set_xlim(xlim)
         
-            outpath = pjoin(ratios_outdir, f'{tag}_varovernom.pdf')
+            outpath = pjoin(ratios_outdir, f'{tag}_varovernom_{dist}.pdf')
             fig.savefig(outpath)
 
         plot_double_ratio(ratios=z_over_w_double_ratios, tag=f'zoverw_{year}')
@@ -167,7 +176,8 @@ def main():
     else:
         outtag = inpath.split('/')[-1]
 
-    plot_theory_uncs(acc, outtag)
+    plot_theory_uncs(acc, outtag, dist='gen_v_pt')
+    plot_theory_uncs(acc, outtag, dist='mjj')
 
 if __name__ == '__main__':
     main()
