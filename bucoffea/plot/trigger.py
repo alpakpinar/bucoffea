@@ -2,6 +2,7 @@
 
 import copy
 import os
+import sys
 import re
 from collections import defaultdict
 from pprint import pprint
@@ -70,7 +71,7 @@ def content_table(hnum, hden, axis_name):
         table.append(line)
     return tabulate(table, headers=['Recoil', 'Numerator', 'Denominator',"Efficiency", "Eff-sigma","Eff+sigma"])
 
-def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMuon', year=2018, tag="test", distribution="recoil",axis_name=None, noscale=False, jeteta_config=None, output_format='pdf'):
+def plot_recoil(acc,outtag,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMuon', year=2018, tag="test", distribution="recoil",axis_name=None, noscale=False, jeteta_config=None, output_format='pdf'):
     # Select and prepare histogram
     h = copy.deepcopy(acc[distribution])
     h = merge_extensions(h, acc,reweight_pu=('nopu' in distribution), noscale=noscale)
@@ -111,7 +112,7 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
     hist.plot1d(hden, ax=ax, clear=False, binwnorm=True)
     plt.yscale('log')
     plt.gca().set_ylim(0.1,1e6)
-    outdir = f"./output/{tag}/29Apr20"
+    outdir = f"./output/{outtag}"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -331,17 +332,17 @@ def sf_comparison_plot(tag):
         fig.clear()
         plt.close(fig)
 
-def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_format='pdf', plot_combined=True):
+def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', output_format='pdf', plot_combined=True):
     regions = ['1m', '2m']
     opts = markers('data')
     emarker = opts.pop('emarker', '')
-    outdir = f"./output/{tag}/29Apr20/scale_factors"
+    outdir = f"./output/{outtag}/scale_factors"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
         
     jeteta_configs = ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central', 'all']
     # Input directory containing data in txt format
-    input_dir = f'./output/{tag}/29Apr20'
+    input_dir = f'./output/{outtag}'
     
     for year in [2017,2018]:
         for region in regions:
@@ -430,7 +431,7 @@ def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_for
             fig.clear()
             plt.close(fig)
 
-def data_mc_comparison_plot(tag, ymin=0, ymax=1.1, distribution='recoil', jeteta_config=None, output_format='pdf'):
+def data_mc_comparison_plot(tag, outtag, ymin=0, ymax=1.1, distribution='recoil', jeteta_config=None, output_format='pdf'):
     if 'gamma' in tag:
         regions = ['g_HLT_PFHT1050','g_HLT_PFHT590','g_HLT_PFHT680','g_HLT_PFHT780','g_HLT_PFHT890']
     elif 'recoil' in tag:
@@ -441,8 +442,8 @@ def data_mc_comparison_plot(tag, ymin=0, ymax=1.1, distribution='recoil', jeteta
     # opts['markersize'] = 5
     # opts['fillstyle'] = 'none'
     emarker = opts.pop('emarker', '')
-    root_outdir = f"./output/{tag}/29Apr20/root_files"
-    figs_outdir = f"./output/{tag}/29Apr20/figures"
+    root_outdir = f"./output/{outtag}/root_files"
+    figs_outdir = f"./output/{outtag}/figures"
     for d in [root_outdir, figs_outdir]:
         if not os.path.exists(d):
             os.makedirs(d)
@@ -458,7 +459,7 @@ def data_mc_comparison_plot(tag, ymin=0, ymax=1.1, distribution='recoil', jeteta
         outfile = uproot.update(outpath)
 
     # Input directory containing data in txt format
-    input_dir = f'./output/{tag}/29Apr20'
+    input_dir = f'./output/{outtag}'
 
     for year in [2017,2018]:
         for region in regions:
@@ -590,15 +591,15 @@ def met_triggers():
         region_comparison_plot(tag)
         sf_comparison_plot(tag)
 
-def met_trigger_eff(distribution):
+def met_trigger_eff(distribution, inpath, outtag):
         if distribution == 'mjj':
             tag = '120pfht_mu_mjj'
         elif distribution == 'recoil':
             tag = '120pfht_mu_recoil'
-            indir = '/Users/alpakpinar/Desktop/bucoffea/bucoffea/submission/merged_2019-11-13_vbf_trigger_recoil'
+            # indir = '/Users/alpakpinar/Desktop/bucoffea/bucoffea/submission/merged_2019-11-13_vbf_trigger_recoil'
 
         acc = dir_archive(
-                          indir,
+                          inpath,
                           serialized=True,
                           compression=0,
                           memsize=1e3
@@ -614,7 +615,8 @@ def met_trigger_eff(distribution):
                 # Single muon CR
                 region_tag='1m'
                 for dataset in ['WJetsToLNu_HT_MLM', 'SingleMuon']:
-                    plot_recoil(acc, region_tag=region_tag,
+                    plot_recoil(acc, outtag=outtag,
+                                region_tag=region_tag,
                                 distribution=distribution,
                                 axis_name=distribution,
                                 dataset=dataset,
@@ -625,7 +627,8 @@ def met_trigger_eff(distribution):
                 # Double muon CR
                 region_tag='2m'
                 for dataset in ['DYJetsToLL_M-50_HT_MLM', 'SingleMuon']:
-                    plot_recoil(acc, region_tag=region_tag,
+                    plot_recoil(acc, outtag=outtag,
+                                region_tag=region_tag,
                                 distribution=distribution,
                                 axis_name=distribution,
                                 dataset=dataset,
@@ -635,47 +638,10 @@ def met_trigger_eff(distribution):
                                 output_format='pdf')        
 
         for jeteta_config in ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central', 'all']:
-            data_mc_comparison_plot(tag, distribution=distribution, jeteta_config=jeteta_config, output_format='pdf')
+            data_mc_comparison_plot(tag, outtag=outtag, distribution=distribution, jeteta_config=jeteta_config, output_format='pdf')
 
-        plot_scalefactors(tag, distribution=distribution, plot_combined=False)
-        plot_scalefactors(tag, distribution=distribution, plot_combined=True)
-
-def met_triggers_ht():
-        tag = '120pfht_hltmu'
-        indir = f"/home/albert/repos/bucoffea/bucoffea/plot/input/16Jul19_incomplete_v7"
-        acc = acc_from_dir(indir)
-
-        # for noscale in [False]:
-        #     distribution = 'recoil_noweight'  if noscale else 'recoil'
-        #     for year in [2017, 2018]:
-        #         region = '1m'
-        #         for dataset in ["WJetsToLNu_HT_MLM", "SingleMuon"]:
-        #             if dataset=='SingleMuon' and noscale:
-        #                 continue
-        #             plot_recoil(acc,region,distribution=distribution,axis_name='recoil',dataset=dataset,year=year, tag=tag, noscale=noscale)
-        #         region = '2m'
-        #         for dataset in ["DYJetsToLL_M-50_HT_MLM", "SingleMuon"]:
-        #             if dataset=='SingleMuon' and noscale:
-        #                 continue
-        #             plot_recoil(acc,region,distribution=distribution,axis_name='recoil',dataset=dataset,year=year, tag=tag, noscale=noscale)
-        #         # region = '1m_hlt'
-        #         # for dataset in ["WJetsToLNu_HT_MLM", "SingleMuon"]:
-        #         #     plot_recoil(acc,region,dataset=dataset,year=year, tag=tag)
-        #         region = '2m_hlt'
-        #         for dataset in ["DYJetsToLL_M-50_HT_MLM", "SingleMuon"]:
-        #             if dataset=='SingleMuon' and noscale:
-        #                 continue
-        #             plot_recoil(acc,region,distribution=distribution,axis_name='recoil',dataset=dataset,year=year, tag=tag, noscale=noscale)
-        #         region = '1e'
-        #         for dataset in ["WJetsToLNu_HT_MLM", "EGamma"]:
-        #             plot_recoil(acc,region,dataset=dataset,year=year, tag=tag, distribution='met')
-        #         # region = '2e'
-        #         # for dataset in ["DYJetsToLL_M-50_HT_MLM", "EGamma"]:
-        #         #     plot_recoil(acc,region,dataset=dataset,year=year, tag=tag, distribution='met')
-
-        # region_comparison_plot(tag)
-        # sf_comparison_plot(tag)
-        data_mc_comparison_plot(tag)
+        plot_scalefactors(tag, outtag=outtag, distribution=distribution, plot_combined=False)
+        plot_scalefactors(tag, outtag=outtag, distribution=distribution, plot_combined=True)
 
 def photon_triggers_merged():
     tag = 'gamma'
@@ -805,7 +771,7 @@ def photon_triggers():
                                 )
 
                     # plot_recoil(acc,region,dataset=dataset,year=year, tag=tag, distribution='recoil',axis_name='recoil')
-    data_mc_comparison_plot(tag)
+    # data_mc_comparison_plot(tag)
 
 def photon_sf_plot(tag):
 
@@ -869,7 +835,13 @@ def photon_sf_plot(tag):
 def main():
     # indir = "/home/albert/repos/bucoffea/bucoffea/plot/input/eff/test"
     #met_triggers_ht()
-    met_trigger_eff('recoil')
+    inpath = sys.argv[1]
+    if inpath.endswith('/'):
+        outtag = inpath.split('/')[-2]
+    else:
+        outtag = inpath.split('/')[-1]
+        
+    met_trigger_eff('recoil', inpath=inpath, outtag=outtag)
     # photon_triggers()
     # photon_sf_plot('gamma')
     # photon_triggers()
