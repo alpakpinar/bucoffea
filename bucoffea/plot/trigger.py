@@ -380,7 +380,7 @@ def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', ou
 
             # Only consider the values above 250 GeV
             if distribution == 'recoil':
-                recoil_cut = xedgnum[0]>=250
+                recoil_cut = xedgnum[0]>=240
                 xsf = xsf[recoil_cut]
 
                 ysferr_new = {}
