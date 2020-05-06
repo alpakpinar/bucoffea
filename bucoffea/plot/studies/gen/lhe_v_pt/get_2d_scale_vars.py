@@ -129,14 +129,15 @@ def plot_individual_scale_vars(tup, var, tag, outtag):
     outfile = pjoin(outpath, f'{tag}_kfac_ratio_{var}.pdf')
     fig.savefig(outfile)
     print(f'Figure saved: {outfile}')
+    plt.close()
 
 def get_2d_ratios(sumw_var, tag, var1, var2):
     '''Get ratio for two physics processes, for a given scale variation.'''
     # Figure out the processes
-    if tag == 'zoverw':
+    if 'zoverw' in tag:
         tag1 = 'dy'
         tag2 = 'wjet'
-    elif tag == 'goverz':
+    elif 'goverz' in tag:
         tag1 = 'gjets'
         tag2 = 'dy'
 
@@ -154,7 +155,106 @@ def get_2d_ratios(sumw_var, tag, var1, var2):
     ratio_nom = sumw1_nom / sumw2_nom
     
     # Return the varied and nominal ratios
-    return (ratio_var1, ratio_var2), ratio_nom 
+    d = {
+        'ratio_num_varied' : ratio_var1,
+        'ratio_denom_varied' : ratio_var2,
+        'ratio_nom' : ratio_nom,
+    }
+    return d
+
+def get_individual_variations_on_ratio(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfile, to_vary='num'):
+    '''Get (and plot) the individual variations on ratio.'''
+    # Labels for variations
+    var_to_label = {
+        'mu_r_down' : r'$\mu_R$ down',
+        'mu_r_up' : r'$\mu_R$ up',
+        'mu_f_down' : r'$\mu_F$ down',
+        'mu_f_up' : r'$\mu_F$ up',
+    }
+    variations = var_to_label.keys()
+    # Get the process to be varied and whether it's in numerator or denominator
+    for var in variations:
+        if to_vary == 'num':
+            var_num = var
+            var_denom = 'mu_r_down' # dummy
+        elif to_vary == 'denom':
+            var_num = 'mu_r_down' # dummy
+            var_denom = var
+
+        ratio_dict = get_2d_ratios(sumw_var, tag, var_num, var_denom)
+        # Get the relevant ratios out of the dict
+        ratio_var = ratio_dict[f'ratio_{to_vary}_varied']
+        ratio_nom = ratio_dict['ratio_nom']
+
+        dratio = ratio_var / ratio_nom
+
+        ################
+        # PLOTTING 
+        ################
+
+        # Plot the result as a 2D histogram
+        fig, ax = plt.subplots()
+        mjj_edges = mjj_axis.edges()
+        vpt_edges = vpt_axis.edges()
+        im = ax.pcolormesh(mjj_axis.edges(), vpt_axis.edges(), dratio.T)
+        
+        vpt_centers = vpt_axis.centers()
+        mjj_centers = mjj_axis.centers()
+
+        for ix in range(len(mjj_centers)):
+            for iy in range(len(vpt_centers)):
+                # textcol = 'white' if ratio[iy, ix] < 0.5*(clims[0]+clims[1]) else 'black'
+                ax.text(
+                        mjj_centers[ix],
+                        vpt_centers[iy],
+                        f'{dratio.T[iy, ix]:.3f}',
+                        ha='center',
+                        va='center',
+                        # color=textcol,
+                        fontsize=6
+                        )
+
+
+        ax.set_ylabel(r'$p_{T}(V) \ (GeV)$')
+        ax.set_xlabel(r'$M_{jj} \ (GeV)$')
+
+        if 'zoverw' in tag:
+            if to_vary == 'num':
+                fig_title = r'$Z(\ell \ell)$ ' + var_to_label[var] + r' / $W(\ell \nu)$' 
+            elif to_vary == 'denom':
+                fig_title = r'$Z(\ell \ell)$' + r' / $W(\ell \nu)$ ' + var_to_label[var] 
+        elif 'goverz' in tag:
+            if to_vary == 'num':
+                fig_title = r'$\gamma$ + jets ' + var_to_label[var] + r' / $W(\ell \nu)$' 
+            elif to_vary == 'denom':
+                fig_title = r'$\gamma$ + jets' + r' / $W(\ell \nu) $ ' + var_to_label[var] 
+
+        ax.set_title(fig_title)
+
+        cb = fig.colorbar(im)
+        cb.set_label('Scale Unc')
+
+        # Save figure
+        outdir = f'./output/theory_variations/{outtag}/scale/individual/ratios/2d'
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
+        outpath = pjoin(outdir, f'{tag}_{to_vary}_varied_{var}.pdf')
+        fig.savefig(outpath)
+
+        print(f'Figure saved: {outpath}')
+        plt.close()
+
+        # Save 2D variations into ROOT file
+        var_to_roothistname = {
+            'mu_r_down' : 'renScaleDown',
+            'mu_r_up' : 'renScaleUp',
+            'mu_f_down' : 'facScaleDown',
+            'mu_f_up' : 'facScaleUp'
+        }
+
+        outputrootfile[f'{tag}_{to_vary}_varied_{var_to_roothistname[var]}'] = (dratio, mjj_edges, vpt_edges)
+
 
 def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfile):
     # Combination of individual variations works as follows:
@@ -179,8 +279,10 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfi
 
     # Calculate combined variation on ratio for each variation pair
     for var1, var2 in var_pairs:
-        ratios_var, ratio_nom = get_2d_ratios(sumw_var, tag, var1, var2)
-        ratio_with_num_varied, ratio_with_denom_varied = ratios_var
+        ratio_dict = get_2d_ratios(sumw_var, tag, var1, var2)
+        ratio_with_num_varied = ratio_dict['ratio_num_varied']
+        ratio_with_denom_varied = ratio_dict['ratio_denom_varied']
+        ratio_nom = ratio_dict['ratio_nom']
 
         # Calculate the ratio of ratios for the two cases!
         dratio_with_num_varied = ratio_with_num_varied / ratio_nom
@@ -239,6 +341,7 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfi
         fig.savefig(outpath)
 
         print(f'Figure saved: {outpath}')
+        plt.close()
 
         # Save 2D variations into ROOT file
         var_to_roothistname = {
@@ -307,7 +410,7 @@ def main():
 
     # After filling out sumw_var, now calculate the variations on ratios
     # Two ratios: Z/W and photons/Z
-    ratio_tags = ['zoverw', 'goverz']
+    ratio_tags = ['zoverw', 'goverz', 'zoverw_ind', 'goverz_ind']
 
     # Create the output ROOT file to save the 
     # 2D scale uncertainties on ratios as a function of v-pt and mjj
@@ -317,17 +420,25 @@ def main():
     
     outputrootfile_z_over_w = uproot.recreate( pjoin(outputrootpath, 'zoverw_scale_unc_2d.root') )
     outputrootfile_g_over_z = uproot.recreate( pjoin(outputrootpath, 'goverz_scale_unc_2d.root') )
+    outputrootfile_z_over_w_ind = uproot.recreate( pjoin(outputrootpath, 'zoverw_scale_unc_2d_individual_unc.root') )
+    outputrootfile_g_over_z_ind = uproot.recreate( pjoin(outputrootpath, 'goverz_scale_unc_2d_individual_unc.root') )
 
     outputrootfiles = {
         'zoverw' : outputrootfile_z_over_w,
-        'goverz' : outputrootfile_g_over_z
+        'goverz' : outputrootfile_g_over_z,
+        'zoverw_ind' : outputrootfile_z_over_w_ind,
+        'goverz_ind' : outputrootfile_g_over_z_ind
     }
 
     vpt_axis = BINNING['vpt']
     mjj_axis = BINNING['mjj']
 
     for ratio_tag in ratio_tags:
-        plot_ratio_variation(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag])
+        if not '_ind' in ratio_tag:
+            plot_ratio_variation(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag])
+        else:
+            get_individual_variations_on_ratio(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag], to_vary='num')
+            get_individual_variations_on_ratio(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag], to_vary='denom')
 
 if __name__ == '__main__':
     main()
