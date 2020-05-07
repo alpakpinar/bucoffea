@@ -641,7 +641,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             
             # Uncertainty variations for Z
             if df['is_lo_z'] or df['is_nlo_z'] or df['is_lo_z_ewk']:
-                theory_uncs = [x for x in cfg.SF.keys() if x.startswith('unc') and 'goverz' not in x]
+                # Get uncertainties on Z variations only
+                theory_uncs = [x for x in cfg.SF.keys() if x.startswith('unc_zoverw_num_varied')]
                 for unc in theory_uncs:
                     reweight = evaluator[unc](df['mjj'], gen_v_pt)
                     w = (region_weights.weight() * reweight)[mask]
@@ -658,7 +659,28 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         vpt=gen_v_pt[mask],
                         uncertainty=unc,
                         weight=w)
-            
+
+            # Uncertainty variations for W
+            if df['is_lo_w'] or df['is_nlo_w'] or df['is_lo_w_ewk']:
+                # Get uncertainties on W variations only
+                theory_uncs = [x for x in cfg.SF.keys() if x.startswith('unc_zoverw_denom_varied')]
+                for unc in theory_uncs:
+                    reweight = evaluator[unc](df['mjj'], gen_v_pt)
+                    w = (region_weights.weight() * reweight)[mask]
+                    # Fill variated mjj distributions
+                    ezfill(
+                        'mjj_unc',
+                        mjj=df['mjj'][mask],
+                        uncertainty=unc,
+                        weight=w)
+
+                    # Fill variated gen V-pt distributions
+                    ezfill(
+                        'gen_v_pt_unc',
+                        vpt=gen_v_pt[mask],
+                        uncertainty=unc,
+                        weight=w)
+
             # Uncertainty variations for photons
             if df['is_lo_g'] or df['is_lo_g_ewk']:
                 # Fill gen-level V-pt for this region
