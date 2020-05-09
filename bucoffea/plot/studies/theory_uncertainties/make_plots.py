@@ -5,7 +5,6 @@ from matplotlib import pyplot as plt
 import uproot
 import re
 import sys
-import sys
 import numpy as np
 import os
 from pprint import pprint
