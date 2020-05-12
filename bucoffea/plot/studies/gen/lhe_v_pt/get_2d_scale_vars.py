@@ -79,7 +79,7 @@ def get_2d_scale_variations(acc, regex, tag, scale_var):
     # Return a tuple containing the SF ratio, V-pt and mjj axes
     return tup1, tup2
 
-def plot_individual_scale_vars(tup, var, tag, outtag):
+def plot_individual_scale_vars(tup, var, tag, outtag, use_znunu=False):
     '''Given the tuple from get_2d_scale_variations, plot the 2D scale variation'''
     ratio, vpt_axis, mjj_axis = tup
     fig, ax = plt.subplots(1,1)
@@ -137,7 +137,11 @@ def plot_individual_scale_vars(tup, var, tag, outtag):
     im.set_clim([0.9, 1.1])
 
     # Save the figure
-    outpath = f'./output/theory_variations/{outtag}/scale/individual/2d'
+    if use_znunu:
+        outpath = f'./output/theory_variations/{outtag}/scale/individual/2d/with_znunu'
+    else:
+        outpath = f'./output/theory_variations/{outtag}/scale/individual/2d'
+
     if not os.path.exists(outpath):
         os.makedirs(outpath)
     outfile = pjoin(outpath, f'{tag}_kfac_ratio_{var}.pdf')
@@ -255,7 +259,10 @@ def get_individual_variations_on_ratio(sumw_var, tag, vpt_axis, mjj_axis, outtag
         cb.set_label('Scale Unc')
 
         # Save figure
-        outdir = f'./output/theory_variations/{outtag}/scale/individual/ratios/2d'
+        if use_znunu:
+            outdir = f'./output/theory_variations/{outtag}/scale/individual/ratios/2d/with_znunu'
+        else:
+            outdir = f'./output/theory_variations/{outtag}/scale/individual/ratios/2d'
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
@@ -359,7 +366,11 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfi
         cb.set_label('Combined Scale Unc')
 
         # Save figure
-        outdir = f'./output/theory_variations/{outtag}/scale/ratioplots/combinedunc/2d'
+        if use_znunu:
+            outdir = f'./output/theory_variations/{outtag}/scale/ratioplots/combinedunc/2d/with_znunu'
+        else:
+            outdir = f'./output/theory_variations/{outtag}/scale/ratioplots/combinedunc/2d'
+            
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
@@ -440,10 +451,10 @@ def main():
             tup, sumw_var[tag][scale_var_type] = get_2d_scale_variations( acc=acc,
                                                                         regex=regex,
                                                                         tag=tag,
-                                                                        scale_var=scale_var
+                                                                        scale_var=scale_var,
                                                                         )        
 
-            plot_individual_scale_vars(tup, var=scale_var, tag=tag, outtag=outtag)
+            plot_individual_scale_vars(tup, var=scale_var, tag=tag, outtag=outtag, use_znunu=use_znunu)
 
     # After filling out sumw_var, now calculate the variations on ratios
     # Two ratios: Z/W and photons/Z
@@ -451,7 +462,10 @@ def main():
 
     # Create the output ROOT file to save the 
     # 2D scale uncertainties on ratios as a function of v-pt and mjj
-    outputrootpath = f'./output/theory_variations/{outtag}/rootfiles'
+    if use_znunu:
+        outputrootpath = f'./output/theory_variations/{outtag}/rootfiles/with_znunu'
+    else:
+        outputrootpath = f'./output/theory_variations/{outtag}/rootfiles'
     if not os.path.exists(outputrootpath):
         os.makedirs(outputrootpath)
     
