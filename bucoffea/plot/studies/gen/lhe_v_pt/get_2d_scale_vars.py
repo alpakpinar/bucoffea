@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import uproot
+import argparse
 import numpy as np
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from bucoffea.helpers.paths import bucoffea_path
@@ -20,6 +21,13 @@ BINNING = {
     'vpt' : hist.Bin('vpt','V $p_{T}$ (GeV)', vpt_ax_coarse),
     'mjj' : hist.Bin('mjj','M(jj) (GeV)', [200] + list(range(500,2500,500)))
 }
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Path to directory containing merged coffea files.')
+    parser.add_argument('--znunu', help='Use Z(vv) samples for calculation.', action='store_true')
+    args = parser.parse_args()
+    return args
 
 def get_2d_scale_variations(acc, regex, tag, scale_var):
     '''Get scale variations as a function of mjj and gen v-pt.'''
@@ -95,6 +103,12 @@ def plot_individual_scale_vars(tup, var, tag, outtag):
             'scale_4' : r'$Z\rightarrow ll$: $\mu_R = 1.0$, $\mu_F = 2.0$',
             'scale_6' : r'$Z\rightarrow ll$: $\mu_R = 2.0$, $\mu_F = 1.0$'
         },
+        'zjets' : {
+            'scale_1' : r'$Z\rightarrow \nu \nu$: $\mu_R = 0.5$, $\mu_F = 1.0$',
+            'scale_3' : r'$Z\rightarrow \nu \nu$: $\mu_R = 1.0$, $\mu_F = 0.5$',
+            'scale_4' : r'$Z\rightarrow \nu \nu$: $\mu_R = 1.0$, $\mu_F = 2.0$',
+            'scale_6' : r'$Z\rightarrow \nu \nu$: $\mu_R = 2.0$, $\mu_F = 1.0$'
+        }
     }
 
     fig_title = var_title[tag][var] 
@@ -131,15 +145,15 @@ def plot_individual_scale_vars(tup, var, tag, outtag):
     print(f'Figure saved: {outfile}')
     plt.close()
 
-def get_2d_ratios(sumw_var, tag, var1, var2):
+def get_2d_ratios(sumw_var, tag, var1, var2, use_znunu=False):
     '''Get ratio for two physics processes, for a given scale variation.'''
     # Figure out the processes
     if 'zoverw' in tag:
-        tag1 = 'dy'
+        tag1 = 'zjets' if use_znunu else 'dy'
         tag2 = 'wjet'
     elif 'goverz' in tag:
         tag1 = 'gjets'
-        tag2 = 'dy'
+        tag2 = 'zjets' if use_znunu else 'dy'
 
     # Get varied and nominal NLO weights for
     # the given scale variation
@@ -162,7 +176,7 @@ def get_2d_ratios(sumw_var, tag, var1, var2):
     }
     return d
 
-def get_individual_variations_on_ratio(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfile, to_vary='num'):
+def get_individual_variations_on_ratio(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfile, to_vary='num', use_znunu=False):
     '''Get (and plot) the individual variations on ratio.'''
     # Labels for variations
     var_to_label = {
@@ -181,7 +195,7 @@ def get_individual_variations_on_ratio(sumw_var, tag, vpt_axis, mjj_axis, outtag
             var_num = 'mu_r_down' # dummy
             var_denom = var
 
-        ratio_dict = get_2d_ratios(sumw_var, tag, var_num, var_denom)
+        ratio_dict = get_2d_ratios(sumw_var, tag, var_num, var_denom, use_znunu)
         # Get the relevant ratios out of the dict
         ratio_var = ratio_dict[f'ratio_{to_vary}_varied']
         ratio_nom = ratio_dict['ratio_nom']
@@ -218,16 +232,19 @@ def get_individual_variations_on_ratio(sumw_var, tag, vpt_axis, mjj_axis, outtag
         ax.set_ylabel(r'$p_{T}(V) \ (GeV)$')
         ax.set_xlabel(r'$M_{jj} \ (GeV)$')
 
+        # Z tag for figure title
+        z_tag = r'$Z(\nu \nu)$' if use_znunu else r'$Z(\ell \ell)$'
+
         if 'zoverw' in tag:
             if to_vary == 'num':
-                fig_title = r'$Z(\ell \ell)$ ' + var_to_label[var] + r' / $W(\ell \nu)$' 
+                fig_title = z_tag + ' ' + var_to_label[var] + r' / $W(\ell \nu)$' 
             elif to_vary == 'denom':
-                fig_title = r'$Z(\ell \ell)$' + r' / $W(\ell \nu)$ ' + var_to_label[var] 
+                fig_title = z_tag + r' / $W(\ell \nu)$ ' + var_to_label[var] 
         elif 'goverz' in tag:
             if to_vary == 'num':
-                fig_title = r'$\gamma$ + jets ' + var_to_label[var] + r' / $W(\ell \nu)$' 
+                fig_title = r'$\gamma$ + jets ' + var_to_label[var] + ' / ' + z_tag
             elif to_vary == 'denom':
-                fig_title = r'$\gamma$ + jets' + r' / $W(\ell \nu) $ ' + var_to_label[var] 
+                fig_title = r'$\gamma$ + jets' + ' / ' + z_tag + ' ' + var_to_label[var] 
 
         ax.set_title(fig_title)
 
@@ -354,7 +371,9 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfi
         outputrootfile[f'{tag}_{var_to_roothistname[var1]}'] = (combined_dratio, mjj_edges, vpt_edges)
 
 def main():
-    inpath = sys.argv[1]
+    args = parse_cli()
+    inpath = args.inpath
+    use_znunu = args.znunu
 
     acc = dir_archive(
                        inpath,
@@ -390,6 +409,7 @@ def main():
     tag_regex = {
         'wjet'  : r'WN?JetsToLNu.*',
         'dy'    : r'DYN?JetsToLL.*',
+        'zjets' : r'Z\d?JetsToNuNu.*',
         'gjets' : r'G\d?Jet.*' 
     }
 
@@ -397,6 +417,14 @@ def main():
     for tag,regex in tag_regex.items():
         scale_var_list = scale_var_dict['gjets'] if tag == 'gjets' else scale_var_dict['wjet/dy']
         
+        # Use Z(vv) samples if requested, otherwise use DY samples
+        if use_znunu:
+            if tag == 'dy':
+                continue
+        else:
+            if tag == 'zjets':
+                continue
+
         sumw_var[tag] = {}
 
         for scale_var, scale_var_type in scale_var_list:
