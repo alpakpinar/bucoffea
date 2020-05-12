@@ -202,6 +202,9 @@ def get_individual_variations_on_ratio(sumw_var, tag, vpt_axis, mjj_axis, outtag
 
         dratio = ratio_var / ratio_nom
 
+        # Guard against NaN values
+        dratio[np.isnan(dratio)] = 1.
+
         ################
         # PLOTTING 
         ################
@@ -273,7 +276,7 @@ def get_individual_variations_on_ratio(sumw_var, tag, vpt_axis, mjj_axis, outtag
         outputrootfile[f'{tag}_{to_vary}_varied_{var_to_roothistname[var]}'] = (dratio, mjj_edges, vpt_edges)
 
 
-def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfile):
+def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfile, use_znunu=False):
     # Combination of individual variations works as follows:
     # The opposite scale variations are combined
     # As an example, when combining zvar_over_w and z_over_wvar, we take the following variations and combine them:
@@ -296,7 +299,7 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfi
 
     # Calculate combined variation on ratio for each variation pair
     for var1, var2 in var_pairs:
-        ratio_dict = get_2d_ratios(sumw_var, tag, var1, var2)
+        ratio_dict = get_2d_ratios(sumw_var, tag, var1, var2, use_znunu)
         ratio_with_num_varied = ratio_dict['ratio_num_varied']
         ratio_with_denom_varied = ratio_dict['ratio_denom_varied']
         ratio_nom = ratio_dict['ratio_nom']
@@ -312,6 +315,9 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfi
             )
         
         combined_dratio = 1 + np.sign(1 - dratio_with_num_varied) * combined_dratio
+
+        # Guard against NaN values
+        combined_dratio[np.isnan(combined_dratio)] = 1.
 
         # Plot the result as a 2D histogram
         fig, ax = plt.subplots()
@@ -339,10 +345,13 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfi
         ax.set_ylabel(r'$p_{T}(V) \ (GeV)$')
         ax.set_xlabel(r'$M_{jj} \ (GeV)$')
 
+        # Z tag for figure title
+        z_tag = r'$Z(\nu \nu)$' if use_znunu else r'$Z(\ell \ell)$'
+
         if tag == 'zoverw':
-            fig_title = r'$Z(\ell \ell)$ ' + var_to_label[var1] + r' / $W(\ell \nu)$ ' + var_to_label[var2] 
+            fig_title = z_tag + ' ' + var_to_label[var1] + r' / $W(\ell \nu)$ ' + var_to_label[var2] 
         elif tag == 'goverz':
-            fig_title = r'$\gamma$ + jets ' + var_to_label[var1] + r' / $Z(\ell \ell)$ ' + var_to_label[var2] 
+            fig_title = r'$\gamma$ + jets ' + var_to_label[var1] + ' / ' + z_tag + var_to_label[var2] 
 
         ax.set_title(fig_title)
 
@@ -463,10 +472,10 @@ def main():
 
     for ratio_tag in ratio_tags:
         if not '_ind' in ratio_tag:
-            plot_ratio_variation(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag])
+            plot_ratio_variation(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag], use_znunu=use_znunu)
         else:
-            get_individual_variations_on_ratio(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag], to_vary='num')
-            get_individual_variations_on_ratio(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag], to_vary='denom')
+            get_individual_variations_on_ratio(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag], to_vary='num', use_znunu=use_znunu)
+            get_individual_variations_on_ratio(sumw_var, tag=ratio_tag, vpt_axis=vpt_axis, mjj_axis=mjj_axis, outtag=outtag, outputrootfile=outputrootfiles[ratio_tag], to_vary='denom', use_znunu=use_znunu)
 
 if __name__ == '__main__':
     main()
