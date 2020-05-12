@@ -150,7 +150,7 @@ class lheVProcessor(processor.ProcessorABC):
         n_pdfw = df['nLHEPdfWeight'][0]
 
         # Correct weights for NLO DY/W
-        if re.match('(DY\dJets)|(W\dJets).*', dataset):
+        if re.match('(DY|W|Z)\dJets.*', dataset):
             pdf_weights = pdf_weights*2
             scale_weights = scale_weights*2
         
