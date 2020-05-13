@@ -194,22 +194,30 @@ region_marker = {
         }
 
 
-def region_comparison_plot(tag):
+def region_comparison_plot(tag, outtag, use_mc=True, jet_config='all'):
     for year in [2017,2018]:
-        regions = ['1m', '2m','2m_hlt']
+        # regions = ['1m', '2m','2m_hlt']
+        regions = ['1m', '2m']
         opts = markers('data')
         # opts['markersize'] = 1.
         # opts['fillstyle'] = 'none'
         emarker = opts.pop('emarker', '')
 
+        # Input directory containing data in txt format
+        input_dir = f'./output/{outtag}'
+
         fig, ax, rax = fig_ratio()
 
         x, y, yerr = {}, {}, {}
         for region in regions:
-            if region.endswith('e'):
-                file = f'output/{tag}/table_{region}_met_EGamma_{year}.txt'
+            if not use_mc:
+                file = pjoin(input_dir, f'table_{region}_recoil_SingleMuon_{year}_{jet_config}.txt')
             else:
-                file = f'output/{tag}/table_{region}_recoil_SingleMuon_{year}.txt'
+                if region == '1m':
+                    file = pjoin(input_dir, f'table_{region}_recoil_WJetsToLNu_HT_MLM_{year}_{jet_config}.txt')
+                elif region == '2m':
+                    file = pjoin(input_dir, f'table_{region}_recoil_DYJetsToLL_M-50_HT_MLM_{year}_{jet_config}.txt')
+
             x[region], _, y[region], yerr[region] = get_xy(file)
             opts['color'] = colors[region]
             ax.errorbar(x[region], y[region], yerr=yerr[region],label=f'{region} region', **opts)
@@ -221,7 +229,7 @@ def region_comparison_plot(tag):
             rax.errorbar(x['1m'], y[region]/y['1m'], yerr[region]/y['1m'], **opts)
 
         # for f in files: plot(f)
-        outdir = f"./output/{tag}"
+        outdir = f"./output/{outtag}"
         # ax.set_ylim(0.9,1)
         ax.legend()
         ax.set_ylabel("Efficiency")
@@ -247,7 +255,8 @@ def region_comparison_plot(tag):
                 verticalalignment='bottom',
                 transform=ax.transAxes
                )
-        fig.savefig(pjoin(outdir, f'region_comparison_data_{year}.pdf'))
+        file_tag = 'mc' if use_mc else 'data'
+        fig.savefig(pjoin(outdir, f'region_comparison_{file_tag}_{year}.pdf'))
         fig.clear()
         plt.close(fig)
 
@@ -332,7 +341,7 @@ def sf_comparison_plot(tag):
         fig.clear()
         plt.close(fig)
 
-def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', output_format='pdf', plot_combined=True):
+def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', output_format='pdf', plot_combined=True, plot_region_comparison=True):
     regions = ['1m', '2m']
     opts = markers('data')
     emarker = opts.pop('emarker', '')
@@ -345,6 +354,10 @@ def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', ou
     input_dir = f'./output/{outtag}'
     
     for year in [2017,2018]:
+        # Store SFs (and errors) for different regions
+        xsf_dict = {}
+        sf = {}
+        sf_err = {}
         for region in regions:
             fig, ax = plt.subplots(1,1) 
             
@@ -401,6 +414,10 @@ def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', ou
             else:
                 ax.errorbar(xsf, ysf['all'][recoil_cut], yerr=ysferr_new['all'], **opts)
             
+            xsf_dict[region] = xnum
+            sf[region] = ysf['all']
+            sf_err[region] = [ ysferr['all'][0], ysferr['all'][1] ] 
+
             ax.set_ylabel('Data / MC SF') 
             ax.set_xlabel(f'{distribution.capitalize()} (GeV)') 
             ax.set_ylim(ymin,ymax)
@@ -430,6 +447,63 @@ def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', ou
             fig.savefig(pjoin(outdir, outname))
             fig.clear()
             plt.close(fig)
+            
+        # -------------------------------------------
+        # Create region comparison plot, if requested
+        # -------------------------------------------
+        if plot_region_comparison:
+            fig, ax, rax = fig_ratio()
+            for region in ['1m', '2m']:
+                ax.errorbar(xsf_dict[region], sf[region], yerr=sf_err[region], label=region, ls='', marker='o')
+            
+            ax.set_ylabel('Data / MC SF')
+            ax.grid(True)
+            ax.set_ylim(0.9, 1.1)
+            ax.legend()
+            ax.yaxis.set_major_locator(MultipleLocator(0.05))
+            ax.yaxis.set_minor_locator(MultipleLocator(0.01))
+
+            ylim = ax.get_ylim()
+            ax.plot([250,250], ylim, color='b')
+            ax.set_ylim(ylim)
+            
+            # Calculate and plot ratio
+            ratio = sf['2m'] / sf['1m']
+            rax.plot(xsf_dict['1m'], ratio, ls='', marker='o', color='k')
+            rax.yaxis.set_major_locator(MultipleLocator(0.05))
+            rax.yaxis.set_minor_locator(MultipleLocator(0.01))
+            rax.set_ylabel('2m / 1m')
+            rax.set_ylim(0.95, 1.05)
+            rax.grid(True)
+            rax.set_xlabel('Recoil (GeV)')
+
+            xlim = rax.get_xlim()
+            rax.plot(xlim, [1.01, 1.01], 'b')
+            rax.plot(xlim, [0.99, 0.99], 'b')
+            rax.set_xlim(xlim)
+            
+            ylim = rax.get_ylim()
+            rax.plot([250, 250], ylim)
+            rax.set_ylim(ylim)
+
+            plt.text(0., 1., f'{year}',
+                    fontsize=16,
+                    horizontalalignment='left',
+                    verticalalignment='bottom',
+                    transform=ax.transAxes
+                )
+
+            plt.text(1., 1., r"%.1f fb$^{-1}$ (13 TeV)" % lumi_by_region(region, year),
+                    fontsize=16,
+                    horizontalalignment='right',
+                    verticalalignment='bottom',
+                    transform=ax.transAxes
+                )
+
+            # Save figure
+            filename = f'region_comparison_sf_{year}.pdf'
+            outpath = pjoin(outdir, filename)
+            fig.savefig(outpath)
 
 def data_mc_comparison_plot(tag, outtag, ymin=0, ymax=1.1, distribution='recoil', jeteta_config=None, output_format='pdf'):
     if 'gamma' in tag:
@@ -588,7 +662,7 @@ def met_triggers():
             for dataset in ["DYNJetsToLL_M-50-MLM", "EGamma"]:
                 plot_recoil(acc,region,dataset=dataset,year=year, tag=tag, distribution='met')
 
-        region_comparison_plot(tag)
+        # region_comparison_plot(tag)
         sf_comparison_plot(tag)
 
 def met_trigger_eff(distribution, inpath, outtag):
@@ -640,8 +714,10 @@ def met_trigger_eff(distribution, inpath, outtag):
         for jeteta_config in ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central', 'all']:
             data_mc_comparison_plot(tag, outtag=outtag, distribution=distribution, jeteta_config=jeteta_config, output_format='pdf')
 
-        plot_scalefactors(tag, outtag=outtag, distribution=distribution, plot_combined=False)
+        # plot_scalefactors(tag, outtag=outtag, distribution=distribution, plot_combined=False)
         plot_scalefactors(tag, outtag=outtag, distribution=distribution, plot_combined=True)
+
+        print('DONE')
 
 def photon_triggers_merged():
     tag = 'gamma'
