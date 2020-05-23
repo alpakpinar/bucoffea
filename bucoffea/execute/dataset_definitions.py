@@ -199,7 +199,7 @@ def files_from_eos(regex):
                 fileset[key] = fileset_16jul[key]
     elif 'lpc' in host:
         topdir = '/eos/uscms/store/user/aakpinar/nanopost/'
-        tag = '15May20'
+        tag = '21May20_splitJEC'
         fileset = find_files_eos(pjoin(topdir, tag), regex)
 
     return fileset
