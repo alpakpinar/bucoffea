@@ -105,7 +105,19 @@ class monojetProcessor(processor.ProcessorABC):
         self._year=None
         self._blind=blind
         self._configure()
-        self._variations = ['_jerup', '_jerdown', '_jesup', '_jesdown', '']
+        # All the split JES uncertainties, "" represents the nominal case with no variation
+        self._variations = ['', '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
+                            '_jesRelativeBalUp', '_jesRelativeBalDown',
+                            '_jesHFUp', '_jesHFDown',
+                            '_jesBBEC1Up', '_jesBBEC1Down',
+                            '_jesEC2Up', '_jesEC2Down',
+                            '_jesAbsoluteUp', '_jesAbsoluteDown',
+                            '_jesBBEC1_2016Up', '_jesBBEC1_2016Down',
+                            '_jesEC2_2016Up', '_jesEC2_2016Down',
+                            '_jesAbsolute_2016Up', '_jesAbsolute_2016Down',
+                            '_jesHF_2016Up', '_jesHF_2016Down',
+                            '_jesRelativeSample_2016Up', '_jesRelativeSample_2016Down',
+                            ]
         self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
     @property
