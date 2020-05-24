@@ -7,7 +7,7 @@ do
         wget ${REMOTE_PATH}/${FNAME}
     fi
     echo ${FNAME} > files.txt
-    for PROCESSOR in vbfhinv; do
+    for PROCESSOR in monojet; do
         buexec ${PROCESSOR} --outpath ./output/ --jobs 1 worker --dataset ${DATASET} --filelist files.txt --chunk 0
     done
 done < "testfiles.txt"
