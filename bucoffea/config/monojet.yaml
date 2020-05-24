@@ -163,7 +163,7 @@ default:
     save:
       passing: False
       prescale: 1  
-      tree: True
+      tree: False
     kinematics:
       save: False
       events:
