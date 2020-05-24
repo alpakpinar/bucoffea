@@ -267,8 +267,9 @@ class monojetProcessor(processor.ProcessorABC):
                 vmap.set_selection_packer(var=var, sel=selection)    
 
             bjets = vmap.get_bjets(var)
-            ak4 = vmap.get_ak4(var) 
-            ak8 = vmap.get_ak8(var) 
+            ak4 = vmap.get_ak4(var)
+            if cfg.RUN.MONOV: 
+                ak8 = vmap.get_ak8(var) 
             met = vmap.get_met(var) 
 
             met_pt = getattr(met, f'pt{var}').flatten()
@@ -285,7 +286,8 @@ class monojetProcessor(processor.ProcessorABC):
 
             # Get relevant pts for AK4 and AK8 jets
             ak4_pt = getattr(ak4, f'pt{var}')
-            ak8_pt = getattr(ak8, f'pt{var}')
+            if cfg.RUN.MONOV: 
+                ak8_pt = getattr(ak8, f'pt{var}')
 
             # MT requirements for muons and electrons
             df[f'MT_mu{var}'] = ((muons.counts==1) * mt(muons.pt, muons.phi, met_pt, met_phi)).max()
@@ -323,26 +325,27 @@ class monojetProcessor(processor.ProcessorABC):
                                                         & (ak4.nhf[leadak4_index]<cfg.SELECTION.SIGNAL.leadak4.NHF)).any())
 
             # AK8 Jet
-            leadak8_index = ak8_pt.argmax()
-            leadak8_pt_eta = (ak8_pt.max() > cfg.SELECTION.SIGNAL.leadak8.PT) \
-                            & (ak8.abseta[leadak8_index] < cfg.SELECTION.SIGNAL.leadak8.ETA).any()
-            selection.add(f'leadak8_pt_eta{var}', leadak8_pt_eta)
+            if cfg.RUN.MONOV:
+                leadak8_index = ak8_pt.argmax()
+                leadak8_pt_eta = (ak8_pt.max() > cfg.SELECTION.SIGNAL.leadak8.PT) \
+                                & (ak8.abseta[leadak8_index] < cfg.SELECTION.SIGNAL.leadak8.ETA).any()
+                selection.add(f'leadak8_pt_eta{var}', leadak8_pt_eta)
+        
+                selection.add(f'leadak8_id{var}',(ak8.tightId[leadak8_index]).any())
     
-            selection.add(f'leadak8_id{var}',(ak8.tightId[leadak8_index]).any())
-
-            # Mono-V selection
-            selection.add(f'leadak8_tau21{var}', ((ak8.tau2[leadak8_index] / ak8.tau1[leadak8_index]) < cfg.SELECTION.SIGNAL.LEADAK8.TAU21).any())
-            selection.add(f'leadak8_mass{var}', ((ak8.mass[leadak8_index] > cfg.SELECTION.SIGNAL.LEADAK8.MASS.MIN) \
-                                        & (ak8.mass[leadak8_index] < cfg.SELECTION.SIGNAL.LEADAK8.MASS.MAX)).any())
-            selection.add('leadak8_wvsqcd_loosemd', ((ak8.wvsqcdmd[leadak8_index] > cfg.WTAG.LOOSEMD)
-                                        & (ak8.wvsqcdmd[leadak8_index] < cfg.WTAG.TIGHTMD)).any())
-            selection.add('leadak8_wvsqcd_tightmd', ((ak8.wvsqcdmd[leadak8_index] > cfg.WTAG.TIGHTMD)).any())
-            selection.add('leadak8_wvsqcd_loose', ((ak8.wvsqcd[leadak8_index] > cfg.WTAG.LOOSE)
-                                        & (ak8.wvsqcd[leadak8_index] < cfg.WTAG.TIGHT)).any())
-            selection.add('leadak8_wvsqcd_tight', ((ak8.wvsqcd[leadak8_index] > cfg.WTAG.TIGHT)).any())
-    
-            selection.add(f'veto_vtag{var}', ~selection.all(f"leadak8_pt_eta{var}", f"leadak8_id{var}", f"leadak8_tau21{var}", f"leadak8_mass{var}"))
-            selection.add('only_one_ak8', ak8.counts==1)
+                # Mono-V selection
+                selection.add(f'leadak8_tau21{var}', ((ak8.tau2[leadak8_index] / ak8.tau1[leadak8_index]) < cfg.SELECTION.SIGNAL.LEADAK8.TAU21).any())
+                selection.add(f'leadak8_mass{var}', ((ak8.mass[leadak8_index] > cfg.SELECTION.SIGNAL.LEADAK8.MASS.MIN) \
+                                            & (ak8.mass[leadak8_index] < cfg.SELECTION.SIGNAL.LEADAK8.MASS.MAX)).any())
+                selection.add('leadak8_wvsqcd_loosemd', ((ak8.wvsqcdmd[leadak8_index] > cfg.WTAG.LOOSEMD)
+                                            & (ak8.wvsqcdmd[leadak8_index] < cfg.WTAG.TIGHTMD)).any())
+                selection.add('leadak8_wvsqcd_tightmd', ((ak8.wvsqcdmd[leadak8_index] > cfg.WTAG.TIGHTMD)).any())
+                selection.add('leadak8_wvsqcd_loose', ((ak8.wvsqcd[leadak8_index] > cfg.WTAG.LOOSE)
+                                            & (ak8.wvsqcd[leadak8_index] < cfg.WTAG.TIGHT)).any())
+                selection.add('leadak8_wvsqcd_tight', ((ak8.wvsqcd[leadak8_index] > cfg.WTAG.TIGHT)).any())
+        
+                selection.add(f'veto_vtag{var}', ~selection.all(f"leadak8_pt_eta{var}", f"leadak8_id{var}", f"leadak8_tau21{var}", f"leadak8_mass{var}"))
+                selection.add('only_one_ak8', ak8.counts==1)
 
             # Photons
             # Angular distance leading photon - leading jet
@@ -421,16 +424,23 @@ class monojetProcessor(processor.ProcessorABC):
 
         for region, cuts in regions.items():
             # Get relevant variation name for each region
-            if ('up' in region) or ('down' in region):
-                var = '_' + region.split('_')[-1]
+            if ('Up' in region) or ('Down' in region):
+                if '2016' not in region:
+                    var = '_' + region.split('_')[-1]
+                else:
+                    var = '_' + '_'.join(region.split('_')[-2:])
             else:
                 var = ''
+
+            print(f'Region: {region}')
+            print(f'Variation: {var}')
 
             # Get the correct objects/quantities for each variation
             selection = vmap.get_selection_packer(var)
             bjets = vmap.get_bjets(var)
             ak4 = vmap.get_ak4(var) 
-            ak8 = vmap.get_ak8(var) 
+            if cfg.RUN.MONOV:
+                ak8 = vmap.get_ak8(var) 
             met = vmap.get_met(var)
             # Get jet pts
             ak4_pt = getattr(ak4, f'pt{var}')
@@ -450,22 +460,23 @@ class monojetProcessor(processor.ProcessorABC):
                 elif re.match(r'cr_g.*', region):
                     photon_trigger_sf(region_weights, photons, df)
 
-            if not df['is_data']:
-                genVs = gen[((gen.pdg==23) | (gen.pdg==24) | (gen.pdg==-24)) & (gen.pt>10)]
-                leadak8 = ak8[ak8.pt.argmax()]
-                leadak8_matched_mask = leadak8.match(genVs, deltaRCut=0.8)
-                matched_leadak8 = leadak8[leadak8_matched_mask]
-                unmatched_leadak8 = leadak8[~leadak8_matched_mask]
-                for wp in ['loose','loosemd','tight','tightmd']:
-                    if re.match(r'.*_{wp}_v.*', region):
-
-                        if (wp == 'tight') or ('nomistag' in region): # no mistag SF available for tight cut
-                            matched_weights = evaluator[f'wtag_{wp}'](matched_leadak8.pt).prod()
-                        else:
-                            matched_weights = evaluator[f'wtag_{wp}'](matched_leadak8.pt).prod() \
-                                    * evaluator[f'wtag_mistag_{wp}'](unmatched_leadak8.pt).prod()
-
-                        region_weights.add('wtag_{wp}', matched_weights)
+            if cfg.RUN.MONOV:
+                if not df['is_data']:
+                    genVs = gen[((gen.pdg==23) | (gen.pdg==24) | (gen.pdg==-24)) & (gen.pt>10)]
+                    leadak8 = ak8[ak8.pt.argmax()]
+                    leadak8_matched_mask = leadak8.match(genVs, deltaRCut=0.8)
+                    matched_leadak8 = leadak8[leadak8_matched_mask]
+                    unmatched_leadak8 = leadak8[~leadak8_matched_mask]
+                    for wp in ['loose','loosemd','tight','tightmd']:
+                        if re.match(r'.*_{wp}_v.*', region):
+    
+                            if (wp == 'tight') or ('nomistag' in region): # no mistag SF available for tight cut
+                                matched_weights = evaluator[f'wtag_{wp}'](matched_leadak8.pt).prod()
+                            else:
+                                matched_weights = evaluator[f'wtag_{wp}'](matched_leadak8.pt).prod() \
+                                        * evaluator[f'wtag_mistag_{wp}'](unmatched_leadak8.pt).prod()
+    
+                            region_weights.add('wtag_{wp}', matched_weights)
 
             # Blinding
             if(self._blind and df['is_data'] and region.startswith('sr')):
@@ -571,7 +582,8 @@ class monojetProcessor(processor.ProcessorABC):
                                   weight=region_weights.weight()[mask]
                                   )
 
-            fill_mult('ak8_mult', ak8)
+            if cfg.RUN.MONOV:
+                fill_mult('ak8_mult', ak8)
             fill_mult('ak4_mult', ak4)
             fill_mult('bjet_mult',bjets)
             fill_mult('loose_ele_mult',electrons)
@@ -615,51 +627,52 @@ class monojetProcessor(processor.ProcessorABC):
             ezfill('drphotonjet',    dr=df[f'dRPhotonJet{var}'][mask],  weight=region_weights.weight()[mask])
 
             # AK8 jets
-            if region=='inclusive' or '_v' in region:
-                # All
-                w_allak8 = weight_shape(ak8.eta[mask], region_weights.weight()[mask])
-                ak8_pt = getattr(ak8, f'pt{var}')
-                leadak8_index = ak8_pt.argmax()
-                ak8_pt0 = ak8_pt[leadak8_index]
-
-                ezfill('ak8_eta',    jeteta=ak8[mask].eta.flatten(), weight=w_allak8)
-                ezfill('ak8_phi',    jetphi=ak8[mask].phi.flatten(), weight=w_allak8)
-                ezfill('ak8_pt',     jetpt=ak8_pt[mask].flatten(),   weight=w_allak8)
-                ezfill('ak8_mass',   mass=ak8[mask].mass.flatten(),  weight=w_allak8)
-
-                # Leading
-                w_leadak8 = weight_shape(ak8[leadak8_index].eta[mask], region_weights.weight()[mask])
-
-                ezfill('ak8_eta0',       jeteta=ak8[leadak8_index].eta[mask].flatten(),    weight=w_leadak8)
-                ezfill('ak8_phi0',       jetphi=ak8[leadak8_index].phi[mask].flatten(),    weight=w_leadak8)
-                ezfill('ak8_pt0',        jetpt=ak8_pt0[mask].flatten(),      weight=w_leadak8 )
-                ezfill('ak8_mass0',      mass=ak8[leadak8_index].mass[mask].flatten(),     weight=w_leadak8)
-                ezfill('ak8_tau210',     tau21=ak8[leadak8_index].tau21[mask].flatten(),     weight=w_leadak8)
-                ezfill('ak8_wvsqcd0',    tagger=ak8[leadak8_index].wvsqcd[mask].flatten(),     weight=w_leadak8)
-                ezfill('ak8_wvsqcdmd0',  tagger=ak8[leadak8_index].wvsqcdmd[mask].flatten(),     weight=w_leadak8)
-                ezfill('ak8_zvsqcd0',    tagger=ak8[leadak8_index].zvsqcd[mask].flatten(),     weight=w_leadak8)
-                ezfill('ak8_zvsqcdmd0',  tagger=ak8[leadak8_index].zvsqcdmd[mask].flatten(),     weight=w_leadak8)
-                ezfill('ak8_tvsqcd0',    tagger=ak8[leadak8_index].tvsqcd[mask].flatten(),     weight=w_leadak8)
-                ezfill('ak8_tvsqcdmd0',    tagger=ak8[leadak8_index].tvsqcdmd[mask].flatten(),     weight=w_leadak8)
-                ezfill('ak8_wvstqcd0',    tagger=ak8[leadak8_index].wvstqcd[mask].flatten(),     weight=w_leadak8)
-                ezfill('ak8_wvstqcdmd0',    tagger=ak8[leadak8_index].wvstqcdmd[mask].flatten(),     weight=w_leadak8)
-
-                # histogram with only gen-matched lead ak8 pt
-                if not df['is_data']:
-                    w_matchedleadak8 = weight_shape(matched_leadak8.eta[mask], region_weights.weight()[mask])
-                    ezfill('ak8_Vmatched_pt0', jetpt=matched_leadak8.pt[mask].flatten(),      weight=w_matchedleadak8 )
-
-
-                # Dimuon specifically for deepak8 mistag rate measurement
-                if 'inclusive_v' in region:
-                    ezfill('ak8_passloose_pt0', wppass=ak8[leadak8_index].wvsqcd[mask].max()>cfg.WTAG.LOOSE, jetpt=ak8[leadak8_index].pt[mask].max(),      weight=w_leadak8 )
-                    ezfill('ak8_passtight_pt0', wppass=ak8[leadak8_index].wvsqcd[mask].max()>cfg.WTAG.TIGHT, jetpt=ak8[leadak8_index].pt[mask].max(),      weight=w_leadak8 )
-                    ezfill('ak8_passloosemd_pt0', wppass=ak8[leadak8_index].wvsqcdmd[mask].max()>cfg.WTAG.LOOSEMD, jetpt=ak8[leadak8_index].pt[mask].max(),      weight=w_leadak8 )
-                    ezfill('ak8_passtightmd_pt0', wppass=ak8[leadak8_index].wvsqcdmd[mask].max()>cfg.WTAG.TIGHTMD, jetpt=ak8[leadak8_index].pt[mask].max(),      weight=w_leadak8 )
-                    ezfill('ak8_passloose_mass0', wppass=ak8[leadak8_index].wvsqcd[mask].max()>cfg.WTAG.LOOSE, mass=ak8[leadak8_index].mass[mask].max(),      weight=w_leadak8 )
-                    ezfill('ak8_passtight_mass0', wppass=ak8[leadak8_index].wvsqcd[mask].max()>cfg.WTAG.TIGHT, mass=ak8[leadak8_index].mass[mask].max(),      weight=w_leadak8 )
-                    ezfill('ak8_passloosemd_mass0', wppass=ak8[leadak8_index].wvsqcdmd[mask].max()>cfg.WTAG.LOOSEMD, mass=ak8[leadak8_index].mass[mask].max(),      weight=w_leadak8 )
-                    ezfill('ak8_passtightmd_mass0', wppass=ak8[leadak8_index].wvsqcdmd[mask].max()>cfg.WTAG.TIGHTMD, mass=ak8[leadak8_index].mass[mask].max(),      weight=w_leadak8 )
+            if cfg.RUN.MONOV:
+                if region=='inclusive' or '_v' in region:
+                    # All
+                    w_allak8 = weight_shape(ak8.eta[mask], region_weights.weight()[mask])
+                    ak8_pt = getattr(ak8, f'pt{var}')
+                    leadak8_index = ak8_pt.argmax()
+                    ak8_pt0 = ak8_pt[leadak8_index]
+    
+                    ezfill('ak8_eta',    jeteta=ak8[mask].eta.flatten(), weight=w_allak8)
+                    ezfill('ak8_phi',    jetphi=ak8[mask].phi.flatten(), weight=w_allak8)
+                    ezfill('ak8_pt',     jetpt=ak8_pt[mask].flatten(),   weight=w_allak8)
+                    ezfill('ak8_mass',   mass=ak8[mask].mass.flatten(),  weight=w_allak8)
+    
+                    # Leading
+                    w_leadak8 = weight_shape(ak8[leadak8_index].eta[mask], region_weights.weight()[mask])
+    
+                    ezfill('ak8_eta0',       jeteta=ak8[leadak8_index].eta[mask].flatten(),    weight=w_leadak8)
+                    ezfill('ak8_phi0',       jetphi=ak8[leadak8_index].phi[mask].flatten(),    weight=w_leadak8)
+                    ezfill('ak8_pt0',        jetpt=ak8_pt0[mask].flatten(),      weight=w_leadak8 )
+                    ezfill('ak8_mass0',      mass=ak8[leadak8_index].mass[mask].flatten(),     weight=w_leadak8)
+                    ezfill('ak8_tau210',     tau21=ak8[leadak8_index].tau21[mask].flatten(),     weight=w_leadak8)
+                    ezfill('ak8_wvsqcd0',    tagger=ak8[leadak8_index].wvsqcd[mask].flatten(),     weight=w_leadak8)
+                    ezfill('ak8_wvsqcdmd0',  tagger=ak8[leadak8_index].wvsqcdmd[mask].flatten(),     weight=w_leadak8)
+                    ezfill('ak8_zvsqcd0',    tagger=ak8[leadak8_index].zvsqcd[mask].flatten(),     weight=w_leadak8)
+                    ezfill('ak8_zvsqcdmd0',  tagger=ak8[leadak8_index].zvsqcdmd[mask].flatten(),     weight=w_leadak8)
+                    ezfill('ak8_tvsqcd0',    tagger=ak8[leadak8_index].tvsqcd[mask].flatten(),     weight=w_leadak8)
+                    ezfill('ak8_tvsqcdmd0',    tagger=ak8[leadak8_index].tvsqcdmd[mask].flatten(),     weight=w_leadak8)
+                    ezfill('ak8_wvstqcd0',    tagger=ak8[leadak8_index].wvstqcd[mask].flatten(),     weight=w_leadak8)
+                    ezfill('ak8_wvstqcdmd0',    tagger=ak8[leadak8_index].wvstqcdmd[mask].flatten(),     weight=w_leadak8)
+    
+                    # histogram with only gen-matched lead ak8 pt
+                    if not df['is_data']:
+                        w_matchedleadak8 = weight_shape(matched_leadak8.eta[mask], region_weights.weight()[mask])
+                        ezfill('ak8_Vmatched_pt0', jetpt=matched_leadak8.pt[mask].flatten(),      weight=w_matchedleadak8 )
+    
+    
+                    # Dimuon specifically for deepak8 mistag rate measurement
+                    if 'inclusive_v' in region:
+                        ezfill('ak8_passloose_pt0', wppass=ak8[leadak8_index].wvsqcd[mask].max()>cfg.WTAG.LOOSE, jetpt=ak8[leadak8_index].pt[mask].max(),      weight=w_leadak8 )
+                        ezfill('ak8_passtight_pt0', wppass=ak8[leadak8_index].wvsqcd[mask].max()>cfg.WTAG.TIGHT, jetpt=ak8[leadak8_index].pt[mask].max(),      weight=w_leadak8 )
+                        ezfill('ak8_passloosemd_pt0', wppass=ak8[leadak8_index].wvsqcdmd[mask].max()>cfg.WTAG.LOOSEMD, jetpt=ak8[leadak8_index].pt[mask].max(),      weight=w_leadak8 )
+                        ezfill('ak8_passtightmd_pt0', wppass=ak8[leadak8_index].wvsqcdmd[mask].max()>cfg.WTAG.TIGHTMD, jetpt=ak8[leadak8_index].pt[mask].max(),      weight=w_leadak8 )
+                        ezfill('ak8_passloose_mass0', wppass=ak8[leadak8_index].wvsqcd[mask].max()>cfg.WTAG.LOOSE, mass=ak8[leadak8_index].mass[mask].max(),      weight=w_leadak8 )
+                        ezfill('ak8_passtight_mass0', wppass=ak8[leadak8_index].wvsqcd[mask].max()>cfg.WTAG.TIGHT, mass=ak8[leadak8_index].mass[mask].max(),      weight=w_leadak8 )
+                        ezfill('ak8_passloosemd_mass0', wppass=ak8[leadak8_index].wvsqcdmd[mask].max()>cfg.WTAG.LOOSEMD, mass=ak8[leadak8_index].mass[mask].max(),      weight=w_leadak8 )
+                        ezfill('ak8_passtightmd_mass0', wppass=ak8[leadak8_index].wvsqcdmd[mask].max()>cfg.WTAG.TIGHTMD, mass=ak8[leadak8_index].mass[mask].max(),      weight=w_leadak8 )
 
             # MET
             met_pt = getattr(met, f'pt{var}').flatten()

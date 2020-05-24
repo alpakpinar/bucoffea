@@ -379,10 +379,6 @@ def setup_candidates(df, cfg, variations):
     ak4 = JaggedCandidateArray.candidatesfromcounts(
         df['nJet'],
         pt=df[f'Jet_pt{jes_suffix}'],
-        # pt_jerup=df[f'Jet_pt_jerUp'],
-        # pt_jerdown=df[f'Jet_pt_jerDown'],
-        # pt_jesup=df[f'Jet_pt_jesTotalUp'],
-        # pt_jesdown=df[f'Jet_pt_jesTotalDown'],
         eta=df['Jet_eta'],
         abseta=np.abs(df['Jet_eta']),
         phi=df['Jet_phi'],
@@ -390,10 +386,6 @@ def setup_candidates(df, cfg, variations):
         looseId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
         tightId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
         puid=((df['Jet_puId']&2>0) | (df[f'Jet_pt{jes_suffix}']>50)), # medium pileup jet ID
-        # puid_jerup=((df['Jet_puId']&2>0) | (df['Jet_pt_jerUp']>50)), # medium pileup jet ID
-        # puid_jerdown=((df['Jet_puId']&2>0) | (df['Jet_pt_jerDown']>50)), # medium pileup jet ID
-        # puid_jesup=((df['Jet_puId']&2>0) | (df['Jet_pt_jesTotalUp']>50)), # medium pileup jet ID
-        # puid_jesdown=((df['Jet_puId']&2>0) | (df['Jet_pt_jesTotalDown']>50)), # medium pileup jet ID
         csvv2=df["Jet_btagCSVV2"],
         deepcsv=df['Jet_btagDeepB'],
         # nef=df['Jet_neEmEF'],
@@ -409,9 +401,9 @@ def setup_candidates(df, cfg, variations):
         ak4_pt = df[f'Jet_pt{var}']
         ak4_puid = (df['Jet_puId']&2 > 0) & (ak4_pt>50)
         # Set the jet values
-        setattr(ak4, f'pt{var}', ak4_pt)
-        setattr(ak4, f'puid{var}', ak4_puid)
-
+        argdict = {f'pt{var}' : ak4_pt, f'puid{var}' : ak4_puid}
+        ak4.add_attributes(**argdict)
+        
     # Before cleaning, apply HEM veto
     hem_ak4 = ak4[ (ak4.pt>30) &
         (-3.0 < ak4.eta) &
@@ -463,16 +455,8 @@ def setup_candidates(df, cfg, variations):
         np.ones(df.size),
         pt=df[f'{met_branch}_pt{jes_suffix_met}'],
         pt_nom=df[f'{met_branch}_pt_nom'],
-        # pt_jerup=df[f'{met_branch}_pt_jerUp'],
-        # pt_jerdown=df[f'{met_branch}_pt_jerDown'],
-        # pt_jesup=df[f'{met_branch}_pt_jesTotalUp'],
-        # pt_jesdown=df[f'{met_branch}_pt_jesTotalDown'],
         phi=df[f'{met_branch}_phi{jes_suffix_met}'],
         phi_nom=df[f'{met_branch}_phi_nom'],
-        # phi_jerup=df[f'{met_branch}_phi_jerUp'],
-        # phi_jerdown=df[f'{met_branch}_phi_jerDown'],
-        # phi_jesup=df[f'{met_branch}_phi_jesTotalUp'],
-        # phi_jesdown=df[f'{met_branch}_phi_jesTotalDown'],
         eta=np.zeros(df.size), # dummy
         mass=np.zeros(df.size) # dummy
     )
@@ -481,9 +465,9 @@ def setup_candidates(df, cfg, variations):
         met_pt = df[f'{met_branch}_pt{var}']
         met_phi = df[f'{met_branch}_phi{var}']
         # Set the MET values
-        setattr(met, f'pt{var}', met_pt)
-        setattr(met, f'puid{var}', met_phi)
-        
+        argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
+        met.add_attributes(**argdict)
+
     # Different sets of jets/b-jets/met for each 
     # JES/JER variation
     vmap = VarMap(variations=variations)
