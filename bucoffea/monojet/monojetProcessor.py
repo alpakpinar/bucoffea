@@ -117,6 +117,7 @@ class monojetProcessor(processor.ProcessorABC):
                             '_jesAbsolute_2016Up', '_jesAbsolute_2016Down',
                             '_jesHF_2016Up', '_jesHF_2016Down',
                             '_jesRelativeSample_2016Up', '_jesRelativeSample_2016Down',
+                            '_jesTotalUp', '_jesTotalDown'
                             ]
         self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
