@@ -906,53 +906,57 @@ ZH_ZToQQ_HToInvisible_M125_pow_pythia8_2018:
   gen: 0.554
   nnlo: 0.617943329
 ZJetsToNuNu_HT-100To200-mg_2016:
-  gen: 93.51
+  gen: 305.3
 ZJetsToNuNu_HT-100To200-mg_2017:
   gen: 305.3
 ZJetsToNuNu_HT-100To200-mg_2018:
   gen: 304.2
 ZJetsToNuNu_HT-100To200-mg_ext1_2016:
-  gen: 93.48
+  gen: 305.3
 ZJetsToNuNu_HT-1200To2500-mg_2016:
-  gen: 0.09579
+  gen: 0.3431
 ZJetsToNuNu_HT-1200To2500-mg_2017:
   gen: 0.3431
 ZJetsToNuNu_HT-1200To2500-mg_2018:
   gen: 0.3425
 ZJetsToNuNu_HT-1200To2500-mg_ext1_2016:
-  gen: 0.09579
+  gen: 0.3431
 ZJetsToNuNu_HT-1200To2500-mg_new_pmx_2017:
   gen: 0.3424
 ZJetsToNuNu_HT-200To400-mg_2016:
-  gen: 25.86
+  gen: 91.86
 ZJetsToNuNu_HT-200To400-mg_2017:
   gen: 91.86
 ZJetsToNuNu_HT-200To400-mg_2018:
   gen: 91.62
 ZJetsToNuNu_HT-200To400-mg_ext1_2016:
-  gen: 25.83
+  gen: 91.86
 ZJetsToNuNu_HT-2500ToInf-mg_2016:
-  gen: 0.002304
+  gen: 0.005146
 ZJetsToNuNu_HT-2500ToInf-mg_2017:
   gen: 0.005146
 ZJetsToNuNu_HT-2500ToInf-mg_2018:
   gen: 0.005277
 ZJetsToNuNu_HT-400To600-mg_2016:
-  gen: 3.579
+  gen: 13.13
 ZJetsToNuNu_HT-400To600-mg_2017:
   gen: 13.13
 ZJetsToNuNu_HT-400To600-mg_2018:
   gen: 13.18
 ZJetsToNuNu_HT-400To600-mg_ext1_2016:
-  gen: 3.562
+  gen: 13.13
 ZJetsToNuNu_HT-400To600-mg_new_pmx_2017:
   gen: 13.14
+ZJetsToNuNu_HT-600To800-mg_2016:
+  gen: 3.242
 ZJetsToNuNu_HT-600To800-mg_2017:
   gen: 3.242
 ZJetsToNuNu_HT-600To800-mg_2018:
   gen: 3.241
 ZJetsToNuNu_HT-600To800-mg_new_pmx_2017:
   gen: 3.267
+ZJetsToNuNu_HT-800To1200-mg_2016:
+  gen: 1.501
 ZJetsToNuNu_HT-800To1200-mg_2017:
   gen: 1.501
 ZJetsToNuNu_HT-800To1200-mg_2018:
