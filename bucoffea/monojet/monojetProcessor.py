@@ -105,21 +105,6 @@ class monojetProcessor(processor.ProcessorABC):
         self._year=None
         self._blind=blind
         self._configure()
-        # All the split JES uncertainties, "" represents the nominal case with no variation
-        self._variations = ['', '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
-                            '_jesRelativeBalUp', '_jesRelativeBalDown',
-                            '_jesHFUp', '_jesHFDown',
-                            '_jesBBEC1Up', '_jesBBEC1Down',
-                            '_jesEC2Up', '_jesEC2Down',
-                            '_jesAbsoluteUp', '_jesAbsoluteDown',
-                            '_jesBBEC1_2016Up', '_jesBBEC1_2016Down',
-                            '_jesEC2_2016Up', '_jesEC2_2016Down',
-                            '_jesAbsolute_2016Up', '_jesAbsolute_2016Down',
-                            '_jesHF_2016Up', '_jesHF_2016Down',
-                            '_jesRelativeSample_2016Up', '_jesRelativeSample_2016Down',
-                            '_jesTotalUp', '_jesTotalDown'
-                            ]
-        self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
     @property
     def accumulator(self):
@@ -139,6 +124,21 @@ class monojetProcessor(processor.ProcessorABC):
         else:
             cfg.ENV_FOR_DYNACONF = f"default"
         cfg.reload()
+        # All the split JES uncertainties, "" represents the nominal case with no variation
+        self._variations = ['', '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
+                            '_jesRelativeBalUp', '_jesRelativeBalDown',
+                            '_jesHFUp', '_jesHFDown',
+                            '_jesBBEC1Up', '_jesBBEC1Down',
+                            '_jesEC2Up', '_jesEC2Down',
+                            '_jesAbsoluteUp', '_jesAbsoluteDown',
+                            f'_jesBBEC1_{self._year}Up', f'_jesBBEC1_{self._year}Down',
+                            f'_jesEC2_{self._year}Up', f'_jesEC2_{self._year}Down',
+                            f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
+                            f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
+                            f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
+                            '_jesTotalUp', '_jesTotalDown'
+                            ]
+        self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
     def process(self, df):
         if not df.size:
@@ -426,7 +426,7 @@ class monojetProcessor(processor.ProcessorABC):
         for region, cuts in regions.items():
             # Get relevant variation name for each region
             if ('Up' in region) or ('Down' in region):
-                if '2016' not in region:
+                if str(df["year"]) not in region:
                     var = '_' + region.split('_')[-1]
                 else:
                     var = '_' + '_'.join(region.split('_')[-2:])
