@@ -34,16 +34,30 @@ def parse_cli():
     args = parser.parse_args()
     return args
 
-def plot_split_jecunc(acc, out_tag, dataset_tag, plot_total=True):
+# Bin selection should be one of the following:
+# Coarse, single bin, initial
+def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='coarse'):
     '''Plot all split JEC uncertainties on the same plot.'''
-    acc.load('recoil')
-    h = acc['recoil']
+    acc.load('met')
+    h = acc['met']
 
-    # recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400]
-    recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900]
-    recoil_bins_2016_coarse = [250,1000]
-    recoil_bin = hist.Bin('recoil', 'Recoil (GeV)', recoil_bins_2016_coarse)
-    h = h.rebin('recoil', recoil_bin)
+    # The bin selection that was used initially
+    if bin_selection == 'initial':
+        if year == 2016:
+            met_bins = list(range(0,500,50)) + list(range(500,1100,100)) 
+        else:
+            met_bins = list(range(0,500,100)) + list(range(500,1250,250)) 
+
+    elif bin_selection == 'coarse':
+        met_bins = [250,300,400,500,800,1500]
+
+    elif bin_selection == 'single bin':
+        met_bins = [250,1500]
+
+    # met_bins_v1 = [250,275,300,350,400,450,500,650,800,1150,1500]
+    met_bin = hist.Bin('met', 'MET (GeV)', met_bins)
+    # h = h.rebin('recoil', recoil_bin)
+    h = h.rebin('met', met_bin)
 
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
@@ -54,18 +68,22 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, plot_total=True):
     h_nom = h.integrate('region', 'sr_j')
     
     data_err_opts = {
-        'linestyle':'none',
+        'linestyle':'-',
         'marker': '.',
         'markersize': 10.,
         'elinewidth': 1,
     }
 
     fig, ax = plt.subplots()
+
+    # Look at only certain variations if we are not to plot everything
+    vars_to_look_at = ['jesRelativeBal', f'jesRelativeSample_{year}', 'jesAbsolute', f'jesAbsolute_{year}', 'jesFlavorQCD', 'jesTotal']
+    
     # Setup the color map
-    colormap = plt.cm.nipy_spectral 
-    num_plots = 12 if plot_total else 11
+    colormap = plt.cm.nipy_spectral
+    num_plots = len(vars_to_look_at) if skimmed else 12
     colors = []
-    for i in np.linspace(0,1,num_plots):
+    for i in np.linspace(0,0.9,num_plots):
         colors.append([colormap(i), colormap(i)])
 
     # Flatten the color list
@@ -80,20 +98,34 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, plot_total=True):
                 continue
         h_var = h.integrate('region', region)
         var_label = region.name.replace('sr_j_', '')
+        var_label_skimmed = re.sub('(Up|Down)', '', var_label)
+        if skimmed:
+            if var_label_skimmed not in vars_to_look_at:
+                continue
         hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
     
     ax.legend(ncol=2, prop={'size': 4.5})
     ax.set_ylabel('JEC Variation / Nominal')
-    ax.set_xlim(500,750)
+    ax.set_ylim(0.9,1.1)
     ax.set_title(titles[dataset_tag])
     ax.grid(True)
+
+    loc = matplotlib.ticker.MultipleLocator(base=0.02)
+    ax.yaxis.set_major_locator(loc)
 
     # Save figure
     outdir = f'./output/{out_tag}/splitJEC'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    outfile = pjoin(outdir, f'{dataset_tag}_splitJEC.pdf')
+    if bin_selection == 'coarse':
+        fname = f'{dataset_tag}_splitJEC_skimmed_METbinsv2.pdf' if skimmed else f'{dataset_tag}_splitJEC_METbinsv2.pdf'
+    elif bin_selection == 'single bin':
+        fname = f'{dataset_tag}_splitJEC_skimmed_singlebin.pdf' if skimmed else f'{dataset_tag}_splitJEC_singlebin.pdf'
+    elif bin_selection == 'initial':
+        fname = f'{dataset_tag}_splitJEC_skimmed.pdf' if skimmed else f'{dataset_tag}_splitJEC.pdf'
+        
+    outfile = pjoin(outdir, fname)
     fig.savefig(outfile)
 
 def main():
@@ -116,7 +148,9 @@ def main():
     else:
         out_tag = inpath.split('/')[-1]
 
-    plot_split_jecunc(acc, out_tag, dataset_tag)
+    year = 2017 if dataset_tag in ['VBF', 'GluGlu'] else 2016
+
+    plot_split_jecunc(acc, out_tag, dataset_tag, year)
 
 if __name__ == '__main__':
     main()
