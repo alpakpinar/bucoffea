@@ -171,10 +171,10 @@ default:
       file: data/sf/theory/unc/zoverw_scale_unc.root
     unc_zoverw_nlo_pdf_down:
       histogram: z_over_w_pdfDown 
-      file: data/sf/theory/unc/zoverw_pdf_unc.root
+      file: data/sf/theory/unc/zoverw_pdf_unc_alternative.root
     unc_zoverw_nlo_pdf_up:
       histogram: z_over_w_pdfUp 
-      file: data/sf/theory/unc/zoverw_pdf_unc.root
+      file: data/sf/theory/unc/zoverw_pdf_unc_alternative.root
     unc_goverz_nlo_muf_down:
       histogram: g_over_z_facScaleDown 
       file: data/sf/theory/unc/goverz_scale_unc.root
