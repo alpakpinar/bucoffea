@@ -19,10 +19,11 @@ def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--zwonly', help='Only run over Z and W.', action='store_true')
+    parser.add_argument('--qcdonly', help='Only run over QCD samples.', action='store_true')
     args = parser.parse_args()
     return args
 
-def from_coffea(inpath, outfile, run_z_w_only=False):
+def from_coffea(inpath, outfile, run_z_w_only=False, run_qcd_only=False):
 
     acc = dir_archive(
                         inpath,
@@ -112,41 +113,44 @@ def from_coffea(inpath, outfile, run_z_w_only=False):
             f[f'gjets_qcd_mjj_unc_w_ewkcorr_overz_common_up_{year}'] = export1d(h_ph_unc_ewk_down)
 
         # EWK V
-        h_z = acc['mjj'][re.compile(f'.*EWKZ.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
-        f[f'z_ewk_mjj_nominal_{year}'] = export1d(h_z)
-
-        h_w = acc['mjj'][re.compile(f'.*EWKW.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
-        f[f'w_ewk_mjj_nominal_{year}'] = export1d(h_w)
-
-        if not run_z_w_only:
-            h_ph = acc['mjj'][re.compile(f'GJets_SM_5f_EWK.*{year}')].integrate('region', 'cr_g_vbf').integrate('dataset')
-            f[f'gjets_ewk_mjj_nominal_{year}'] = export1d(h_ph)
-            print(h_ph.values())
-
-        # Scale + PDF variations for EWK Z
-        h_z_unc = acc['mjj_unc'][re.compile(f'.*EWKZ.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
-        for unc in map(str, h_z_unc.axis('uncertainty').identifiers()):
-            if 'goverz' in unc or 'ewkcorr' in unc:
-                continue
-            h = h_z_unc.integrate(h_z_unc.axis('uncertainty'), unc)
-            f[f'z_ewk_mjj_{unc}_{year}'] = export1d(h)
-
-        # Scale + PDF variations for EWK photons
-        if not run_z_w_only:
-            h_ph_unc = acc['mjj_unc'][re.compile(f'GJets_SM.*{year}')].integrate('region', 'cr_g_vbf').integrate('dataset')
-            for unc in map(str, h_ph_unc.axis('uncertainty').identifiers()):
-                if 'zoverw' in unc or 'ewkcorr' in unc:
+        if not run_qcd_only:
+            h_z = acc['mjj'][re.compile(f'.*EWKZ.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
+            f[f'z_ewk_mjj_nominal_{year}'] = export1d(h_z)
+    
+            h_w = acc['mjj'][re.compile(f'.*EWKW.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
+            f[f'w_ewk_mjj_nominal_{year}'] = export1d(h_w)
+    
+            if not run_z_w_only:
+                h_ph = acc['mjj'][re.compile(f'GJets_SM_5f_EWK.*{year}')].integrate('region', 'cr_g_vbf').integrate('dataset')
+                f[f'gjets_ewk_mjj_nominal_{year}'] = export1d(h_ph)
+                print(h_ph.values())
+    
+            # Scale + PDF variations for EWK Z
+            h_z_unc = acc['mjj_unc'][re.compile(f'.*EWKZ.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
+            for unc in map(str, h_z_unc.axis('uncertainty').identifiers()):
+                if 'goverz' in unc or 'ewkcorr' in unc:
                     continue
-                h = h_ph_unc.integrate(h_ph_unc.axis('uncertainty'), unc)
-                f[f'gjets_ewk_mjj_{unc}_{year}'] = export1d(h)
+                h = h_z_unc.integrate(h_z_unc.axis('uncertainty'), unc)
+                f[f'z_ewk_mjj_{unc}_{year}'] = export1d(h)
+    
+            # Scale + PDF variations for EWK photons
+            if not run_z_w_only:
+                h_ph_unc = acc['mjj_unc'][re.compile(f'GJets_SM.*{year}')].integrate('region', 'cr_g_vbf').integrate('dataset')
+                for unc in map(str, h_ph_unc.axis('uncertainty').identifiers()):
+                    if 'zoverw' in unc or 'ewkcorr' in unc:
+                        continue
+                    h = h_ph_unc.integrate(h_ph_unc.axis('uncertainty'), unc)
+                    f[f'gjets_ewk_mjj_{unc}_{year}'] = export1d(h)
 
-def make_ratios(infile, run_z_w_only=False):
+def make_ratios(infile, run_z_w_only=False, run_qcd_only=False):
     f = r.TFile(infile)
     of = r.TFile(infile.replace('.root','_ratio.root'),'RECREATE')
     of.cd()
 
+    sources = ['ewk', 'qcd'] if not run_qcd_only else ['qcd']
+
     # Z / W ratios (scale + PDF variations)
-    for source in ['ewk','qcd']:
+    for source in sources:
         for year in [2017,2018]:
             denominator = f.Get(f'w_{source}_mjj_nominal_{year}')
             for name in map(lambda x:x.GetName(), f.GetListOfKeys()):
@@ -178,7 +182,7 @@ def make_ratios(infile, run_z_w_only=False):
 
     if not run_z_w_only:
         # GJets / Z ratios (scale + PDF variations)
-        for source in ['ewk','qcd']:
+        for source in sources:
             for year in [2017,2018]:
                 denominator = f.Get(f'z_{source}_mjj_nominal_{year}')
                 for name in map(lambda x:x.GetName(), f.GetListOfKeys()):
@@ -211,13 +215,15 @@ def make_ratios(infile, run_z_w_only=False):
     of.Close()
     return str(of.GetName())
 
-def make_uncertainties(infile, run_z_w_only=False):
+def make_uncertainties(infile, run_z_w_only=False, run_qcd_only=False):
     f = r.TFile(infile)
     of = r.TFile(infile.replace('_ratio','_ratio_unc'),'RECREATE')
     of.cd()
 
+    sources = ['ewk', 'qcd'] if not run_qcd_only else ['qcd']
+
     # Uncertainty in Z / W ratios (scale + PDF variations)
-    for source in ['ewk','qcd']:
+    for source in sources:
         for year in [2017,2018]:
             nominal = f.Get(f'ratio_z_{source}_mjj_nominal_{year}')
             for name in map(lambda x:x.GetName(), f.GetListOfKeys()):
@@ -265,7 +271,7 @@ def make_uncertainties(infile, run_z_w_only=False):
 
     if not run_z_w_only:
         # Uncertainty in GJets / Z ratios (scale + PDF variations)
-        for source in ['ewk','qcd']:
+        for source in sources:
             for year in [2017,2018]:
                 nominal = f.Get(f'ratio_gjets_{source}_mjj_nominal_{year}')
                 for name in map(lambda x:x.GetName(), f.GetListOfKeys()):
@@ -321,6 +327,7 @@ def main():
     args = parse_cli()
     inpath = args.inpath 
     run_z_w_only = args.zwonly
+    run_qcd_only = args.qcdonly
 
     # Get the output tag for output directory naming
     if inpath.endswith('/'):
@@ -335,8 +342,8 @@ def main():
         outfile = pjoin(outdir, f'vbf_z_w_theory_unc.root')
     else:
         outfile = pjoin(outdir, f'vbf_z_w_gjets_theory_unc.root')
-    from_coffea(inpath, outfile)
-    outfile = make_ratios(outfile)
-    make_uncertainties(outfile)
+    from_coffea(inpath, outfile, run_z_w_only=run_z_w_only, run_qcd_only=run_qcd_only)
+    outfile = make_ratios(outfile, run_z_w_only=run_z_w_only, run_qcd_only=run_qcd_only)
+    make_uncertainties(outfile, run_z_w_only=run_z_w_only, run_qcd_only=run_qcd_only)
 if __name__ == "__main__":
     main()
