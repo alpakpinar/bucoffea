@@ -307,12 +307,17 @@ def plot_ratio(noms, uncs, tag, vpt_axis, mjj_axis, outputrootfile, mjj_integrat
             cb = fig.colorbar(im)
             cb.set_label('PDF unc on ratio')
             if tag == 'z_over_w':
-                im.set_clim(0.99, 1.01)
+                if variation_tag == 'up':
+                    clims = (1.00,1.03)
+                elif variation_tag == 'down':
+                    clims = (0.97,1.00)
             elif tag == 'g_over_z':
                 if variation_tag == 'up':
-                    im.set_clim(0.97, 0.98)
+                    clims = (0.97,0.98)
                 elif variation_tag == 'down':
-                    im.set_clim(1.02, 1.03)
+                    clims = (1.02,1.03)
+            
+            im.set_clim(*clims)
             
             # Set figure title
             if tag == 'z_over_w':
@@ -326,14 +331,14 @@ def plot_ratio(noms, uncs, tag, vpt_axis, mjj_axis, outputrootfile, mjj_integrat
 
             for ix in range(len(mjj_centers)):
                 for iy in range(len(vpt_centers)):
-                    # textcol = 'white' if ratio[iy, ix] < 0.5*(clims[0]+clims[1]) else 'black'
+                    textcol = 'white' if dratio.T[iy, ix] < 0.5*(clims[0]+clims[1]) else 'black'
                     ax.text(
                             mjj_centers[ix],
                             vpt_centers[iy],
                             f'{dratio.T[iy, ix]:.4f}',
                             ha='center',
                             va='center',
-                            # color=textcol,
+                            color=textcol,
                             fontsize=6
                             )
 
