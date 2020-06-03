@@ -78,3 +78,14 @@ WminusH_WToQQ_HToInvisible_M*
 WplusH_WToQQ_HToInvisible_M*
 ZH_ZToQQ_HToInvisible_M*
 ggZH_ZToQQ_HToInvisible_M*
+
+# LQ
+/ScalarFirstGenLeptoquarkToQNu_Mlq-*
+
+# DMsimp
+/DMSimp_monojet_NLO_FXFX_GQ*
+/DMSimp_monov_NLO_FXFX_GQ*
+
+# ADD
+ADDMonoJet_MD*
+
