@@ -202,31 +202,31 @@ def vbfhinv_regions(cfg, variations):
             ]
 
         # Dimuon CR
-        cr_2m_cuts = ['trig_met','two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'veto_ele', 'dimuon_charge'] + common_cuts[1:]
-        cr_2m_cuts.remove('veto_muo')
-
-        regions[f'cr_2m_vbf{var}'] = cr_2m_cuts
+        # cr_2m_cuts = ['trig_met','two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'veto_ele', 'dimuon_charge'] + common_cuts[1:]
+        # cr_2m_cuts.remove('veto_muo')
+# 
+        # regions[f'cr_2m_vbf{var}'] = cr_2m_cuts
 
         # Single muon CR
-        cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:]
-        cr_1m_cuts.remove('veto_muo')
-        regions[f'cr_1m_vbf{var}'] = cr_1m_cuts 
+        # cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:]
+        # cr_1m_cuts.remove('veto_muo')
+        # regions[f'cr_1m_vbf{var}'] = cr_1m_cuts 
 
         # Dielectron CR
-        cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:]
+        # cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:]
         # cr_2e_cuts.remove('veto_ele')
-        regions[f'cr_2e_vbf{var}'] = cr_2e_cuts 
+        # regions[f'cr_2e_vbf{var}'] = cr_2e_cuts 
 
         # Single electron CR
-        cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', 'veto_muo',f'met_el{var}'] + common_cuts[1:]
+        # cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', 'veto_muo',f'met_el{var}'] + common_cuts[1:]
         # cr_1e_cuts.remove('veto_ele')
-        regions[f'cr_1e_vbf{var}'] =  cr_1e_cuts
+        # regions[f'cr_1e_vbf{var}'] =  cr_1e_cuts
 
         # Photon CR
-        cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts
-        cr_g_cuts.remove('veto_photon')
-
-        regions[f'cr_g_vbf{var}'] = cr_g_cuts
+        # cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts
+        # cr_g_cuts.remove('veto_photon')
+# 
+        # regions[f'cr_g_vbf{var}'] = cr_g_cuts
 
     ##########################################
 
