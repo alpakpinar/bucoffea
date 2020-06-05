@@ -38,6 +38,10 @@ def parse_commandline():
     parser.add_argument('--ewk', help='Only run over EWK samples.', action='store_true')
     parser.add_argument('--all', help='Run over both QCD and EWK samples.', action='store_true')
     parser.add_argument('--analysis', help='Type of analysis, VBF or monojet. Default is VBF', default='vbf')
+    parser.add_argument('--onlyJES', help='Only plot JES uncertainties.', action='store_true')
+    parser.add_argument('--binSelection', help='Bin selection: "singleBin" or "multipleBins"')
+    parser.add_argument('--save_to_df', help='Save results to output pandas dataframe, stored in an output pkl file.', action='store_true')
+    parser.add_argument('--onlyZW', help='Only run over Z and W samples, do not run on photons.', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -217,31 +221,36 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     
     print(f'Histogram saved in: {outpath}')
 
-def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, sample_type, analysis='vbf'):
+def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, sample_type, analysis='vbf', plot_onlyJES=False, bin_selection='singleBin'):
     '''Given the input accumulator, plot ratio of two datasets
     for each JES/JER variation, on the same canvas.
     ==============
     PARAMETERS:
     ==============
-    acc         : Input accumulator containing the histograms.
-    regex1      : Regular expression matching the dataset name in the numerator of the ratio.
-    regex2      : Regular expression matching the dataset name in the denominator of the ratio.
-    region1     : The region from which the data for the numerator is going to be taken from.
-    region2     : The region from which the data for the denominator is going to be taken from.
-    tag         : Tag for the process name. (e.g "wjet")
-    out_tag     : Out-tag for naming output directory, output files are going to be saved under this directory.
-    sample_type : QCD ("qcd") or EWK ("ewk") sample. 
-    analysis    : Type of analysis under consideration, "vbf" or "monojet". Default is vbf.
+    acc           : Input accumulator containing the histograms.
+    regex1        : Regular expression matching the dataset name in the numerator of the ratio.
+    regex2        : Regular expression matching the dataset name in the denominator of the ratio.
+    region1       : The region from which the data for the numerator is going to be taken from.
+    region2       : The region from which the data for the denominator is going to be taken from.
+    tag           : Tag for the process name. (e.g "wjet")
+    out_tag       : Out-tag for naming output directory, output files are going to be saved under this directory.
+    sample_type   : QCD ("qcd") or EWK ("ewk") sample. 
+    analysis      : Type of analysis under consideration, "vbf" or "monojet". Default is vbf.
+    plot_onlyJES  : Only plot JES uncertaintes on the plot.
+    bin_selection : Selection for binning, use "singleBin" for one bin and "multipleBins" for multipile mjj bins.  
     '''
     # If analysis is VBF, look at mjj distribution. If analysis is monojet, look at recoil.
     if analysis == 'vbf':
         acc.load('mjj')
         h = acc['mjj']
         # Rebin mjj
-        mjj_bins = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
-        mjj_bins_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
-        mjj_bins_very_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', [0,4000]) 
-        h = h.rebin('mjj', mjj_bins_very_coarse)
+        mjj_binning = {
+            'singleBin' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', [0,4000]),
+            # 'multipleBins' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
+            'multipleBins' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
+        }
+        # mjj_bins_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
+        h = h.rebin('mjj', mjj_binning[bin_selection])
 
     elif analysis == 'monojet':
         acc.load('recoil')
@@ -323,20 +332,24 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     centers = h1.axes()[1].centers()
 
     # Get maximum and minimum ratios, fix y-axis limits
-    counts = list(ratios.values())
-    lower_ylim = min(counts) * 0.95
-    upper_ylim = max(counts) * 1.05
+    if bin_selection == 'singleBin':
+        counts = list(ratios.values())
+        lower_ylim = min(counts) * 0.98
+        upper_ylim = max(counts) * 1.02
 
     # Plot the ratios for each variation
-    variations = ['', '_jerup', '_jerdown', '_jesup', '_jesdown']
-    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 2)}, sharex=True)
+    if plot_onlyJES:
+        variations = ['', '_jesup', '_jesdown']
+    else:
+        variations = ['', '_jerup', '_jerdown', '_jesup', '_jesdown']
+    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     for idx, var_name in enumerate(variations):
         ratio_arr = ratios[var_name]
         hep.histplot(ratio_arr, 
                      edges, 
                      label=var_to_legend_label[var_name],
                      ax=ax,
-                     stack=True,
+                    #  stack=True,
                      histtype='step',
                      yerr=err[var_name]
                      )
@@ -352,7 +365,8 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
         xlim = (250,2000)
 
     ax.set_xlim(xlim)
-    ax.set_ylim(lower_ylim, upper_ylim)
+    if bin_selection == 'singleBin':
+        ax.set_ylim(lower_ylim, upper_ylim)
     ax.set_ylabel(tag_to_ylabel[tag])
     ax.legend()
 
@@ -372,7 +386,7 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
                 transform=ax.transAxes
                 )
 
-    rax.set_ylim(0.94, 1.06)
+    rax.set_ylim(0.96, 1.04)
     loc = matplotlib.ticker.MultipleLocator(base=0.02)
     rax.yaxis.set_major_locator(loc)
     rax.set_ylabel('Varied / Nominal')
@@ -380,15 +394,21 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
         rax.set_xlabel(r'$M_{jj} \ (GeV)$')
     elif analysis == 'monojet':
         rax.set_xlabel(r'Recoil (GeV)')
-    rax.legend(ncol=2)
+    ncol_for_legend = 1 if plot_onlyJES else 2
+    rax.legend(ncol=ncol_for_legend)
     rax.grid(True)
 
     # Save the figure
-    outdir = f'./output/{out_tag}'
+    if plot_onlyJES:
+        outdir = f'./output/{out_tag}/onlyJES'
+    else:
+        outdir = f'./output/{out_tag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    outpath = pjoin(outdir, f'{tag}_{sample_type}_jes_jer_variations.pdf')
+    filename = f'{tag}_{sample_type}_jes_jer_variations_{bin_selection}.pdf'
+
+    outpath = pjoin(outdir, filename)
     fig.savefig(outpath)
     plt.close()
 
@@ -443,12 +463,29 @@ def main():
                     sample_type=sample_type,
                     analysis=args.analysis)
 
+    if args.onlyZW:
+        ratios_to_look_at = [
+            'znunu_over_wlnu17',
+            'znunu_over_wlnu18',
+            'znunu_over_zmumu17',
+            'znunu_over_zmumu18',
+            'znunu_over_zee17',
+            'znunu_over_zee18',
+            'wlnu_over_wmunu17',
+            'wlnu_over_wmunu18',
+            'wlnu_over_wenu17',
+            'wlnu_over_wenu18'
+        ]
+
     # Plot ratios unless "individual plots only option is specified"
     if not args.individual:
         # Store the ratios and dataset names/types to tabulate values (using pandas) later
         ratio_list = []
         index_list = []
         for tag, data_dict in tag_to_dataset_pairs.items():
+            if args.onlyZW:
+                if tag not in ratios_to_look_at:
+                    continue
             for sample_type, run in run_over_samples.items():
                 if not run:
                     continue
@@ -464,24 +501,27 @@ def main():
                                         tag=tag, 
                                         out_tag=out_tag,
                                         sample_type=sample_type,
-                                        analysis=args.analysis)
+                                        analysis=args.analysis,
+                                        plot_onlyJES=args.onlyJES,
+                                        bin_selection=args.binSelection)
 
                 ratio_list.append(ratio_dict)
     
     # Create a DataFrame out of ratios
-    rename_columns = {
-        '' : 'Nominal',
-        '_jerup' : 'JER up',
-        '_jerdown' : 'JER down',
-        '_jesup' : 'JES up',
-        '_jesdown' : 'JES down'
-    }
-    df = pd.DataFrame(ratio_list, index=index_list) 
-    df.rename(columns=rename_columns, inplace=True)
-    # Save to pkl file
-    pkl_file = 'ratios_df.pkl'
-    with open(pkl_file, 'wb+') as f:
-        df.to_pickle(pkl_file)
+    if args.save_to_df:
+        rename_columns = {
+            '' : 'Nominal',
+            '_jerup' : 'JER up',
+            '_jerdown' : 'JER down',
+            '_jesup' : 'JES up',
+            '_jesdown' : 'JES down'
+        }
+        df = pd.DataFrame(ratio_list, index=index_list) 
+        df.rename(columns=rename_columns, inplace=True)
+        # Save to pkl file
+        pkl_file = 'ratios_df.pkl'
+        with open(pkl_file, 'wb+') as f:
+            df.to_pickle(pkl_file)
 
 if __name__ == '__main__':
     main()
