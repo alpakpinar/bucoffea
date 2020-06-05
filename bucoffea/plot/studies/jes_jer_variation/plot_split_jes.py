@@ -28,15 +28,23 @@ titles = {
 }
 
 # Define all possible binnings for all variables in this dictionary
+mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
+mjj_binning_single_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,3500])
+
+met_binning_v1_2016 = hist.Bin('met', r'$MET \ (GeV)$', list(range(0,500,50)) + list(range(500,1100,100))) 
+met_binning_v1_2017 = hist.Bin('met', r'$MET \ (GeV)$', list(range(0,500,100)) + list(range(500,1250,250))) 
+met_binning_single_bin = hist.Bin('met', r'$MET \ (GeV)$', [200,1500])
+met_binning_coarse = hist.Bin('met', r'$MET \ (GeV)$', [250,300,400,500,800,1500])
+
 binnings = {
     'met' : {
-        'initial' : {2016 : list(range(0,500,50)) + list(range(500,1100,100)), 2017: list(range(0,500,100)) + list(range(500,1250,250))},
-        'single bin' : {2016 : [250,1500], 2017 : [250,1500]},
-        'coarse' : {2016 : [250,300,400,500,800,1500], 2017 : [250,300,400,500,800,1500]}
+        'initial' : {'2016' : met_binning_v1_2016, '2017': met_binning_v1_2017},
+        'single bin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin},
+        'coarse' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse}
     },
     'mjj' : {
-        'initial' : list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500],
-        'single bin' : {2016: [200,3500], 2017: [200,3500]}
+        'initial' : {'2016' : mjj_binning_v1, '2017': mjj_binning_v1},
+        'single bin' : {'2016': mjj_binning_single_bin, '2017': mjj_binning_single_bin}
     }
 }
 
@@ -44,12 +52,13 @@ def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--tag', help='Tag for dataset to be used.')
+    parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     args = parser.parse_args()
     return args
 
 # Bin selection should be one of the following:
 # Coarse, single bin, initial
-def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='coarse', analysis='vbf'):
+def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf'):
     '''Plot all split JEC uncertainties on the same plot.'''
     # Load the relevant variable to analysis, select binning
     variable_to_use = 'mjj' if analysis == 'vbf' else 'met'
@@ -57,16 +66,18 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     h = acc[variable_to_use]
 
     # Rebin the histogram
-    new_bins = binnings[bin_selection][year]
+    new_bins = binnings[variable_to_use][bin_selection][year]
     h = h.rebin(variable_to_use , new_bins)
 
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
     h = merge_datasets(h)
 
-    h = h.integrate('dataset', re.compile(f'{dataset_tag}.*'))[re.compile('sr_j.*')]
+    region_suffix = '_j' if analysis == 'monojet' else '_vbf'
 
-    h_nom = h.integrate('region', 'sr_j')
+    h = h.integrate('dataset', re.compile(f'{dataset_tag}.*'))[re.compile(f'sr{region_suffix}.*')]
+
+    h_nom = h.integrate('region', f'sr{region_suffix}')
     
     data_err_opts = {
         'linestyle':'-',
@@ -92,13 +103,13 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     ax.set_prop_cycle('color', colors)
 
     for region in h.identifiers('region'):
-        if region.name == 'sr_j':
+        if region.name == f'sr{region_suffix}':
             continue
         if not plot_total:
             if "Total" in region.name:
                 continue
         h_var = h.integrate('region', region)
-        var_label = region.name.replace('sr_j_', '')
+        var_label = region.name.replace(f'sr{region_suffix}_', '')
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
         if skimmed:
             if var_label_skimmed not in vars_to_look_at:
@@ -107,12 +118,22 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     
     ax.legend(ncol=2, prop={'size': 4.5})
     ax.set_ylabel('JEC Variation / Nominal')
-    ax.set_ylim(0.9,1.1)
+    # Aesthetics, different for different analyses
+    if analysis == 'monojet':
+        ax.set_ylim(0.9,1.1)
+        loc = matplotlib.ticker.MultipleLocator(base=0.02)
+        ax.yaxis.set_major_locator(loc)
+    elif analysis == 'vbf':
+        if bin_selection == 'single bin':
+            loc = matplotlib.ticker.MultipleLocator(base=0.02)
+        elif bin_selection == 'initial':
+            loc = matplotlib.ticker.MultipleLocator(base=0.05)
+            ax.set_ylim(0.75,1.35)
+        ax.yaxis.set_major_locator(loc)
+        
     ax.set_title(titles[dataset_tag])
     ax.grid(True)
 
-    loc = matplotlib.ticker.MultipleLocator(base=0.02)
-    ax.yaxis.set_major_locator(loc)
 
     # Save figure
     outdir = f'./output/{out_tag}/splitJEC/{analysis}'
@@ -133,6 +154,7 @@ def main():
     args = parse_cli()
     inpath = args.inpath
     dataset_tag = args.tag
+    analysis = args.analysis
 
     acc = dir_archive(
         inpath,
@@ -149,9 +171,13 @@ def main():
     else:
         out_tag = inpath.split('/')[-1]
 
-    year = 2017 if dataset_tag in ['VBF', 'GluGlu'] else 2016
+    year = '2017' if dataset_tag in ['VBF', 'GluGlu'] else '2016'
 
-    plot_split_jecunc(acc, out_tag, dataset_tag, year)
+    # Plot split JEC uncertainties in two ways: 
+    # 1. All uncertainty sources plotted on a single bin
+    # 2. Only the largest sources are plotted, with multiple bins
+    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='single bin')
+    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=True, bin_selection='initial')
 
 if __name__ == '__main__':
     main()
