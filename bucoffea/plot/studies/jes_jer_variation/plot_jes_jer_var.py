@@ -39,7 +39,6 @@ def parse_commandline():
     parser.add_argument('--all', help='Run over both QCD and EWK samples.', action='store_true')
     parser.add_argument('--analysis', help='Type of analysis, VBF or monojet. Default is VBF', default='vbf')
     parser.add_argument('--onlyJES', help='Only plot JES uncertainties.', action='store_true')
-    parser.add_argument('--binSelection', help='Bin selection: "singleBin" or "multipleBins"')
     parser.add_argument('--save_to_df', help='Save results to output pandas dataframe, stored in an output pkl file.', action='store_true')
     parser.add_argument('--onlyZW', help='Only run over Z and W samples, do not run on photons.', action='store_true')
     args = parser.parse_args()
@@ -237,7 +236,7 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     sample_type   : QCD ("qcd") or EWK ("ewk") sample. 
     analysis      : Type of analysis under consideration, "vbf" or "monojet". Default is vbf.
     plot_onlyJES  : Only plot JES uncertaintes on the plot.
-    bin_selection : Selection for binning, use "singleBin" for one bin and "multipleBins" for multipile mjj bins.  
+    bin_selection : Selection for binning, use "singleBin" for one bin or "coarse" or "fine".  
     '''
     # If analysis is VBF, look at mjj distribution. If analysis is monojet, look at recoil.
     if analysis == 'vbf':
@@ -246,8 +245,8 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
         # Rebin mjj
         mjj_binning = {
             'singleBin' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', [0,4000]),
-            # 'multipleBins' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
-            'multipleBins' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
+            'coarse' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))),
+            'fine' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
         }
         # mjj_bins_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
         h = h.rebin('mjj', mjj_binning[bin_selection])
@@ -386,7 +385,11 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
                 transform=ax.transAxes
                 )
 
-    rax.set_ylim(0.96, 1.04)
+    if bin_selection == 'singleBin':
+        rax.set_ylim(0.96, 1.04)
+    else:
+        rax.set_ylim(0.9, 1.1)
+
     loc = matplotlib.ticker.MultipleLocator(base=0.02)
     rax.yaxis.set_major_locator(loc)
     rax.set_ylabel('Varied / Nominal')
@@ -477,6 +480,9 @@ def main():
             'wlnu_over_wenu18'
         ]
 
+    # All bin types for the ratio plot
+    bin_types = ['fine', 'coarse', 'singleBin']
+
     # Plot ratios unless "individual plots only option is specified"
     if not args.individual:
         # Store the ratios and dataset names/types to tabulate values (using pandas) later
@@ -493,19 +499,21 @@ def main():
                 datapair_dict = data_dict[sample_type] 
                 data1_info = datapair_dict['dataset1']
                 data2_info = datapair_dict['dataset2']
-                ratio_dict = plot_jes_jer_var_ratio( acc, 
-                                        regex1=data1_info['regex'], 
-                                        regex2=data2_info['regex'], 
-                                        region1=data1_info['region'], 
-                                        region2=data2_info['region'], 
-                                        tag=tag, 
-                                        out_tag=out_tag,
-                                        sample_type=sample_type,
-                                        analysis=args.analysis,
-                                        plot_onlyJES=args.onlyJES,
-                                        bin_selection=args.binSelection)
-
-                ratio_list.append(ratio_dict)
+                for bin_selection in bin_types:
+                    ratio_dict = plot_jes_jer_var_ratio( acc, 
+                                            regex1=data1_info['regex'], 
+                                            regex2=data2_info['regex'], 
+                                            region1=data1_info['region'], 
+                                            region2=data2_info['region'], 
+                                            tag=tag, 
+                                            out_tag=out_tag,
+                                            sample_type=sample_type,
+                                            analysis=args.analysis,
+                                            plot_onlyJES=args.onlyJES,
+                                            bin_selection=bin_selection)
+                    
+                    if bin_selection == 'singleBin':
+                        ratio_list.append(ratio_dict)
     
     # Create a DataFrame out of ratios
     if args.save_to_df:
