@@ -27,6 +27,19 @@ titles = {
     'ZJets' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties'
 }
 
+# Define all possible binnings for all variables in this dictionary
+binnings = {
+    'met' : {
+        'initial' : {2016 : list(range(0,500,50)) + list(range(500,1100,100)), 2017: list(range(0,500,100)) + list(range(500,1250,250))},
+        'single bin' : {2016 : [250,1500], 2017 : [250,1500]},
+        'coarse' : {2016 : [250,300,400,500,800,1500], 2017 : [250,300,400,500,800,1500]}
+    },
+    'mjj' : {
+        'initial' : list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500],
+        'single bin' : {2016: [200,3500], 2017: [200,3500]}
+    }
+}
+
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
@@ -36,28 +49,16 @@ def parse_cli():
 
 # Bin selection should be one of the following:
 # Coarse, single bin, initial
-def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='coarse'):
+def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='coarse', analysis='vbf'):
     '''Plot all split JEC uncertainties on the same plot.'''
-    acc.load('met')
-    h = acc['met']
+    # Load the relevant variable to analysis, select binning
+    variable_to_use = 'mjj' if analysis == 'vbf' else 'met'
+    acc.load(variable_to_use)
+    h = acc[variable_to_use]
 
-    # The bin selection that was used initially
-    if bin_selection == 'initial':
-        if year == 2016:
-            met_bins = list(range(0,500,50)) + list(range(500,1100,100)) 
-        else:
-            met_bins = list(range(0,500,100)) + list(range(500,1250,250)) 
-
-    elif bin_selection == 'coarse':
-        met_bins = [250,300,400,500,800,1500]
-
-    elif bin_selection == 'single bin':
-        met_bins = [250,1500]
-
-    # met_bins_v1 = [250,275,300,350,400,450,500,650,800,1150,1500]
-    met_bin = hist.Bin('met', 'MET (GeV)', met_bins)
-    # h = h.rebin('recoil', recoil_bin)
-    h = h.rebin('met', met_bin)
+    # Rebin the histogram
+    new_bins = binnings[bin_selection][year]
+    h = h.rebin(variable_to_use , new_bins)
 
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
@@ -114,7 +115,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     ax.yaxis.set_major_locator(loc)
 
     # Save figure
-    outdir = f'./output/{out_tag}/splitJEC'
+    outdir = f'./output/{out_tag}/splitJEC/{analysis}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
