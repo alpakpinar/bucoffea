@@ -19,8 +19,8 @@ def main():
 
 
     fileset = {
-        "ZJetsToNuNu_HT-100To200-mg_2016" : [
-            "root://cmsxrootd.fnal.gov//store/user/aakpinar/nanopost/21May20_splitJEC/ZJetsToNuNu_HT-100To200_13TeV-madgraph/ZJetsToNuNu_HT-100To200-mg_2016/200522_094347/0000/tree_1.root"
+        "VBF_HToInvisible_M125_pow_pythia8_2017" : [
+            "root://cmsxrootd.fnal.gov//store/user/aakpinar/nanopost/21May20_splitJEC/VBF_HToInvisible_M125_13TeV_TuneCP5_powheg_pythia8/VBF_HToInvisible_M125_pow_pythia8_2017/200525_202203/0000/tree_1.root"
         ]
     }
 
