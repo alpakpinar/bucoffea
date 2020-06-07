@@ -6,7 +6,6 @@ import sys
 import os
 import argparse
 from pprint import pprint
-from termcolor import colored
 
 pjoin = os.path.join
 
@@ -20,25 +19,25 @@ def parse_cli():
 def test_histogram_names(acc):
     '''Given the input accumulator, check whether specific histograms are there.'''
     histograms_to_search = ('mjj', 'met', 'recoil', 'gen_vpt', 'gen_mjj', 'ak4_pt', 'ak4_eta', 'detajj', 'dphijj')
-    print(colored('='*20, 'red'))
-    print(colored('CHECKING HISTOGRAMS', 'red'))
-    print(colored('='*20, 'red'))
+    print('='*20)
+    print('CHECKING HISTOGRAMS')
+    print('='*20)
 
     # Check that each histogram is there 
     for histo_name in histograms_to_search:
         assert histo_name in acc.keys()
         print(f'Found {histo_name}')
 
-    print(colored('-'*20, 'green'))
-    print(colored('HISTOGRAM CHECK: DONE', 'green'))
+    print('-'*20)
+    print('HISTOGRAM CHECK: DONE')
 
 def test_regions(acc, analysis='vbf'):
     '''Given the input accumulator, check whether all the regions are present (SR + 5 CRs).'''
     region_suffix = '_j' if analysis == 'monojet' else '_vbf'
     regions_to_search = [f'sr{region_suffix}', f'cr_1m{region_suffix}', f'cr_1e{region_suffix}', f'cr_2m{region_suffix}', f'cr_2e{region_suffix}', f'cr_g{region_suffix}']
-    print(colored('='*20, 'red'))
-    print(colored('CHECKING REGIONS', 'red'))
-    print(colored('='*20, 'red'))
+    print('='*20)
+    print('CHECKING REGIONS')
+    print('='*20)
 
     # Check that each region is present in recoil distribution
     h = acc['recoil']
@@ -50,8 +49,8 @@ def test_regions(acc, analysis='vbf'):
         assert region in region_names
         print(f'Found {region}')
 
-    print(colored('-'*20, 'green'))
-    print(colored('REGION CHECK: DONE', 'green'))
+    print('-'*20)
+    print('REGION CHECK: DONE')
 
 def test_binnings(acc):
     '''For several variables, check the binning of these (see whether they can be rebinned to the requested scheme later)'''
@@ -59,9 +58,9 @@ def test_binnings(acc):
     mjj_bins = list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]
     variables_to_check = ['recoil', 'mjj']
 
-    print(colored('='*20, 'red'))
-    print(colored(f'CHECKING BINNINGS: {", ".join(variables_to_check)}', 'red'))
-    print(colored('='*20, 'red'))
+    print('='*20)
+    print(f'CHECKING BINNINGS: {", ".join(variables_to_check)}')
+    print('='*20)
 
     new_binnings = {
         'recoil' : hist.Bin('recoil', 'Recoil (GeV)', recoil_bins_2016),
@@ -77,14 +76,14 @@ def test_binnings(acc):
         except:
             raise AssertionError(f'The binning for {variable} is not consistent!')
 
-    print(colored('-'*20, 'green'))
-    print(colored('BINNING CHECK: DONE', 'green'))
+    print('-'*20)
+    print('BINNING CHECK: DONE')
 
 def test_cuts(acc):
     '''For a given region (SR or CR), test whether all the cuts are applied.'''
-    print(colored('='*20, 'red'))
-    print(colored('CHECKING CUTFLOWS', 'red'))
-    print(colored('='*20, 'red'))
+    print('='*20)
+    print('CHECKING CUTFLOWS')
+    print('='*20)
 
     common_cuts = [
         'veto_ele',
@@ -143,8 +142,8 @@ def test_cuts(acc):
             assert cut in cutflow.keys()
             print(f'Cut exists: {cut}' + u' \u2713') 
 
-    print(colored('-'*20, 'green'))
-    print(colored('CUT CHECK: DONE', 'green'))
+    print('-'*20)
+    print('CUT CHECK: DONE')
 
 # def test_uncs(acc, analysis='vbf'):
     # '''Given the input accumulator, check whether all the uncertainties on met/mjj are present.'''
