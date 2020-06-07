@@ -28,7 +28,7 @@ echo "===================="
 cd output;
 for file in vbfhinv_W*2017.coffea
 do
-    pytest check_coffea_histograms.py ${file}
+    pytest ../check_coffea_histograms.py ${file}
 done
 
 
