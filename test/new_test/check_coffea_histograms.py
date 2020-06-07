@@ -60,7 +60,7 @@ def main():
     # Do a number of checks to the coffea file
     check_histogram_names(acc)
     check_regions(acc)
-    check_uncs(unc)
+    check_uncs(acc)
 
 if __name__ == '__main__':
     main()
