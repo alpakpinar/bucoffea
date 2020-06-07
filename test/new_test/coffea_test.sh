@@ -14,7 +14,7 @@ do
         wget ${REMOTE_PATH}/${FNAME}
     fi
     echo ${FNAME} > files.txt
-    buexec vbfhinv --outpath ./output/ --jobs 1 worker --dataset ${DATASET} --filelist files.txt --chunk 0
+    buexec vbfhinv --outpath ./output_newtest/ --jobs 1 worker --dataset ${DATASET} --filelist files.txt --chunk 0
 done < "testfiles_new.txt"
 
 # Get the coffea output from run_quick, feed it into the checking script
@@ -25,10 +25,10 @@ done < "testfiles_new.txt"
 echo "===================="
 echo "Running coffea checker"
 echo "===================="
-cd output;
-for file in vbfhinv_W*2017.coffea
+cd output_newtest;
+for filename in ./*.coffea
 do
-    pytest ../check_coffea_histograms.py ${file}
+    pytest ../check_coffea_histograms.py ${filename}
 done
 
 
