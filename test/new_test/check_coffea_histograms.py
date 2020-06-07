@@ -20,23 +20,23 @@ def test_histogram_names(acc):
     '''Given the input accumulator, check whether specific histograms are there.'''
     histograms_to_search = ('mjj', 'met', 'recoil', 'gen_vpt', 'gen_mjj', 'ak4_pt', 'ak4_eta', 'detajj', 'dphijj')
     print('='*20)
-    print('CHECKING HISTOGRAMS')
+    print('\033[1mCHECKING HISTOGRAMS \033[0m')
     print('='*20)
 
     # Check that each histogram is there 
     for histo_name in histograms_to_search:
         assert histo_name in acc.keys()
-        print(f'Found {histo_name}')
+        print(f'Found {histo_name}' + u' \u2713')
 
     print('-'*20)
-    print('HISTOGRAM CHECK: DONE')
+    print('\033[1mHISTOGRAM CHECK: DONE \033[0m')
 
 def test_regions(acc, analysis='vbf'):
     '''Given the input accumulator, check whether all the regions are present (SR + 5 CRs).'''
     region_suffix = '_j' if analysis == 'monojet' else '_vbf'
     regions_to_search = [f'sr{region_suffix}', f'cr_1m{region_suffix}', f'cr_1e{region_suffix}', f'cr_2m{region_suffix}', f'cr_2e{region_suffix}', f'cr_g{region_suffix}']
     print('='*20)
-    print('CHECKING REGIONS')
+    print('\033[1mCHECKING REGIONS \033[0m')
     print('='*20)
 
     # Check that each region is present in recoil distribution
@@ -47,10 +47,10 @@ def test_regions(acc, analysis='vbf'):
     
     for region in regions_to_search:
         assert region in region_names
-        print(f'Found {region}')
+        print(f'Found {region}' + u' \u2713')
 
     print('-'*20)
-    print('REGION CHECK: DONE')
+    print('\033[1mREGION CHECK: DONE \033[0m')
 
 def test_binnings(acc):
     '''For several variables, check the binning of these (see whether they can be rebinned to the requested scheme later)'''
@@ -59,7 +59,7 @@ def test_binnings(acc):
     variables_to_check = ['recoil', 'mjj']
 
     print('='*20)
-    print(f'CHECKING BINNINGS: {", ".join(variables_to_check)}')
+    print(f'\033[1mCHECKING BINNINGS: {", ".join(variables_to_check)} \033[0m')
     print('='*20)
 
     new_binnings = {
@@ -69,20 +69,20 @@ def test_binnings(acc):
 
     for variable in variables_to_check:
         h = acc[variable]
-        print(f'Checking binning: {variable}')
         # Do the rebinning and see if coffea complains
         try:
             h = h.rebin(variable, new_binnings[variable])
         except:
             raise AssertionError(f'The binning for {variable} is not consistent!')
+        print(f'Binning is consistent: {variable}'  + u' \u2713')
 
     print('-'*20)
-    print('BINNING CHECK: DONE')
+    print('\033[1mBINNING CHECK: DONE \033[0m')
 
 def test_cuts(acc):
     '''For a given region (SR or CR), test whether all the cuts are applied.'''
     print('='*20)
-    print('CHECKING CUTFLOWS')
+    print('\033[1mCHECKING CUTFLOWS \033[0m')
     print('='*20)
 
     common_cuts = [
@@ -143,7 +143,7 @@ def test_cuts(acc):
             print(f'Cut exists: {cut}' + u' \u2713') 
 
     print('-'*20)
-    print('CUT CHECK: DONE')
+    print('\033[1mCUT CHECK: DONE \033[0m')
 
 # def test_uncs(acc, analysis='vbf'):
     # '''Given the input accumulator, check whether all the uncertainties on met/mjj are present.'''
