@@ -26,9 +26,10 @@ echo "===================="
 echo "Running coffea checker"
 echo "===================="
 cd output_newtest;
+ls;
 for filename in ./*.coffea
 do
-    pytest ../check_coffea_histograms.py ${filename}
+    python ../check_coffea_histograms.py $(basename ${filename})
 done
 
 
