@@ -355,7 +355,9 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
 
         if var_name != '':
             r = ratios[var_name] / ratios['']
+            # rax.errorbar(centers, r, yerr=err['']/ratios[''], marker='o', ls='', label=var_to_legend_label[var_name], c=colors[idx])
             rax.plot(centers, r, 'o', label=var_to_legend_label[var_name], c=colors[idx])
+            rax.fill_between(centers, 1-(err['']/ratios['']), 1+(err['']/ratios['']), color='gray', alpha=0.5)
 
     # Aesthetics
     if analysis == 'vbf':
@@ -363,7 +365,9 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     elif analysis == 'monojet':
         xlim = (250,2000)
 
-    ax.set_xlim(xlim)
+    edges = mjj_binning[bin_selection].edges()
+
+    ax.set_xlim(edges[0], edges[-1])
     if bin_selection == 'singleBin':
         ax.set_ylim(lower_ylim, upper_ylim)
     ax.set_ylabel(tag_to_ylabel[tag])
