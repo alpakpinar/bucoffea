@@ -56,9 +56,6 @@ jobs:
     - name: Install bucoffea package
       run: |
         pip install -e .
-    - name: Install pytest
-      run: |
-        pip install pytest
     - name: Run tests
       run: |
         cd test/new_test
