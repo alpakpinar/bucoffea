@@ -6,6 +6,9 @@ from bucoffea.helpers.cutflow import print_cutflow
 from coffea.util import save
 import coffea.processor as processor
 import argparse
+import os
+
+pjoin = os.path.join
 
 def parse_commandline():
 
@@ -19,7 +22,7 @@ def main():
 
     fileset = {
         "VBF_HToInvisible_M125_pow_pythia8_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/27Oct19/VBF_HToInvisible_M125_13TeV_TuneCP5_powheg_pythia8/VBF_HToInvisible_M125_pow_pythia8_2017/191027_233758/0000/tree_1.root"
+            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/19Feb20/VBF_HToInvisible_M125_13TeV_TuneCP5_powheg_pythia8/VBF_HToInvisible_M125_pow_pythia8_2017/200219_231507/0000/tree_1.root"
         ]
     }
 
@@ -66,6 +69,14 @@ def main():
         # Debugging / testing output
         # debug_plot_output(output)
         print_cutflow(output, outfile=f'{processor_class}_cutflow_{dataset}.txt')
+
+        # Dump the output into a txt file, to be further processed by the testing script
+        output_name = f'{processor_class}_{dataset}.coffea'
+        outpath = os.path.dirname(os.path.realpath(__file__))
+        outfile = pjoin(outpath, output_name)
+        
+        with open('run_quick_output.txt', 'w+') as f:
+            f.write(outfile)
 
 if __name__ == "__main__":
     main()
