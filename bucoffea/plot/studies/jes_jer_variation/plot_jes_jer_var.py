@@ -39,6 +39,7 @@ def parse_commandline():
     parser.add_argument('--all', help='Run over both QCD and EWK samples.', action='store_true')
     parser.add_argument('--analysis', help='Type of analysis, VBF or monojet. Default is VBF', default='vbf')
     parser.add_argument('--onlyJES', help='Only plot JES uncertainties.', action='store_true')
+    parser.add_argument('--onlyJER', help='Only plot JER uncertainties.', action='store_true')
     parser.add_argument('--save_to_df', help='Save results to output pandas dataframe, stored in an output pkl file.', action='store_true')
     parser.add_argument('--onlyZW', help='Only run over Z and W samples, do not run on photons.', action='store_true')
     args = parser.parse_args()
@@ -220,7 +221,7 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     
     print(f'Histogram saved in: {outpath}')
 
-def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, sample_type, analysis='vbf', plot_onlyJES=False, bin_selection='singleBin'):
+def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, sample_type, analysis='vbf', plot_onlyJES=False, plot_onlyJER=False, bin_selection='singleBin'):
     '''Given the input accumulator, plot ratio of two datasets
     for each JES/JER variation, on the same canvas.
     ==============
@@ -236,6 +237,7 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     sample_type   : QCD ("qcd") or EWK ("ewk") sample. 
     analysis      : Type of analysis under consideration, "vbf" or "monojet". Default is vbf.
     plot_onlyJES  : Only plot JES uncertaintes on the plot.
+    plot_onlyJER  : Only plot JER uncertaintes on the plot.
     bin_selection : Selection for binning, use "singleBin" for one bin or "coarse" or "fine".  
     '''
     # If analysis is VBF, look at mjj distribution. If analysis is monojet, look at recoil.
@@ -339,6 +341,8 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     # Plot the ratios for each variation
     if plot_onlyJES:
         variations = ['', '_jesup', '_jesdown']
+    elif plot_onlyJER:
+        variations = ['', '_jerup', '_jerdown']
     else:
         variations = ['', '_jerup', '_jerdown', '_jesup', '_jesdown']
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
@@ -401,13 +405,15 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
         rax.set_xlabel(r'$M_{jj} \ (GeV)$')
     elif analysis == 'monojet':
         rax.set_xlabel(r'Recoil (GeV)')
-    ncol_for_legend = 1 if plot_onlyJES else 2
+    ncol_for_legend = 1 if (plot_onlyJES or plot_onlyJER) else 2
     rax.legend(ncol=ncol_for_legend)
     rax.grid(True)
 
     # Save the figure
     if plot_onlyJES:
         outdir = f'./output/{out_tag}/onlyJES'
+    elif plot_onlyJER:
+        outdir = f'./output/{out_tag}/onlyJER'
     else:
         outdir = f'./output/{out_tag}'
     if not os.path.exists(outdir):
@@ -514,6 +520,7 @@ def main():
                                             sample_type=sample_type,
                                             analysis=args.analysis,
                                             plot_onlyJES=args.onlyJES,
+                                            plot_onlyJER=args.onlyJER,
                                             bin_selection=bin_selection)
                     
                     if bin_selection == 'singleBin':
