@@ -22,8 +22,10 @@ from itertools import chain
 pjoin = os.path.join
 
 titles = {
-    'GluGlu' : r'$ggH(inv) \ 2017$ split JEC uncertainties',
-    'VBF' : r'$VBF \ H(inv) \ 2017$ split JEC uncertainties',
+    'GluGlu2017' : r'$ggH(inv) \ 2017$ split JEC uncertainties',
+    'GluGlu2018' : r'$ggH(inv) \ 2018$ split JEC uncertainties',
+    'VBF2017' : r'$VBF \ H(inv) \ 2017$ split JEC uncertainties',
+    'VBF2018' : r'$VBF \ H(inv) \ 2018$ split JEC uncertainties',
     'ZJets' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties'
 }
 
@@ -38,13 +40,13 @@ met_binning_coarse = hist.Bin('met', r'$MET \ (GeV)$', [250,300,400,500,800,1500
 
 binnings = {
     'met' : {
-        'initial' : {'2016' : met_binning_v1_2016, '2017': met_binning_v1_2017},
-        'single bin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin},
-        'coarse' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse}
+        'initial' : {'2016' : met_binning_v1_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
+        'single bin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
+        'coarse' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
     },
     'mjj' : {
-        'initial' : {'2016' : mjj_binning_v1, '2017': mjj_binning_v1},
-        'single bin' : {'2016': mjj_binning_single_bin, '2017': mjj_binning_single_bin}
+        'initial' : {'2016' : mjj_binning_v1, '2017': mjj_binning_v1, '2018': mjj_binning_v1},
+        'single bin' : {'2016': mjj_binning_single_bin, '2017': mjj_binning_single_bin, '2018': mjj_binning_single_bin}
     }
 }
 
@@ -75,7 +77,8 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
 
     region_suffix = '_j' if analysis == 'monojet' else '_vbf'
 
-    h = h.integrate('dataset', re.compile(f'{dataset_tag}.*'))[re.compile(f'sr{region_suffix}.*')]
+    dataset_name = dataset_tag.replace(f'{year}', '')
+    h = h.integrate('dataset', re.compile(f'{dataset_name}.*{year}'))[re.compile(f'sr{region_suffix}.*')]
 
     h_nom = h.integrate('region', f'sr{region_suffix}')
     
@@ -126,6 +129,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     elif analysis == 'vbf':
         if bin_selection == 'single bin':
             loc = matplotlib.ticker.MultipleLocator(base=0.02)
+            ax.set_ylim(0.87,1.13)
         elif bin_selection == 'initial':
             loc = matplotlib.ticker.MultipleLocator(base=0.05)
             ax.set_ylim(0.75,1.35)
@@ -171,7 +175,13 @@ def main():
     else:
         out_tag = inpath.split('/')[-1]
 
-    year = '2017' if dataset_tag in ['VBF', 'GluGlu'] else '2016'
+    # Determine the year of the dataset
+    if '2017' in dataset_tag:
+        year = '2017' # 2017 VBF + ggH signals
+    elif '2018' in dataset_tag:
+        year = '2018' # 2018 VBF + ggH signals
+    else:
+        year = '2016' # 2016 Znunu
 
     # Plot split JEC uncertainties in two ways: 
     # 1. All uncertainty sources plotted on a single bin
