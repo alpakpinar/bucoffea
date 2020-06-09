@@ -574,9 +574,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             else:
                 var = ''
 
-            print(f'Region: {region}')
-            print(f'Variation: {var}')
-
             # Get the correct objects/quantities for each variation
             selection = vmap.get_selection_packer(var)
             bjets = vmap.get_bjets(var)
