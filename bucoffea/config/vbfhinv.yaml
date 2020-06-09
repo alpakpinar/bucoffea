@@ -216,6 +216,7 @@ default:
         - 79123963
         - 51393664
     trigger_study: False
+    use_control_regions: True
   triggers:
     ht:
       gammaeff:
