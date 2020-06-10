@@ -22,21 +22,8 @@ from itertools import chain
 pjoin = os.path.join
 
 titles = {
-    'GluGlu2017' : r'$ggH(inv) \ 2017$ split JEC uncertainties',
-    'GluGlu2018' : r'$ggH(inv) \ 2018$ split JEC uncertainties',
-    'VBF2017' : r'$VBF \ H(inv) \ 2017$ split JEC uncertainties',
-    'VBF2018' : r'$VBF \ H(inv) \ 2018$ split JEC uncertainties',
-    'ZJets2016' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties',
-    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties'
-}
-
-titles_two_nuisances = {
-    'GluGlu2017' : r'$ggH(inv) \ 2017$ corr vs uncorr JEC uncertainties',
-    'GluGlu2018' : r'$ggH(inv) \ 2018$ corr vs uncorr JEC uncertainties',
-    'VBF2018' : r'$VBF \ H(inv) \ 2018$ corr vs uncorr JEC uncertainties',
-    'VBF2017' : r'$VBF \ H(inv) \ 2017$ corr vs uncorr JEC uncertainties',
-    'ZJets2016' : r'$Z(\nu\nu) \ 2016$ corr vs uncorr JEC uncertainties',
-    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ corr vs uncorr JEC uncertainties'
+    'zoverw_2017' : r'$Z(\nu\nu) \ / \ W(\ell\nu) \ 2017$',
+    'zoverw_2018' : r'$Z(\nu\nu) \ / \ W(\ell\nu) \ 2018$',
 }
 
 # Define all possible binnings for all variables in this dictionary
@@ -50,13 +37,13 @@ met_binning_coarse = hist.Bin('met', r'$MET \ (GeV)$', [250,300,400,500,800,1500
 
 binnings = {
     'met' : {
-        'initial' : {'2016' : met_binning_v1_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
-        'single bin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
-        'coarse' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
+        'defaultBinning' : {'2016' : met_binning_v1_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
+        'singleBin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
+        'coarseBin' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
     },
     'mjj' : {
-        'initial' : {'2016' : mjj_binning_v1, '2017': mjj_binning_v1, '2018': mjj_binning_v1},
-        'single bin' : {'2016': mjj_binning_single_bin, '2017': mjj_binning_single_bin, '2018': mjj_binning_single_bin}
+        'defaultBinning' : {'2016' : mjj_binning_v1, '2017': mjj_binning_v1, '2018': mjj_binning_v1},
+        'singleBin' : {'2016': mjj_binning_single_bin, '2017': mjj_binning_single_bin, '2018': mjj_binning_single_bin}
     }
 }
 
@@ -66,12 +53,10 @@ def parse_cli():
     parser.add_argument('--tag', help='Tag for the transfer factor to be used.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     # parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
-    parser.add_argument('--ratio', help='Plot uncertainties on transfer factors.', action='store_true')
-    parser.add_argument('--year', help='The year for which the dataset is produced.')
     args = parser.parse_args()
     return args
 
-def plot_split_jecunc_ratios(acc, out_tag, tag_num, tag_denom, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf'):
+def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_denom, year, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
     '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
     # Load the relevant variable to analysis, select binning
     variable_to_use = 'mjj' if analysis == 'vbf' else 'met'
@@ -98,7 +83,6 @@ def plot_split_jecunc_ratios(acc, out_tag, tag_num, tag_denom, year, plot_total=
     ratios = {}
     nominal_ratio = h_nominal_num.values()[()] / h_nominal_den.values()[()]
     ratios['nominal'] = nominal_ratio
-    pprint(nominal_ratio)
 
     data_err_opts = {
         'linestyle':'-',
@@ -146,7 +130,33 @@ def plot_split_jecunc_ratios(acc, out_tag, tag_num, tag_denom, year, plot_total=
         ax.plot(centers, dratio, marker='o', label=var_label)
         # hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
 
-    fig.savefig('test.pdf')
+    # Aesthetics
+    ax.grid(True)
+    ax.set_xlabel(r'$M_{jj} \ (GeV)$')
+    ax.set_ylabel('JEC uncertainty')
+    if bin_selection == 'singleBin':
+        ax.set_ylim(0.95,1.05)
+        ticker_base = 0.01
+    else:
+        ax.set_ylim(0.9,1.1)
+        ticker_base = 0.02
+    ax.set_title(titles[transfer_factor_tag])
+    ax.legend(ncol=2, prop={'size': 4.5})
+
+    loc = matplotlib.ticker.MultipleLocator(base=ticker_base)
+    ax.yaxis.set_major_locator(loc)
+
+    # Save figure
+    outdir = f'./output/{out_tag}/splitJEC/vbf/transfer_factors'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    skimming_suffix = '_skimmed' if skimmed else ''
+
+    filename = f'{transfer_factor_tag}_splitJEC{skimming_suffix}_{bin_selection}.pdf'
+    outpath = pjoin(outdir, filename)
+
+    fig.savefig(outpath)
 
 ###########################
 
@@ -155,7 +165,6 @@ def main():
     inpath = args.inpath
     transfer_factor_tag = args.tag
     analysis = args.analysis
-    year = args.year
 
     acc = dir_archive(
         inpath,
@@ -173,12 +182,17 @@ def main():
         out_tag = inpath.split('/')[-1]
 
     # Determine the datasets for the transfer factor
-    if transfer_factor_tag == 'zoverw':
+    if 'zoverw' in transfer_factor_tag:
         tag_num = 'ZJets'
         tag_denom = 'WJets'
 
+    # Get the year for the datasets, from the TF tag
+    # NOTE: TF tag should be in the format of "process1overprocess2_year"
+    year = transfer_factor_tag.split('_')[1]
+
     # Ratio plotting to be called here
-    plot_split_jecunc_ratios(acc, out_tag, tag_num, tag_denom, year)
+    plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_denom, year, skimmed=True, bin_selection='defaultBinning')
+    plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_denom, year, skimmed=False, bin_selection='singleBin')
 
 if __name__ == '__main__':
     main()

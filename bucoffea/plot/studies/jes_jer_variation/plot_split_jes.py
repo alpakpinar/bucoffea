@@ -147,8 +147,12 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
             loc = matplotlib.ticker.MultipleLocator(base=0.02)
             ax.set_ylim(0.87,1.13)
         elif bin_selection == 'initial':
+            if 'ZJets' in dataset_tag:
+                ax.set_ylim(0.65,1.45)
+            else:
+                ax.set_ylim(0.75,1.35)
             loc = matplotlib.ticker.MultipleLocator(base=0.05)
-            ax.set_ylim(0.75,1.35)
+        
         ax.yaxis.set_major_locator(loc)
         
     ax.set_title(titles[dataset_tag])
@@ -349,6 +353,7 @@ def main():
     # 2. Only the largest sources are plotted, with multiple bins
     plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='single bin')
     plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=True, bin_selection='initial')
+    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='initial')
 
     # Produce the plots with regrouping, if requested:
     if args.regroup:
