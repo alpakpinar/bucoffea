@@ -26,7 +26,8 @@ titles = {
     'GluGlu2018' : r'$ggH(inv) \ 2018$ split JEC uncertainties',
     'VBF2017' : r'$VBF \ H(inv) \ 2017$ split JEC uncertainties',
     'VBF2018' : r'$VBF \ H(inv) \ 2018$ split JEC uncertainties',
-    'ZJets' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties'
+    'ZJets2016' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties',
+    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties'
 }
 
 titles_two_nuisances = {
@@ -34,7 +35,8 @@ titles_two_nuisances = {
     'GluGlu2018' : r'$ggH(inv) \ 2018$ corr vs uncorr JEC uncertainties',
     'VBF2018' : r'$VBF \ H(inv) \ 2018$ corr vs uncorr JEC uncertainties',
     'VBF2017' : r'$VBF \ H(inv) \ 2017$ corr vs uncorr JEC uncertainties',
-    'ZJets' : r'$Z(\nu\nu) \ 2016$ corr vs uncorr JEC uncertainties'
+    'ZJets2016' : r'$Z(\nu\nu) \ 2016$ corr vs uncorr JEC uncertainties',
+    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ corr vs uncorr JEC uncertainties'
 }
 
 # Define all possible binnings for all variables in this dictionary
@@ -63,7 +65,7 @@ def parse_cli():
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--tag', help='Tag for dataset to be used.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
-    parser.add_argument('--regroup', help='Regroup all the sources into correlated and uncorrelated.', action='store_true')
+    parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -84,12 +86,17 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     scale_xs_lumi(h)
     h = merge_datasets(h)
 
+    # Determine the region to take the data from
+    if re.match('GluGlu|VBF|ZJets.*', dataset_tag):
+        region_to_use = 'sr'
+    else:
+        raise NotImplementedError('Not implemented for this region yet.')
     region_suffix = '_j' if analysis == 'monojet' else '_vbf'
 
     dataset_name = dataset_tag.replace(f'{year}', '')
-    h = h.integrate('dataset', re.compile(f'{dataset_name}.*{year}'))[re.compile(f'sr{region_suffix}.*')]
+    h = h.integrate('dataset', re.compile(f'{dataset_name}.*{year}'))[re.compile(f'{region_to_use}{region_suffix}.*')]
 
-    h_nom = h.integrate('region', f'sr{region_suffix}')
+    h_nom = h.integrate('region', f'{region_to_use}{region_suffix}')
     
     data_err_opts = {
         'linestyle':'-',
@@ -115,13 +122,13 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     ax.set_prop_cycle('color', colors)
 
     for region in h.identifiers('region'):
-        if region.name == f'sr{region_suffix}':
+        if region.name == f'{region_to_use}{region_suffix}':
             continue
         if not plot_total:
             if "Total" in region.name:
                 continue
         h_var = h.integrate('region', region)
-        var_label = region.name.replace(f'sr{region_suffix}_', '')
+        var_label = region.name.replace(f'{region_to_use}{region_suffix}_', '')
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
         if skimmed:
             if var_label_skimmed not in vars_to_look_at:
@@ -308,80 +315,6 @@ def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='
     outpath = pjoin(outdir, filename)
     fig.savefig(outpath)
 
-def plot_split_jecunc_ratios(acc, out_tag, tag_num, tag_denom, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf'):
-    '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
-    # Load the relevant variable to analysis, select binning
-    variable_to_use = 'mjj' if analysis == 'vbf' else 'met'
-    acc.load(variable_to_use)
-    h = acc[variable_to_use]
-
-    # Rebin the histogram
-    new_bins = binnings[variable_to_use][bin_selection][year]
-    h = h.rebin(variable_to_use , new_bins)
-
-    h = merge_extensions(h, acc, reweight_pu=False)
-    scale_xs_lumi(h)
-    h = merge_datasets(h)
-
-    region_suffix = '_j' if analysis == 'monojet' else '_vbf'
-
-    # Get the histograms for numerator and denominator
-    h_num = h.integrate('dataset', re.compile(f'{tag_num}.*{year}'))[re.compile(f'sr{region_suffix}.*')]
-    h_den = h.integrate('dataset', re.compile(f'{tag_denom}.*{year}'))[re.compile(f'sr{region_suffix}.*')]
-
-    h_nominal_num = h_num.integrate('region', f'sr{region_suffix}')
-    h_nominal_den = h_den.integrate('region', f'sr{region_suffix}')
-    # Get the nominal ratio and store it in a dict
-    ratios = {}
-    nominal_ratio = h_nominal_num.values()[()] / h_nominal_den.values()[()]
-    ratios['nominal'] = nominal_ratio
-    pprint(nominal_ratio)
-
-    data_err_opts = {
-        'linestyle':'-',
-        'marker': '.',
-        'markersize': 10.,
-        'elinewidth': 1,
-    }
-
-    fig, ax = plt.subplots()
-
-    # Look at only certain variations if we are not to plot everything
-    vars_to_look_at = ['jesRelativeBal', f'jesRelativeSample_{year}', 'jesAbsolute', f'jesAbsolute_{year}', 'jesFlavorQCD', 'jesTotal']
-    
-    # Setup the color map
-    colormap = plt.cm.nipy_spectral
-    num_plots = len(vars_to_look_at) if skimmed else 12
-    colors = []
-    for i in np.linspace(0,0.9,num_plots):
-        colors.append([colormap(i), colormap(i)])
-
-    # Flatten the color list
-    colors = list(chain.from_iterable(colors))
-    ax.set_prop_cycle('color', colors)
-
-    for region in h_num.identifiers('region'):
-        if region.name == f'sr{region_suffix}':
-            continue
-        if not plot_total:
-            if "Total" in region.name:
-                continue
-        h_varied_num = h_num.integrate('region', region)
-        h_varied_den = h_den.integrate('region', region)
-        var_label = region.name.replace(f'sr{region_suffix}_', '')
-        var_label_skimmed = re.sub('(Up|Down)', '', var_label)
-
-        # Get the varied ratio and store it
-        varied_ratio = h_varied_num.values()[()] / h_varied_den.values()[()]
-        ratios[var_label] = varied_ratio
-
-        if skimmed:
-            if var_label_skimmed not in vars_to_look_at:
-                continue
-        # hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
-        # Continue from here
-###########################
-
 def main():
     args = parse_cli()
     inpath = args.inpath
@@ -405,17 +338,17 @@ def main():
 
     # Determine the year of the dataset
     if '2017' in dataset_tag:
-        year = '2017' # 2017 VBF + ggH signals
+        year = '2017' # 2017 VBF + ggH signals or Z(nunu)
     elif '2018' in dataset_tag:
-        year = '2018' # 2018 VBF + ggH signals
+        year = '2018' # 2018 VBF + ggH signals or Z(nunu)
     else:
-        year = '2016' # 2016 Znunu
+        year = '2016' # 2016 Z(nunu)
 
     # Plot split JEC uncertainties in two ways: 
     # 1. All uncertainty sources plotted on a single bin
     # 2. Only the largest sources are plotted, with multiple bins
-    # plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='single bin')
-    # plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=True, bin_selection='initial')
+    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='single bin')
+    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=True, bin_selection='initial')
 
     # Produce the plots with regrouping, if requested:
     if args.regroup:
