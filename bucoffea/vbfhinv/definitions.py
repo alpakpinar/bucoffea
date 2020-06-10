@@ -217,12 +217,12 @@ def vbfhinv_regions(cfg, variations):
     
             # Dielectron CR
             cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:]
-            cr_2e_cuts.remove('veto_ele')
+            # cr_2e_cuts.remove('veto_ele')
             regions[f'cr_2e_vbf{var}'] = cr_2e_cuts 
     
             # Single electron CR
             cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', 'veto_muo',f'met_el{var}'] + common_cuts[1:]
-            cr_1e_cuts.remove('veto_ele')
+            # cr_1e_cuts.remove('veto_ele')
             regions[f'cr_1e_vbf{var}'] =  cr_1e_cuts
     
             # Photon CR
