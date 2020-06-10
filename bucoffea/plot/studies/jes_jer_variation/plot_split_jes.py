@@ -29,6 +29,14 @@ titles = {
     'ZJets' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties'
 }
 
+titles_two_nuisances = {
+    'GluGlu2017' : r'$ggH(inv) \ 2017$ corr vs uncorr JEC uncertainties',
+    'GluGlu2018' : r'$ggH(inv) \ 2018$ corr vs uncorr JEC uncertainties',
+    'VBF2018' : r'$VBF \ H(inv) \ 2018$ corr vs uncorr JEC uncertainties',
+    'VBF2017' : r'$VBF \ H(inv) \ 2017$ corr vs uncorr JEC uncertainties',
+    'ZJets' : r'$Z(\nu\nu) \ 2016$ corr vs uncorr JEC uncertainties'
+}
+
 # Define all possible binnings for all variables in this dictionary
 mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
 mjj_binning_single_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,3500])
@@ -55,6 +63,7 @@ def parse_cli():
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--tag', help='Tag for dataset to be used.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
+    parser.add_argument('--regroup', help='Regroup all the sources into correlated and uncorrelated.', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -154,6 +163,225 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     outfile = pjoin(outdir, fname)
     fig.savefig(outfile)
 
+def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='initial', analysis='vbf'):
+    '''Plot split JEC uncertainties regrouped into two:
+    1. Correlated across years
+    2. Uncorrelated across years
+    '''
+    # Load the relevant variable to analysis, select binning
+    variable_to_use = 'mjj' if analysis == 'vbf' else 'met'
+    acc.load(variable_to_use)
+    h = acc[variable_to_use]
+
+    # Rebin the histogram
+    new_bins = binnings[variable_to_use][bin_selection][year]
+    h = h.rebin(variable_to_use , new_bins)
+
+    h = merge_extensions(h, acc, reweight_pu=False)
+    scale_xs_lumi(h)
+    h = merge_datasets(h)
+
+    region_suffix = '_j' if analysis == 'monojet' else '_vbf'
+
+    dataset_name = dataset_tag.replace(f'{year}', '')
+    h = h.integrate('dataset', re.compile(f'{dataset_name}.*{year}'))[re.compile(f'sr{region_suffix}.*')]
+
+    h_nom = h.integrate('region', f'sr{region_suffix}')
+    
+    data_err_opts = {
+        'linestyle':'-',
+        'marker': '.',
+        'markersize': 10.,
+        'elinewidth': 1,
+    }
+
+    # All the uncertainty sources: Classified as "uncorrelated", "correlated" and "partially correlated"
+    unc_sources = {
+        'uncorrelated' : [f'jesAbsolute_{year}', f'jesBBEC1_{year}', f'jesEC2_{year}', f'jesHF_{year}', f'jesRelativeSample_{year}'],
+        'correlated' : ['jesFlavorQCD', 'jesAbsolute'],
+        'partially correlated' : ['jesHF', 'jesBBEC1', 'jesEC2', 'jesRelativeBal']
+    }
+    
+    # Group all the uncertainty sources, at the end we'll have four variations:
+    # CorrelatedUp, CorrelatedDown, UncorrelatedUp, UncorrelatedDown
+    regrouped_variations = {}
+    regrouped_variation_errors = {}
+    # Initialize the two nuisances and the uncertainties on them as all zeros
+    for nuisance in ['uncorrelatedUp', 'uncorrelatedDown', 'correlatedUp', 'correlatedDown']:
+        regrouped_variations[nuisance] = np.zeros_like(h_nom.values()[()])
+    for nuisance in ['uncorrelatedUp', 'uncorrelatedDown', 'correlatedUp', 'correlatedDown']:
+        regrouped_variation_errors[nuisance] = np.zeros((2, len(h_nom.values()[()]) ))
+    
+    # ================================================
+    # Regroup the variations into two and calculate combined variations + uncertainties 
+    # ================================================
+    for region in h.identifiers('region'):
+        if region.name == f'sr{region_suffix}' or 'Total' in region.name:
+            continue
+        h_var = h.integrate('region', region)
+        sumw_nom, sumw2_nom = h_nom.values(sumw2=True)[()] 
+        sumw_var, sumw2_var = h_var.values(sumw2=True)[()] 
+
+        # Variation for this uncertainty source: Varied / nominal - 1
+        variation = sumw_var / sumw_nom - 1
+        r_sumw = sumw_var / sumw_nom
+        
+        # Calculate the errors on this ratio using coffea hist tools
+        # Imitating the coffea uncertainty calculation here: 
+        # https://github.com/CoffeaTeam/coffea/blob/78534edcc16dbabe961e7b93b57a6c9476d7c6c3/coffea/hist/plot.py#L362
+        
+        variation_err = np.abs(hist.poisson_interval(r_sumw, sumw2_nom/sumw_var**2) - r_sumw)
+        var_label = region.name.replace(f'sr{region_suffix}_', '')
+        var_label_skimmed = re.sub('(Up|Down)', '', var_label)
+
+        # Do the grouping of all sources into two 
+        if var_label_skimmed in unc_sources['uncorrelated']:
+            if 'Up' in var_label:
+                regrouped_variations['uncorrelatedUp'] += variation**2
+                regrouped_variation_errors['uncorrelatedUp'] += variation_err**2
+            elif 'Down' in var_label:
+                regrouped_variations['uncorrelatedDown'] += variation**2
+                regrouped_variation_errors['uncorrelatedDown'] += variation_err**2
+        
+        elif var_label_skimmed in unc_sources['correlated']:
+            if 'Up' in var_label:
+                regrouped_variations['correlatedUp'] += variation**2
+                regrouped_variation_errors['correlatedUp'] += variation_err**2
+            elif 'Down' in var_label:
+                regrouped_variations['correlatedDown'] += variation**2
+                regrouped_variation_errors['correlatedDown'] += variation_err**2
+
+        elif var_label_skimmed in unc_sources['partially correlated']:
+            # If the source is partially (50%) correlated, put half of the variation in the correlated
+            # collection, and the other half to uncorrelated one
+            if 'Up' in var_label:
+                regrouped_variations['correlatedUp'] += variation**2 / 2
+                regrouped_variation_errors['correlatedUp'] += variation_err**2 / 2
+                regrouped_variations['uncorrelatedUp'] += variation**2 / 2
+                regrouped_variation_errors['uncorrelatedUp'] += variation_err**2 / 2
+            elif 'Down' in var_label:
+                regrouped_variations['correlatedDown'] += variation**2 / 2
+                regrouped_variation_errors['correlatedDown'] += variation_err**2 / 2
+                regrouped_variations['uncorrelatedDown'] += variation**2 / 2
+                regrouped_variation_errors['uncorrelatedDown'] += variation_err**2 / 2
+
+        else:
+            raise ValueError(f'Unrecognized uncertainty source: {var_label_skimmed}')
+
+    # Take the square root to calculate the combined variations, add 1 to each of them so that 
+    # values are all centered around 1, instead of 0
+    for nuisance, variation in regrouped_variations.items():
+        if 'Up' in nuisance:
+            regrouped_variations[nuisance] = 1 + np.sqrt(variation)
+        elif 'Down' in nuisance:
+            regrouped_variations[nuisance] = 1 - np.sqrt(variation) 
+
+    for nuisance, err in regrouped_variation_errors.items():
+        regrouped_variation_errors[nuisance] = np.sqrt(err)
+
+    # ================================================
+    # Now, plot the regrouped sources in the same plot
+    # ================================================
+    fig, ax = plt.subplots()
+    centers = h_nom.axis(variable_to_use).centers()
+    for nuisance, variation in regrouped_variations.items():
+        ax.errorbar(centers, variation, yerr=regrouped_variation_errors[nuisance], marker='o', label=nuisance)
+    ax.legend()
+    ax.set_xlabel(r'$M_{jj} \ (GeV)$')
+    ax.set_ylabel('JEC uncertainty')
+    ax.grid(True)
+
+    xlim = ax.get_xlim()
+    ax.plot(xlim, [1.0, 1.0], 'k--')
+    ax.set_xlim(xlim)
+    ax.set_title(titles_two_nuisances[dataset_tag])
+
+    loc = matplotlib.ticker.MultipleLocator(base=0.05)
+    ax.yaxis.set_major_locator(loc)
+
+    # Save figure
+    outdir = f'./output/{out_tag}/splitJEC/{analysis}/two_nuisances'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    filename = f'{dataset_tag}_splitJEC.pdf'
+    outpath = pjoin(outdir, filename)
+    fig.savefig(outpath)
+
+def plot_split_jecunc_ratios(acc, out_tag, tag_num, tag_denom, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf'):
+    '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
+    # Load the relevant variable to analysis, select binning
+    variable_to_use = 'mjj' if analysis == 'vbf' else 'met'
+    acc.load(variable_to_use)
+    h = acc[variable_to_use]
+
+    # Rebin the histogram
+    new_bins = binnings[variable_to_use][bin_selection][year]
+    h = h.rebin(variable_to_use , new_bins)
+
+    h = merge_extensions(h, acc, reweight_pu=False)
+    scale_xs_lumi(h)
+    h = merge_datasets(h)
+
+    region_suffix = '_j' if analysis == 'monojet' else '_vbf'
+
+    # Get the histograms for numerator and denominator
+    h_num = h.integrate('dataset', re.compile(f'{tag_num}.*{year}'))[re.compile(f'sr{region_suffix}.*')]
+    h_den = h.integrate('dataset', re.compile(f'{tag_denom}.*{year}'))[re.compile(f'sr{region_suffix}.*')]
+
+    h_nominal_num = h_num.integrate('region', f'sr{region_suffix}')
+    h_nominal_den = h_den.integrate('region', f'sr{region_suffix}')
+    # Get the nominal ratio and store it in a dict
+    ratios = {}
+    nominal_ratio = h_nominal_num.values()[()] / h_nominal_den.values()[()]
+    ratios['nominal'] = nominal_ratio
+    pprint(nominal_ratio)
+
+    data_err_opts = {
+        'linestyle':'-',
+        'marker': '.',
+        'markersize': 10.,
+        'elinewidth': 1,
+    }
+
+    fig, ax = plt.subplots()
+
+    # Look at only certain variations if we are not to plot everything
+    vars_to_look_at = ['jesRelativeBal', f'jesRelativeSample_{year}', 'jesAbsolute', f'jesAbsolute_{year}', 'jesFlavorQCD', 'jesTotal']
+    
+    # Setup the color map
+    colormap = plt.cm.nipy_spectral
+    num_plots = len(vars_to_look_at) if skimmed else 12
+    colors = []
+    for i in np.linspace(0,0.9,num_plots):
+        colors.append([colormap(i), colormap(i)])
+
+    # Flatten the color list
+    colors = list(chain.from_iterable(colors))
+    ax.set_prop_cycle('color', colors)
+
+    for region in h_num.identifiers('region'):
+        if region.name == f'sr{region_suffix}':
+            continue
+        if not plot_total:
+            if "Total" in region.name:
+                continue
+        h_varied_num = h_num.integrate('region', region)
+        h_varied_den = h_den.integrate('region', region)
+        var_label = region.name.replace(f'sr{region_suffix}_', '')
+        var_label_skimmed = re.sub('(Up|Down)', '', var_label)
+
+        # Get the varied ratio and store it
+        varied_ratio = h_varied_num.values()[()] / h_varied_den.values()[()]
+        ratios[var_label] = varied_ratio
+
+        if skimmed:
+            if var_label_skimmed not in vars_to_look_at:
+                continue
+        # hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
+        # Continue from here
+###########################
+
 def main():
     args = parse_cli()
     inpath = args.inpath
@@ -186,8 +414,12 @@ def main():
     # Plot split JEC uncertainties in two ways: 
     # 1. All uncertainty sources plotted on a single bin
     # 2. Only the largest sources are plotted, with multiple bins
-    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='single bin')
-    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=True, bin_selection='initial')
+    # plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='single bin')
+    # plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=True, bin_selection='initial')
+
+    # Produce the plots with regrouping, if requested:
+    if args.regroup:
+        plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='initial', analysis=analysis)
 
 if __name__ == '__main__':
     main()
