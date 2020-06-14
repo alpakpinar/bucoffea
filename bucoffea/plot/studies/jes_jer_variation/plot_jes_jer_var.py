@@ -41,7 +41,7 @@ def parse_commandline():
     parser.add_argument('--onlyJES', help='Only plot JES uncertainties.', action='store_true')
     parser.add_argument('--onlyJER', help='Only plot JER uncertainties.', action='store_true')
     parser.add_argument('--save_to_df', help='Save results to output pandas dataframe, stored in an output pkl file.', action='store_true')
-    parser.add_argument('--onlyZW', help='Only run over Z and W samples, do not run on photons.', action='store_true')
+    parser.add_argument('--only', help='Only run over a subset of the samples', nargs='*')
     args = parser.parse_args()
     return args
 
@@ -158,7 +158,6 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
                      edges, 
                      label=var_to_legend_label[var],
                      ax=ax,
-                     stack=True,
                      histtype='step'
                      )
 
@@ -200,7 +199,7 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
                 )
 
     rax.set_ylim(0.8, 1.2)
-    loc = matplotlib.ticker.MultipleLocator(base=0.2)
+    loc = matplotlib.ticker.MultipleLocator(base=0.05)
     rax.yaxis.set_major_locator(loc)
     rax.set_ylabel('Varied / Nominal')
     if analysis == 'vbf':
@@ -461,12 +460,26 @@ def main():
         'ewk' : args.ewk or args.all 
     }
 
+    # Get the processes to run over, if some "only" option is specified
+    if args.only:
+        all_tags = dataset_regex.keys()
+        processes_to_look_at = []
+        if "Znunu" in args.only:
+            z_procs = [tag for tag in all_tags if tag.startswith('znunu')]
+            processes_to_look_at.extend(z_procs)
+        if "Wlnu" in args.only:
+            w_procs = [tag for tag in all_tags if tag.startswith('wlnu')]
+            processes_to_look_at.extend(w_procs)
+
     # Plot individual distributions unless "ratio only" option is specified
     if not args.ratio:
         for tag, data_dict in dataset_regex.items():
             for sample_type, run in run_over_samples.items():
                 if not run:
                     continue
+                if args.only:
+                    if not tag in processes_to_look_at:
+                        continue
                 title, regex, region = data_dict[sample_type].values()
                 plot_jes_jer_var(acc, regex=regex, 
                     title=title, 
@@ -476,19 +489,31 @@ def main():
                     sample_type=sample_type,
                     analysis=args.analysis)
 
-    if args.onlyZW:
-        ratios_to_look_at = [
-            'znunu_over_wlnu17',
-            'znunu_over_wlnu18',
-            'znunu_over_zmumu17',
-            'znunu_over_zmumu18',
-            'znunu_over_zee17',
-            'znunu_over_zee18',
-            'wlnu_over_wmunu17',
-            'wlnu_over_wmunu18',
-            'wlnu_over_wenu17',
-            'wlnu_over_wenu18'
-        ]
+    # Run for only specific ratios if an "only" option is specified to the script
+    if args.only:
+        all_ratios = tag_to_dataset_pairs.keys()
+        ratios_to_look_at = []
+        if 'Znunu' in args.only and 'Wlnu' in args.only:
+            z_over_w_procs = [tag for tag in all_ratios if tag.startswith('znunu_over_wlnu')]
+            ratios_to_look_at.extend(z_over_w_procs)
+        if 'Znunu' in args.only and 'Zee' in args.only:
+            z_over_zee_procs = [tag for tag in all_ratios if tag.startswith('znunu_over_zee')]
+            ratios_to_look_at.extend(z_over_zee_procs)
+        if 'Znunu' in args.only and 'Zmumu' in args.only:
+            z_over_zmumu_procs = [tag for tag in all_ratios if tag.startswith('znunu_over_zmumu')]
+            ratios_to_look_at.extend(z_over_zmumu_procs)
+        if 'Wlnu' in args.only and 'Wenu' in args.only:
+            w_over_wenu_procs = [tag for tag in all_ratios if tag.startswith('wlnu_over_wenu')]
+            ratios_to_look_at.extend(w_over_wenu_procs)
+        if 'Wlnu' in args.only and 'Wmunu' in args.only:
+            w_over_wmunu_procs = [tag for tag in all_ratios if tag.startswith('wlnu_over_wmunu')]
+            ratios_to_look_at.extend(w_over_wmunu_procs)
+        if 'GJets' in args.only and 'Znunu' in args.only:
+            g_over_z_procs = [tag for tag in all_ratios if tag.startswith('gjets_over_znunu')]
+            ratios_to_look_at.extend(g_over_z_procs)
+        if 'GJets' in args.only and 'Wlnu' in args.only:
+            w_over_g_procs = [tag for tag in all_ratios if tag.startswith('wlnu_over_gjets')]
+            ratios_to_look_at.extend(w_over_g_procs)
 
     # All bin types for the ratio plot
     bin_types = ['fine', 'coarse', 'singleBin']
@@ -499,7 +524,7 @@ def main():
         ratio_list = []
         index_list = []
         for tag, data_dict in tag_to_dataset_pairs.items():
-            if args.onlyZW:
+            if args.only:
                 if tag not in ratios_to_look_at:
                     continue
             for sample_type, run in run_over_samples.items():
