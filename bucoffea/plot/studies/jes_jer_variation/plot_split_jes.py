@@ -27,7 +27,8 @@ titles = {
     'VBF2017' : r'$VBF \ H(inv) \ 2017$ split JEC uncertainties',
     'VBF2018' : r'$VBF \ H(inv) \ 2018$ split JEC uncertainties',
     'ZJets2016' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties',
-    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties'
+    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties',
+    'ZJets2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties'
 }
 
 titles_two_nuisances = {
@@ -36,7 +37,8 @@ titles_two_nuisances = {
     'VBF2018' : r'$VBF \ H(inv) \ 2018$ corr vs uncorr JEC uncertainties',
     'VBF2017' : r'$VBF \ H(inv) \ 2017$ corr vs uncorr JEC uncertainties',
     'ZJets2016' : r'$Z(\nu\nu) \ 2016$ corr vs uncorr JEC uncertainties',
-    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ corr vs uncorr JEC uncertainties'
+    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ corr vs uncorr JEC uncertainties',
+    'ZJets2018' : r'$Z(\nu\nu) \ 2018$ corr vs uncorr JEC uncertainties'
 }
 
 # Define all possible binnings for all variables in this dictionary
