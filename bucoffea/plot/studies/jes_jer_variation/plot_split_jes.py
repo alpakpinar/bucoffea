@@ -15,7 +15,7 @@ from matplotlib import pyplot as plt
 import matplotlib.ticker
 import mplhep as hep
 import numpy as np
-# import pandas as pd
+import uproot
 from pprint import pprint
 from itertools import chain
 
@@ -68,12 +68,13 @@ def parse_cli():
     parser.add_argument('--tag', help='Tag for dataset to be used.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
+    parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
     args = parser.parse_args()
     return args
 
 # Bin selection should be one of the following:
 # Coarse, single bin, initial
-def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf'):
+def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf', root_config={'save': False, 'file': None}):
     '''Plot all split JEC uncertainties on the same plot.'''
     # Load the relevant variable to analysis, select binning
     variable_to_use = 'mjj' if analysis == 'vbf' else 'met'
@@ -123,6 +124,10 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     colors = list(chain.from_iterable(colors))
     ax.set_prop_cycle('color', colors)
 
+    # As we loop through each uncertainty source, save into ROOT file if this is requested
+    if root_config['save']:
+        rootfile = uproot.recreate(root_config['file'])
+
     for region in h.identifiers('region'):
         if region.name == f'{region_to_use}{region_suffix}':
             continue
@@ -137,6 +142,11 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
                 continue
         hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
     
+        if root_config['save']:
+            ratio = h_var.values()[()] / h_nom.values()[()]
+            edges = h_nom.axis(variable_to_use).edges()
+            rootfile[var_label] = (ratio, edges)
+
     ax.legend(ncol=2, prop={'size': 4.5})
     ax.set_ylabel('JEC Variation / Nominal')
     # Aesthetics, different for different analyses
@@ -159,7 +169,6 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
         
     ax.set_title(titles[dataset_tag])
     ax.grid(True)
-
 
     # Save figure
     outdir = f'./output/{out_tag}/splitJEC/{analysis}'
@@ -350,12 +359,26 @@ def main():
     else:
         year = '2016' # 2016 Z(nunu)
 
+    # Create an output root file to save the uncertainties
+    outputrootdir = f'./output/{out_tag}/splitJEC/vbf/root'
+    if not os.path.exists(outputrootdir):
+        os.makedirs(outputrootdir)
+
+    outputrootfile = pjoin(outputrootdir, f'{dataset_tag}.root')
+
+    # Configure root usage for the function 
+    root_config = {
+        'save' : args.save_to_root,
+        'file' : outputrootfile if args.save_to_root else None
+    }
+
     # Plot split JEC uncertainties in two ways: 
     # 1. All uncertainty sources plotted on a single bin
     # 2. Only the largest sources are plotted, with multiple bins
     plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='single bin')
     plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=True, bin_selection='initial')
-    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='initial')
+    # Only save to ROOT file the unskimmed shapes
+    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='initial', root_config=root_config)
 
     # Produce the plots with regrouping, if requested:
     if args.regroup:
