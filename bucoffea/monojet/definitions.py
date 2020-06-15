@@ -398,6 +398,8 @@ def setup_candidates(df, cfg, variations):
     )
     # Get variated jet properties for each JEC variation
     for var in variations:
+        if var == '':
+            continue
         ak4_pt = df[f'Jet_pt{var}']
         ak4_puid = (df['Jet_puId']&2 > 0) & (ak4_pt>50)
         # Set the jet values
@@ -462,6 +464,8 @@ def setup_candidates(df, cfg, variations):
     )
     # Get variated MET properties for each JEC variation
     for var in variations:
+        if var == '':
+            continue
         met_pt = df[f'{met_branch}_pt{var}']
         met_phi = df[f'{met_branch}_phi{var}']
         # Set the MET values
