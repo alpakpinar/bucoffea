@@ -401,7 +401,7 @@ def setup_candidates(df, cfg, variations):
         if var == '':
             continue
         ak4_pt = df[f'Jet_pt{var}']
-        ak4_puid = (df['Jet_puId']&2 > 0) & (ak4_pt>50)
+        ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt>50)
         # Set the jet values
         argdict = {f'pt{var}' : ak4_pt, f'puid{var}' : ak4_puid}
         ak4.add_attributes(**argdict)
