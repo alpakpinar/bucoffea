@@ -28,7 +28,9 @@ titles = {
     'VBF2018' : r'$VBF \ H(inv) \ 2018$ split JEC uncertainties',
     'ZJets2016' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties',
     'ZJets2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties',
-    'ZJets2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties'
+    'ZJets2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties',
+    'WJets2017' : r'$W(\ell\nu) \ 2017$ split JEC uncertainties',
+    'WJets2018' : r'$W(\ell\nu) \ 2018$ split JEC uncertainties'
 }
 
 titles_two_nuisances = {
@@ -90,7 +92,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     h = merge_datasets(h)
 
     # Determine the region to take the data from
-    if re.match('GluGlu|VBF|ZJets.*', dataset_tag):
+    if re.match('GluGlu|VBF|ZJets|WJets.*', dataset_tag):
         region_to_use = 'sr'
     else:
         raise NotImplementedError('Not implemented for this region yet.')
