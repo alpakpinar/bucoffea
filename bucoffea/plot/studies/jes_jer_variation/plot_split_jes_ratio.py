@@ -135,7 +135,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_den
     ax.set_xlabel(r'$M_{jj} \ (GeV)$')
     ax.set_ylabel('JEC uncertainty')
     if bin_selection == 'singleBin':
-        ax.set_ylim(0.95,1.05)
+        ax.set_ylim(0.97,1.03)
         ticker_base = 0.01
     else:
         ax.set_ylim(0.9,1.1)
