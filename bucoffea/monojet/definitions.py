@@ -266,15 +266,12 @@ def setup_candidates(df, cfg, variations):
     if df['is_data'] and extract_year(df['dataset']) != 2018:
         # 2016, 2017 data
         jes_suffix = ''
-        jes_suffix_met = ''
     elif df['is_data']:
         # 2018 data
         jes_suffix = '_nom'
-        jes_suffix_met = '_nom'
     else:
         # MC, all years
         jes_suffix = '_nom'
-        jes_suffix_met = '_jer'
 
     muons = JaggedCandidateArray.candidatesfromcounts(
         df['nMuon'],
@@ -455,10 +452,10 @@ def setup_candidates(df, cfg, variations):
 
     met = JaggedCandidateArray.candidatesfromcounts(
         np.ones(df.size),
-        pt=df[f'{met_branch}_pt{jes_suffix_met}'],
-        pt_nom=df[f'{met_branch}_pt_nom'],
-        phi=df[f'{met_branch}_phi{jes_suffix_met}'],
-        phi_nom=df[f'{met_branch}_phi_nom'],
+        pt=df[f'{met_branch}_T1Smear_pt'],
+        pt_nom=df[f'{met_branch}_T1_pt'],
+        phi=df[f'{met_branch}_T1Smear_phi'],
+        phi_nom=df[f'{met_branch}_T1_phi'],
         eta=np.zeros(df.size), # dummy
         mass=np.zeros(df.size) # dummy
     )
@@ -466,8 +463,8 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
-        met_pt = df[f'{met_branch}_pt{var}']
-        met_phi = df[f'{met_branch}_phi{var}']
+        met_pt = df[f'{met_branch}_T1Smear_pt{var}']
+        met_phi = df[f'{met_branch}_T1Smear_phi{var}']
         # Set the MET values
         argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
         met.add_attributes(**argdict)
