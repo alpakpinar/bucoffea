@@ -89,7 +89,11 @@ def compare(acc_v5, acc_v7, distribution='mjj', year=2017):
     ax.set_ylabel('Counts / Bin Width')
     ax.set_yscale('log')
     ax.set_xlim(0, edges[-1])
-    ax.set_ylim(1e-2, 1e4)
+    # Handle y-limit automatically
+    low_ylim = 1e-2
+    max_val = np.max(values_v5_binw_norm)
+    high_ylim = max_val*10
+    ax.set_ylim(low_ylim, high_ylim)
     ax.grid(True)
 
     # Plot the ratio pad 
