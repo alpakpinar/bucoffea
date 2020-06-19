@@ -482,32 +482,6 @@ def setup_candidates(df, cfg, variations):
         _ak4 = ak4[ak4_pt.argsort()]
         ak4_pt = ak4_pt[ak4_pt.argsort()]
         
-        # For JES variations, get JER smeared MET
-        if 'jes' in var:
-            varied_met_pt = getattr(met, f'pt{var}')
-            varied_met_phi = getattr(met, f'phi{var}')
-            # Translate pt and phi to px and py 
-            varied_met_px = varied_met_pt*np.cos(varied_met_phi)
-            varied_met_py = varied_met_pt*np.sin(varied_met_phi)
-
-            # Do the same for nominal and JER smeared MET
-            jer_met_px = met.pt*np.cos(met.phi)
-            jer_met_py = met.pt*np.sin(met.phi)
-            nom_met_px = met.pt_nom*np.cos(met.phi_nom)
-            nom_met_py = met.pt_nom*np.sin(met.phi_nom)
-
-            # Apply corrections to JES varied MET px and MET py
-            # Corrected MET = (JER_smeared MET - nominal MET) + Uncorrected MET
-            varied_met_px_jer = jer_met_px + (varied_met_px - nom_met_px)
-            varied_met_py_jer = jer_met_py + (varied_met_py - nom_met_py)
-
-            # Convert back to MET pt and phi
-            varied_met_pt_jer = np.hypot(varied_met_px_jer, varied_met_py_jer)
-            varied_met_phi_jer = np.arctan2(varied_met_py_jer, varied_met_px_jer)
-
-            setattr(met, f'pt{var}', varied_met_pt_jer)
-            setattr(met, f'phi{var}', varied_met_phi_jer)
-
         # Choose relevant b-jets
         _bjets = _ak4[
               (_ak4.looseId) \
