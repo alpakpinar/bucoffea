@@ -392,6 +392,8 @@ def setup_candidates(df, cfg):
     )
 
     # Determine PU ID for nanoAODv7 (use the newer discriminant instead of the old one)
+    # Implementation of medium working point follows this twiki:
+    # https://twiki.cern.ch/twiki/bin/view/CMS/PileupJetID#Working_points
     puid = np.zeros_like(ak4.puIdDisc, dtype=bool)
     # The threshold is pt & eta dependent, divide into 16 categories
     pt_edges = [0,10,20,30,50]
