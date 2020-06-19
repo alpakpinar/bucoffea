@@ -134,7 +134,7 @@ def main():
                     )
 
     # The distributions to look at
-    distributions = ['mjj', 'recoil', 'ak4_pt0', 'ak4_eta0']
+    distributions = ['mjj', 'recoil', 'ak4_pt0', 'ak4_eta0', 'ak4_eta1']
 
     for distribution in distributions:
         compare(acc_v5, acc_v7, distribution=distribution)
