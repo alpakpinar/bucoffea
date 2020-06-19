@@ -34,14 +34,20 @@ def parse_cli():
 
 def compare(acc_v5, acc_v7, distribution='mjj', year=2017):
     '''Compare the data in signal region (MET) for v5 and v7 NanoAOD.'''
-    
+    # Get the relevant axis name in the histogram 
+    if 'ak4_pt' in distribution:
+        ax_name = 'jetpt'
+    elif 'ak4_eta' in distribution:
+        ax_name = 'jeteta'
+    else:
+        ax_name = distribution
+
     def preprocess(h, acc):
         h = merge_extensions(h, acc, reweight_pu=False)
         h = merge_datasets(h)
 
         # Rebin (if needed)
         if distribution in REBIN.keys():
-            ax_name = 'jetpt' if 'ak4_pt' in distribution else distribution
             h = h.rebin(h.axis(ax_name), REBIN[distribution])
 
         # Select the signal region + MET dataset
@@ -61,8 +67,8 @@ def compare(acc_v5, acc_v7, distribution='mjj', year=2017):
     values_v5 = h_v5.values(overflow='over')[()]
     values_v7 = h_v7.values(overflow='over')[()]
 
-    edges = h_v5.axis(distribution).edges(overflow='over')
-    centers = h_v5.axis(distribution).centers(overflow='over')
+    edges = h_v5.axis(ax_name).edges(overflow='over')
+    centers = h_v5.axis(ax_name).centers(overflow='over')
 
     # Get bin widths + bin width normalized values
     bin_widths = np.diff(edges)
@@ -90,7 +96,7 @@ def compare(acc_v5, acc_v7, distribution='mjj', year=2017):
     ratio = values_v7 / values_v5
     rax.plot(centers, ratio, color='k', **plot_opts)
 
-    rax.set_xlabel(REBIN[distribution].label)
+    rax.set_xlabel(h_v5.axis(ax_name).label)
     rax.set_ylabel('v7 / v5')
     rax.set_ylim(0.98, 1.02)
 
