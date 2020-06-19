@@ -97,6 +97,10 @@ def compare(acc_v5, acc_v7, distribution='mjj', year=2017):
     ax.grid(True)
 
     # Plot the ratio pad 
+    xlim = rax.get_xlim()
+    rax.plot(xlim, [1,1], 'r')
+    rax.set_xlim(xlim)
+
     ratio = values_v7 / values_v5
     rax.plot(centers, ratio, color='k', **plot_opts)
 
