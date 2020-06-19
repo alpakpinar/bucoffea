@@ -54,7 +54,7 @@ default:
         pt: 230
         pttrig: 230
     branch: # No eta cut here bc we use "isScEtaEB"
-      id: Photon_cutBasedBitmap
+      id: Photon_cutBased
   muon:
     cuts:
       tight:
