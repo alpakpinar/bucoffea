@@ -102,9 +102,9 @@ def compare(acc_v5, acc_v7, distribution='mjj', year=2017):
 
     rax.set_xlabel(h_v5.axis(ax_name).label)
     rax.set_ylabel('v7 / v5')
-    rax.set_ylim(0.98, 1.02)
+    rax.set_ylim(0.8, 1.2)
 
-    loc = matplotlib.ticker.MultipleLocator(base=0.01)
+    loc = matplotlib.ticker.MultipleLocator(base=0.05)
     rax.yaxis.set_major_locator(loc)
     rax.grid(True)
 
