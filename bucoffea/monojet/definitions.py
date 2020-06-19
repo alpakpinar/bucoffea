@@ -380,7 +380,7 @@ def setup_candidates(df, cfg):
         mass=np.zeros_like(df['Jet_pt']),
         looseId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
         tightId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
-        puid=((df['Jet_puId']&2>0) | (df[f'Jet_pt{jes_suffix}']>50)), # medium pileup jet ID
+        puIdDisc=df['Jet_puIdDisc'],
         csvv2=df["Jet_btagCSVV2"],
         deepcsv=df['Jet_btagDeepB'],
         nef=df['Jet_neEmEF'],
@@ -390,6 +390,33 @@ def setup_candidates(df, cfg):
         nconst=df['Jet_nConstituents'],
         hadflav= 0*df['Jet_pt'] if df['is_data'] else df['Jet_hadronFlavour']
     )
+
+    # Determine PU ID for nanoAODv7 (use the newer discriminant instead of the old one)
+    puid = np.zeros_like(ak4.puIdDisc, dtype=bool)
+    # The threshold is pt & eta dependent, divide into 16 categories
+    pt_edges = [0,10,20,30,50]
+    eta_edges = [0,2.5,2.75,3,5]
+    # List of the threshold for each jet category (hard-written, bad practice, can update in future)
+    thresholds_pt3050 = [0.61, -0.35, -0.23, -0.17] # thresholds for 30 < pt < 50 (medium ID)
+    thresholds_otherwise = [0.18, -0.55, -0.42, -0.36] # thresholds for pt < 30 (medium ID)
+
+    for pt_idx in range(len(pt_edges)-1):
+        for eta_idx in range(len(eta_edges)-1):
+            pt_low, pt_high = pt_edges[pt_idx], pt_edges[pt_idx+1]
+            eta_low, eta_high = eta_edges[eta_idx], eta_edges[eta_idx+1]
+            jet_in_category = (ak4.pt > pt_low) & (ak4.pt < pt_high) & (ak4.abseta > eta_low) & (ak4.abseta < eta_high)
+
+            # Get the threshold for this jet category
+            pt3050 = (pt_low == 30)
+            threshold = thresholds_pt3050[eta_idx] if pt3050 else thresholds_otherwise[eta_idx]
+
+            # Update the PU ID for jets that lie in this pt/eta category
+            puid = puid | (jet_in_category * (ak4.puIdDisc > threshold) + ~jet_in_category*False)
+
+    # Do not apply pileup ID for jets with pt > 50 GeV
+    puid = puid | (ak4.pt > 50)
+    # Add as an attribute to ak4 object
+    ak4.add_attributes(puid=puid)
 
     # Before cleaning, apply HEM veto
     hem_ak4 = ak4[ (ak4.pt>30) &
