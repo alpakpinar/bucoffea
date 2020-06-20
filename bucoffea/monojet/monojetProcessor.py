@@ -136,7 +136,8 @@ class monojetProcessor(processor.ProcessorABC):
                             f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
                             f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
                             f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
-                            '_jesTotalUp', '_jesTotalDown'
+                            '_jesTotalUp', '_jesTotalDown',
+                            '_jerUp', '_jerDown'
                             ]
         self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
