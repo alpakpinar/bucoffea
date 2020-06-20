@@ -127,6 +127,7 @@ def vbfhinv_accumulator(cfg):
     items["dpfcalo_sr"] = Hist("Counts", dataset_ax, region_ax, dpfcalo_ax)
     items["dphijm"] = Hist("min(4 leading jets, MET)", dataset_ax, region_ax, dphi_ax)
     items["dphijr"] = Hist("min(4 leading jets, Recoil)", dataset_ax, region_ax, dphi_ax)
+    items["dphinjr"] = Hist("min(4 leading noisy jets, Recoil)", dataset_ax, region_ax, dphi_ax)
 
     # Multiplicity histograms
     for cand in ['ak4', 'ak8', 'bjet', 'loose_ele', 'loose_muo', 'tight_ele', 'tight_muo', 'tau', 'photon','hlt_single_muon','muons_hltmatch']:
@@ -230,6 +231,9 @@ def vbfhinv_regions(cfg):
 
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr']
+
+    # Additional signal region where events with any noisy jets are removed (jets should be pt>30) 
+    regions['sr_vbf_veto_noisy_jets'] = regions['sr_vbf'] + ['veto_noisy_jet']
 
     # For sync mode
     if cfg and cfg.RUN.SYNC:

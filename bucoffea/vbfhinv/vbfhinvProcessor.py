@@ -168,17 +168,36 @@ class vbfhinvProcessor(processor.ProcessorABC):
             df['mjj_gen'] = digenjet.mass.max()
             df['mjj_gen'] = np.where(df['mjj_gen'] > 0, df['mjj_gen'], 0)
 
-
         # Candidates
         # Already pre-filtered!
         # All leptons are at least loose
         # Check out setup_candidates for filtering details
         met_pt, met_phi, ak4, bjets, _, muons, electrons, taus, photons = setup_candidates(df, cfg)
 
-        # Remove jets in accordance with the noise recipe
+        # Identify events with noisy jets, which have pt larger than a threshold set below
+        pt_threshold = 30
         if df['year'] == 2017:
+            # Get the noisy jets 
+            is_noisy_jet = ~((ak4.ptraw>50) | (ak4.abseta<2.65) | (ak4.abseta>3.139)) | (~ak4.puid)
+            noisy_ak4 = ak4[is_noisy_jet]
+
+            # Get the noisy jets which have pt greater than a threshold
+            noisy_ak4_large_pt = noisy_ak4[noisy_ak4.pt > pt_threshold]
+
+            # Filter the jets that do not go into the noisy region
             ak4   = ak4[(ak4.ptraw>50) | (ak4.abseta<2.65) | (ak4.abseta>3.139)]
             bjets = bjets[(bjets.ptraw>50) | (bjets.abseta<2.65) | (bjets.abseta>3.139)]
+        
+        # In 2018, we don't use the v2 recipe, we only look at PU ID for jets
+        elif df['year'] == 2018:
+            is_noisy_jet = ~ak4.puid
+            noisy_ak4 = ak4[is_noisy_jet]
+
+            # Get the noisy jets which have pt greater than a threshold
+            noisy_ak4_large_pt = noisy_ak4[noisy_ak4.pt > pt_threshold]
+
+            fail_puid_no_thresh = ~ak4.puid
+            noisy_jets = ak4[fail_puid_no_thresh]
 
         # Filtering ak4 jets according to pileup ID
         ak4 = ak4[ak4.puid]
@@ -222,6 +241,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         df["minDPhiJetRecoil"] = min_dphi_jet_met(ak4, df['recoil_phi'], njet=4, ptmin=30, etamax=5.0)
         df["minDPhiJetMet"] = min_dphi_jet_met(ak4, met_phi, njet=4, ptmin=30, etamax=5.0)
+
+        # Calculate and store the minimum delta phi between noisy jets and recoil
+        df['minDPhiNoisyJetRecoil'] = min_dphi_jet_met(noisy_ak4, df['recoil_phi'], njet=4, ptmin=5, etamax=5.0)
+        # Guard against inf
+        df['minDPhiNoisyJetRecoil'][np.isinf(df['minDPhiNoisyJetRecoil'])] = -1.
+
         selection = processor.PackedSelection()
 
         # Triggers
@@ -230,6 +255,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection = trigger_selection(selection, df, cfg)
 
         selection.add('mu_pt_trig_safe', muons.pt.max() > 30)
+
+        # Drop the event if there is at least one noisy jet present
+        selection.add('veto_noisy_jet', noisy_ak4_large_pt.counts==0)
 
         # Common selection
         selection.add('veto_ele', electrons.counts==0)
@@ -570,6 +598,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('recoil_phi',         phi=df["recoil_phi"][mask],        weight=rweight[mask] )
             ezfill('dphijm',             dphi=df["minDPhiJetMet"][mask],    weight=rweight[mask] )
             ezfill('dphijr',             dphi=df["minDPhiJetRecoil"][mask], weight=rweight[mask] )
+            ezfill('dphinjr',             dphi=df["minDPhiNoisyJetRecoil"][mask], weight=rweight[mask] )
 
             ezfill('dphijj',             dphi=df["dphijj"][mask],   weight=rweight[mask] )
             ezfill('detajj',             deta=df["detajj"][mask],   weight=rweight[mask] )
