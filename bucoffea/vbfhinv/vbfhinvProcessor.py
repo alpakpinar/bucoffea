@@ -368,11 +368,16 @@ class vbfhinvProcessor(processor.ProcessorABC):
             met_phi = getattr(met, f'phi{var}').flatten()
 
             selection.add(f'veto_b{var}', bjets.counts==0)
+            
+            # Remove the jets in noisy region, in accordance with the v2 recipe
+            if df['year'] == 2017:
+                ak4 = ak4[(ak4.ptraw>50) | (ak4.abseta<2.65) | (ak4.abseta>3.139)]
+                bjets = bjets[(bjets.ptraw>50) | (bjets.abseta<2.65) | (bjets.abseta>3.139)]
 
-            # Filtering ak4 jets according to pileup ID
+            # Remove the jets if they fail the PU ID
             ak4_puid = getattr(ak4, f'puid{var}')
             bjets_puid = getattr(bjets, f'puid{var}')
-            
+
             ak4 = ak4[ak4_puid]
             bjets = bjets[bjets_puid] 
 
