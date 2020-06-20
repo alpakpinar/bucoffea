@@ -15,7 +15,6 @@ from matplotlib import pyplot as plt
 import matplotlib.ticker
 import mplhep as hep
 import numpy as np
-# import pandas as pd
 from pprint import pprint
 from itertools import chain
 from data import tag_to_dataset_pairs
@@ -44,13 +43,13 @@ titles = {
 mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
 mjj_binning_single_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,3500])
 
-met_binning_v1_2016 = hist.Bin('met', r'$MET \ (GeV)$', list(range(0,500,50)) + list(range(500,1100,100))) 
-met_binning_v1_2017 = hist.Bin('met', r'$MET \ (GeV)$', list(range(0,500,100)) + list(range(500,1250,250))) 
-met_binning_single_bin = hist.Bin('met', r'$MET \ (GeV)$', [200,1500])
-met_binning_coarse = hist.Bin('met', r'$MET \ (GeV)$', [250,300,400,500,800,1500])
+met_binning_v1_2016 = hist.Bin('recoil', r'$Recoil \ (GeV)$', list(range(0,500,50)) + list(range(500,1100,100))) 
+met_binning_v1_2017 = hist.Bin('recoil', r'$Recoil \ (GeV)$', list(range(0,500,100)) + list(range(500,1250,250))) 
+met_binning_single_bin = hist.Bin('recoil', r'$Recoil \ (GeV)$', [200,1500])
+met_binning_coarse = hist.Bin('recoil', r'$Recoil \ (GeV)$', [250,300,400,500,800,1500])
 
 binnings = {
-    'met' : {
+    'recoil' : {
         'defaultBinning' : {'2016' : met_binning_v1_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
         'singleBin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
         'coarseBin' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
@@ -64,14 +63,11 @@ binnings = {
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
-    parser.add_argument('--tag', help='Tag for the transfer factor to be used.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--run', help='Which samples to run on: qcd, ewk.', nargs='*')
-    # parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
     args = parser.parse_args()
     return args
 
-# def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_denom, year, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
 def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
     '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
     # Load the relevant variable to analysis, select binning
@@ -186,7 +182,6 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 def main():
     args = parse_cli()
     inpath = args.inpath
-    transfer_factor_tag = args.tag
 
     acc = dir_archive(
         inpath,
