@@ -187,7 +187,6 @@ def main():
     args = parse_cli()
     inpath = args.inpath
     transfer_factor_tag = args.tag
-    analysis = args.analysis
 
     acc = dir_archive(
         inpath,
@@ -220,7 +219,8 @@ def main():
                 dataset_info=qcd_dataset_info, 
                 year=year, 
                 skimmed=False, 
-                bin_selection='singleBin')
+                bin_selection='singleBin',
+                analysis=args.analysis)
                 
         # Run EWK ratio
         if 'ewk' in args.run:
@@ -231,7 +231,8 @@ def main():
                 dataset_info=ewk_dataset_info, 
                 year=year, 
                 skimmed=False, 
-                bin_selection='singleBin')
+                bin_selection='singleBin',
+                analysis=args.analysis)
 
 if __name__ == '__main__':
     main()
