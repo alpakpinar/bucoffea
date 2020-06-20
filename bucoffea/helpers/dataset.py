@@ -1,4 +1,6 @@
 import re
+def is_lo_znunu(dataset):
+    return bool(re.match(r'Z(\d*)Jet.*(mg|MLM|madgraph).*', dataset))
 
 def is_lo_z(dataset):
     return bool(re.match(r'(DY|Z)(\d*)Jet.*(mg|MLM|madgraph).*', dataset))
@@ -19,7 +21,7 @@ def is_lo_g_ewk(dataset):
     return bool(re.match(r'GJets.*EWK.*', dataset))
 
 def is_nlo_g(dataset):
-    return bool(re.match(r'G(\d)+Jet.*amc.*', dataset))
+    return bool(re.match(r'G(\d)*Jet.*(amc|NLO).*', dataset))
 
 def is_nlo_g_ewk(dataset):
     return bool(re.match(r'AJJ.*amc.*', dataset))
