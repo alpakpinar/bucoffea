@@ -23,6 +23,7 @@ from bucoffea.helpers.dataset import (
                                       is_lo_g,
                                       is_lo_w,
                                       is_lo_z,
+                                      is_lo_znunu,
                                       is_lo_w_ewk,
                                       is_lo_z_ewk,
                                       is_nlo_w,
@@ -234,6 +235,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         dataset = df['dataset']
         df['is_lo_w'] = is_lo_w(dataset)
         df['is_lo_z'] = is_lo_z(dataset)
+        df['is_lo_znunu'] = is_lo_znunu(dataset)
         df['is_lo_w_ewk'] = is_lo_w_ewk(dataset)
         df['is_lo_z_ewk'] = is_lo_z_ewk(dataset)
         df['is_lo_g'] = is_lo_g(dataset)
