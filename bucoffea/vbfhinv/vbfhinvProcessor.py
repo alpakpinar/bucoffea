@@ -196,9 +196,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             # Get the noisy jets which have pt greater than a threshold
             noisy_ak4_large_pt = noisy_ak4[noisy_ak4.pt > pt_threshold]
 
-            fail_puid_no_thresh = ~ak4.puid
-            noisy_jets = ak4[fail_puid_no_thresh]
-
         # Filtering ak4 jets according to pileup ID
         ak4 = ak4[ak4.puid]
 
