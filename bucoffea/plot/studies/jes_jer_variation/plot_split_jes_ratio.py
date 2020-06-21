@@ -154,11 +154,10 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
             if var_label_skimmed not in vars_to_look_at:
                 continue
         
-        # Do not plot JER for now
-        if 'jer' in region.name:
-            continue
         dratio = varied_ratio / nominal_ratio
-        ax.plot(centers, dratio, marker='o', label=var_label)
+        # Do not plot JER for now
+        if not 'jer' in region.name:
+            ax.plot(centers, dratio, marker='o', label=var_label)
 
         # Save the uncertainties to an output root file
         hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
