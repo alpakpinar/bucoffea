@@ -15,28 +15,41 @@ from matplotlib import pyplot as plt
 import matplotlib.ticker
 import mplhep as hep
 import numpy as np
-# import pandas as pd
 from pprint import pprint
 from itertools import chain
+from data import tag_to_dataset_pairs
 
 pjoin = os.path.join
 
+# Figure titles for all ratios
 titles = {
-    'zoverw_2017' : r'$Z(\nu\nu) \ / \ W(\ell\nu) \ 2017$',
-    'zoverw_2018' : r'$Z(\nu\nu) \ / \ W(\ell\nu) \ 2018$',
+    'znunu_over_wlnu17' : r'$Z(\nu\nu) \ / \ W(\ell\nu) \ 2017$',
+    'znunu_over_wlnu18' : r'$Z(\nu\nu) \ / \ W(\ell\nu) \ 2018$',
+    'znunu_over_zmumu17' : r'$Z(\nu\nu) \ / \ Z(\mu\mu) \ 2017$',
+    'znunu_over_zmumu18' : r'$Z(\nu\nu) \ / \ Z(\mu\mu) \ 2018$',
+    'znunu_over_zee17' : r'$Z(\nu\nu) \ / \ Z(ee) \ 2017$',
+    'znunu_over_zee18' : r'$Z(\nu\nu) \ / \ Z(ee) \ 2018$',
+    'wlnu_over_wenu17' : r'$W(\ell\nu) \ / \ W(e\nu) \ 2017$',
+    'wlnu_over_wenu18' : r'$W(\ell\nu) \ / \ W(e\nu) \ 2018$',
+    'wlnu_over_wmunu17' : r'$W(\ell\nu) \ / \ W(\mu\nu) \ 2017$',
+    'wlnu_over_wmunu18' : r'$W(\ell\nu) \ / \ W(\mu\nu) \ 2018$',
+    'gjets_over_znunu17' : r'$\gamma + jets \ / \ Z(\nu\nu) \ 2017$',
+    'gjets_over_znunu18' : r'$\gamma + jets \ / \ Z(\nu\nu) \ 2018$',
+    'wlnu_over_gjets17' : r'$W(\ell\nu) \ / \ \gamma + jets \ 2017$',
+    'wlnu_over_gjets18' : r'$W(\ell\nu) \ / \ \gamma + jets \ 2018$'
 }
 
 # Define all possible binnings for all variables in this dictionary
 mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
 mjj_binning_single_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,3500])
 
-met_binning_v1_2016 = hist.Bin('met', r'$MET \ (GeV)$', list(range(0,500,50)) + list(range(500,1100,100))) 
-met_binning_v1_2017 = hist.Bin('met', r'$MET \ (GeV)$', list(range(0,500,100)) + list(range(500,1250,250))) 
-met_binning_single_bin = hist.Bin('met', r'$MET \ (GeV)$', [200,1500])
-met_binning_coarse = hist.Bin('met', r'$MET \ (GeV)$', [250,300,400,500,800,1500])
+met_binning_v1_2016 = hist.Bin('recoil', r'$Recoil \ (GeV)$', list(range(0,500,50)) + list(range(500,1100,100))) 
+met_binning_v1_2017 = hist.Bin('recoil', r'$Recoil \ (GeV)$', list(range(0,500,100)) + list(range(500,1250,250))) 
+met_binning_single_bin = hist.Bin('recoil', r'$Recoil \ (GeV)$', [200,1500])
+met_binning_coarse = hist.Bin('recoil', r'$Recoil \ (GeV)$', [250,300,400,500,800,1500])
 
 binnings = {
-    'met' : {
+    'recoil' : {
         'defaultBinning' : {'2016' : met_binning_v1_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
         'singleBin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
         'coarseBin' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
@@ -50,16 +63,15 @@ binnings = {
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
-    parser.add_argument('--tag', help='Tag for the transfer factor to be used.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
-    # parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
+    parser.add_argument('--run', help='Which samples to run on: qcd, ewk.', nargs='*')
     args = parser.parse_args()
     return args
 
-def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_denom, year, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
+def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
     '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
     # Load the relevant variable to analysis, select binning
-    variable_to_use = 'mjj' if analysis == 'vbf' else 'met'
+    variable_to_use = 'mjj' if analysis == 'vbf' else 'recoil'
     acc.load(variable_to_use)
     h = acc[variable_to_use]
 
@@ -73,12 +85,19 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_den
 
     region_suffix = '_j' if analysis == 'monojet' else '_vbf'
 
-    # Get the histograms for numerator and denominator
-    h_num = h.integrate('dataset', re.compile(f'{tag_num}.*{year}'))[re.compile(f'sr{region_suffix}.*')]
-    h_den = h.integrate('dataset', re.compile(f'{tag_denom}.*{year}'))[re.compile(f'sr{region_suffix}.*')]
+    # Get information about the datasets in num and denom from the "dataset_info" parameter: Regex to match and the region to consider
+    dataset_info_num = dataset_info['dataset1']
+    dataset_info_den = dataset_info['dataset2']
 
-    h_nominal_num = h_num.integrate('region', f'sr{region_suffix}')
-    h_nominal_den = h_den.integrate('region', f'sr{region_suffix}')
+    regex_num, region_num = dataset_info_num['regex'], dataset_info_num['region']
+    regex_den, region_den = dataset_info_den['regex'], dataset_info_den['region']
+
+    # Get the histograms for numerator and denominator
+    h_num = h.integrate('dataset', re.compile(f'{regex_num}.*{year}'))[re.compile(f'{region_num}{region_suffix}.*')]
+    h_den = h.integrate('dataset', re.compile(f'{regex_den}.*{year}'))[re.compile(f'{region_den}{region_suffix}.*')]
+
+    h_nominal_num = h_num.integrate('region', f'{region_num}{region_suffix}')
+    h_nominal_den = h_den.integrate('region', f'{region_den}{region_suffix}')
     # Get the nominal ratio and store it in a dict
     ratios = {}
     nominal_ratio = h_nominal_num.values()[()] / h_nominal_den.values()[()]
@@ -135,7 +154,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_den
     ax.set_xlabel(r'$M_{jj} \ (GeV)$')
     ax.set_ylabel('JEC uncertainty')
     if bin_selection == 'singleBin':
-        ax.set_ylim(0.95,1.05)
+        ax.set_ylim(0.97,1.03)
         ticker_base = 0.01
     else:
         ax.set_ylim(0.9,1.1)
@@ -163,8 +182,6 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_den
 def main():
     args = parse_cli()
     inpath = args.inpath
-    transfer_factor_tag = args.tag
-    analysis = args.analysis
 
     acc = dir_archive(
         inpath,
@@ -181,18 +198,36 @@ def main():
     else:
         out_tag = inpath.split('/')[-1]
 
-    # Determine the datasets for the transfer factor
-    if 'zoverw' in transfer_factor_tag:
-        tag_num = 'ZJets'
-        tag_denom = 'WJets'
+    # List of all ratios
+    all_ratios = tag_to_dataset_pairs.keys()
 
-    # Get the year for the datasets, from the TF tag
-    # NOTE: TF tag should be in the format of "process1overprocess2_year"
-    year = transfer_factor_tag.split('_')[1]
+    # Loop over each transfer factor
+    for transfer_factor_tag in all_ratios:
+        year = 2017 if '17' in transfer_factor_tag else 2018
 
-    # Ratio plotting to be called here
-    plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_denom, year, skimmed=True, bin_selection='defaultBinning')
-    plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, tag_num, tag_denom, year, skimmed=False, bin_selection='singleBin')
+        # Run QCD ratio
+        if 'qcd' in args.run:
+            qcd_dataset_info = tag_to_dataset_pairs[transfer_factor_tag]['qcd']
+            # Plot split uncertainties as flat uncertainties (single bin)
+            plot_split_jecunc_ratios(acc, out_tag, 
+                transfer_factor_tag=transfer_factor_tag, 
+                dataset_info=qcd_dataset_info, 
+                year=year, 
+                skimmed=False, 
+                bin_selection='singleBin',
+                analysis=args.analysis)
+                
+        # Run EWK ratio
+        if 'ewk' in args.run:
+            ewk_dataset_info = tag_to_dataset_pairs[transfer_factor_tag]['ewk']
+            # Plot split uncertainties as flat uncertainties (single bin)
+            plot_split_jecunc_ratios(acc, out_tag, 
+                transfer_factor_tag=transfer_factor_tag, 
+                dataset_info=ewk_dataset_info, 
+                year=year, 
+                skimmed=False, 
+                bin_selection='singleBin',
+                analysis=args.analysis)
 
 if __name__ == '__main__':
     main()
