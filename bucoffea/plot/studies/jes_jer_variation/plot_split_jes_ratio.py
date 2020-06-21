@@ -162,7 +162,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
         # Save the uncertainties to an output root file
         hist_name = f'{transfer_factor_tag}_{process}'
-        outputrootfile[hist_name] = (edges, dratio)
+        outputrootfile[hist_name] = (dratio, edges)
 
     # Aesthetics
     ax.grid(True)
@@ -231,13 +231,18 @@ def main():
 
     # Loop over each transfer factor
     for transfer_factor_tag in all_ratios:
+        skip=False
         year = 2017 if '17' in transfer_factor_tag else 2018
 
         # Skip over some TFs if requested so
         if args.skip:
             for tag in args.skip:
+                print(tag)
                 if tag in transfer_factor_tag:
-                    continue
+                    skip=True
+
+        if skip:
+            continue
 
         # Run QCD ratio
         if 'qcd' in args.run:
