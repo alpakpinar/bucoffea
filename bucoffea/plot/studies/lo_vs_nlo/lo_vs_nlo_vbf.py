@@ -76,7 +76,7 @@ def plot(args):
             # Loop over all regions
             for region in mc_lo.keys():
                 if not re.match(args.region, region):
-                        continue
+                    continue
                 # Plot ratio pads for all regions (now that we're unblinded)
                 ratio = True 
                 # Make separate output direcotry for each region

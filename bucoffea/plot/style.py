@@ -136,6 +136,119 @@ def plot_settings():
                 'ylim' : (1e-1,1e6)
             }
         },
+        'sr_vbf_veto_noisy_jets' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt1' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'met' : {
+                'ylim' : (1e-6,1e3)
+            },
+            'puppimet' : {
+                'ylim' : (1e-6,1e3)
+            },
+            'tkmet' : {
+                'ylim' : (1e-6,1e3)
+            },
+            'calomet' : {
+                'ylim' : (1e-6,1e3)
+            },
+            'ak4_phi0' : {
+                'ylim' : (1e0,1e7)
+            },
+            'ak4_phi1' : {
+                'ylim' : (1e0,1e7)
+            },
+            'ak4_phi' : {
+                'ylim' : (1e0,1e7)
+            },
+            'ak4_eta0' : {
+                'ylim' : (1e-3,1e4)
+            },
+            'ak4_eta1' : {
+                'ylim' : (1e-3,1e4)
+            },
+            'hem_ht' : {
+                'ylim' : (1e-1,1e5)
+            },
+            'hem_pt_max' : {
+                'ylim' : (1e-1,1e5)
+            },
+            'photon_raw_hem_pt_sum' : {
+                'xlim' : (0,300)
+            },
+            'photon_raw_anti_hem_pt_sum' : {
+                'xlim' : (0,300)
+            },
+            'photon_raw_anti_hem_mult' : {
+                'ylim' : (1e-3,1e4)
+            },
+            'photon_raw' : {
+                'ylim' : (1e-3,1e4)
+            },
+            'photon_raw_hem_mult' : {
+                'ylim' : (1e-3,1e4)
+            },
+
+            'ak4_eta' : {
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_chf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e8)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e8)
+            },
+            'ak4_chf1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e8)
+            },
+            'ak4_nhf1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e8)
+            },
+            'dpfcalo' : {
+                'xlim' : (-0.75,0.75),
+                'ylim' : (1e1,1e7)
+            },
+            'dphijr' : {
+                'xlim' : (0,3.2),
+                'ylim' : (1e0,1e6)
+            },
+            'dphijm' : {
+                'xlim' : (0,3.2),
+                'ylim' : (1e0,1e6)
+            },
+            'ak4_mult' : {
+                'xlim' : (0,10),
+                'ylim' : (1e0,1e6)
+            },
+            'mjj' : {
+                'ylim' : (1e-3,1e5)
+            },
+            'detajj' : {
+                'ylim' : (1e-1,1e6)
+            },
+            'dphijj' : {
+                'ylim' : (1e-1,1e6)
+            },
+            'recoil_phi' : {
+                'ylim' : (1e-1,1e6)
+            },
+            'met_phi' : {
+                'ylim' : (1e-1,1e6)
+            }
+        },
         'sr_j' : {
             'recoil' : {
                 'ylim' : (1e-3,1e4)
