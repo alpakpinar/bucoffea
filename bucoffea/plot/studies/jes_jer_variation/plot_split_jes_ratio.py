@@ -19,6 +19,8 @@ from pprint import pprint
 from itertools import chain
 from data import tag_to_dataset_pairs
 import uproot
+from collections import OrderedDict
+from tabulate import tabulate
 
 pjoin = os.path.join
 
@@ -67,10 +69,11 @@ def parse_cli():
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--run', help='Which samples to run on: qcd, ewk.', nargs='*')
     parser.add_argument('--skip', help='Which processes to skip over.', nargs='*')
+    parser.add_argument('--tabulate', help='Tabulate the variation/unc values.', action='store_true')
     args = parser.parse_args()
     return args
 
-def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, process, outputrootfile, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
+def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, process, outputrootfile, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf', tabulate_top5=False):
     '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
     # Load the relevant variable to analysis, select binning
     print(f'Working on: {transfer_factor_tag}')
@@ -131,6 +134,10 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     colors = list(chain.from_iterable(colors))
     ax.set_prop_cycle('color', colors)
 
+    # Store the uncertainty from each source
+    uncs = {}
+    varied = {}
+
     for region in h_num.identifiers('region'):
         if region.name.endswith(region_suffix):
             continue
@@ -163,6 +170,10 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
         outputrootfile[hist_name] = (dratio, edges)
 
+        # Store the uncs and variations
+        uncs[var_label] = np.abs(dratio - 1) * 100
+        varied[var_label] = varied_ratio
+
     # Aesthetics
     ax.grid(True)
     if analysis == 'vbf':
@@ -193,8 +204,60 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     outpath = pjoin(outdir, filename)
 
     fig.savefig(outpath)
-
     print(f'MSG% File created: {outpath}')
+    
+    # Sort the sources
+    if tabulate_top5:
+        print('MSG% Sorting the uncertainties and tabulating top 5.')
+        sorted_uncs = OrderedDict()
+        for k, v in sorted(uncs.items(), reverse=True, key=lambda item: item[1]):
+            # Do not save JER uncertainties in these tables for now
+            if 'jer' in k:
+                continue 
+            sorted_uncs[k] = v
+
+        unc_sources = sorted_uncs.keys()
+        new_unc_sources = []
+        for idx, source in enumerate(unc_sources):
+            if 'Up' in source:
+                new_unc_sources.append(source)
+                unc_label = source.replace('Up', '')
+                new_unc_sources.append(f'{unc_label}Down')
+
+        # Finally, get the top 5 unc sources + the total JES unc and tabulate
+        num_sources_to_keep = 5
+        new_sorted_uncs = OrderedDict()
+        for idx, source in enumerate(new_unc_sources):        
+            if idx == 2*(num_sources_to_keep+1):
+                break
+            new_sorted_uncs[source] = sorted_uncs[source]
+
+        # Dump the table into an output txt file
+        table = [["Uncertainty Source", "Nominal", "Up Variation", "Down Variation", "Up (%)", "Down (%)"]]
+        for source in new_sorted_uncs.keys():
+            if 'Up' in source:
+                label = source.replace('Up', '')
+                unc_up = new_sorted_uncs[f'{label}Up']
+                unc_down = new_sorted_uncs[f'{label}Down']
+                var_up = varied[f'{label}Up']
+                var_down = varied[f'{label}Down']
+                table.append([label, nominal_ratio, var_up, var_down, unc_up[0], unc_down[0]])
+
+        # Save the table as a txt file
+        outdir = f'./output/{out_tag}/splitJEC/{analysis}/tables'
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        
+        outfile = pjoin(outdir, f'{transfer_factor_tag}_top_five_uncs.txt')
+
+        with open(outfile, 'w+') as f:
+            f.write('='*10 + '\n')
+            f.write(transfer_factor_tag + '\n')
+            f.write('='*10 + '\n')
+            t = tabulate(table, floatfmt='.3f', headers='firstrow')
+            f.write(t)
+
+        print(f'MSG% Table saved at: {outfile}')
 
 def main():
     args = parse_cli()
@@ -256,7 +319,8 @@ def main():
                 outputrootfile=outputrootfile, 
                 skimmed=False, 
                 bin_selection='singleBin',
-                analysis=args.analysis)
+                analysis=args.analysis,
+                tabulate_top5=args.tabulate)
                 
         # Run EWK ratio
         if 'ewk' in args.run:
@@ -270,7 +334,8 @@ def main():
                 outputrootfile=outputrootfile, 
                 skimmed=False, 
                 bin_selection='singleBin',
-                analysis=args.analysis)
+                analysis=args.analysis,
+                tabulate_top5=args.tabulate)
 
 if __name__ == '__main__':
     main()

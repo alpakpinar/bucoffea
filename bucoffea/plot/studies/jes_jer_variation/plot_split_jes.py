@@ -18,6 +18,8 @@ import numpy as np
 import uproot
 from pprint import pprint
 from itertools import chain
+from tabulate import tabulate
+from collections import OrderedDict
 
 pjoin = os.path.join
 
@@ -71,12 +73,13 @@ def parse_cli():
     parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
     parser.add_argument('--onlyRun', help='If specified, only run over these processes.', nargs='*')
     parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
+    parser.add_argument('--tabulate', help='Tabulate unc/variation values.', action='store_true')
     args = parser.parse_args()
     return args
 
 # Bin selection should be one of the following:
 # Coarse, single bin, initial
-def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf', root_config={'save': False, 'file': None}):
+def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf', root_config={'save': False, 'file': None}, tabulate_top5=False):
     '''Plot all split JEC uncertainties on the same plot.'''
     # Load the relevant variable to analysis, select binning
     variable_to_use = 'mjj' if analysis == 'vbf' else 'recoil'
@@ -126,6 +129,11 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     colors = list(chain.from_iterable(colors))
     ax.set_prop_cycle('color', colors)
 
+    # If requested, store the top 5 uncertainty sources (as well as the total) and dump them into a table
+    if tabulate_top5:
+        uncs = {}
+        varied = {}
+
     for region in h.identifiers('region'):
         if region.name == f'{region_to_use}{region_suffix}':
             continue
@@ -153,6 +161,12 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
             rootfile = root_config['file']
             rootfile[f'{dataset_tag}_{var_label}'] = (ratio, edges)
 
+        # Store all uncertainties, later to be tabulated (top 5 only + total)
+        if tabulate_top5:
+            ratio = h_var.values()[()] / h_nom.values()[()]
+            uncs[var_label] = np.abs(ratio - 1)*100
+            varied[var_label] = h_var.values()[()]
+
     ax.legend(ncol=2, prop={'size': 4.5})
     ax.set_ylabel('JEC Variation / Nominal')
     # Aesthetics, different for different analyses
@@ -165,7 +179,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
             loc = matplotlib.ticker.MultipleLocator(base=0.02)
             ax.set_ylim(0.87,1.13)
         elif bin_selection == 'initial':
-            if 'ZJets' in dataset_tag:
+            if 'ZJets' in dataset_tag or 'WJets' in dataset_tag:
                 ax.set_ylim(0.65,1.45)
             else:
                 ax.set_ylim(0.75,1.35)
@@ -191,6 +205,58 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     outfile = pjoin(outdir, fname)
     fig.savefig(outfile)
     print(f'MSG% File saved: {outfile}')
+    plt.close()
+
+    # Save the top 5 uncertainties in a table under "./tables" directory
+    # Save the nominal value
+    nom_value = h_nom.values()[()]
+    if tabulate_top5:
+        print('MSG% Sorting the uncertainties and tabulating top 5.')
+        sorted_uncs = OrderedDict()
+        for k, v in sorted(uncs.items(), reverse=True, key=lambda item: item[1]):
+            sorted_uncs[k] = v
+
+        unc_sources = sorted_uncs.keys()
+        new_unc_sources = []
+        for idx, source in enumerate(unc_sources):
+            if 'Up' in source:
+                new_unc_sources.append(source)
+                unc_label = source.replace('Up', '')
+                new_unc_sources.append(f'{unc_label}Down')
+
+        # Finally, get the top 5 unc sources + the total JES unc and tabulate
+        num_sources_to_keep = 5
+        new_sorted_uncs = OrderedDict()
+        for idx, source in enumerate(new_unc_sources):        
+            if idx == 2*(num_sources_to_keep+1):
+                break
+            new_sorted_uncs[source] = sorted_uncs[source]
+
+        # Dump the table into an output txt file
+        table = [["Uncertainty Source", "Nominal", "Up Variation", "Down Variation", "Up (%)", "Down (%)"]]
+        for source in new_sorted_uncs.keys():
+            if 'Up' in source:
+                label = source.replace('Up', '')
+                unc_up = new_sorted_uncs[f'{label}Up']
+                unc_down = new_sorted_uncs[f'{label}Down']
+                var_up = varied[f'{label}Up']
+                var_down = varied[f'{label}Down']
+                table.append([label, nom_value[0], var_up[0], var_down[0], unc_up[0], unc_down[0]])
+
+        outdir = f'./output/{out_tag}/splitJEC/{analysis}/tables'
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        
+        outfile = pjoin(outdir, f'{dataset_tag}_top_five_uncs.txt')
+
+        with open(outfile, 'w+') as f:
+            f.write('='*10 + '\n')
+            f.write(dataset_tag + '\n')
+            f.write('='*10 + '\n')
+            t = tabulate(table, floatfmt='.3f', headers='firstrow')
+            f.write(t)
+
+        print(f'MSG% Table saved at: {outfile}')
 
 def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='initial', analysis='vbf'):
     '''Plot split JEC uncertainties regrouped into two:
@@ -361,7 +427,7 @@ def main():
     if not os.path.exists(outputrootdir):
         os.makedirs(outputrootdir)
 
-    outputrootfile = pjoin(outputrootdir, 'shape_jes_uncs.root')
+    outputrootfile = pjoin(outputrootdir, 'monojet_shape_jes_uncs.root')
     rootfile = uproot.recreate(outputrootfile)
     print(f'MSG% ROOT file is created: {rootfile}')
 
@@ -377,12 +443,11 @@ def main():
         print(f'MSG% Working on: {dataset_tag}')
 
         # If specified, run only on specified processes, skip otherwise
-
+        skip=False
         if args.onlyRun:
             skip=True
             for tag in args.onlyRun:
                 if tag in dataset_tag:
-                    skip=False
                     break
 
         if skip:
@@ -396,10 +461,11 @@ def main():
             year = '2018' # 2018 VBF + ggH signals or Z(nunu)
         else:
             year = '2016' # 2016 Z(nunu)
-        # Plot split JEC uncertainties in two ways: 
+        # Plot split JEC uncertainties in three ways: 
         # 1. All uncertainty sources plotted on a single bin
         # 2. Only the largest sources are plotted, with multiple bins
-        plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=False, bin_selection='single bin')
+        # 3. Plot all the sources and save them into a ROOT file as a shape uncertainty
+        plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=False, bin_selection='single bin', tabulate_top5=args.tabulate)
         plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=True, bin_selection='initial')
         # Only save to ROOT file the unskimmed shapes
         plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=False, bin_selection='initial', root_config=root_config)
