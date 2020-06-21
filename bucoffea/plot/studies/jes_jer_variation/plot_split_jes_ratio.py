@@ -149,6 +149,10 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         dratio = varied_ratio / nominal_ratio
         ax.plot(centers, dratio, marker='o', label=var_label)
 
+        # Save the uncertainties to an output root file
+        hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
+        outputrootfile[hist_name] = (edges, dratio)
+
     # Aesthetics
     ax.grid(True)
     ax.set_xlabel(r'$M_{jj} \ (GeV)$')
@@ -177,12 +181,9 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
     fig.savefig(outpath)
 
-    # Save the uncertainties to an output root file
-    hist_name = f'{transfer_factor_tag}_{process}'
-    outputrootfile[hist_name] = (edges, dratio)
 
 def main():
-    args = parse_cli()
+gi    args = parse_cli()
     inpath = args.inpath
 
     acc = dir_archive(
