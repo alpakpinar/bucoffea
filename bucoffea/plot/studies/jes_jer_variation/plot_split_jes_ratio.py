@@ -18,7 +18,6 @@ import numpy as np
 from pprint import pprint
 from itertools import chain
 from data import tag_to_dataset_pairs
-import uproot
 
 pjoin = os.path.join
 
@@ -66,18 +65,20 @@ def parse_cli():
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--run', help='Which samples to run on: qcd, ewk.', nargs='*')
+    parser.add_argument('--skip', help='Which processes to skip over.', nargs='*')
     args = parser.parse_args()
     return args
 
-def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, process, outputrootfile, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
+def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
     '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
     # Load the relevant variable to analysis, select binning
+    print(f'Working on: {transfer_factor_tag}')
     variable_to_use = 'mjj' if analysis == 'vbf' else 'recoil'
     acc.load(variable_to_use)
     h = acc[variable_to_use]
 
     # Rebin the histogram
-    new_bins = binnings[variable_to_use][bin_selection][year]
+    new_bins = binnings[variable_to_use][bin_selection][str(year)]
     h = h.rebin(variable_to_use , new_bins)
 
     h = merge_extensions(h, acc, reweight_pu=False)
@@ -94,8 +95,8 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     regex_den, region_den = dataset_info_den['regex'], dataset_info_den['region']
 
     # Get the histograms for numerator and denominator
-    h_num = h.integrate('dataset', re.compile(f'{regex_num}.*{year}'))[re.compile(f'{region_num}{region_suffix}.*')]
-    h_den = h.integrate('dataset', re.compile(f'{regex_den}.*{year}'))[re.compile(f'{region_den}{region_suffix}.*')]
+    h_num = h.integrate('dataset', re.compile(regex_num))[re.compile(f'{region_num}{region_suffix}.*')]
+    h_den = h.integrate('dataset', re.compile(regex_den))[re.compile(f'{region_den}{region_suffix}.*')]
 
     h_nominal_num = h_num.integrate('region', f'{region_num}{region_suffix}')
     h_nominal_den = h_den.integrate('region', f'{region_den}{region_suffix}')
@@ -113,7 +114,6 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
     fig, ax = plt.subplots()
     centers = h_num.axis(variable_to_use).centers()
-    edges = h_num.axis(variable_to_use).edges()
 
     # Look at only certain variations if we are not to plot everything
     vars_to_look_at = ['jesRelativeBal', f'jesRelativeSample_{year}', 'jesAbsolute', f'jesAbsolute_{year}', 'jesFlavorQCD', 'jesTotal']
@@ -130,15 +130,20 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     ax.set_prop_cycle('color', colors)
 
     for region in h_num.identifiers('region'):
-        if region.name == f'sr{region_suffix}':
+        if region.name.endswith(region_suffix):
             continue
         if not plot_total:
             if "Total" in region.name:
                 continue
-        h_varied_num = h_num.integrate('region', region)
-        h_varied_den = h_den.integrate('region', region)
-        var_label = region.name.replace(f'sr{region_suffix}_', '')
+
+        var_label = region.name.replace(f'{region_num}{region_suffix}_', '')
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
+
+        region_for_num = f'{region_num}{region_suffix}_{var_label}'
+        region_for_den = f'{region_den}{region_suffix}_{var_label}'
+
+        h_varied_num = h_num.integrate('region', region_for_num)
+        h_varied_den = h_den.integrate('region', region_for_den)
 
         # Get the varied ratio and store it
         varied_ratio = h_varied_num.values()[()] / h_varied_den.values()[()]
@@ -146,12 +151,12 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         if skimmed:
             if var_label_skimmed not in vars_to_look_at:
                 continue
+        
+        # Do not plot JER for now
+        if 'jer' in region.name:
+            continue
         dratio = varied_ratio / nominal_ratio
         ax.plot(centers, dratio, marker='o', label=var_label)
-
-        # Save the uncertainties to an output root file
-        hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
-        outputrootfile[hist_name] = (edges, dratio)
 
     # Aesthetics
     ax.grid(True)
@@ -159,7 +164,6 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         ax.set_xlabel(r'$M_{jj} \ (GeV)$')
     elif analysis == 'monojet':
         ax.set_xlabel('Recoil (GeV)')
-        
     ax.set_ylabel('JEC uncertainty')
     if bin_selection == 'singleBin':
         ax.set_ylim(0.97,1.03)
@@ -184,10 +188,10 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     outpath = pjoin(outdir, filename)
 
     fig.savefig(outpath)
-
+    print(f'File created: {outpath}')
 
 def main():
-gi    args = parse_cli()
+    args = parse_cli()
     inpath = args.inpath
 
     acc = dir_archive(
@@ -208,19 +212,15 @@ gi    args = parse_cli()
     # List of all ratios
     all_ratios = tag_to_dataset_pairs.keys()
 
-    # Save the uncertainties on TFs on an output root file
-    rootdir = f'./output/{out_tag}/root'
-    if not os.path.exists(rootdir):
-        os.makedirs(rootdir)
-
-    rootfile = pjoin(rootdir, f'{args.analysis}_tf_uncs.root')
-    outputrootfile = uproot.recreate(rootfile)
-
-    print(f'MSG% ROOT file created: {rootfile}')
-
     # Loop over each transfer factor
     for transfer_factor_tag in all_ratios:
         year = 2017 if '17' in transfer_factor_tag else 2018
+
+        # Skip over some TFs if requested so
+        if args.skip:
+            for tag in args.skip:
+                if tag in transfer_factor_tag:
+                    continue
 
         # Run QCD ratio
         if 'qcd' in args.run:
@@ -229,9 +229,7 @@ gi    args = parse_cli()
             plot_split_jecunc_ratios(acc, out_tag, 
                 transfer_factor_tag=transfer_factor_tag, 
                 dataset_info=qcd_dataset_info, 
-                year=year,
-                process='qcd',
-                outputrootfile=outputrootfile, 
+                year=year, 
                 skimmed=False, 
                 bin_selection='singleBin',
                 analysis=args.analysis)
@@ -244,8 +242,6 @@ gi    args = parse_cli()
                 transfer_factor_tag=transfer_factor_tag, 
                 dataset_info=ewk_dataset_info, 
                 year=year, 
-                process='ewk', 
-                outputrootfile=outputrootfile, 
                 skimmed=False, 
                 bin_selection='singleBin',
                 analysis=args.analysis)
