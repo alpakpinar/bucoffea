@@ -161,7 +161,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         ax.plot(centers, dratio, marker='o', label=var_label)
 
         # Save the uncertainties to an output root file
-        hist_name = f'{transfer_factor_tag}_{process}'
+        hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
         outputrootfile[hist_name] = (dratio, edges)
 
     # Aesthetics
@@ -184,7 +184,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     ax.yaxis.set_major_locator(loc)
 
     # Save figure
-    outdir = f'./output/{out_tag}/splitJEC/vbf/transfer_factors'
+    outdir = f'./output/{out_tag}/splitJEC/{analysis}/transfer_factors'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -220,7 +220,7 @@ def main():
     all_ratios = tag_to_dataset_pairs.keys()
 
     # Save the uncertainties on TFs on an output root file
-    rootdir = f'./output/{out_tag}/root'
+    rootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root'
     if not os.path.exists(rootdir):
         os.makedirs(rootdir)
 
