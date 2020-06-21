@@ -112,6 +112,10 @@ def plot_settings():
                 'xlim' : (0,3.2),
                 'ylim' : (1e0,1e6)
             },
+            'dphinjr' : {
+                'xlim' : (0,3.2),
+                'ylim' : (1e0,1e6)
+            },
             'dphijm' : {
                 'xlim' : (0,3.2),
                 'ylim' : (1e0,1e6)
