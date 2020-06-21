@@ -26,9 +26,11 @@ titles = {
     'GluGlu2018' : r'$ggH(inv) \ 2018$ split JEC uncertainties',
     'VBF2017' : r'$VBF \ H(inv) \ 2017$ split JEC uncertainties',
     'VBF2018' : r'$VBF \ H(inv) \ 2018$ split JEC uncertainties',
-    'ZJets2016' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties',
-    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties',
-    'ZJets2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties'
+    'ZJetsToNuNu2016' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties',
+    'ZJetsToNuNu2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties',
+    'ZJetsToNuNu2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties',
+    'WJetsToLNu2017' : r'$W(\ell\nu) \ 2017$ split JEC uncertainties',
+    'WJetsToLNu2018' : r'$W(\ell\nu) \ 2018$ split JEC uncertainties'
 }
 
 titles_two_nuisances = {
@@ -36,22 +38,22 @@ titles_two_nuisances = {
     'GluGlu2018' : r'$ggH(inv) \ 2018$ corr vs uncorr JEC uncertainties',
     'VBF2018' : r'$VBF \ H(inv) \ 2018$ corr vs uncorr JEC uncertainties',
     'VBF2017' : r'$VBF \ H(inv) \ 2017$ corr vs uncorr JEC uncertainties',
-    'ZJets2016' : r'$Z(\nu\nu) \ 2016$ corr vs uncorr JEC uncertainties',
-    'ZJets2017' : r'$Z(\nu\nu) \ 2017$ corr vs uncorr JEC uncertainties',
-    'ZJets2018' : r'$Z(\nu\nu) \ 2018$ corr vs uncorr JEC uncertainties'
+    'ZJetsToNuNu2016' : r'$Z(\nu\nu) \ 2016$ corr vs uncorr JEC uncertainties',
+    'ZJetsToNuNu2017' : r'$Z(\nu\nu) \ 2017$ corr vs uncorr JEC uncertainties',
+    'ZJetsToNuNu2018' : r'$Z(\nu\nu) \ 2018$ corr vs uncorr JEC uncertainties'
 }
 
 # Define all possible binnings for all variables in this dictionary
 mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
 mjj_binning_single_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,3500])
 
-met_binning_v1_2016 = hist.Bin('met', r'$MET \ (GeV)$', list(range(0,500,50)) + list(range(500,1100,100))) 
-met_binning_v1_2017 = hist.Bin('met', r'$MET \ (GeV)$', list(range(0,500,100)) + list(range(500,1250,250))) 
-met_binning_single_bin = hist.Bin('met', r'$MET \ (GeV)$', [200,1500])
-met_binning_coarse = hist.Bin('met', r'$MET \ (GeV)$', [250,300,400,500,800,1500])
+met_binning_v1_2016 = hist.Bin('recoil', 'Recoil (GeV)', list(range(0,500,50)) + list(range(500,1100,100))) 
+met_binning_v1_2017 = hist.Bin('recoil', 'Recoil (GeV)', list(range(250,550,100)) + list(range(550,1300,250))) 
+met_binning_single_bin = hist.Bin('recoil', 'Recoil (GeV)', [250,1500])
+met_binning_coarse = hist.Bin('recoil', 'Recoil (GeV)', [250,300,400,500,800,1500])
 
 binnings = {
-    'met' : {
+    'recoil' : {
         'initial' : {'2016' : met_binning_v1_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
         'single bin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
         'coarse' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
@@ -65,7 +67,6 @@ binnings = {
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
-    parser.add_argument('--tag', help='Tag for dataset to be used.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
     parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
@@ -77,7 +78,7 @@ def parse_cli():
 def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf', root_config={'save': False, 'file': None}):
     '''Plot all split JEC uncertainties on the same plot.'''
     # Load the relevant variable to analysis, select binning
-    variable_to_use = 'mjj' if analysis == 'vbf' else 'met'
+    variable_to_use = 'mjj' if analysis == 'vbf' else 'recoil'
     acc.load(variable_to_use)
     h = acc[variable_to_use]
 
@@ -90,7 +91,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     h = merge_datasets(h)
 
     # Determine the region to take the data from
-    if re.match('GluGlu|VBF|ZJets.*', dataset_tag):
+    if re.match('GluGlu|VBF|ZJets|WJets.*', dataset_tag):
         region_to_use = 'sr'
     else:
         raise NotImplementedError('Not implemented for this region yet.')
@@ -124,16 +125,16 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     colors = list(chain.from_iterable(colors))
     ax.set_prop_cycle('color', colors)
 
-    # As we loop through each uncertainty source, save into ROOT file if this is requested
-    if root_config['save']:
-        rootfile = uproot.recreate(root_config['file'])
-
     for region in h.identifiers('region'):
         if region.name == f'{region_to_use}{region_suffix}':
             continue
         if not plot_total:
             if "Total" in region.name:
                 continue
+
+        # Do not plot JER for now
+        if "jer" in region.name:
+            continue
         h_var = h.integrate('region', region)
         var_label = region.name.replace(f'{region_to_use}{region_suffix}_', '')
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
@@ -141,11 +142,15 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
             if var_label_skimmed not in vars_to_look_at:
                 continue
         hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
-    
+
+        # As we loop through each uncertainty source, save into ROOT file if this is requested
         if root_config['save']:
             ratio = h_var.values()[()] / h_nom.values()[()]
             edges = h_nom.axis(variable_to_use).edges()
-            rootfile[var_label] = (ratio, edges)
+            # Guard against inf/nan values
+            ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
+            rootfile = root_config['file']
+            rootfile[f'{dataset_tag}_{var_label}'] = (ratio, edges)
 
     ax.legend(ncol=2, prop={'size': 4.5})
     ax.set_ylabel('JEC Variation / Nominal')
@@ -184,6 +189,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
         
     outfile = pjoin(outdir, fname)
     fig.savefig(outfile)
+    print(f'MSG% File saved: {outfile}')
 
 def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='initial', analysis='vbf'):
     '''Plot split JEC uncertainties regrouped into two:
@@ -333,8 +339,6 @@ def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='
 def main():
     args = parse_cli()
     inpath = args.inpath
-    dataset_tag = args.tag
-    analysis = args.analysis
 
     acc = dir_archive(
         inpath,
@@ -351,38 +355,45 @@ def main():
     else:
         out_tag = inpath.split('/')[-1]
 
-    # Determine the year of the dataset
-    if '2017' in dataset_tag:
-        year = '2017' # 2017 VBF + ggH signals or Z(nunu)
-    elif '2018' in dataset_tag:
-        year = '2018' # 2018 VBF + ggH signals or Z(nunu)
-    else:
-        year = '2016' # 2016 Z(nunu)
-
     # Create an output root file to save the uncertainties
-    outputrootdir = f'./output/{out_tag}/splitJEC/vbf/root'
+    outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root'
     if not os.path.exists(outputrootdir):
         os.makedirs(outputrootdir)
 
-    outputrootfile = pjoin(outputrootdir, f'{dataset_tag}.root')
+    outputrootfile = pjoin(outputrootdir, 'shape_jes_uncs.root')
+    rootfile = uproot.recreate(outputrootfile)
+    print(f'MSG% ROOT file is created: {rootfile}')
 
     # Configure root usage for the function 
     root_config = {
         'save' : args.save_to_root,
-        'file' : outputrootfile if args.save_to_root else None
+        'file' : rootfile if args.save_to_root else None
     }
 
-    # Plot split JEC uncertainties in two ways: 
-    # 1. All uncertainty sources plotted on a single bin
-    # 2. Only the largest sources are plotted, with multiple bins
-    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='single bin')
-    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=True, bin_selection='initial')
-    # Only save to ROOT file the unskimmed shapes
-    plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis, skimmed=False, bin_selection='initial', root_config=root_config)
+    # dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'WJetsToLNu2017', 'WJetsToLNu2018', 'VBF2017', 'VBF2018', 'GluGlu2017', 'GluGlu2018']
+    dataset_tags = ['WJetsToLNu2017', 'WJetsToLNu2018']
 
-    # Produce the plots with regrouping, if requested:
-    if args.regroup:
-        plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='initial', analysis=analysis)
+    for dataset_tag in dataset_tags:
+        print(f'MSG% Working on: {dataset_tag}')
+
+        # Determine the year of the dataset
+        if '2017' in dataset_tag:
+            year = '2017' # 2017 VBF + ggH signals or Z(nunu)
+        elif '2018' in dataset_tag:
+            year = '2018' # 2018 VBF + ggH signals or Z(nunu)
+        else:
+            year = '2016' # 2016 Z(nunu)
+        # Plot split JEC uncertainties in two ways: 
+        # 1. All uncertainty sources plotted on a single bin
+        # 2. Only the largest sources are plotted, with multiple bins
+        plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=False, bin_selection='single bin')
+        plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=True, bin_selection='initial')
+        # Only save to ROOT file the unskimmed shapes
+        plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=False, bin_selection='initial', root_config=root_config)
+    
+        # Produce the plots with regrouping, if requested:
+        if args.regroup:
+            plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='initial', analysis=args.analysis)
 
 if __name__ == '__main__':
     main()
