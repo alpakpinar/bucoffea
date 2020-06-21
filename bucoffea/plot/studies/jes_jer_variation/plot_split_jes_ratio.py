@@ -18,6 +18,7 @@ import numpy as np
 from pprint import pprint
 from itertools import chain
 from data import tag_to_dataset_pairs
+import uproot
 
 pjoin = os.path.join
 
@@ -69,7 +70,7 @@ def parse_cli():
     args = parser.parse_args()
     return args
 
-def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
+def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, process, outputrootfile, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf'):
     '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
     # Load the relevant variable to analysis, select binning
     print(f'Working on: {transfer_factor_tag}')
@@ -114,6 +115,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
     fig, ax = plt.subplots()
     centers = h_num.axis(variable_to_use).centers()
+    edges = h_num.axis(variable_to_use).edges()
 
     # Look at only certain variations if we are not to plot everything
     vars_to_look_at = ['jesRelativeBal', f'jesRelativeSample_{year}', 'jesAbsolute', f'jesAbsolute_{year}', 'jesFlavorQCD', 'jesTotal']
@@ -158,6 +160,10 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         dratio = varied_ratio / nominal_ratio
         ax.plot(centers, dratio, marker='o', label=var_label)
 
+        # Save the uncertainties to an output root file
+        hist_name = f'{transfer_factor_tag}_{process}'
+        outputrootfile[hist_name] = (edges, dratio)
+
     # Aesthetics
     ax.grid(True)
     if analysis == 'vbf':
@@ -188,7 +194,8 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     outpath = pjoin(outdir, filename)
 
     fig.savefig(outpath)
-    print(f'File created: {outpath}')
+
+    print(f'MSG% File created: {outpath}')
 
 def main():
     args = parse_cli()
@@ -212,6 +219,16 @@ def main():
     # List of all ratios
     all_ratios = tag_to_dataset_pairs.keys()
 
+    # Save the uncertainties on TFs on an output root file
+    rootdir = f'./output/{out_tag}/root'
+    if not os.path.exists(rootdir):
+        os.makedirs(rootdir)
+
+    rootfile = pjoin(rootdir, f'{args.analysis}_tf_uncs.root')
+    outputrootfile = uproot.recreate(rootfile)
+
+    print(f'MSG% ROOT file created: {rootfile}')
+
     # Loop over each transfer factor
     for transfer_factor_tag in all_ratios:
         year = 2017 if '17' in transfer_factor_tag else 2018
@@ -229,7 +246,9 @@ def main():
             plot_split_jecunc_ratios(acc, out_tag, 
                 transfer_factor_tag=transfer_factor_tag, 
                 dataset_info=qcd_dataset_info, 
-                year=year, 
+                year=year,
+                process='qcd',
+                outputrootfile=outputrootfile, 
                 skimmed=False, 
                 bin_selection='singleBin',
                 analysis=args.analysis)
@@ -242,6 +261,8 @@ def main():
                 transfer_factor_tag=transfer_factor_tag, 
                 dataset_info=ewk_dataset_info, 
                 year=year, 
+                process='ewk', 
+                outputrootfile=outputrootfile, 
                 skimmed=False, 
                 bin_selection='singleBin',
                 analysis=args.analysis)
