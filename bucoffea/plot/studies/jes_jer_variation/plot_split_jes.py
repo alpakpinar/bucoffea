@@ -69,6 +69,7 @@ def parse_cli():
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
+    parser.add_argument('--onlyRun', help='If specified, only run over these processes.', nargs='*')
     parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
     args = parser.parse_args()
     return args
@@ -370,11 +371,23 @@ def main():
         'file' : rootfile if args.save_to_root else None
     }
 
-    # dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'WJetsToLNu2017', 'WJetsToLNu2018', 'VBF2017', 'VBF2018', 'GluGlu2017', 'GluGlu2018']
-    dataset_tags = ['WJetsToLNu2017', 'WJetsToLNu2018']
+    dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'WJetsToLNu2017', 'WJetsToLNu2018', 'VBF2017', 'VBF2018', 'GluGlu2017', 'GluGlu2018']
 
     for dataset_tag in dataset_tags:
         print(f'MSG% Working on: {dataset_tag}')
+
+        # If specified, run only on specified processes, skip otherwise
+
+        if args.onlyRun:
+            skip=True
+            for tag in args.onlyRun:
+                if tag in dataset_tag:
+                    skip=False
+                    break
+
+        if skip:
+            print(f'MSG% Skipping: {dataset_tag}')
+            continue
 
         # Determine the year of the dataset
         if '2017' in dataset_tag:
