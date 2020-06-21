@@ -155,7 +155,11 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
     # Aesthetics
     ax.grid(True)
-    ax.set_xlabel(r'$M_{jj} \ (GeV)$')
+    if analysis == 'vbf':
+        ax.set_xlabel(r'$M_{jj} \ (GeV)$')
+    elif analysis == 'monojet':
+        ax.set_xlabel('Recoil (GeV)')
+        
     ax.set_ylabel('JEC uncertainty')
     if bin_selection == 'singleBin':
         ax.set_ylim(0.97,1.03)
