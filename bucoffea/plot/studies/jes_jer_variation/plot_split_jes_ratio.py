@@ -237,11 +237,12 @@ def main():
         # Skip over some TFs if requested so
         if args.skip:
             for tag in args.skip:
-                print(tag)
                 if tag in transfer_factor_tag:
                     skip=True
+                    break
 
         if skip:
+            print(f'MSG% Skipping: {transfer_factor_tag}')
             continue
 
         # Run QCD ratio
