@@ -128,27 +128,7 @@ tag_to_dataset_pairs = {
             'dataset1' : {'regex' : 'EWKW2Jets_WToLNu.*2018', 'region' : 'sr'},
             'dataset2' : {'regex' : 'EWKW2Jets_WToLNu.*2018', 'region' : 'cr_1m'},
         },
-    },
-    'wlnu_over_gjets17' : {
-        'qcd': {
-            'dataset1' : {'regex' : 'WJetsToLNu.*2017', 'region' : 'sr'},
-            'dataset2' : {'regex' : 'GJets_DR-0p4.*2017', 'region' : 'cr_g'},
-        },
-        'ewk': {
-            'dataset1' : {'regex' : 'EWKW2Jets_WToLNu.*2017', 'region' : 'sr'},
-            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2017', 'region' : 'cr_g'},
-        }
-    },
-    'wlnu_over_gjets18' : {
-        'qcd': {
-            'dataset1' : {'regex' : 'WJetsToLNu.*2018', 'region' : 'sr'},
-            'dataset2' : {'regex' : 'GJets_DR-0p4.*2018', 'region' : 'cr_g'},
-        },
-        'ewk': {
-            'dataset1' : {'regex' : 'EWKW2Jets_WToLNu.*2018', 'region' : 'sr'},
-            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2018', 'region' : 'cr_g'},
-        }
-    },
+    }
 }
 
 # Dict mappping dataset names to 
