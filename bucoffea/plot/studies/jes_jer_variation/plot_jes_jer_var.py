@@ -23,10 +23,10 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][:5]
 # Legend labels for each variation
 var_to_legend_label = {
     ''         : 'Nominal',
-    '_jerup'   : 'JER up',
-    '_jerdown' : 'JER down',
-    '_jesup'   : 'JES up',
-    '_jesdown' : 'JES down'
+    '_jerUp'   : 'JER up',
+    '_jerDown' : 'JER down',
+    '_jesTotalUp'   : 'JES up',
+    '_jesTotalDown' : 'JES down'
 }
 
 def parse_commandline():
@@ -79,7 +79,7 @@ def get_unc(d, edges, out_tag, tag, sample_type):
         for idx, sigma in enumerate(unc):
             f.write(f'{edges[idx]:.0f} < mjj < {edges[idx+1]:.0f}: {sigma*100:.2f}%\n')
 
-    print(f'File saved: {outpath}')
+    print(f'MSG% File saved: {outpath}')
 
 def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analysis='vbf'):
     '''Given the input accumulator and the regex
@@ -115,7 +115,7 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
         recoil_bins_very_coarse = hist.Bin('recoil', r'Recoil (GeV)', [0,2000])
         h = h.rebin('recoil', recoil_bins_very_coarse)
 
-    print(f'Working on: {tag}, {sample_type}')
+    print(f'MSG% Working on: {tag}, {sample_type}')
 
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
@@ -140,7 +140,7 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     # Calculate the ratios of each variation
     # with respect to nominal counts
     ratios = {}
-    variations = ['', '_jerup', '_jerdown', '_jesup', '_jesdown']
+    variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
     for variation in variations:
         ratios[variation] = h.integrate('region', f'{region}{analysis_tag}{variation}').values()[()] / h_nom
 
@@ -218,7 +218,7 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     fig.savefig(outpath)
     plt.close()
     
-    print(f'Histogram saved in: {outpath}')
+    print(f'MSG% Histogram saved in: {outpath}')
 
 def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, sample_type, analysis='vbf', plot_onlyJES=False, plot_onlyJER=False, bin_selection='singleBin'):
     '''Given the input accumulator, plot ratio of two datasets
@@ -250,16 +250,18 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
             'fine' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
         }
         # mjj_bins_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
-        h = h.rebin('mjj', mjj_binning[bin_selection])
+        binning_to_use = mjj_binning[bin_selection]
+        h = h.rebin('mjj', binning_to_use)
 
     elif analysis == 'monojet':
         acc.load('recoil')
         h = acc['recoil']
         # Rebin recoil into one large bin
         recoil_bins_very_coarse = hist.Bin('recoil', r'Recoil (GeV)', [0,2000])
-        h = h.rebin('recoil', recoil_bins_very_coarse)
+        binning_to_use = recoil_bins_very_coarse
+        h = h.rebin('recoil', binning_to_use)
 
-    print(f'Working on: {tag}, {sample_type}')
+    print(f'MSG% Working on: {tag}, {sample_type}')
 
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
@@ -339,11 +341,11 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
 
     # Plot the ratios for each variation
     if plot_onlyJES:
-        variations = ['', '_jesup', '_jesdown']
+        variations = ['', '_jesTotalUp', '_jesTotalDown']
     elif plot_onlyJER:
-        variations = ['', '_jerup', '_jerdown']
+        variations = ['', '_jerUp', '_jerDown']
     else:
-        variations = ['', '_jerup', '_jerdown', '_jesup', '_jesdown']
+        variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     for idx, var_name in enumerate(variations):
         ratio_arr = ratios[var_name]
@@ -368,7 +370,7 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     elif analysis == 'monojet':
         xlim = (250,2000)
 
-    edges = mjj_binning[bin_selection].edges()
+    edges = binning_to_use.edges()
 
     ax.set_xlim(edges[0], edges[-1])
     if bin_selection == 'singleBin':
@@ -424,7 +426,7 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     fig.savefig(outpath)
     plt.close()
 
-    print(f'Histogram saved in: {outpath}')
+    print(f'MSG% Histogram saved in: {outpath}')
 
     # Calculate and print the uncertainties
     # for each mjj bin
@@ -516,7 +518,8 @@ def main():
             ratios_to_look_at.extend(w_over_g_procs)
 
     # All bin types for the ratio plot
-    bin_types = ['fine', 'coarse', 'singleBin']
+    # For now: Just plot single bin (not interested in shape information for TFs)
+    bin_types = ['singleBin']
 
     # Plot ratios unless "individual plots only option is specified"
     if not args.individual:
@@ -555,10 +558,10 @@ def main():
     if args.save_to_df:
         rename_columns = {
             '' : 'Nominal',
-            '_jerup' : 'JER up',
-            '_jerdown' : 'JER down',
-            '_jesup' : 'JES up',
-            '_jesdown' : 'JES down'
+            '_jerUp' : 'JER up',
+            '_jerDown' : 'JER down',
+            '_jesTotalUp' : 'JES up',
+            '_jesTotalDown' : 'JES down'
         }
         df = pd.DataFrame(ratio_list, index=index_list) 
         df.rename(columns=rename_columns, inplace=True)
