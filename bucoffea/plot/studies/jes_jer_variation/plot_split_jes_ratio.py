@@ -76,7 +76,7 @@ def parse_cli():
 def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, process, outputrootfile, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf', tabulate_top5=False):
     '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
     # Load the relevant variable to analysis, select binning
-    print(f'Working on: {transfer_factor_tag}')
+    print(f'MSG% Working on: {transfer_factor_tag}')
     variable_to_use = 'mjj' if analysis == 'vbf' else 'recoil'
     acc.load(variable_to_use)
     h = acc[variable_to_use]

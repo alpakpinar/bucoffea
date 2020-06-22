@@ -141,16 +141,15 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
             if "Total" in region.name:
                 continue
 
-        # Do not plot JER for now
-        if "jer" in region.name:
-            continue
         h_var = h.integrate('region', region)
         var_label = region.name.replace(f'{region_to_use}{region_suffix}_', '')
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
         if skimmed:
             if var_label_skimmed not in vars_to_look_at:
                 continue
-        hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
+        # Do not plot JER for now
+        if not "jer" in region.name:
+            hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
 
         # As we loop through each uncertainty source, save into ROOT file if this is requested
         if root_config['save']:
