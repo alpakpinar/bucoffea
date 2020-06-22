@@ -60,7 +60,8 @@ legend_labels = {
     'Diboson.*' : "WW/WZ/ZZ",
     'ZJetsToNuNu.*.*' : "QCD Z$\\rightarrow\\nu\\nu$",
     'EWKZ.*ZToNuNu.*' : "EWK Z$\\rightarrow\\nu\\nu$",
-    'MET|Single(Electron|Photon|Muon)|EGamma.*' : "Data"
+    'MET|Single(Electron|Photon|Muon)|EGamma.*' : "Data",
+    "VBF.*" : "VBF $H(inv)$"
 
 }
 class Style():

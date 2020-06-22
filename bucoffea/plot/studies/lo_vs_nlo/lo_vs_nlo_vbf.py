@@ -67,6 +67,15 @@ def plot(args):
                 'cr_g_vbf' : re.compile(f'(GJets_(DR-0p4|SM).*|QCD_data.*|WJetsToLNu.*HT.*).*{year}'),
             }
 
+            signal = {
+                'sr_vbf' : re.compile(f'VBF.*{year}'),
+                'cr_1m_vbf' : None,
+                'cr_1e_vbf' : None,
+                'cr_2m_vbf' : None,
+                'cr_2e_vbf' : None,
+                'cr_g_vbf' : None
+            }
+
             # Load ingredients from cache
             acc.load('sumw')
             acc.load('sumw_pileup')
@@ -112,6 +121,7 @@ def plot(args):
                                 year=year,
                                 data=data[region],
                                 mc=imc,
+                                signal=signal[region],
                                 ylim=plotset[distribution].get('ylim',None),
                                 xlim=plotset[distribution].get('xlim',None),
                                 tag = 'losf',
