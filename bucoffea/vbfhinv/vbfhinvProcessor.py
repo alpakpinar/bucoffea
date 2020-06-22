@@ -240,7 +240,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         df["minDPhiJetMet"] = min_dphi_jet_met(ak4, met_phi, njet=4, ptmin=30, etamax=5.0)
 
         # Calculate and store the minimum delta phi between noisy jets and recoil
-        df['minDPhiNoisyJetRecoil'] = min_dphi_jet_met(noisy_ak4, df['recoil_phi'], njet=4, ptmin=5, etamax=5.0)
+        df['minDPhiNoisyJetRecoil'] = min_dphi_jet_met(noisy_ak4, df['recoil_phi'], njet=4, ptmin=30, etamax=5.0)
         # Guard against inf
         df['minDPhiNoisyJetRecoil'][np.isinf(df['minDPhiNoisyJetRecoil'])] = -1.
 
