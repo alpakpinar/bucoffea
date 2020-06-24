@@ -300,7 +300,8 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
         h1_sumw, h1_sumw2 = h1_vals[region1]
         h2_sumw, h2_sumw2 = h2_vals[region2]
         # Get the variation name out of region names
-        if region1[0] in ['sr_vbf', 'cr_g_vbf', 'sr_j', 'cr_g_j']:
+        region_name = region1[0]
+        if region_name.endswith('_vbf') or region_name.endswith('_j'):
             var_name = ''
         else:
             var_name = f'_{region1[0].split("_")[-1]}'
