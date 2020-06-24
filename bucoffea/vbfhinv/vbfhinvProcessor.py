@@ -491,12 +491,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         output['tree_float16'][region][f"weight_{name}"] += processor.column_accumulator(np.float16(w[mask]))
                         # output['tree_float16'][region][f"weight_total"] += processor.column_accumulator(np.float16(rweight[mask]))
              
-                # Leading electron transverse mass
+                # Single electron transverse mass
                 if re.match('.*_1e_.*', region):
-                    output['tree_float16'][region]["leadele_mt"]   +=  processor.column_accumulator(df['MT_el'][mask])
-                # Leading muon transverse mass
+                    output['tree_float16'][region]["mt"]   +=  processor.column_accumulator(df['MT_el'][mask])
+                # Single muon transverse mass
                 if re.match('.*_1m_.*', region):
-                    output['tree_float16'][region]["leadmu_mt"]   +=  processor.column_accumulator(df['MT_mu'][mask])
+                    output['tree_float16'][region]["mt"]   +=  processor.column_accumulator(df['MT_mu'][mask])
 
                 # Leading electron
                 if re.match('.*_(\d)e_.*', region):

@@ -210,7 +210,7 @@ default:
     save:
       passing: False
       tree: True
-      treeregions: "((sr|cr_.*)_j|inclusive)$"
+      treeregions: "((sr|cr_.*)_vbf|inclusive)$"
     kinematics:
       save: False
       events:
