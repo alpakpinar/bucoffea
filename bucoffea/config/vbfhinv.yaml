@@ -209,7 +209,8 @@ default:
     sync: False
     save:
       passing: False
-      tree: False
+      tree: True
+      treeregions: "((sr|cr_.*)_j|inclusive)$"
     kinematics:
       save: False
       events:
