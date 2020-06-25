@@ -22,11 +22,11 @@ tag_to_dataset = {
 		'dataset' : re.compile('ZJetsToNuNu.*2018')
 	},
 	'wlnu17' : {
-		'region' : {'with_nu_cut' : 'sr_vbf_nu', 'without_nu_cut' : 'sr_vbf'},
+		'region' : {'with_nu_cut' : 'sr_vbf', 'without_nu_cut' : 'sr_vbf'},
 		'dataset' : re.compile('WJetsToLNu.*2017')
 	},
 	'wlnu18' : {
-		'region' : {'with_nu_cut' : 'sr_vbf_nu', 'without_nu_cut' : 'sr_vbf'},
+		'region' : {'with_nu_cut' : 'sr_vbf', 'without_nu_cut' : 'sr_vbf'},
 		'dataset' : re.compile('WJetsToLNu.*2018')
 	},
 	'zmumu17' : {
@@ -167,6 +167,7 @@ def plot_ratio_comparison(r, tag, out_tag):
 	ax.grid(True)
 	ax.set_ylabel(ylabels[tag])
 
+
 	if '17' in tag:
 		year = 2017
 	elif '18' in tag:
@@ -192,12 +193,13 @@ def plot_ratio_comparison(r, tag, out_tag):
 	rax.grid(True)
 	rax.set_xlabel(r'$M_{jj}\ (GeV)$')
 	rax.set_ylabel(r'With / Without $\nu$ Cut')
+	rax.fill_between(xcenters1, 1+(r2_sumw_err/r2_sumw), 1-(r2_sumw_err/r2_sumw), color='gray')
 
 	rax.set_xlim(200, 4000)
-	rax.set_ylim(0.9, 1.1)
+	rax.set_ylim(0.7, 1.3)
 	rax.plot([200, 4000], [1, 1], 'r--')
 	
-	loc = matplotlib.ticker.MultipleLocator(base=0.05)
+	loc = matplotlib.ticker.MultipleLocator(base=0.1)
 	rax.yaxis.set_major_locator(loc)
 
 	outdir = f'output/{out_tag}/comparison'
