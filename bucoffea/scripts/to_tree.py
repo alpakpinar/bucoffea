@@ -35,6 +35,7 @@ def make_trees(args):
     filelists = files_by_dataset(args.files)
     # The output for each dataset will be written into a separate file
     for dataset, files in filelists.items():
+        print(f'Working on dataset: {dataset}')
         # Find region and branch names
         datatypes = {}
         tree_by_variable = {}
@@ -60,6 +61,8 @@ def make_trees(args):
         # Combine
         with uproot.recreate(pjoin(args.outdir, f"tree_{dataset}.root"),compression=uproot.ZLIB(4)) as f:
             for region in set(regions):
+                if region == 'inclusive':
+                    continue
                 for fname in files:
                     acc = load(fname)
                     d = {x: acc[tree_by_variable[x]][region][x].value for x in variables}
