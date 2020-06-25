@@ -500,28 +500,28 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
                 # Leading electron
                 if re.match('.*_(\d)e_.*', region):
-                    output['tree_float16'][region]["leadele_pt"]   +=  processor.column_accumulator(electrons.pt[leadelectron_index][mask].max())
-                    output['tree_float16'][region]["leadele_eta"]   +=  processor.column_accumulator(electrons.eta[leadelectron_index][mask].max())
-                    output['tree_float16'][region]["leadele_phi"]   +=  processor.column_accumulator(electrons.phi[leadelectron_index][mask].max())
-                    output['tree_float16'][region]["leadele_tightId"]   +=  processor.column_accumulator(electrons.tightId[leadelectron_index][mask].max())
+                    output['tree_float16'][region]["ele0_pt"]   +=  processor.column_accumulator(electrons.pt[leadelectron_index][mask].max())
+                    output['tree_float16'][region]["ele0_eta"]   +=  processor.column_accumulator(electrons.eta[leadelectron_index][mask].max())
+                    output['tree_float16'][region]["ele0_phi"]   +=  processor.column_accumulator(electrons.phi[leadelectron_index][mask].max())
+                    output['tree_float16'][region]["ele0_tightId"]   +=  processor.column_accumulator(electrons.tightId[leadelectron_index][mask].max())
                 # Trailing electron
                 if re.match('.*_2e_.*', region):
-                    output['tree_float16'][region]["trailele_pt"]   +=  processor.column_accumulator(electrons.pt[~leadelectron_index][mask].max())
-                    output['tree_float16'][region]["trailele_eta"]   +=  processor.column_accumulator(electrons.eta[~leadelectron_index][mask].max())
-                    output['tree_float16'][region]["trailele_phi"]   +=  processor.column_accumulator(electrons.phi[~leadelectron_index][mask].max())
-                    output['tree_float16'][region]["trailele_tightId"]   +=  processor.column_accumulator(electrons.tightId[~leadelectron_index][mask].max())
+                    output['tree_float16'][region]["ele1_pt"]   +=  processor.column_accumulator(electrons.pt[~leadelectron_index][mask].max())
+                    output['tree_float16'][region]["ele1_eta"]   +=  processor.column_accumulator(electrons.eta[~leadelectron_index][mask].max())
+                    output['tree_float16'][region]["ele1_phi"]   +=  processor.column_accumulator(electrons.phi[~leadelectron_index][mask].max())
+                    output['tree_float16'][region]["ele1_tightId"]   +=  processor.column_accumulator(electrons.tightId[~leadelectron_index][mask].max())
                 # Leading muon
                 if re.match('.*_(\d)m_.*', region):
-                    output['tree_float16'][region]["leadmu_pt"]   +=  processor.column_accumulator(muons.pt[leadmuon_index][mask].max())
-                    output['tree_float16'][region]["leadmu_eta"]   +=  processor.column_accumulator(muons.eta[leadmuon_index][mask].max())
-                    output['tree_float16'][region]["leadmu_phi"]   +=  processor.column_accumulator(muons.phi[leadmuon_index][mask].max())
-                    output['tree_float16'][region]["leadmu_tightId"]   +=  processor.column_accumulator(muons.tightId[leadmuon_index][mask].max())
+                    output['tree_float16'][region]["mu0_pt"]   +=  processor.column_accumulator(muons.pt[leadmuon_index][mask].max())
+                    output['tree_float16'][region]["mu0_eta"]   +=  processor.column_accumulator(muons.eta[leadmuon_index][mask].max())
+                    output['tree_float16'][region]["mu0_phi"]   +=  processor.column_accumulator(muons.phi[leadmuon_index][mask].max())
+                    output['tree_float16'][region]["mu0_tightId"]   +=  processor.column_accumulator(muons.tightId[leadmuon_index][mask].max())
                 # Trailing muon
                 if re.match('.*_2m_.*', region):
-                    output['tree_float16'][region]["leadmu_pt"]   +=  processor.column_accumulator(muons.pt[~leadmuon_index][mask].max())
-                    output['tree_float16'][region]["leadmu_eta"]   +=  processor.column_accumulator(muons.eta[~leadmuon_index][mask].max())
-                    output['tree_float16'][region]["leadmu_phi"]   +=  processor.column_accumulator(muons.phi[~leadmuon_index][mask].max())
-                    output['tree_float16'][region]["leadmu_tightId"]   +=  processor.column_accumulator(muons.tightId[~leadmuon_index][mask].max())
+                    output['tree_float16'][region]["mu1_pt"]   +=  processor.column_accumulator(muons.pt[~leadmuon_index][mask].max())
+                    output['tree_float16'][region]["mu1_eta"]   +=  processor.column_accumulator(muons.eta[~leadmuon_index][mask].max())
+                    output['tree_float16'][region]["mu1_phi"]   +=  processor.column_accumulator(muons.phi[~leadmuon_index][mask].max())
+                    output['tree_float16'][region]["mu1_tightId"]   +=  processor.column_accumulator(muons.tightId[~leadmuon_index][mask].max())
                 # Photon
                 if re.match('.*_g_.*', region):
                     output['tree_float16'][region]["photon_pt"]   +=  processor.column_accumulator(photons.pt[leadphoton_index][mask].max())
