@@ -226,20 +226,20 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # Calculate additional jetMET quantities if they are specified in the config file
         if 'HT' in cfg.RUN.SAVE.VARIABLES:
             ak4_pt_thresh = 20
-            # Inclusive, |eta| < 5.0
-            inclusive_eta = (ak4.abseta <= 5.0) & (ak4.pt > ak4_pt_thresh)
+            # Inclusive, all jets
+            inclusive_eta = ak4.pt > ak4_pt_thresh
             df['HT_jetsInclusive'] = ak4[inclusive_eta].pt.sum() 
 
             # Jets in HF
-            jet_in_hf = (ak4.abseta > 3.0) & (ak4.abseta < 5.0) & (ak4.pt > ak4_pt_thresh)
+            jet_in_hf = (ak4.abseta > 3.0) & (ak4.pt > ak4_pt_thresh)
             df['HT_jetsInHF'] = ak4[jet_in_hf].pt.sum() 
             
             # Jets in barrel
-            jet_in_barrel = (ak4.abseta <= 1.479) & (ak4.pt > ak4_pt_thresh)
+            jet_in_barrel = (ak4.abseta <= 2.4) & (ak4.pt > ak4_pt_thresh)
             df['HT_jetsInBarrel'] = ak4[jet_in_barrel].pt.sum()
 
             # Jets in endcap
-            jet_in_endcap = (ak4.abseta > 1.479) & (ak4.abseta <= 3.0) & (ak4.pt > ak4_pt_thresh)
+            jet_in_endcap = (ak4.abseta > 2.4) & (ak4.abseta <= 3.0) & (ak4.pt > ak4_pt_thresh)
             df['HT_jetsInEndcap']    = ak4[jet_in_endcap].pt.sum()
             df['HT_jetsNotInEndcap'] = ak4[~jet_in_endcap].pt.sum()
 
@@ -248,29 +248,29 @@ class vbfhinvProcessor(processor.ProcessorABC):
             # Jet momenta that are perpendicular to the beam axis
             jet_px = ak4.pt * np.cos(ak4.phi)
             jet_py = ak4.pt * np.sin(ak4.phi)
-            # Inclusive, |eta| < 5.0
-            inclusive_eta = (ak4.abseta <= 5.0) & (ak4.pt > ak4_pt_thresh)
+            # Inclusive, all jets
+            inclusive_eta = ak4.pt > ak4_pt_thresh
             HTmiss_x = - jet_px[inclusive_eta].sum() 
             HTmiss_y = - jet_py[inclusive_eta].sum() 
             df['HTmiss_jetsInclusive_pt']  = np.hypot(HTmiss_x, HTmiss_y)
             df['HTmiss_jetsInclusive_phi'] = np.arctan2(HTmiss_y, HTmiss_x)
 
             # Jets in HF
-            jet_in_hf = (ak4.abseta > 3.0) & (ak4.abseta < 5.0) & (ak4.pt > ak4_pt_thresh)
+            jet_in_hf = (ak4.abseta > 3.0) & (ak4.pt > ak4_pt_thresh)
             HTmiss_HF_x = - jet_px[jet_in_hf].sum() 
             HTmiss_HF_y = - jet_py[jet_in_hf].sum() 
             df['HTmiss_jetsInHF_pt']  = np.hypot(HTmiss_HF_x, HTmiss_HF_y)
             df['HTmiss_jetsInHF_phi'] = np.arctan2(HTmiss_HF_y, HTmiss_HF_x)
             
             # Jets in barrel
-            jet_in_barrel = (ak4.abseta <= 1.479) & (ak4.pt > ak4_pt_thresh)
+            jet_in_barrel = (ak4.abseta <= 2.4) & (ak4.pt > ak4_pt_thresh)
             HTmiss_barrel_x = - jet_px[jet_in_barrel].sum() 
             HTmiss_barrel_y = - jet_py[jet_in_barrel].sum() 
             df['HTmiss_jetsInBarrel_pt']  = np.hypot(HTmiss_barrel_x, HTmiss_barrel_y)
             df['HTmiss_jetsInBarrel_phi'] = np.arctan2(HTmiss_barrel_y, HTmiss_barrel_x)
 
             # Jets in endcap
-            jet_in_endcap = (ak4.abseta > 1.479) & (ak4.abseta <= 3.0) & (ak4.pt > ak4_pt_thresh)
+            jet_in_endcap = (ak4.abseta > 2.4) & (ak4.abseta <= 3.0) & (ak4.pt > ak4_pt_thresh)
             HTmiss_endcap_x = - jet_px[jet_in_endcap].sum() 
             HTmiss_endcap_y = - jet_py[jet_in_endcap].sum() 
             df['HTmiss_jetsInEndcap_pt']  = np.hypot(HTmiss_endcap_x, HTmiss_endcap_y)
