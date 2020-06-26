@@ -222,6 +222,45 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         df["minDPhiJetRecoil"] = min_dphi_jet_met(ak4, df['recoil_phi'], njet=4, ptmin=30, etamax=5.0)
         df["minDPhiJetMet"] = min_dphi_jet_met(ak4, met_phi, njet=4, ptmin=30, etamax=5.0)
+
+        # Calculate additional jetMET quantities if they are specified in the config file
+        if 'sumEt' in cfg.RUN.SAVE.VARIABLES:
+            # Sum ET for all jets with abseta smaller than 5.0
+            inclusive_eta = ak4.abseta <= 5.0
+            df['sumEt_inclusive'] = ak4[inclusive_eta].pt.sum() 
+
+            # Jets in HF
+            jet_in_hf = (ak4.abseta > 3.0) & (ak4.abseta < 5.0)
+            df['sumEt_HF'] = ak4[jet_in_hf].pt.sum() 
+            
+            # Jets in barrel
+            jet_in_barrel = ak4.abseta <= 1.479
+            df['sumEt_barrel'] = ak4[jet_in_barrel].pt.sum()
+
+            # Jets in endcap
+            jet_in_endcap = (ak4.abseta > 1.479) & (ak4.abseta <= 3.0)
+            df['sumEt_endcap'] = ak4[jet_in_endcap].pt.sum()
+            df['sumEt_noEndcap'] = ak4[~jet_in_endcap].pt.sum()
+
+        if 'missingHt' in cfg.RUN.SAVE.VARIABLES:
+            # Missing HT for all jets with abseta smaller than 5.0 and pt larger than the pt threshold
+            pt_thresh_for_HT = 20
+            inclusive_jets = (ak4.abseta <= 5.0) & (ak4.pt > pt_thresh_for_HT)
+            df['missingHt_inclusive'] = ak4[inclusive_jets].pt.sum() 
+
+            # Jets in HF
+            jet_in_hf = (ak4.abseta > 3.0) & (ak4.abseta < 5.0) & (ak4.pt > pt_thresh_for_HT)
+            df['missingHt_HF'] = ak4[jet_in_hf].pt.sum() 
+            
+            # Jets in barrel
+            jet_in_barrel = (ak4.abseta <= 1.479) & (ak4.pt > pt_thresh_for_HT)
+            df['missingHt_barrel'] = ak4[jet_in_barrel].pt.sum()
+
+            # Jets in endcap
+            jet_in_endcap = (ak4.abseta > 1.479) & (ak4.abseta <= 3.0) & (ak4.pt > pt_thresh_for_HT)
+            df['missingHt_endcap'] = ak4[jet_in_endcap].pt.sum()
+            df['missingHt_noEndcap'] = ak4[~jet_in_endcap].pt.sum()
+
         selection = processor.PackedSelection()
 
         # Triggers
@@ -261,6 +300,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
         df['mjj'] = diak4.mass.max()
         df['dphijj'] = dphi(diak4.i0.phi.min(), diak4.i1.phi.max())
         df['detajj'] = np.abs(diak4.i0.eta - diak4.i1.eta).max()
+
+        # Delta phi between leading/trailing jet and MET
+        df['dPhiLeadingJetMet'] = dphi(diak4.i0.phi.min(), df['recoil_phi'])
+        df['dPhiTrailingJetMet'] = dphi(diak4.i1.phi.min(), df['recoil_phi'])
 
         leading_jet_in_horn = ((diak4.i0.abseta<3.2) & (diak4.i0.abseta>2.8)).any()
         trailing_jet_in_horn = ((diak4.i1.abseta<3.2) & (diak4.i1.abseta>2.8)).any()
@@ -460,80 +503,101 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     output['tree_int64'][region]["run"]                     += processor.column_accumulator(df["run"][mask])
                     output['tree_int64'][region]["lumi"]                    += processor.column_accumulator(df["luminosityBlock"][mask])
 
-                if region == 'inclusive':
-                    for name in selection.names:
-                        output['tree_bool'][region][name] += processor.column_accumulator(np.bool_(selection.all(*[name])[mask]))
+                    if region == 'inclusive':
+                        for name in selection.names:
+                            output['tree_bool'][region][name] += processor.column_accumulator(np.bool_(selection.all(*[name])[mask]))
 
-                # Save quantities for other regions 
-                else:
-                    output['tree_float16'][region]["recoil_pt"]   +=  processor.column_accumulator(df["recoil_pt"][mask])
-                    output['tree_float16'][region]["recoil_phi"]  +=  processor.column_accumulator(df["recoil_phi"][mask])
-                    output['tree_float16'][region]["met_pt"]   +=  processor.column_accumulator(met_pt[mask])
-                    output['tree_float16'][region]["met_phi"]  +=  processor.column_accumulator(met_phi[mask])
-                    output['tree_float16'][region]["met_pt_nojer"]   +=  processor.column_accumulator(df['MET_pt_nom' if df['year']==2018 else 'METFixEE2017_pt_nom'][mask])
-                    output['tree_float16'][region]["met_phi_nojer"]  +=  processor.column_accumulator(df['MET_phi_nom' if df['year']==2018 else 'METFixEE2017_phi_nom'][mask])
-                    output['tree_float16'][region]["mjj"]         +=  processor.column_accumulator(df["mjj"][mask])
+                    # Save quantities for other regions 
+                    else:
+                        output['tree_float16'][region]["recoil_pt"]       +=  processor.column_accumulator(df["recoil_pt"][mask])
+                        output['tree_float16'][region]["recoil_phi"]      +=  processor.column_accumulator(df["recoil_phi"][mask])
+                        output['tree_float16'][region]["met_pt"]          +=  processor.column_accumulator(met_pt[mask])
+                        output['tree_float16'][region]["met_phi"]         +=  processor.column_accumulator(met_phi[mask])
+                        output['tree_float16'][region]["met_pt_nojer"]    +=  processor.column_accumulator(df['MET_pt_nom' if df['year']==2018 else 'METFixEE2017_pt_nom'][mask])
+                        output['tree_float16'][region]["met_phi_nojer"]   +=  processor.column_accumulator(df['MET_phi_nom' if df['year']==2018 else 'METFixEE2017_phi_nom'][mask])
+                        output['tree_float16'][region]["mjj"]             +=  processor.column_accumulator(df["mjj"][mask])
+                        output['tree_float16'][region]["dphijj"]          +=  processor.column_accumulator(df["dphijj"][mask])
+                        output['tree_float16'][region]["detajj"]          +=  processor.column_accumulator(df["detajj"][mask])
+                        
+                        output['tree_float16'][region]["leadak4_pt"]      +=  processor.column_accumulator(diak4.i0.pt.max()[mask])
+                        output['tree_float16'][region]["leadak4_eta"]     +=  processor.column_accumulator(diak4.i0.eta.max()[mask])
+                        output['tree_float16'][region]["leadak4_phi"]     +=  processor.column_accumulator(diak4.i0.phi.max()[mask])
+        
+                        output['tree_float16'][region]["trailak4_pt"]     +=  processor.column_accumulator(diak4.i1.pt.max()[mask])
+                        output['tree_float16'][region]["trailak4_eta"]    +=  processor.column_accumulator(diak4.i1.eta.max()[mask])
+                        output['tree_float16'][region]["trailak4_phi"]    +=  processor.column_accumulator(diak4.i1.phi.max()[mask])
+        
+                        output['tree_float16'][region]["mindPhiJetMet"]       +=  processor.column_accumulator(df["minDPhiJetRecoil"][mask])
+                        output['tree_float16'][region]["dPhiLeadingJetMet"]   +=  processor.column_accumulator(df["dPhiLeadingJetMet"][mask])
+                        output['tree_float16'][region]["dPhiTrailingJetMet"]  +=  processor.column_accumulator(df["dPhiTrailingJetMet"][mask])
+                        output['tree_float16'][region]["CaloMET_pt"]          +=  processor.column_accumulator(df["CaloMET_pt"][mask])
+                        output['tree_float16'][region]["CaloMET_phi"]         +=  processor.column_accumulator(df["CaloMET_phi"][mask])
+                        output['tree_float16'][region]["TkMET_pt"]            +=  processor.column_accumulator(df["TkMET_pt"][mask])
+                        output['tree_float16'][region]["TkMET_phi"]           +=  processor.column_accumulator(df["TkMET_phi"][mask])
                     
-                    output['tree_float16'][region]["leadak4_pt"]         +=  processor.column_accumulator(diak4.i0.pt.max()[mask])
-                    output['tree_float16'][region]["leadak4_eta"]        +=  processor.column_accumulator(diak4.i0.eta.max()[mask])
-                    output['tree_float16'][region]["leadak4_phi"]        +=  processor.column_accumulator(diak4.i0.phi.max()[mask])
-    
-                    output['tree_float16'][region]["trailak4_pt"]         +=  processor.column_accumulator(diak4.i1.pt.max()[mask])
-                    output['tree_float16'][region]["trailak4_eta"]        +=  processor.column_accumulator(diak4.i1.eta.max()[mask])
-                    output['tree_float16'][region]["trailak4_phi"]        +=  processor.column_accumulator(diak4.i1.phi.max()[mask])
-    
-                    output['tree_float16'][region]["mindphijr"]  +=  processor.column_accumulator(df["minDPhiJetRecoil"][mask])
-                    output['tree_float16'][region]["calomet_pt"]  +=  processor.column_accumulator(df["CaloMET_pt"][mask])
-                
-                    # MC quantities
-                    if not df['is_data']:
-                        if gen_v_pt is not None:
-                            output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(gen_v_pt[mask])
-                        
-                        if df['has_lhe_v_pt']:
-                            output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(df['mjj_gen'][mask])
-                        
-                        for name, w in region_weights._weights.items():
-                            output['tree_float16'][region][f"weight_{name}"] += processor.column_accumulator(np.float16(w[mask]))
-                            # output['tree_float16'][region][f"weight_total"] += processor.column_accumulator(np.float16(rweight[mask]))
-                
-                    # Single electron transverse mass
-                    if re.match('.*_1e_.*', region):
-                        output['tree_float16'][region]["mt"]   +=  processor.column_accumulator(df['MT_el'][mask])
-                    # Single muon transverse mass
-                    if re.match('.*_1m_.*', region):
-                        output['tree_float16'][region]["mt"]   +=  processor.column_accumulator(df['MT_mu'][mask])
-    
-                    # Leading electron
-                    if re.match('.*_(\d)e_.*', region):
-                        output['tree_float16'][region]["ele0_pt"]   +=  processor.column_accumulator(electrons.pt[leadelectron_index][mask].max())
-                        output['tree_float16'][region]["ele0_eta"]   +=  processor.column_accumulator(electrons.eta[leadelectron_index][mask].max())
-                        output['tree_float16'][region]["ele0_phi"]   +=  processor.column_accumulator(electrons.phi[leadelectron_index][mask].max())
-                        output['tree_float16'][region]["ele0_tightId"]   +=  processor.column_accumulator(electrons.tightId[leadelectron_index][mask].max())
-                    # Trailing electron
-                    if re.match('.*_2e_.*', region):
-                        output['tree_float16'][region]["ele1_pt"]   +=  processor.column_accumulator(electrons.pt[~leadelectron_index][mask].max())
-                        output['tree_float16'][region]["ele1_eta"]   +=  processor.column_accumulator(electrons.eta[~leadelectron_index][mask].max())
-                        output['tree_float16'][region]["ele1_phi"]   +=  processor.column_accumulator(electrons.phi[~leadelectron_index][mask].max())
-                        output['tree_float16'][region]["ele1_tightId"]   +=  processor.column_accumulator(electrons.tightId[~leadelectron_index][mask].max())
-                    # Leading muon
-                    if re.match('.*_(\d)m_.*', region):
-                        output['tree_float16'][region]["mu0_pt"]   +=  processor.column_accumulator(muons.pt[leadmuon_index][mask].max())
-                        output['tree_float16'][region]["mu0_eta"]   +=  processor.column_accumulator(muons.eta[leadmuon_index][mask].max())
-                        output['tree_float16'][region]["mu0_phi"]   +=  processor.column_accumulator(muons.phi[leadmuon_index][mask].max())
-                        output['tree_float16'][region]["mu0_tightId"]   +=  processor.column_accumulator(muons.tightId[leadmuon_index][mask].max())
-                    # Trailing muon
-                    if re.match('.*_2m_.*', region):
-                        output['tree_float16'][region]["mu1_pt"]   +=  processor.column_accumulator(muons.pt[~leadmuon_index][mask].max())
-                        output['tree_float16'][region]["mu1_eta"]   +=  processor.column_accumulator(muons.eta[~leadmuon_index][mask].max())
-                        output['tree_float16'][region]["mu1_phi"]   +=  processor.column_accumulator(muons.phi[~leadmuon_index][mask].max())
-                        output['tree_float16'][region]["mu1_tightId"]   +=  processor.column_accumulator(muons.tightId[~leadmuon_index][mask].max())
-                    # Photon
-                    if re.match('.*_g_.*', region):
-                        output['tree_float16'][region]["photon_pt"]   +=  processor.column_accumulator(photons.pt[leadphoton_index][mask].max())
-                        output['tree_float16'][region]["photon_eta"]   +=  processor.column_accumulator(photons.eta[leadphoton_index][mask].max())
-                        output['tree_float16'][region]["photon_phi"]   +=  processor.column_accumulator(photons.phi[leadphoton_index][mask].max())
+                        # Sum(ET) and missing HT for jets
+                        output['tree_float16'][region]["sumEt_inclusive"]   +=  processor.column_accumulator(df["sumEt_inclusive"][mask])
+                        output['tree_float16'][region]["sumEt_HF"]          +=  processor.column_accumulator(df["sumEt_HF"][mask])
+                        output['tree_float16'][region]["sumEt_barrel"]      +=  processor.column_accumulator(df["sumEt_barrel"][mask])
+                        output['tree_float16'][region]["sumEt_endcap"]      +=  processor.column_accumulator(df["sumEt_endcap"][mask])
+                        output['tree_float16'][region]["sumEt_noEndcap"]    +=  processor.column_accumulator(df["sumEt_noEndcap"][mask])
 
+                        output['tree_float16'][region]["missingHt_inclusive"]   +=  processor.column_accumulator(df["missingHt_inclusive"][mask])
+                        output['tree_float16'][region]["missingHt_HF"]          +=  processor.column_accumulator(df["missingHt_HF"][mask])
+                        output['tree_float16'][region]["missingHt_barrel"]      +=  processor.column_accumulator(df["missingHt_barrel"][mask])
+                        output['tree_float16'][region]["missingHt_endcap"]      +=  processor.column_accumulator(df["missingHt_endcap"][mask])
+                        output['tree_float16'][region]["missingHt_noEndcap"]    +=  processor.column_accumulator(df["missingHt_noEndcap"][mask])
+
+                        # MC quantities
+                        if not df['is_data']:
+                            if gen_v_pt is not None:
+                                output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(gen_v_pt[mask])
+                                output['tree_float16'][region]["GenMET_pt"]   +=  processor.column_accumulator(df['GenMET_pt'][mask])
+                                output['tree_float16'][region]["GenMET_phi"]  +=  processor.column_accumulator(df['GenMET_phi'][mask])
+                            
+                            if df['has_lhe_v_pt']:
+                                output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(df['mjj_gen'][mask])
+                            
+                            for name, w in region_weights._weights.items():
+                                output['tree_float16'][region][f"weight_{name}"] += processor.column_accumulator(np.float16(w[mask]))
+                    
+                        # Single electron transverse mass
+                        if re.match('.*_1e_.*', region):
+                            output['tree_float16'][region]["mt"]   +=  processor.column_accumulator(df['MT_el'][mask])
+                        # Single muon transverse mass
+                        if re.match('.*_1m_.*', region):
+                            output['tree_float16'][region]["mt"]   +=  processor.column_accumulator(df['MT_mu'][mask])
+        
+                        # Leading electron
+                        if re.match('.*_(\d)e_.*', region):
+                            output['tree_float16'][region]["ele0_pt"]        +=  processor.column_accumulator(electrons.pt[leadelectron_index][mask].max())
+                            output['tree_float16'][region]["ele0_eta"]       +=  processor.column_accumulator(electrons.eta[leadelectron_index][mask].max())
+                            output['tree_float16'][region]["ele0_phi"]       +=  processor.column_accumulator(electrons.phi[leadelectron_index][mask].max())
+                            output['tree_float16'][region]["ele0_tightId"]   +=  processor.column_accumulator(electrons.tightId[leadelectron_index][mask].max())
+                        # Trailing electron
+                        if re.match('.*_2e_.*', region):
+                            output['tree_float16'][region]["ele1_pt"]        +=  processor.column_accumulator(electrons.pt[~leadelectron_index][mask].max())
+                            output['tree_float16'][region]["ele1_eta"]       +=  processor.column_accumulator(electrons.eta[~leadelectron_index][mask].max())
+                            output['tree_float16'][region]["ele1_phi"]       +=  processor.column_accumulator(electrons.phi[~leadelectron_index][mask].max())
+                            output['tree_float16'][region]["ele1_tightId"]   +=  processor.column_accumulator(electrons.tightId[~leadelectron_index][mask].max())
+                        # Leading muon
+                        if re.match('.*_(\d)m_.*', region):
+                            output['tree_float16'][region]["mu0_pt"]        +=  processor.column_accumulator(muons.pt[leadmuon_index][mask].max())
+                            output['tree_float16'][region]["mu0_eta"]       +=  processor.column_accumulator(muons.eta[leadmuon_index][mask].max())
+                            output['tree_float16'][region]["mu0_phi"]       +=  processor.column_accumulator(muons.phi[leadmuon_index][mask].max())
+                            output['tree_float16'][region]["mu0_tightId"]   +=  processor.column_accumulator(muons.tightId[leadmuon_index][mask].max())
+                        # Trailing muon
+                        if re.match('.*_2m_.*', region):
+                            output['tree_float16'][region]["mu1_pt"]        +=  processor.column_accumulator(muons.pt[~leadmuon_index][mask].max())
+                            output['tree_float16'][region]["mu1_eta"]       +=  processor.column_accumulator(muons.eta[~leadmuon_index][mask].max())
+                            output['tree_float16'][region]["mu1_phi"]       +=  processor.column_accumulator(muons.phi[~leadmuon_index][mask].max())
+                            output['tree_float16'][region]["mu1_tightId"]   +=  processor.column_accumulator(muons.tightId[~leadmuon_index][mask].max())
+                        # Photon
+                        if re.match('.*_g_.*', region):
+                            output['tree_float16'][region]["photon_pt"]    +=  processor.column_accumulator(photons.pt[leadphoton_index][mask].max())
+                            output['tree_float16'][region]["photon_eta"]   +=  processor.column_accumulator(photons.eta[leadphoton_index][mask].max())
+                            output['tree_float16'][region]["photon_phi"]   +=  processor.column_accumulator(photons.phi[leadphoton_index][mask].max())
+    
             # Save the event numbers of events passing this selection
             if cfg.RUN.SAVE.PASSING:
                 output['selected_events'][region] += list(df['event'][mask])

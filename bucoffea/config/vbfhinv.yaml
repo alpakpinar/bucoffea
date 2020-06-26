@@ -210,7 +210,10 @@ default:
     save:
       passing: False
       tree: True
-      treeregions: "((sr|cr_.*)_vbf|inclusive)$"
+      treeregions: "^sr_vbf$"
+      variables:
+        - sumEt
+        - missingHt
     kinematics:
       save: False
       events:
