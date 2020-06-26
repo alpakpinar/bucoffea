@@ -213,8 +213,8 @@ default:
       treeregions: "^sr_vbf$"
       variables:
         - HT
+        - HTmiss
         - sumEt
-        - missingHT
     kinematics:
       save: False
       events:

@@ -243,44 +243,44 @@ class vbfhinvProcessor(processor.ProcessorABC):
             df['HT_jetsInEndcap']    = ak4[jet_in_endcap].pt.sum()
             df['HT_jetsNotInEndcap'] = ak4[~jet_in_endcap].pt.sum()
 
-        if 'missingHT' in cfg.RUN.SAVE.VARIABLES:
+        if 'HTmiss' in cfg.RUN.SAVE.VARIABLES:
             ak4_pt_thresh = 20
             # Jet momenta that are perpendicular to the beam axis
             jet_px = ak4.pt * np.cos(ak4.phi)
             jet_py = ak4.pt * np.sin(ak4.phi)
             # Inclusive, |eta| < 5.0
             inclusive_eta = (ak4.abseta <= 5.0) & (ak4.pt > ak4_pt_thresh)
-            missingHT_x = - jet_px[inclusive_eta].sum() 
-            missingHT_y = - jet_py[inclusive_eta].sum() 
-            df['missingHT_jetsInclusive_pt']  = np.hypot(missingHT_x, missingHT_y)
-            df['missingHT_jetsInclusive_phi'] = np.arctan2(missingHT_y, missingHT_x)
+            HTmiss_x = - jet_px[inclusive_eta].sum() 
+            HTmiss_y = - jet_py[inclusive_eta].sum() 
+            df['HTmiss_jetsInclusive_pt']  = np.hypot(HTmiss_x, HTmiss_y)
+            df['HTmiss_jetsInclusive_phi'] = np.arctan2(HTmiss_y, HTmiss_x)
 
             # Jets in HF
             jet_in_hf = (ak4.abseta > 3.0) & (ak4.abseta < 5.0) & (ak4.pt > ak4_pt_thresh)
-            missingHT_HF_x = - jet_px[jet_in_hf].sum() 
-            missingHT_HF_y = - jet_py[jet_in_hf].sum() 
-            df['missingHT_jetsInHF_pt']  = np.hypot(missingHT_HF_x, missingHT_HF_y)
-            df['missingHT_jetsInHF_phi'] = np.arctan2(missingHT_HF_y, missingHT_HF_x)
+            HTmiss_HF_x = - jet_px[jet_in_hf].sum() 
+            HTmiss_HF_y = - jet_py[jet_in_hf].sum() 
+            df['HTmiss_jetsInHF_pt']  = np.hypot(HTmiss_HF_x, HTmiss_HF_y)
+            df['HTmiss_jetsInHF_phi'] = np.arctan2(HTmiss_HF_y, HTmiss_HF_x)
             
             # Jets in barrel
             jet_in_barrel = (ak4.abseta <= 1.479) & (ak4.pt > ak4_pt_thresh)
-            missingHT_barrel_x = - jet_px[jet_in_barrel].sum() 
-            missingHT_barrel_y = - jet_py[jet_in_barrel].sum() 
-            df['missingHT_jetsInBarrel_pt']  = np.hypot(missingHT_barrel_x, missingHT_barrel_y)
-            df['missingHT_jetsInBarrel_phi'] = np.arctan2(missingHT_barrel_y, missingHT_barrel_x)
+            HTmiss_barrel_x = - jet_px[jet_in_barrel].sum() 
+            HTmiss_barrel_y = - jet_py[jet_in_barrel].sum() 
+            df['HTmiss_jetsInBarrel_pt']  = np.hypot(HTmiss_barrel_x, HTmiss_barrel_y)
+            df['HTmiss_jetsInBarrel_phi'] = np.arctan2(HTmiss_barrel_y, HTmiss_barrel_x)
 
             # Jets in endcap
             jet_in_endcap = (ak4.abseta > 1.479) & (ak4.abseta <= 3.0) & (ak4.pt > ak4_pt_thresh)
-            missingHT_endcap_x = - jet_px[jet_in_endcap].sum() 
-            missingHT_endcap_y = - jet_py[jet_in_endcap].sum() 
-            df['missingHT_jetsInEndcap_pt']  = np.hypot(missingHT_endcap_x, missingHT_endcap_y)
-            df['missingHT_jetsInEndcap_phi'] = np.arctan2(missingHT_endcap_y, missingHT_endcap_x)
+            HTmiss_endcap_x = - jet_px[jet_in_endcap].sum() 
+            HTmiss_endcap_y = - jet_py[jet_in_endcap].sum() 
+            df['HTmiss_jetsInEndcap_pt']  = np.hypot(HTmiss_endcap_x, HTmiss_endcap_y)
+            df['HTmiss_jetsInEndcap_phi'] = np.arctan2(HTmiss_endcap_y, HTmiss_endcap_x)
 
             # All jets outside endcap
-            missingHT_no_endcap_x = - jet_px[~jet_in_endcap].sum() 
-            missingHT_no_endcap_y = - jet_py[~jet_in_endcap].sum() 
-            df['missingHT_jetsNotInEndcap_pt']  = np.hypot(missingHT_no_endcap_x, missingHT_no_endcap_y)
-            df['missingHT_jetsNotInEndcap_phi'] = np.arctan2(missingHT_no_endcap_y, missingHT_no_endcap_x)
+            HTmiss_no_endcap_x = - jet_px[~jet_in_endcap].sum() 
+            HTmiss_no_endcap_y = - jet_py[~jet_in_endcap].sum() 
+            df['HTmiss_jetsNotInEndcap_pt']  = np.hypot(HTmiss_no_endcap_x, HTmiss_no_endcap_y)
+            df['HTmiss_jetsNotInEndcap_phi'] = np.arctan2(HTmiss_no_endcap_y, HTmiss_no_endcap_x)
 
         selection = processor.PackedSelection()
 
@@ -564,17 +564,17 @@ class vbfhinvProcessor(processor.ProcessorABC):
                             output['tree_float16'][region]["HT_jetsInEndcap"]      +=  processor.column_accumulator(df["HT_jetsInEndcap"][mask])
                             output['tree_float16'][region]["HT_jetsNotInEndcap"]   +=  processor.column_accumulator(df["HT_jetsNotInEndcap"][mask])
 
-                        if 'missingHT' in cfg.RUN.SAVE.VARIABLES:
-                            output['tree_float16'][region]["missingHT_jetsInclusive_pt"]     +=  processor.column_accumulator(df["missingHT_jetsInclusive_pt"][mask])
-                            output['tree_float16'][region]["missingHT_jetsInclusive_phi"]    +=  processor.column_accumulator(df["missingHT_jetsInclusive_phi"][mask])
-                            output['tree_float16'][region]["missingHT_jetsInHF_pt"]          +=  processor.column_accumulator(df["missingHT_jetsInHF_pt"][mask])
-                            output['tree_float16'][region]["missingHT_jetsInHF_phi"]         +=  processor.column_accumulator(df["missingHT_jetsInHF_phi"][mask])
-                            output['tree_float16'][region]["missingHT_jetsInBarrel_pt"]      +=  processor.column_accumulator(df["missingHT_jetsInBarrel_pt"][mask])
-                            output['tree_float16'][region]["missingHT_jetsInBarrel_phi"]     +=  processor.column_accumulator(df["missingHT_jetsInBarrel_phi"][mask])
-                            output['tree_float16'][region]["missingHT_jetsInEndcap_pt"]      +=  processor.column_accumulator(df["missingHT_jetsInEndcap_pt"][mask])
-                            output['tree_float16'][region]["missingHT_jetsInEndcap_phi"]     +=  processor.column_accumulator(df["missingHT_jetsInEndcap_phi"][mask])
-                            output['tree_float16'][region]["missingHT_jetsNotInEndcap_pt"]   +=  processor.column_accumulator(df["missingHT_jetsNotInEndcap_pt"][mask])
-                            output['tree_float16'][region]["missingHT_jetsNotInEndcap_phi"]  +=  processor.column_accumulator(df["missingHT_jetsNotInEndcap_phi"][mask])
+                        if 'HTmiss' in cfg.RUN.SAVE.VARIABLES:
+                            output['tree_float16'][region]["HTmiss_jetsInclusive_pt"]     +=  processor.column_accumulator(df["HTmiss_jetsInclusive_pt"][mask])
+                            output['tree_float16'][region]["HTmiss_jetsInclusive_phi"]    +=  processor.column_accumulator(df["HTmiss_jetsInclusive_phi"][mask])
+                            output['tree_float16'][region]["HTmiss_jetsInHF_pt"]          +=  processor.column_accumulator(df["HTmiss_jetsInHF_pt"][mask])
+                            output['tree_float16'][region]["HTmiss_jetsInHF_phi"]         +=  processor.column_accumulator(df["HTmiss_jetsInHF_phi"][mask])
+                            output['tree_float16'][region]["HTmiss_jetsInBarrel_pt"]      +=  processor.column_accumulator(df["HTmiss_jetsInBarrel_pt"][mask])
+                            output['tree_float16'][region]["HTmiss_jetsInBarrel_phi"]     +=  processor.column_accumulator(df["HTmiss_jetsInBarrel_phi"][mask])
+                            output['tree_float16'][region]["HTmiss_jetsInEndcap_pt"]      +=  processor.column_accumulator(df["HTmiss_jetsInEndcap_pt"][mask])
+                            output['tree_float16'][region]["HTmiss_jetsInEndcap_phi"]     +=  processor.column_accumulator(df["HTmiss_jetsInEndcap_phi"][mask])
+                            output['tree_float16'][region]["HTmiss_jetsNotInEndcap_pt"]   +=  processor.column_accumulator(df["HTmiss_jetsNotInEndcap_pt"][mask])
+                            output['tree_float16'][region]["HTmiss_jetsNotInEndcap_phi"]  +=  processor.column_accumulator(df["HTmiss_jetsNotInEndcap_phi"][mask])
 
                         if 'sumEt' in cfg.RUN.SAVE.VARIABLES:
                             output['tree_float16'][region]['MET_sumEt'] += processor.column_accumulator(df['MET_sumEt' if df['year'] == 2018 else 'METFixEE2017_sumEt'][mask])
