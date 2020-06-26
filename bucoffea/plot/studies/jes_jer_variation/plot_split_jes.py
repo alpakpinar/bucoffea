@@ -50,13 +50,14 @@ mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) +
 mjj_binning_single_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,3500])
 
 met_binning_v1_2016 = hist.Bin('recoil', 'Recoil (GeV)', list(range(0,500,50)) + list(range(500,1100,100))) 
+met_binning_v2_2016 = hist.Bin('recoil', 'Recoil (GeV)', [250,275,300,350,400,450,500,650,800,1150,1500]) 
 met_binning_v1_2017 = hist.Bin('recoil', 'Recoil (GeV)', list(range(250,550,100)) + list(range(550,1300,250))) 
 met_binning_single_bin = hist.Bin('recoil', 'Recoil (GeV)', [250,1500])
 met_binning_coarse = hist.Bin('recoil', 'Recoil (GeV)', [250,300,400,500,800,1500])
 
 binnings = {
     'recoil' : {
-        'initial' : {'2016' : met_binning_v1_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
+        'initial' : {'2016' : met_binning_v2_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
         'single bin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
         'coarse' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
     },
@@ -74,6 +75,7 @@ def parse_cli():
     parser.add_argument('--onlyRun', help='If specified, only run over these processes.', nargs='*')
     parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
     parser.add_argument('--tabulate', help='Tabulate unc/variation values.', action='store_true')
+    parser.add_argument('--znunu2016', help='Only run over Z(vv) 2016.', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -436,7 +438,11 @@ def main():
         'file' : rootfile if args.save_to_root else None
     }
 
-    dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'WJetsToLNu2017', 'WJetsToLNu2018', 'VBF2017', 'VBF2018', 'GluGlu2017', 'GluGlu2018']
+    # If requested so, only run over Z(nunu) 2016
+    if not args.znunu2016:
+        dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'WJetsToLNu2017', 'WJetsToLNu2018', 'VBF2017', 'VBF2018', 'GluGlu2017', 'GluGlu2018']
+    else:
+        dataset_tags = ['ZJetsToNuNu2016']
 
     for dataset_tag in dataset_tags:
         print(f'MSG% Working on: {dataset_tag}')
