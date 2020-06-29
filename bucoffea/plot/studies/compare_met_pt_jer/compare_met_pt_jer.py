@@ -48,6 +48,12 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
     hist.plot1d(h_05Jun20v5, ax=ax, clear=False)
 
     ax.set_xlabel('')
+    # Set the title for the figure
+    if region == 'inclusive':
+        region_tag = 'Inclusive' 
+    elif region == 'sr_vbf':
+        region_tag = 'Signal region (VBF)' 
+    ax.set_title(f'{process} {year}: {region_tag}')
     
     data_err_opts = {
         'linestyle':'none',
@@ -56,6 +62,8 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
         'color':'k',
         'elinewidth': 1,
     }
+
+    ax.legend(labels=['Without JER fix', 'With JER fix'])
 
     # Plot ratio
     hist.plotratio(h_05Jun20v5, h_19Feb20, ax=rax, error_opts=data_err_opts, unc='num')
