@@ -284,6 +284,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
 
+        # Simple baseline selections for "inclusive" MET comparison
+        leadak4_pt_eta_baseline = (diak4.i0.pt > cfg.SELECTION.SIGNAL.LEADAK4.PT) & (np.abs(diak4.i0.eta) < cfg.SELECTION.SIGNAL.LEADAK4.ETA)
+        recoil_baseline = df['recoil_pt'] > 100 
+        selection.add('leadak4_pt_eta_baseline', leadak4_pt_eta_baseline.any())
+        selection.add('recoil_baseline', recoil_baseline)
+
         # Divide into three categories for trigger study
         if cfg.RUN.TRIGGER_STUDY:
             two_central_jets = (np.abs(diak4.i0.eta) <= 2.4) & (np.abs(diak4.i1.eta) <= 2.4)

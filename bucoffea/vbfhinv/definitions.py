@@ -228,6 +228,9 @@ def vbfhinv_regions(cfg):
     regions = {}
     regions['inclusive'] = ['inclusive']
 
+    # Region with baseline selections for near inclusive comparison
+    regions['cr_baseline_vbf'] = ['leadak4_pt_eta_baseline', 'recoil_baseline']
+
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr']
 
