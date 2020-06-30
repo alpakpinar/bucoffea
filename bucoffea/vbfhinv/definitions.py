@@ -218,7 +218,6 @@ def vbfhinv_regions(cfg):
         'trailak4_id',
         'hemisphere',
         'mjj',
-        'dphijj',
         'detajj',
         'veto_photon',
         'veto_tau',
