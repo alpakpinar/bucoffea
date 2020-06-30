@@ -543,10 +543,16 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         output['tree_float16'][region]["leadak4_pt"]      +=  processor.column_accumulator(diak4.i0.pt.max()[mask])
                         output['tree_float16'][region]["leadak4_eta"]     +=  processor.column_accumulator(diak4.i0.eta.max()[mask])
                         output['tree_float16'][region]["leadak4_phi"]     +=  processor.column_accumulator(diak4.i0.phi.max()[mask])
+                        output['tree_float16'][region]["leadak4_chHEF"]   +=  processor.column_accumulator(diak4.i0.chf.max()[mask])
+                        output['tree_float16'][region]["leadak4_neHEF"]   +=  processor.column_accumulator(diak4.i0.nhf.max()[mask])
+                        output['tree_float16'][region]["leadak4_neEmEF"]  +=  processor.column_accumulator(diak4.i0.nef.max()[mask])
         
                         output['tree_float16'][region]["trailak4_pt"]     +=  processor.column_accumulator(diak4.i1.pt.max()[mask])
                         output['tree_float16'][region]["trailak4_eta"]    +=  processor.column_accumulator(diak4.i1.eta.max()[mask])
                         output['tree_float16'][region]["trailak4_phi"]    +=  processor.column_accumulator(diak4.i1.phi.max()[mask])
+                        output['tree_float16'][region]["trailak4_chHEF"]  +=  processor.column_accumulator(diak4.i1.chf.max()[mask])
+                        output['tree_float16'][region]["trailak4_neHEF"]  +=  processor.column_accumulator(diak4.i1.nhf.max()[mask])
+                        output['tree_float16'][region]["trailak4_neEmEF"] +=  processor.column_accumulator(diak4.i1.nef.max()[mask])
         
                         output['tree_float16'][region]["mindPhiJetMet"]       +=  processor.column_accumulator(df["minDPhiJetRecoil"][mask])
                         output['tree_float16'][region]["dPhiLeadingJetMet"]   +=  processor.column_accumulator(df["dPhiLeadingJetMet"][mask])
