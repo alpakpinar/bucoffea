@@ -12,7 +12,7 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2017, region='inclusive'):
+def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2017, region='cr_baseline_vbf'):
     '''Compare smeared MET pt distribution between the two accumulators.'''
     acc_19Feb20.load('met')
     acc_05Jun20v5.load('met')
@@ -29,8 +29,8 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
         h = h.integrate('dataset', re.compile(f'{process}.*{year}')).integrate('region', region)
 
         # Rebin
-        if region == 'inclusive':
-            met_bin = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,520,20)))
+        if region == 'cr_baseline_vbf':
+            met_bin = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(100,520,20)))
         else:
             met_bin = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(250,550,20)))
             
@@ -49,8 +49,8 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
 
     ax.set_xlabel('')
     # Set the title for the figure
-    if region == 'inclusive':
-        region_tag = 'Inclusive' 
+    if region == 'cr_baseline_vbf':
+        region_tag = 'Baseline Selections' 
     elif region == 'sr_vbf':
         region_tag = 'Signal region (VBF)' 
     ax.set_title(f'{process} {year}: {region_tag}')
@@ -96,8 +96,10 @@ def main():
     acc_19Feb20.load('sumw')
     acc_05Jun20v5.load('sumw')
 
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2017, region='inclusive')
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2018, region='inclusive')
+    # Region: cr_baseline_vbf --> Region with minimal baseline selections
+    # MET pt > 100 + leading jet pt/eta cuts 
+    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2017, region='cr_baseline_vbf')
+    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2018, region='cr_baseline_vbf')
     compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2017, region='sr_vbf')
     compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2018, region='sr_vbf')
 
