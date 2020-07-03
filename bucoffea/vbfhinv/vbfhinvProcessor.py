@@ -11,6 +11,7 @@ from bucoffea.helpers import (
                               mask_and,
                               mask_or,
                               min_dphi_jet_met,
+                              max_dphi_jet_met,
                               mt,
                               recoil,
                               weight_shape,
@@ -222,6 +223,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         df["minDPhiJetRecoil"] = min_dphi_jet_met(ak4, df['recoil_phi'], njet=4, ptmin=30, etamax=5.0)
         df["minDPhiJetMet"] = min_dphi_jet_met(ak4, met_phi, njet=4, ptmin=30, etamax=5.0)
+        df["maxDPhiJetMet"] = max_dphi_jet_met(ak4, met_phi, njet=4, ptmin=30, etamax=5.0)
 
         # Calculate additional jetMET quantities if they are specified in the config file
         if 'HT' in cfg.RUN.SAVE.VARIABLES:
@@ -325,6 +327,13 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # Delta phi between leading/trailing jet and MET
         df['dPhiLeadingJetMet'] = dphi(diak4.i0.phi.min(), df['recoil_phi'])
         df['dPhiTrailingJetMet'] = dphi(diak4.i1.phi.min(), df['recoil_phi'])
+
+        # Calculate dphi between the more forward/central jet from the leading dijet pair and MET
+        leading_jet_more_central = diak4.i0.abseta < diak4.i1.abseta
+        trailing_jet_more_central = diak4.i0.abseta > diak4.i1.abseta
+
+        df['dPhiMoreCentralJetMet'] = leading_jet_more_central.any() * df['dPhiLeadingJetMet'] + trailing_jet_more_central.any() * df['dPhiTrailingJetMet'] 
+        df['dPhiMoreForwardJetMet'] = trailing_jet_more_central.any() * df['dPhiLeadingJetMet'] + leading_jet_more_central.any() * df['dPhiTrailingJetMet'] 
 
         leading_jet_in_horn = ((diak4.i0.abseta<3.2) & (diak4.i0.abseta>2.8)).any()
         trailing_jet_in_horn = ((diak4.i1.abseta<3.2) & (diak4.i1.abseta>2.8)).any()
@@ -554,13 +563,16 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         output['tree_float16'][region]["trailak4_neHEF"]  +=  processor.column_accumulator(diak4.i1.nhf.max()[mask])
                         output['tree_float16'][region]["trailak4_neEmEF"] +=  processor.column_accumulator(diak4.i1.nef.max()[mask])
         
-                        output['tree_float16'][region]["mindPhiJetMet"]       +=  processor.column_accumulator(df["minDPhiJetRecoil"][mask])
-                        output['tree_float16'][region]["dPhiLeadingJetMet"]   +=  processor.column_accumulator(df["dPhiLeadingJetMet"][mask])
-                        output['tree_float16'][region]["dPhiTrailingJetMet"]  +=  processor.column_accumulator(df["dPhiTrailingJetMet"][mask])
-                        output['tree_float16'][region]["CaloMET_pt"]          +=  processor.column_accumulator(df["CaloMET_pt"][mask])
-                        output['tree_float16'][region]["CaloMET_phi"]         +=  processor.column_accumulator(df["CaloMET_phi"][mask])
-                        output['tree_float16'][region]["TkMET_pt"]            +=  processor.column_accumulator(df["TkMET_pt"][mask])
-                        output['tree_float16'][region]["TkMET_phi"]           +=  processor.column_accumulator(df["TkMET_phi"][mask])
+                        output['tree_float16'][region]["mindPhiJetMet"]          +=  processor.column_accumulator(df["minDPhiJetMet"][mask])
+                        output['tree_float16'][region]["maxdPhiJetMet"]          +=  processor.column_accumulator(df["minDPhiJetMet"][mask])
+                        output['tree_float16'][region]["dPhiLeadingJetMet"]      +=  processor.column_accumulator(df["dPhiLeadingJetMet"][mask])
+                        output['tree_float16'][region]["dPhiTrailingJetMet"]     +=  processor.column_accumulator(df["dPhiTrailingJetMet"][mask])
+                        output['tree_float16'][region]["dPhiMoreCentralJetMet"]  +=  processor.column_accumulator(df["dPhiMoreCentralJetMet"][mask])
+                        output['tree_float16'][region]["dPhiMoreForwardJetMet"]  +=  processor.column_accumulator(df["dPhiMoreForwardJetMet"][mask])
+                        output['tree_float16'][region]["CaloMET_pt"]             +=  processor.column_accumulator(df["CaloMET_pt"][mask])
+                        output['tree_float16'][region]["CaloMET_phi"]            +=  processor.column_accumulator(df["CaloMET_phi"][mask])
+                        output['tree_float16'][region]["TkMET_pt"]               +=  processor.column_accumulator(df["TkMET_pt"][mask])
+                        output['tree_float16'][region]["TkMET_phi"]              +=  processor.column_accumulator(df["TkMET_phi"][mask])
                     
                         # HT and missing HT for jets
                         if 'HT' in cfg.RUN.SAVE.VARIABLES:

@@ -30,6 +30,28 @@ def min_dphi_jet_met(jets, met_phi, njet=4, ptmin=30, etamax=2.4):
 
     return dphi(jets.phi, met_phi).min()
 
+def max_dphi_jet_met(jets, met_phi, njet=4, ptmin=30, etamax=2.4):
+    """Calculate maximal delta phi between jets and met
+
+    :param jets: Jet candidates to use, must be sorted by pT
+    :type jets: JaggedCandidateArray
+    :param met_phi: MET phi values, one per event
+    :type met_phi: array
+    :param njet: Number of leading jets to consider, defaults to 4
+    :type njet: int, optional
+    """
+
+    # Make sure that met_phi is not just a single float
+    # which can happen accidentally, but is not what
+    # we want.
+    assert(met_phi.shape!=())
+
+    # Use the first njet jets with pT > ptmin
+    jets=jets[(jets.pt>ptmin)&(jets.abseta < etamax)]
+    jets = jets[:,:njet]
+
+    return dphi(jets.phi, met_phi).max()
+
 def mt(pt1, phi1, pt2, phi2):
     """Calculates MT of two objects"""
     return np.sqrt(2 * pt1 * pt2 * (1-np.cos(phi1-phi2)))
