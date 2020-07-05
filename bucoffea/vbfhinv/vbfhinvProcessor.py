@@ -329,7 +329,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         df['dPhiTrailingJetMet'] = dphi(diak4.i1.phi.min(), df['recoil_phi'])
 
         # Calculate dphi between the more forward/central jet from the leading dijet pair and MET
-        leading_jet_more_central = diak4.i0.abseta < diak4.i1.abseta
+        leading_jet_more_central = diak4.i0.abseta <= diak4.i1.abseta
         trailing_jet_more_central = diak4.i0.abseta > diak4.i1.abseta
 
         df['dPhiMoreCentralJetMet'] = leading_jet_more_central.any() * df['dPhiLeadingJetMet'] + trailing_jet_more_central.any() * df['dPhiTrailingJetMet'] 
