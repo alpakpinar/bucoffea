@@ -564,7 +564,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         output['tree_float16'][region]["trailak4_neEmEF"] +=  processor.column_accumulator(diak4.i1.nef.max()[mask])
         
                         output['tree_float16'][region]["mindPhiJetMet"]          +=  processor.column_accumulator(df["minDPhiJetMet"][mask])
-                        output['tree_float16'][region]["maxdPhiJetMet"]          +=  processor.column_accumulator(df["minDPhiJetMet"][mask])
+                        output['tree_float16'][region]["maxdPhiJetMet"]          +=  processor.column_accumulator(df["maxDPhiJetMet"][mask])
                         output['tree_float16'][region]["dPhiLeadingJetMet"]      +=  processor.column_accumulator(df["dPhiLeadingJetMet"][mask])
                         output['tree_float16'][region]["dPhiTrailingJetMet"]     +=  processor.column_accumulator(df["dPhiTrailingJetMet"][mask])
                         output['tree_float16'][region]["dPhiMoreCentralJetMet"]  +=  processor.column_accumulator(df["dPhiMoreCentralJetMet"][mask])
