@@ -2,7 +2,7 @@ default:
   test: false
   selection:
     signal:
-      recoil: 100    # min
+      recoil: 200    # min
       dijet:
         shape_based:
           mass: 200
