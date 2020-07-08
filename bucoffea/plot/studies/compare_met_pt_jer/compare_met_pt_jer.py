@@ -39,11 +39,11 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
                 met_bin = hist.Bin('met_nom',r'$p_{T}^{miss}$ (GeV)',list(range(100,520,20)))
             else:
                 met_bin = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(100,520,20)))
-        elif region == 'cr_2m_vbf':
+        elif 'cr_2m' in region:
             if T1MET:
-                met_bin = hist.Bin('met_nom',r'$p_{T}^{miss}$ (GeV)',list(range(0,260,20)))
+                met_bin = hist.Bin('met_nom',r'$p_{T}^{miss}$ (GeV)',list(range(0,400,20)))
             else:
-                met_bin = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,260,20)))
+                met_bin = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,400,20)))
         else:
             if T1MET:
                 met_bin = hist.Bin('met_nom',r'$p_{T}^{miss}$ (GeV)',list(range(250,550,20)))
@@ -75,15 +75,20 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
 
     ax.set_xlabel('')
     ax.set_yscale('log')
-    ax.set_ylim(1e-1, 1e4)
-    
+    if 'baseline' in region:
+        ax.set_ylim(1e-1, 1e8)
+    else:
+        ax.set_ylim(1e-1, 1e4)
+
     # Set the title for the figure
-    if region == 'cr_baseline_vbf':
-        region_tag = 'Baseline Selections' 
-    elif region == 'sr_vbf':
-        region_tag = 'Signal region (VBF)' 
-    elif region == 'cr_2m_vbf':
-        region_tag = 'Dimuon control region (VBF)' 
+    region_tags = {
+        'cr_baseline' : 'Baseline Selections',
+        'sr_vbf' : 'Signal region (VBF)',
+        'cr_2m_vbf' : 'Dimuon control region (VBF)',
+        'cr_2m_baseline' : r'Baseline Selections, $Z(\mu \mu)$'
+    }
+    
+    region_tag = region_tags[region]
     ax.set_title(f'{process} {year}: {region_tag}')
     
     data_err_opts = {
@@ -100,7 +105,7 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
     hist.plotratio(h_05Jun20v5, h_19Feb20, ax=rax, error_opts=data_err_opts, unc='num')
     rax.grid(True)
     rax.set_ylabel('With JER fix / Without')
-    if region == 'cr_2m_vbf':
+    if 'cr_2m' in region:
         rax.set_ylim(0.6,1.4)
     else:
         rax.set_ylim(0.8,1.2)
@@ -129,10 +134,10 @@ def main():
 
     if 'dy' in inpath_19Feb20:
         process='DYJetsToLL'
-        regions_to_test = ['cr_baseline_vbf', 'cr_2m_vbf']
+        regions_to_test = ['cr_baseline', 'cr_2m_baseline']
     elif 'znunu' in inpath_19Feb20:
         process='ZJetsToNuNu'
-        regions_to_test = ['cr_baseline_vbf', 'sr_vbf']
+        regions_to_test = ['cr_baseline', 'sr_vbf']
 
     acc_19Feb20   = dir_archive(inpath_19Feb20, serialized=True, memsize=1e3, compression=0)
     acc_05Jun20v5 = dir_archive(inpath_05Jun20v5, serialized=True, memsize=1e3, compression=0)
