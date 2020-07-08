@@ -591,6 +591,16 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         output['tree_float16'][region]["TkMET_pt"]               +=  processor.column_accumulator(df["TkMET_pt"][mask])
                         output['tree_float16'][region]["TkMET_phi"]              +=  processor.column_accumulator(df["TkMET_phi"][mask])
                     
+                        # Information related to pileup
+                        output['tree_float16'][region]['Pileup_nTrueInt']        += processor.column_accumulator(df["Pileup_nTrueInt"][mask])
+                        output['tree_float16'][region]['Pileup_pudensity']       += processor.column_accumulator(df["Pileup_pudensity"][mask])
+                        output['tree_float16'][region]['Pileup_gpudensity']      += processor.column_accumulator(df["Pileup_gpudensity"][mask])
+                        output['tree_float16'][region]['Pileup_nPU']             += processor.column_accumulator(df["Pileup_nPU"][mask])
+                        output['tree_float16'][region]['Pileup_sumEOOT']         += processor.column_accumulator(df["Pileup_sumEOOT"][mask])
+                        output['tree_float16'][region]['Pileup_sumLOOT']         += processor.column_accumulator(df["Pileup_sumLOOT"][mask])
+                        output['tree_float16'][region]['PV_npvs']                += processor.column_accumulator(df["PV_npvs"][mask])
+                        output['tree_float16'][region]['PV_npvsGood']            += processor.column_accumulator(df["PV_npvsGood"][mask])
+
                         # HT and missing HT for jets
                         if 'HT' in cfg.RUN.SAVE.VARIABLES:
                             output['tree_float16'][region]["HT_jetsInclusive"]     +=  processor.column_accumulator(df["HT_jetsInclusive"][mask])
