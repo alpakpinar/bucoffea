@@ -41,9 +41,9 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
                 met_bin = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(100,520,20)))
         elif region == 'cr_2m_vbf':
             if T1MET:
-                met_bin = hist.Bin('met_nom',r'$p_{T}^{miss}$ (GeV)',list(range(0,150,10)))
+                met_bin = hist.Bin('met_nom',r'$p_{T}^{miss}$ (GeV)',list(range(0,260,20)))
             else:
-                met_bin = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,150,10)))
+                met_bin = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,260,20)))
         else:
             if T1MET:
                 met_bin = hist.Bin('met_nom',r'$p_{T}^{miss}$ (GeV)',list(range(250,550,20)))
@@ -74,6 +74,9 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
     hist.plot1d(h_05Jun20v5_nom, ax=ax, clear=False)
 
     ax.set_xlabel('')
+    ax.set_yscale('log')
+    ax.set_ylim(1e-1, 1e4)
+    
     # Set the title for the figure
     if region == 'cr_baseline_vbf':
         region_tag = 'Baseline Selections' 
