@@ -37,7 +37,7 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
         h = h.rebin('met', met_bin)
 
         return h
-    
+
     # Preprocess histograms
     h_19Feb20   = preprocess(h_19Feb20, acc_19Feb20)
     h_05Jun20v5 = preprocess(h_05Jun20v5, acc_05Jun20v5)
@@ -53,6 +53,8 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
         region_tag = 'Baseline Selections' 
     elif region == 'sr_vbf':
         region_tag = 'Signal region (VBF)' 
+    elif region == 'cr_2m_vbf':
+        region_tag = 'Dimuon control region (VBF)' 
     ax.set_title(f'{process} {year}: {region_tag}')
     
     data_err_opts = {
@@ -79,7 +81,10 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
     rax.set_xlim(xlim)
     
     # Save figure
-    outdir = f'./output'
+    if process == 'DYJetsToLL':
+        outdir = f'./output/comparison_with_dy'
+    elif process == 'ZJetsToNuNu':
+        outdir = f'./output/comparison_with_znunu'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
@@ -90,6 +95,13 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
 def main():
     inpath_19Feb20, inpath_05Jun20v5 = sys.argv[1:]
 
+    if 'dy' in inpath_19Feb20:
+        process='DYJetsToLL'
+        regions_to_test = ['cr_baseline_vbf', 'cr_2m_vbf']
+    elif 'znunu' in inpath_19Feb20:
+        process='ZJetsToNuNu'
+        regions_to_test = ['cr_baseline_vbf', 'sr_vbf']
+
     acc_19Feb20   = dir_archive(inpath_19Feb20, serialized=True, memsize=1e3, compression=0)
     acc_05Jun20v5 = dir_archive(inpath_05Jun20v5, serialized=True, memsize=1e3, compression=0)
 
@@ -98,10 +110,10 @@ def main():
 
     # Region: cr_baseline_vbf --> Region with minimal baseline selections
     # MET pt > 100 + leading jet pt/eta cuts 
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2017, region='cr_baseline_vbf')
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2018, region='cr_baseline_vbf')
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2017, region='sr_vbf')
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, year=2018, region='sr_vbf')
+    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2017, region=regions_to_test[0])
+    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2018, region=regions_to_test[0])
+    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2017, region=regions_to_test[1])
+    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2018, region=regions_to_test[1])
 
 if __name__ == '__main__':
     main()
