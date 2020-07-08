@@ -36,8 +36,14 @@ default:
       singlemu:
         mt : 160
       singleel:
-        mt: 160
-        met: 50
+        mt: 9999
+        met: 80
+  ak4:
+    jer: False
+  ak8:
+    jer: False
+  met:
+    jer: False
   tau:
     cuts:
       pt: 20

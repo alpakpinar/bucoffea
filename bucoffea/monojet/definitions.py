@@ -272,6 +272,10 @@ def setup_candidates(df, cfg, variations):
     else:
         # MC, all years
         jes_suffix = '_nom'
+        if cfg.MET.JER:
+            jes_suffix_met = '_jer'
+        else:
+            jes_suffix_met = '_nom'
 
     muons = JaggedCandidateArray.candidatesfromcounts(
         df['nMuon'],
@@ -375,14 +379,14 @@ def setup_candidates(df, cfg, variations):
 
     ak4 = JaggedCandidateArray.candidatesfromcounts(
         df['nJet'],
-        pt=df[f'Jet_pt{jes_suffix}'] / df['Jet_corr_JER'],
+        pt=df[f'Jet_pt{jes_suffix}'] if (df['is_data'] or cfg.AK4.JER) else df[f'Jet_pt{jes_suffix}']/df['Jet_corr_JER'],
         eta=df['Jet_eta'],
         abseta=np.abs(df['Jet_eta']),
         phi=df['Jet_phi'],
         mass=np.zeros_like(df['Jet_pt']),
         looseId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
         tightId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
-        puid=((df['Jet_puId']&2>0) | ((df[f'Jet_pt{jes_suffix}'] / df['Jet_corr_JER']) > 50)), # medium pileup jet ID
+        puid=((df['Jet_puId']&2>0) | ((df[f'Jet_pt{jes_suffix}'] if (df['is_data'] or cfg.AK4.JER) else df[f'Jet_pt{jes_suffix}']/df['Jet_corr_JER'])>50)), # medium pileup jet ID
         csvv2=df["Jet_btagCSVV2"],
         deepcsv=df['Jet_btagDeepB'],
         # nef=df['Jet_neEmEF'],
@@ -398,8 +402,12 @@ def setup_candidates(df, cfg, variations):
         if var == '':
             continue
         # Get the unsmeared jet pt
-        ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
-        ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt>50)
+        if not cfg.AK4.JER:
+            ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
+            ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt>50)
+        else:
+            ak4_pt = df[f'Jet_pt{var}']
+            ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt>50)
         # Set the jet values
         argdict = {f'pt{var}' : ak4_pt, f'puid{var}' : ak4_puid}
         ak4.add_attributes(**argdict)
@@ -420,15 +428,11 @@ def setup_candidates(df, cfg, variations):
 
     ak8 = JaggedCandidateArray.candidatesfromcounts(
         df['nFatJet'],
-        pt=df[f'FatJet_pt{jes_suffix}'],
-        pt_jerup=df['FatJet_pt_jerUp'],
-        pt_jerdown=df['FatJet_pt_jerDown'],
-        pt_jesup=df['FatJet_pt_jesTotalUp'],
-        pt_jesdown=df['FatJet_pt_jesTotalDown'],
+        pt=df[f'FatJet_pt{jes_suffix}'] if (df['is_data'] or cfg.AK8.JER) else df[f'FatJet_pt{jes_suffix}']/df['FatJet_corr_JER'],
         eta=df['FatJet_eta'],
         abseta=np.abs(df['FatJet_eta']),
         phi=df['FatJet_phi'],
-        mass=df[f'FatJet_msoftdrop{jes_suffix}'],
+        mass=df[f'FatJet_msoftdrop{jes_suffix}'] if (df['is_data'] or cfg.AK8.JER) else df[f'FatJet_msoftdrop{jes_suffix}']/df['FatJet_corr_JER'],
         tightId=(df['FatJet_jetId']&2) == 2, # Tight
         csvv2=df["FatJet_btagCSVV2"],
         deepcsv=df['FatJet_btagDeepB'],
