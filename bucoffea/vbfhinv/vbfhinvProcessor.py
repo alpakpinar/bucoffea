@@ -173,7 +173,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # Already pre-filtered!
         # All leptons are at least loose
         # Check out setup_candidates for filtering details
-        met_pt, met_phi, ak4, bjets, _, muons, electrons, taus, photons = setup_candidates(df, cfg)
+        met_pt, met_phi, met_pt_nom, met_phi_nom, ak4, bjets, _, muons, electrons, taus, photons = setup_candidates(df, cfg)
 
         # Remove jets in accordance with the noise recipe
         if df['year'] == 2017:
@@ -572,6 +572,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('dpfcalo_sr',            dpfcalo=df["dPFCaloSR"][mask],       weight=rweight[mask] )
             ezfill('met',                met=met_pt[mask],            weight=rweight[mask] )
             ezfill('met_phi',            phi=met_phi[mask],           weight=rweight[mask] )
+            # Fill in the unsmeared (T1 corrected) MET as well
+            ezfill('met_nom',            met=met_pt_nom[mask],            weight=rweight[mask] )
+            ezfill('met_phi_nom',        phi=met_phi_nom[mask],           weight=rweight[mask] )
+            
             ezfill('recoil',             recoil=df["recoil_pt"][mask],      weight=rweight[mask] )
             ezfill('recoil_phi',         phi=df["recoil_phi"][mask],        weight=rweight[mask] )
             ezfill('dphijm',             dphi=df["minDPhiJetMet"][mask],    weight=rweight[mask] )

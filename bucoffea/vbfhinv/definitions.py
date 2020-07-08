@@ -82,6 +82,8 @@ def vbfhinv_accumulator(cfg):
     items["lhe_htinc"] = Hist("Counts", dataset_ax, ht_ax)
     items["met"] = Hist("Counts", dataset_ax, region_ax, met_ax)
     items["met_phi"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
+    items["met_nom"] = Hist("Counts", dataset_ax, region_ax, met_ax)
+    items["met_phi_nom"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
     items["recoil"] = Hist("Counts", dataset_ax, region_ax, recoil_ax)
     items["recoil_phi"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
 

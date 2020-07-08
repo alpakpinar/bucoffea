@@ -458,8 +458,10 @@ def setup_candidates(df, cfg):
 
     met_pt = df[f'{met_branch}_pt{jes_suffix_met}']
     met_phi = df[f'{met_branch}_phi{jes_suffix_met}']
+    met_pt_nom = df[f'{met_branch}_pt_nom']
+    met_phi_nom = df[f'{met_branch}_phi_nom']
 
-    return met_pt, met_phi, ak4, bjets, ak8, muons, electrons, taus, photons
+    return met_pt, met_phi, met_pt_nom, met_phi_nom, ak4, bjets, ak8, muons, electrons, taus, photons
 
 def monojet_regions(cfg):
     common_cuts = [
