@@ -553,11 +553,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         good_jets = ak4[ak4.pt>30]
                         nJet = good_jets.counts
                         # Get the third jet for the events which have more than two jets 
-                        # If there is no third jet with pt>30 GeV, the values will be set to -1
+                        # If there is no third jet with pt>30 GeV, the values will be set to -99
                         event_has_third_jet = nJet > 2
-                        third_jet_pt  = np.hstack( np.where(event_has_third_jet, good_jets.pt[:,:3][:,-1:], [-1]) )
-                        third_jet_eta = np.hstack( np.where(event_has_third_jet, good_jets.eta[:,:3][:,-1:], [-1]) )
-                        third_jet_phi = np.hstack( np.where(event_has_third_jet, good_jets.phi[:,:3][:,-1:], [-1]) )
+                        third_jet_pt  = np.hstack( np.where(event_has_third_jet, good_jets.pt[:,:3][:,-1:], [-99]) )
+                        third_jet_eta = np.hstack( np.where(event_has_third_jet, good_jets.eta[:,:3][:,-1:], [-99]) )
+                        third_jet_phi = np.hstack( np.where(event_has_third_jet, good_jets.phi[:,:3][:,-1:], [-99]) )
 
                         output['tree_float16'][region]["nJet"]            += processor.column_accumulator(nJet[mask])
                         output['tree_float16'][region]["thirdJet_pt"]     += processor.column_accumulator(third_jet_pt[mask])
