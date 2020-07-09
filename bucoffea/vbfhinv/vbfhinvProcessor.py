@@ -559,6 +559,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         third_jet_eta = np.hstack( np.where(event_has_third_jet, good_jets.eta[:,:3][:,-1:], [-99]) )
                         third_jet_phi = np.hstack( np.where(event_has_third_jet, good_jets.phi[:,:3][:,-1:], [-99]) )
 
+                        # Calculate and store delta phi between TrackMET and PF MET
+                        dphi_tkMET_pfMET = dphi(met_phi, df['TkMET_phi'])
+
                         output['tree_float16'][region]["nJet"]            += processor.column_accumulator(nJet[mask])
                         output['tree_float16'][region]["thirdJet_pt"]     += processor.column_accumulator(third_jet_pt[mask])
                         output['tree_float16'][region]["thirdJet_eta"]    += processor.column_accumulator(third_jet_eta[mask])
@@ -590,7 +593,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         output['tree_float16'][region]["CaloMET_phi"]            +=  processor.column_accumulator(df["CaloMET_phi"][mask])
                         output['tree_float16'][region]["TkMET_pt"]               +=  processor.column_accumulator(df["TkMET_pt"][mask])
                         output['tree_float16'][region]["TkMET_phi"]              +=  processor.column_accumulator(df["TkMET_phi"][mask])
-                    
+                        
+                        output['tree_float16'][region]["dPhi_TkMET_PFMET"]       +=  processor.column_accumulator(dphi_tkMET_pfMET[mask])
 
                         # HT and missing HT for jets
                         if 'HT' in cfg.RUN.SAVE.VARIABLES:
