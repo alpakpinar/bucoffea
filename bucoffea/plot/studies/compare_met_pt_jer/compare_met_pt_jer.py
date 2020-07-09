@@ -8,9 +8,19 @@ from coffea import hist
 from klepto.archives import dir_archive
 from matplotlib import pyplot as plt
 import matplotlib.ticker
+import argparse
 from pprint import pprint
 
 pjoin = os.path.join
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('path_19Feb20', help='Path to merged coffea files for 19Feb20 skim.')
+    parser.add_argument('path_05Jun20v5', help='Path to merged coffea files for 05Jun20v5 skim.')
+    parser.add_argument('--processes', help='The processes to compare.', nargs='*')
+    args = parser.parse_args()
+    
+    return args
 
 def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2017, region='cr_baseline_vbf'):
     '''Compare smeared MET pt distribution between the two accumulators.'''
@@ -130,14 +140,14 @@ def compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process='ZJetsToNuNu', year=2
     print(f'MSG% File saved: {outpath}')
 
 def main():
-    inpath_19Feb20, inpath_05Jun20v5 = sys.argv[1:]
-
-    if 'dy' in inpath_19Feb20:
-        process='DYJetsToLL'
-        regions_to_test = ['cr_baseline', 'cr_2m_baseline']
-    elif 'znunu' in inpath_19Feb20:
-        process='ZJetsToNuNu'
-        regions_to_test = ['cr_baseline', 'sr_vbf']
+    args = parse_cli()
+    inpath_19Feb20   = args.path_19Feb20
+    inpath_05Jun20v5 = args.path_05Jun20v5
+    if args.processes:
+        processes = args.processes
+    # By defualt, do the comparison for Znunu and DY processes
+    else:
+        processes = ['ZJetsToNuNu', 'DYJetsToLL']
 
     acc_19Feb20   = dir_archive(inpath_19Feb20, serialized=True, memsize=1e3, compression=0)
     acc_05Jun20v5 = dir_archive(inpath_05Jun20v5, serialized=True, memsize=1e3, compression=0)
@@ -147,10 +157,16 @@ def main():
 
     # Region: cr_baseline_vbf --> Region with minimal baseline selections
     # MET pt > 100 + leading jet pt/eta cuts 
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2017, region=regions_to_test[0])
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2018, region=regions_to_test[0])
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2017, region=regions_to_test[1])
-    compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2018, region=regions_to_test[1])
+    for process in processes:
+        if process == 'ZJetsToNuNu':
+            regions_to_test = ['cr_baseline', 'sr_vbf']
+        elif process == 'DYJetsToLL':
+            regions_to_test = ['cr_baseline', 'cr_2m_baseline']
+
+        compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2017, region=regions_to_test[0])
+        compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2018, region=regions_to_test[0])
+        compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2017, region=regions_to_test[1])
+        compare_met_pt_jer(acc_19Feb20, acc_05Jun20v5, process=process, year=2018, region=regions_to_test[1])
 
 if __name__ == '__main__':
     main()
