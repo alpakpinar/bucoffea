@@ -689,8 +689,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         weight=w)
 
                     # Fill variated jet eta distributions
-                    ezfill('ak4_eta0_unc', mjj=diak4.i0.eta[mask], uncertainty=unc, weight=w)
-                    ezfill('ak4_eta1_unc', mjj=diak4.i1.eta[mask], uncertainty=unc, weight=w)
+                    ezfill('ak4_eta0_unc', jeteta=diak4.i0.eta[mask], uncertainty=unc, weight=w)
+                    ezfill('ak4_eta1_unc', jeteta=diak4.i1.eta[mask], uncertainty=unc, weight=w)
 
             # Uncertainty variations for photons
             if df['is_lo_g'] or df['is_lo_g_ewk']:
@@ -717,8 +717,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         weight=w)
 
                     # Fill variated jet eta distributions
-                    ezfill('ak4_eta0_unc', mjj=diak4.i0.eta[mask], uncertainty=unc, weight=w)
-                    ezfill('ak4_eta1_unc', mjj=diak4.i1.eta[mask], uncertainty=unc, weight=w)
+                    ezfill('ak4_eta0_unc', jeteta=diak4.i0.eta[mask], uncertainty=unc, weight=w)
+                    ezfill('ak4_eta1_unc', jeteta=diak4.i1.eta[mask], uncertainty=unc, weight=w)
 
             # Fill mjj and gen V-pt distributions without EWK corrections for LO Z, W and photon samples
             if df['is_lo_z'] or df['is_lo_w'] or df['is_lo_g']:
