@@ -157,32 +157,18 @@ default:
     qcd_nlo_g_2017_2d: # 2D QCD k factor for QCD photon
       histogram: 2d_gjets_vbf
       file: data/sf/theory/2017_gen_v_pt_qcd_sf.root
-    # Theory uncertainties on Z / W ratio 
-    # Uncertainties for Z varied and W varied individually
-    unc_zoverw_num_varied_nlo_muf_down:
-      histogram: zoverw_ind_num_varied_facScaleDown 
-      file: data/sf/theory/unc/zoverw_scale_unc_2d_individual_unc_withznunu.root
-    unc_zoverw_num_varied_nlo_muf_up:
-      histogram: zoverw_ind_num_varied_facScaleUp
-      file: data/sf/theory/unc/zoverw_scale_unc_2d_individual_unc_withznunu.root
-    unc_zoverw_num_varied_nlo_mur_down:
-      histogram: zoverw_ind_num_varied_renScaleDown
-      file: data/sf/theory/unc/zoverw_scale_unc_2d_individual_unc_withznunu.root
-    unc_zoverw_num_varied_nlo_mur_up:
-      histogram: zoverw_ind_num_varied_renScaleUp
-      file: data/sf/theory/unc/zoverw_scale_unc_2d_individual_unc_withznunu.root
-    unc_zoverw_denom_varied_nlo_muf_down:
-      histogram: zoverw_ind_denom_varied_facScaleDown 
-      file: data/sf/theory/unc/zoverw_scale_unc_2d_individual_unc_withznunu.root
-    unc_zoverw_denom_varied_nlo_muf_up:
-      histogram: zoverw_ind_denom_varied_facScaleUp
-      file: data/sf/theory/unc/zoverw_scale_unc_2d_individual_unc_withznunu.root
-    unc_zoverw_denom_varied_nlo_mur_down:
-      histogram: zoverw_ind_denom_varied_renScaleDown
-      file: data/sf/theory/unc/zoverw_scale_unc_2d_individual_unc_withznunu.root
-    unc_zoverw_denom_varied_nlo_mur_up:
-      histogram: zoverw_ind_denom_varied_renScaleUp
-      file: data/sf/theory/unc/zoverw_scale_unc_2d_individual_unc_withznunu.root
+    unc_zoverw_nlo_muf_down:
+      histogram: zoverw_facScaleDown 
+      file: data/sf/theory/unc/zoverw_scale_unc_2d.root
+    unc_zoverw_nlo_muf_up:
+      histogram: zoverw_facScaleUp
+      file: data/sf/theory/unc/zoverw_scale_unc_2d.root
+    unc_zoverw_nlo_mur_down:
+      histogram: zoverw_renScaleDown
+      file: data/sf/theory/unc/zoverw_scale_unc_2d.root
+    unc_zoverw_nlo_mur_up:
+      histogram: zoverw_renScaleUp
+      file: data/sf/theory/unc/zoverw_scale_unc_2d.root
     unc_zoverw_nlo_pdf_down:
       histogram: z_over_w_pdfDown 
       file: data/sf/theory/unc/zoverw_pdf_unc_2d.root
