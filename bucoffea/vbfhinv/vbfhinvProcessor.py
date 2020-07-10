@@ -212,17 +212,18 @@ class vbfhinvProcessor(processor.ProcessorABC):
             cfg.ENV_FOR_DYNACONF = f"default"
         cfg.reload()
         # All the split JES uncertainties, "" represents the nominal case with no variation
-        self._variations = ['', '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
-                            '_jesRelativeBalUp', '_jesRelativeBalDown',
-                            '_jesHFUp', '_jesHFDown',
-                            '_jesBBEC1Up', '_jesBBEC1Down',
-                            '_jesEC2Up', '_jesEC2Down',
-                            '_jesAbsoluteUp', '_jesAbsoluteDown',
-                            f'_jesBBEC1_{self._year}Up', f'_jesBBEC1_{self._year}Down',
-                            f'_jesEC2_{self._year}Up', f'_jesEC2_{self._year}Down',
-                            f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
-                            f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
-                            f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
+        self._variations = ['', 
+                            # '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
+                            # '_jesRelativeBalUp', '_jesRelativeBalDown',
+                            # '_jesHFUp', '_jesHFDown',
+                            # '_jesBBEC1Up', '_jesBBEC1Down',
+                            # '_jesEC2Up', '_jesEC2Down',
+                            # '_jesAbsoluteUp', '_jesAbsoluteDown',
+                            # f'_jesBBEC1_{self._year}Up', f'_jesBBEC1_{self._year}Down',
+                            # f'_jesEC2_{self._year}Up', f'_jesEC2_{self._year}Down',
+                            # f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
+                            # f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
+                            # f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
                             '_jesTotalUp', '_jesTotalDown',
                             '_jerUp', '_jerDown'
                             ]
@@ -646,9 +647,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
             # Leading ak4
             w_diak4 = weight_shape(diak4.pt[mask], rweight[mask])
             ezfill('ak4_pt0',       jetpt=getattr(diak4.i0, f'pt{var}')[mask].flatten(),      weight=w_diak4)
+            ezfill('ak4_eta0',      jeteta=diak4.i0.eta[mask].flatten(),      weight=w_diak4)
 
             # Trailing ak4
             ezfill('ak4_pt1',       jetpt=getattr(diak4.i1, f'pt{var}')[mask].flatten(),      weight=w_diak4)
+            ezfill('ak4_eta1',      jeteta=diak4.i1.eta[mask].flatten(),      weight=w_diak4)
 
             # B tag discriminator
             btag = getattr(ak4, cfg.BTAG.ALGO)
