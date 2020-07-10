@@ -42,6 +42,7 @@ def parse_commandline():
     parser.add_argument('--onlyJER', help='Only plot JER uncertainties.', action='store_true')
     parser.add_argument('--save_to_df', help='Save results to output pandas dataframe, stored in an output pkl file.', action='store_true')
     parser.add_argument('--only', help='Only run over a subset of the samples', nargs='*')
+    parser.add_argument('--variable', help='The variable for the calculation of uncertainties, defaults to mjj.', default='mjj')
     args = parser.parse_args()
     return args
 
@@ -81,7 +82,7 @@ def get_unc(d, edges, out_tag, tag, sample_type):
 
     print(f'MSG% File saved: {outpath}')
 
-def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analysis='vbf'):
+def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analysis='vbf', variable='mjj'):
     '''Given the input accumulator and the regex
     describing the dataset, plot the mjj distribution
     with different JES/JER variations in the same canvas.
@@ -97,16 +98,24 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     title       : Histogram title for plotting.
     sample_type : QCD ("qcd") or EWK ("ewk") sample.
     analysis    : Type of analysis under consideration, "vbf" or "monojet". Default is vbf.
+    variable    : The variable to be used for plotting, by default it is taken to be mjj.
     '''
     # If analysis is VBF, look at mjj distribution. If analysis is monojet, look at recoil.
     if analysis == 'vbf':
-        acc.load('mjj')
-        h = acc['mjj']
-        # Rebin mjj
-        mjj_bins = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
-        mjj_bins_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
-        mjj_bins_very_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', [0,4000]) 
-        h = h.rebin('mjj', mjj_bins_very_coarse)
+        acc.load(variable)
+        h = acc[variable]
+        if variable == 'mjj':
+            # Rebin mjj
+            mjj_bins = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
+            mjj_bins_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
+            mjj_bins_very_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', [0,4000]) 
+            h = h.rebin('mjj', mjj_bins_very_coarse)
+        elif variable == 'ak4_eta0':
+            jeteta_bins = hist.Bin('jeteta', r'Leading Jet $\eta$', np.arange(-5,6))
+            h = h.rebin('jeteta', jeteta_bins)
+        elif variable == 'ak4_eta1':
+            jeteta_bins = hist.Bin('jeteta', r'Trailing Jet $\eta$', np.arange(-5,6))
+            h = h.rebin('jeteta', jeteta_bins)
 
     elif analysis == 'monojet':
         acc.load('recoil')
@@ -203,7 +212,10 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     rax.yaxis.set_major_locator(loc)
     rax.set_ylabel('Varied / Nominal')
     if analysis == 'vbf':
-        rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+        if variable == 'mjj':
+            rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+        elif variable in ['ak4_eta0', 'ak4_eta1']:
+            rax.set_xlabel(h.axis('jeteta').label)
     elif analysis == 'monojet':
         rax.set_xlabel(r'Recoil (GeV)')
     rax.legend(ncol=2)
@@ -214,13 +226,16 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    outpath = pjoin(outdir, f'{tag}_{sample_type}_jes_jer_variations.pdf')
+    outpath = pjoin(outdir, f'{tag}_{sample_type}_{variable}_jes_jer_variations.pdf')
     fig.savefig(outpath)
     plt.close()
     
     print(f'MSG% Histogram saved in: {outpath}')
 
-def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, sample_type, analysis='vbf', plot_onlyJES=False, plot_onlyJER=False, bin_selection='singleBin'):
+def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
+            sample_type, analysis='vbf', plot_onlyJES=False, plot_onlyJER=False, 
+            bin_selection='singleBin', variable='mjj'):
+
     '''Given the input accumulator, plot ratio of two datasets
     for each JES/JER variation, on the same canvas.
     ==============
@@ -238,20 +253,28 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     plot_onlyJES  : Only plot JES uncertaintes on the plot.
     plot_onlyJER  : Only plot JER uncertaintes on the plot.
     bin_selection : Selection for binning, use "singleBin" for one bin or "coarse" or "fine".  
+    variable      : The variable to be used for plotting, by default it is taken to be mjj.
     '''
     # If analysis is VBF, look at mjj distribution. If analysis is monojet, look at recoil.
     if analysis == 'vbf':
-        acc.load('mjj')
-        h = acc['mjj']
-        # Rebin mjj
-        mjj_binning = {
-            'singleBin' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', [0,4000]),
-            'coarse' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))),
-            'fine' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
-        }
-        # mjj_bins_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
-        binning_to_use = mjj_binning[bin_selection]
-        h = h.rebin('mjj', binning_to_use)
+        acc.load(variable)
+        h = acc[variable]
+        if variable == 'mjj':
+            # Rebin mjj
+            mjj_binning = {
+                'singleBin' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', [0,4000]),
+                'coarse' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))),
+                'fine' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
+            }
+            # mjj_bins_coarse = hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(0,4000,1000))) 
+            binning_to_use = mjj_binning[bin_selection]
+            h = h.rebin('mjj', binning_to_use)
+        elif variable == 'ak4_eta0':
+            jeteta_bins = hist.Bin('jeteta', r'Leading Jet $\eta$', np.arange(-5,6))
+            h = h.rebin('jeteta', jeteta_bins)
+        elif variable == 'ak4_eta1':
+            jeteta_bins = hist.Bin('jeteta', r'Trailing Jet $\eta$', np.arange(-5,6))
+            h = h.rebin('jeteta', jeteta_bins)
 
     elif analysis == 'monojet':
         acc.load('recoil')
@@ -404,7 +427,10 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     rax.yaxis.set_major_locator(loc)
     rax.set_ylabel('Varied / Nominal')
     if analysis == 'vbf':
-        rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+        if variable == 'mjj':
+            rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+        elif variable in ['ak4_eta0', 'ak4_eta1']:
+            rax.set_xlabel(h.axis('jeteta').label)
     elif analysis == 'monojet':
         rax.set_xlabel(r'Recoil (GeV)')
     ncol_for_legend = 1 if (plot_onlyJES or plot_onlyJER) else 2
@@ -421,7 +447,7 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    filename = f'{tag}_{sample_type}_jes_jer_variations_{bin_selection}.pdf'
+    filename = f'{tag}_{sample_type}_jes_jer_variations_{variable}_{bin_selection}.pdf'
 
     outpath = pjoin(outdir, filename)
     fig.savefig(outpath)
@@ -490,7 +516,9 @@ def main():
                     out_tag=out_tag, 
                     region=region, 
                     sample_type=sample_type,
-                    analysis=args.analysis)
+                    analysis=args.analysis,
+                    variable=args.variable
+                    )
 
     # Run for only specific ratios if an "only" option is specified to the script
     if args.only:
@@ -550,8 +578,10 @@ def main():
                                             analysis=args.analysis,
                                             plot_onlyJES=args.onlyJES,
                                             plot_onlyJER=args.onlyJER,
-                                            bin_selection=bin_selection)
-                    
+                                            bin_selection=bin_selection,
+                                            variable=args.variable
+                                            )
+
                     if bin_selection == 'singleBin':
                         ratio_list.append(ratio_dict)
     
