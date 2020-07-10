@@ -254,3 +254,139 @@ indices_from_tags = {
             'ewk' : r'EWK $W(\ell\nu) / \gamma$ + jets 2018',
         }
     }
+
+# Dataset pairs used for data validation plot
+tag_to_dataset_pairs_data_validation = {
+    'zmumu_over_wmunu17' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'DYJetsToLL.*2017', 'region' : 'cr_2m'},
+            'dataset2' : {'regex' : 'WJetsToLNu.*2017', 'region' : 'cr_1m'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKZ2Jets_ZToLL.*2017', 'region' : 'cr_2m'},
+            'dataset2' : {'regex' : 'EWKW2Jets_WToLNu.*2017', 'region' : 'cr_1m'},
+        },
+    },
+    'zmumu_over_wmunu18' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'DYJetsToLL.*2018', 'region' : 'cr_2m'},
+            'dataset2' : {'regex' : 'WJetsToLNu.*2018', 'region' : 'cr_1m'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKZ2Jets_ZToLL.*2018', 'region' : 'cr_2m'},
+            'dataset2' : {'regex' : 'EWKW2Jets_WToLNu.*2018', 'region' : 'cr_1m'},
+        },
+    },
+    'zee_over_wenu17' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'DYJetsToLL.*2017', 'region' : 'cr_2e'},
+            'dataset2' : {'regex' : 'WJetsToLNu.*2017', 'region' : 'cr_1e'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKZ2Jets_ZToLL.*2017', 'region' : 'cr_2e'},
+            'dataset2' : {'regex' : 'EWKW2Jets_WToLNu.*2017', 'region' : 'cr_1e'},
+        },
+    },
+    'zee_over_wenu18' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'DYJetsToLL.*2018', 'region' : 'cr_2e'},
+            'dataset2' : {'regex' : 'WJetsToLNu.*2018', 'region' : 'cr_1e'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKZ2Jets_ZToLL.*2018', 'region' : 'cr_2e'},
+            'dataset2' : {'regex' : 'EWKW2Jets_WToLNu.*2018', 'region' : 'cr_1e'},
+        },
+    },
+    'zee_over_gjets17' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'DYJetsToLL.*2017', 'region' : 'cr_2e'},
+            'dataset2' : {'regex' : 'GJets_DR-0p4.*2017', 'region' : 'cr_g'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKZ2Jets_ZToLL.*2017', 'region' : 'cr_2e'},
+            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2017', 'region' : 'cr_g'},
+        },
+    },
+    'zee_over_gjets18' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'DYJetsToLL.*2018', 'region' : 'cr_2e'},
+            'dataset2' : {'regex' : 'GJets_DR-0p4.*2018', 'region' : 'cr_g'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKZ2Jets_ZToLL.*2018', 'region' : 'cr_2e'},
+            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2018', 'region' : 'cr_g'},
+        },
+    },
+    'zmumu_over_gjets17' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'DYJetsToLL.*2017', 'region' : 'cr_2m'},
+            'dataset2' : {'regex' : 'GJets_DR-0p4.*2017', 'region' : 'cr_g'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKZ2Jets_ZToLL.*2017', 'region' : 'cr_2m'},
+            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2017', 'region' : 'cr_g'},
+        },
+    },
+    'zmumu_over_gjets18' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'DYJetsToLL.*2018', 'region' : 'cr_2m'},
+            'dataset2' : {'regex' : 'GJets_DR-0p4.*2018', 'region' : 'cr_g'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKZ2Jets_ZToLL.*2018', 'region' : 'cr_2m'},
+            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2018', 'region' : 'cr_g'},
+        },
+    },
+    'wenu_over_gjets17' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'WJetsToLNu.*2017', 'region' : 'cr_1e'},
+            'dataset2' : {'regex' : 'GJets_DR-0p4.*2017', 'region' : 'cr_g'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKW2Jets_WToLNu.*2017', 'region' : 'cr_1e'},
+            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2017', 'region' : 'cr_g'},
+        },
+    },
+    'wenu_over_gjets18' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'WJetsToLNu.*2018', 'region' : 'cr_1e'},
+            'dataset2' : {'regex' : 'GJets_DR-0p4.*2018', 'region' : 'cr_g'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKW2Jets_WToLNu.*2018', 'region' : 'cr_1e'},
+            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2018', 'region' : 'cr_g'},
+        },
+    },
+    'wmunu_over_gjets17' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'WJetsToLNu.*2017', 'region' : 'cr_1m'},
+            'dataset2' : {'regex' : 'GJets_DR-0p4.*2017', 'region' : 'cr_g'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKW2Jets_WToLNu.*2017', 'region' : 'cr_1m'},
+            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2017', 'region' : 'cr_g'},
+        },
+    },
+    'wmunu_over_gjets18' : {
+        'qcd': {
+            'dataset1' : {'regex' : 'WJetsToLNu.*2018', 'region' : 'cr_1m'},
+            'dataset2' : {'regex' : 'GJets_DR-0p4.*2018', 'region' : 'cr_g'},
+        },
+        'ewk': {
+            'dataset1' : {'regex' : 'EWKW2Jets_WToLNu.*2018', 'region' : 'cr_1m'},
+            'dataset2' : {'regex' : 'GJets_SM_5f_EWK.*2018', 'region' : 'cr_g'},
+        },
+    },
+
+}
+
+# Ratios to combine for the data validation plot
+# Combine electron and muon channels to gain more stats
+pairs_to_combine_for_data_validation = [
+    {'pair' : ('zmumu_over_wmunu17', 'zee_over_wenu17'), 'tag' : 'zll_over_wlnu17'},
+    {'pair' : ('zmumu_over_wmunu18', 'zee_over_wenu18'), 'tag' : 'zll_over_wlnu18'},
+    {'pair' : ('zmumu_over_gjets17', 'zee_over_gjets17'), 'tag' : 'zll_over_gjets17'}, 
+    {'pair' : ('zmumu_over_gjets18', 'zee_over_gjets18'), 'tag' : 'zll_over_gjets18'}, 
+    {'pair' : ('wmunu_over_gjets17', 'wenu_over_gjets17'), 'tag' : 'wlnu_over_gjets17'},
+    {'pair' : ('wmunu_over_gjets18', 'wenu_over_gjets18'), 'tag' : 'wlnu_over_gjets18'}
+]

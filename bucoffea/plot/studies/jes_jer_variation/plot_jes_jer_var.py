@@ -12,7 +12,12 @@ import matplotlib.ticker
 import mplhep as hep
 import numpy as np
 import pandas as pd
-from data import tag_to_dataset_pairs, dataset_regex, indices_from_tags
+from data import (tag_to_dataset_pairs, 
+                  tag_to_dataset_pairs_data_validation,
+                  pairs_to_combine_for_data_validation,
+                  dataset_regex, 
+                  indices_from_tags
+                  )
 from pprint import pprint
 
 pjoin = os.path.join
@@ -23,10 +28,12 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][:5]
 # Legend labels for each variation
 var_to_legend_label = {
     ''         : 'Nominal',
-    '_jerUp'   : 'JER up',
-    '_jerDown' : 'JER down',
-    '_jesTotalUp'   : 'JES up',
-    '_jesTotalDown' : 'JES down'
+    '_jerup'   : 'JER up',
+    '_jerdown' : 'JER down',
+    '_jesup'   : 'JES up',
+    '_jesdown' : 'JES down'
+    # '_jesTotalUp'   : 'JES up',
+    # '_jesTotalDown' : 'JES down'
 }
 
 def parse_commandline():
@@ -43,6 +50,8 @@ def parse_commandline():
     parser.add_argument('--save_to_df', help='Save results to output pandas dataframe, stored in an output pkl file.', action='store_true')
     parser.add_argument('--only', help='Only run over a subset of the samples', nargs='*')
     parser.add_argument('--variable', help='The variable for the calculation of uncertainties, defaults to mjj.', default='mjj')
+    parser.add_argument('--year', help='The year of the samples to be run over.', type=int)
+    parser.add_argument('--combine', help='The year of the samples to be run over.', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -149,7 +158,8 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     # Calculate the ratios of each variation
     # with respect to nominal counts
     ratios = {}
-    variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
+    # variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
+    variations = ['', '_jerup', '_jerdown', '_jesup', '_jesdown']
     for variation in variations:
         ratios[variation] = h.integrate('region', f'{region}{analysis_tag}{variation}').values()[()] / h_nom
 
@@ -234,26 +244,27 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
 
 def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
             sample_type, analysis='vbf', plot_onlyJES=False, plot_onlyJER=False, 
-            bin_selection='singleBin', variable='mjj'):
+            bin_selection='singleBin', variable='mjj', combine=None):
 
     '''Given the input accumulator, plot ratio of two datasets
     for each JES/JER variation, on the same canvas.
     ==============
     PARAMETERS:
     ==============
-    acc           : Input accumulator containing the histograms.
-    regex1        : Regular expression matching the dataset name in the numerator of the ratio.
-    regex2        : Regular expression matching the dataset name in the denominator of the ratio.
-    region1       : The region from which the data for the numerator is going to be taken from.
-    region2       : The region from which the data for the denominator is going to be taken from.
-    tag           : Tag for the process name. (e.g "wjet")
-    out_tag       : Out-tag for naming output directory, output files are going to be saved under this directory.
-    sample_type   : QCD ("qcd") or EWK ("ewk") sample. 
-    analysis      : Type of analysis under consideration, "vbf" or "monojet". Default is vbf.
-    plot_onlyJES  : Only plot JES uncertaintes on the plot.
-    plot_onlyJER  : Only plot JER uncertaintes on the plot.
-    bin_selection : Selection for binning, use "singleBin" for one bin or "coarse" or "fine".  
-    variable      : The variable to be used for plotting, by default it is taken to be mjj.
+    acc            : Input accumulator containing the histograms.
+    regex1         : Regular expression matching the dataset name in the numerator of the ratio.
+    regex2         : Regular expression matching the dataset name in the denominator of the ratio.
+    region1        : The region from which the data for the numerator is going to be taken from.
+    region2        : The region from which the data for the denominator is going to be taken from.
+    tag            : Tag for the process name. (e.g "wjet")
+    out_tag        : Out-tag for naming output directory, output files are going to be saved under this directory.
+    sample_type    : QCD ("qcd") or EWK ("ewk") sample. 
+    analysis       : Type of analysis under consideration, "vbf" or "monojet". Default is vbf.
+    plot_onlyJES   : Only plot JES uncertaintes on the plot.
+    plot_onlyJER   : Only plot JER uncertaintes on the plot.
+    bin_selection  : Selection for binning, use "singleBin" for one bin or "coarse" or "fine".  
+    variable       : The variable to be used for plotting, by default it is taken to be mjj.
+    combine        : Combine W or Z regions if specified, defaults to None.
     '''
     # If analysis is VBF, look at mjj distribution. If analysis is monojet, look at recoil.
     if analysis == 'vbf':
@@ -270,11 +281,12 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag,
             binning_to_use = mjj_binning[bin_selection]
             h = h.rebin('mjj', binning_to_use)
         elif variable == 'ak4_eta0':
-            jeteta_bins = hist.Bin('jeteta', r'Leading Jet $\eta$', np.arange(-5,6))
-            h = h.rebin('jeteta', jeteta_bins)
+            binning_to_use = hist.Bin('jeteta', r'Leading Jet $\eta$', np.arange(-5,6))
+            # binning_to_use = hist.Bin('jeteta', r'Leading Jet $\eta$', [-5, -4, -3] + list(np.arange(-2.6, 3, 0.4) ) + [3, 4, 5] )
+            h = h.rebin('jeteta', binning_to_use)
         elif variable == 'ak4_eta1':
-            jeteta_bins = hist.Bin('jeteta', r'Trailing Jet $\eta$', np.arange(-5,6))
-            h = h.rebin('jeteta', jeteta_bins)
+            binning_to_use = hist.Bin('jeteta', r'Trailing Jet $\eta$', np.arange(-5,6))
+            h = h.rebin('jeteta', binning_to_use)
 
     elif analysis == 'monojet':
         acc.load('recoil')
@@ -344,6 +356,20 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag,
         'znunu_over_zmumu18' : r'{} $Z\rightarrow \nu \nu$ SR / {} $Z\rightarrow \mu \mu$ CR'.format(sample_label, sample_label),
         'znunu_over_zee17' : r'{} $Z\rightarrow \nu \nu$ SR / {} $Z\rightarrow ee$ CR'.format(sample_label, sample_label),
         'znunu_over_zee18' : r'{} $Z\rightarrow \nu \nu$ SR / {} $Z\rightarrow ee$ CR'.format(sample_label, sample_label),
+
+        'zee_over_wenu17' : r'{} $Z\rightarrow ee$ SR / {} $W\rightarrow e\nu$ CR'.format(sample_label, sample_label),
+        'zee_over_wenu18' : r'{} $Z\rightarrow ee$ SR / {} $W\rightarrow e\nu$ CR'.format(sample_label, sample_label),
+        'zmumu_over_wmunu17' : r'{} $Z\rightarrow \mu\mu$ SR / {} $W\rightarrow \mu\nu$ CR'.format(sample_label, sample_label),
+        'zmumu_over_wmunu18' : r'{} $Z\rightarrow \mu\mu$ SR / {} $W\rightarrow \mu\nu$ CR'.format(sample_label, sample_label),
+        'zee_over_gjets17' : r'{} $Z\rightarrow ee$ SR / {} $\gamma$ + jets CR'.format(sample_label, sample_label),
+        'zee_over_gjets18' : r'{} $Z\rightarrow ee$ SR / {} $\gamma$ + jets CR'.format(sample_label, sample_label),
+        'zmumu_over_gjets17' : r'{} $Z\rightarrow \mu\mu$ SR / {} $\gamma$ + jets CR'.format(sample_label, sample_label),
+        'zmumu_over_gjets18' : r'{} $Z\rightarrow \mu\mu$ SR / {} $\gamma$ + jets CR'.format(sample_label, sample_label),
+        'wenu_over_gjets17' : r'{} $W\rightarrow e\nu$ SR / {} $\gamma$ + jets CR'.format(sample_label, sample_label),
+        'wenu_over_gjets18' : r'{} $W\rightarrow e\nu$ SR / {} $\gamma$ + jets CR'.format(sample_label, sample_label),
+        'wmunu_over_gjets17' : r'{} $W\rightarrow \mu\nu$ SR / {} $\gamma$ + jets CR'.format(sample_label, sample_label),
+        'wmunu_over_gjets18' : r'{} $W\rightarrow \mu\nu$ SR / {} $\gamma$ + jets CR'.format(sample_label, sample_label),
+
         'gjets_over_znunu17' : r'{} $\gamma$ + jets CR / {} $Z\rightarrow \nu \nu$ SR'.format(sample_label, sample_label),
         'gjets_over_znunu18' : r'{} $\gamma$ + jets CR / {} $Z\rightarrow \nu \nu$ SR'.format(sample_label, sample_label),
         'wlnu_over_wenu17' : r'{} $W\rightarrow \ell \nu$ SR / {} $W\rightarrow e\nu$ CR'.format(sample_label, sample_label),
@@ -369,10 +395,12 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag,
     elif plot_onlyJER:
         variations = ['', '_jerUp', '_jerDown']
     else:
-        variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
+        variations = ['', '_jerup', '_jerdown', '_jesup', '_jesdown']
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     for idx, var_name in enumerate(variations):
         ratio_arr = ratios[var_name]
+        # Guard against the bad values
+        ratio_arr[np.isnan(ratio_arr) | np.isinf(ratio_arr)] = 1.
         hep.histplot(ratio_arr, 
                      edges, 
                      label=var_to_legend_label[var_name],
@@ -447,7 +475,10 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag,
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    filename = f'{tag}_{sample_type}_jes_jer_variations_{variable}_{bin_selection}.pdf'
+    if bin_selection:
+        filename = f'{tag}_{sample_type}_jes_jer_variations_{variable}_{bin_selection}.pdf'
+    else:
+        filename = f'{tag}_{sample_type}_jes_jer_variations_{variable}.pdf'
 
     outpath = pjoin(outdir, filename)
     fig.savefig(outpath)
@@ -460,10 +491,62 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag,
     get_unc(ratios, edges, out_tag, tag, sample_type)
 
     # Flatten and return
-    for key in ratios.keys():
-        ratios[key] = ratios[key][0]
+    if bin_selection == 'singleBin':
+        for key in ratios.keys():
+            ratios[key] = ratios[key][0]
 
-    return ratios
+    # Return the ratios and errors for each variation + the binning
+    return ratios, err, edges
+
+def plot_combined_variations(combined_variations, combined_errs, bins, out_tag, variable, ratio_tag):
+    '''Plot JES/JER variations for the combined ratio.'''
+    # Tag to y-label mapping for combined variations
+    tag_to_ylabel_combined = {
+        'zll_over_wlnu17'   : r'$Z\rightarrow \ell \ell$ / $W\rightarrow \ell \nu$ 2017',
+        'zll_over_wlnu18'   : r'$Z\rightarrow \ell \ell$ / $W\rightarrow \ell \nu$ 2018',
+        'zll_over_gjets17'  : r'$Z\rightarrow \ell \ell$ / $\gamma$ + jets 2017',
+        'zll_over_gjets18'  : r'$Z\rightarrow \ell \ell$ / $\gamma$ + jets 2018',
+        'wlnu_over_gjets17' : r'$W\rightarrow \ell \nu$ / $\gamma$ + jets 2017',
+        'wlnu_over_gjets18' : r'$W\rightarrow \ell \nu$ / $\gamma$ + jets 2018'
+    }
+
+    ratios = {}
+    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 2)}, sharex=True)
+    for var_name, values in combined_variations.items():
+        hep.histplot(values, bins, yerr=combined_errs[var_name], ax=ax, label=var_to_legend_label[var_name], histtype='step')
+        # Store the ratios to the nominal case
+        if var_name != '':
+            ratios[var_name] = values / combined_variations['']
+
+    ax.legend(title='Variations')
+    ax.set_ylim(0,0.5)
+    ax.set_ylabel(tag_to_ylabel_combined[ratio_tag])
+
+    # Plot the ratios
+    for var_name, ratios in ratios.items():
+        hep.histplot(ratios, bins, ax=rax, label=var_to_legend_label[var_name], histtype='errorbar')
+
+    if variable == 'ak4_eta0':
+        rax.set_xlabel(r'Leading Jet $\eta$')
+    elif variable == 'ak4_eta1':
+        rax.set_xlabel(r'Trailing Jet $\eta$')
+    
+    rax.legend()
+    rax.set_ylim(0.8,1.2)
+    rax.grid(True)
+
+    loc = matplotlib.ticker.MultipleLocator(base=0.1)
+    rax.yaxis.set_major_locator(loc)
+    rax.set_ylabel('Varied / Nominal')
+
+    # Save figure
+    outdir = f'./output/{out_tag}/combined_variations'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    outpath = pjoin(outdir, f'{ratio_tag}.pdf')
+    fig.savefig(outpath)
+    print(f'MSG% File saved: {outpath}')
 
 def main():
     args = parse_commandline()
@@ -501,7 +584,7 @@ def main():
             processes_to_look_at.extend(w_procs)
 
     # Plot individual distributions unless "ratio only" option is specified
-    if not args.ratio:
+    if not args.ratio and not args.combine:
         for tag, data_dict in dataset_regex.items():
             for sample_type, run in run_over_samples.items():
                 if not run:
@@ -548,16 +631,23 @@ def main():
 
     # All bin types for the ratio plot
     # For now: Just plot single bin (not interested in shape information for TFs)
-    bin_types = ['singleBin']
+    if args.variable == 'mjj':
+        bin_types = ['singleBin']
+    else:
+        bin_types = [None]
 
     # Plot ratios unless "individual plots only option is specified"
-    if not args.individual:
+    if not args.individual and not args.combine:
         # Store the ratios and dataset names/types to tabulate values (using pandas) later
         ratio_list = []
         index_list = []
         for tag, data_dict in tag_to_dataset_pairs.items():
             if args.only:
                 if tag not in ratios_to_look_at:
+                    continue
+            # If a year is specified, only run over the samples from that year
+            if args.year:
+                if (args.year == 2017 and '18' in tag) or (args.year == 2018 and '17' in tag):
                     continue
             for sample_type, run in run_over_samples.items():
                 if not run:
@@ -600,6 +690,70 @@ def main():
         pkl_file = 'ratios_df.pkl'
         with open(pkl_file, 'wb+') as f:
             df.to_pickle(pkl_file)
+
+    # For the data validation plots, get the combined uncertainties as a function of leading/trailing jet eta
+    if args.combine:
+        combined_uncs = {}
+        for d in pairs_to_combine_for_data_validation:
+            ratio1, ratio2 = d['pair']
+            ratio_tag = d['tag']
+            if args.year:
+                if (args.year == 2017 and '18' in ratio1) or (args.year == 2018 and '17' in ratio1):
+                    continue
+            ratio1_info = tag_to_dataset_pairs_data_validation[ratio1]['qcd'] # Only run QCD processes for now
+            ratio2_info = tag_to_dataset_pairs_data_validation[ratio2]['qcd'] # Only run QCD processes for now
+            
+            # Get the uncertainties + the errors for the individual ratios as an array
+            data1_info_ratio1 = ratio1_info['dataset1']
+            data2_info_ratio1 = ratio1_info['dataset2']
+
+            ratio_dict_ratio1, err_dict_ratio1, bins = plot_jes_jer_var_ratio( acc, 
+                                                            regex1=data1_info_ratio1['regex'], 
+                                                            regex2=data2_info_ratio1['regex'], 
+                                                            region1=data1_info_ratio1['region'], 
+                                                            region2=data2_info_ratio1['region'], 
+                                                            tag=ratio1, 
+                                                            out_tag=out_tag,
+                                                            sample_type='qcd',
+                                                            analysis=args.analysis,
+                                                            # plot_onlyJES=args.onlyJES,
+                                                            # plot_onlyJER=args.onlyJER,
+                                                            bin_selection=None,
+                                                            variable=args.variable
+                                                            )
+
+            data1_info_ratio2 = ratio2_info['dataset1']
+            data2_info_ratio2 = ratio2_info['dataset2']
+
+            ratio_dict_ratio2, err_dict_ratio2, bins = plot_jes_jer_var_ratio( acc, 
+                                                            regex1=data1_info_ratio2['regex'], 
+                                                            regex2=data2_info_ratio2['regex'], 
+                                                            region1=data1_info_ratio2['region'], 
+                                                            region2=data2_info_ratio2['region'], 
+                                                            tag=ratio1, 
+                                                            out_tag=out_tag,
+                                                            sample_type='qcd',
+                                                            analysis=args.analysis,
+                                                            # plot_onlyJES=args.onlyJES,
+                                                            # plot_onlyJER=args.onlyJER,
+                                                            bin_selection=None,
+                                                            variable=args.variable
+                                                            )
+
+            # Combine the two variations
+            combined_variations = {}
+            combined_errs = {}
+            for var in ratio_dict_ratio1.keys():
+                ratio1_vals = ratio_dict_ratio1[var]
+                ratio2_vals = ratio_dict_ratio2[var]
+                combined_variations[var] = np.hypot(ratio1_vals, ratio2_vals)
+
+                ratio1_err = err_dict_ratio1[var]
+                ratio2_err = err_dict_ratio2[var]
+                combined_errs[var] = np.hypot(ratio1_err, ratio2_err)
+
+            # Plot the combined variations
+            plot_combined_variations(combined_variations, combined_errs, bins, out_tag, variable=args.variable, ratio_tag=ratio_tag)
 
 if __name__ == '__main__':
     main()
