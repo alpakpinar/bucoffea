@@ -7,8 +7,7 @@ import numpy as np
 import mplhep as hep
 import uproot
 from coffea import hist
-from coffea.hist.plot import poisson_interval
-from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
+from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, ratio_unc
 from matplotlib import pyplot as plt
 from klepto.archives import dir_archive
 from pprint import pprint
@@ -135,10 +134,9 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
     data_ratio[np.isinf(data_ratio) | np.isnan(data_ratio)] = 1.
     mc_ratio[np.isinf(mc_ratio) | np.isnan(mc_ratio)] = 1.
 
-    # Calculate the error on the ratio
-    # Following in the footsteps of: 
-    # https://github.com/CoffeaTeam/coffea/blob/199f7c8aeb4a40bc12240df4fee9dc6bd6c964c2/coffea/hist/plot.py#L364
-    data_ratio_err = np.abs(poisson_interval(data_ratio, data_region1_sumw2 / data_region2_sumw**2 ) - data_ratio)
+    # Calculate the stat error on the ratio for data and MC
+    data_ratio_err = ratio_unc(data_region1_sumw, data_region2_sumw, np.sqrt(data_region1_sumw2), np.sqrt(data_region2_sumw2))
+    mc_ratio_stat_err = ratio_unc(mc_region1_sumw, mc_region2_sumw, np.sqrt(mc_region1_sumw2), np.sqrt(mc_region2_sumw2))
 
     # Calculate the error in MC: Theory uncs (shape) + JES/JER + lepton uncs (flat)
     # File containing the theory variations
@@ -147,14 +145,14 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
     theory_uncs_up = {}
     theory_uncs_down = {}
 
+    # Accumulate the up and down variations in these two arrays, start with stat error only
+    mc_uncs_up = mc_ratio_stat_err**2
+    mc_uncs_down = mc_ratio_stat_err**2
+
     # Calculate uncertainties
     if tag == 'zll_over_wlv':
         theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_wlnu' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
         theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_wlnu' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
-
-        # Initialize an array of zeros for accumulating up and down variations in MC
-        mc_uncs_up = np.zeros_like(f_theory[theory_unc_names_up[0]].values)
-        mc_uncs_down = np.zeros_like(f_theory[theory_unc_names_down[0]].values)
 
         for unc in theory_unc_names_up:
             mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
@@ -190,10 +188,6 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
         elif tag == 'wlv_over_gjets':
             theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'wlv_over_gjets' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
             theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'wlv_over_gjets' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
-
-        # Initialize an array of zeros for accumulating up and down variations in MC
-        mc_uncs_up = np.zeros_like(f_theory[theory_unc_names_up[0]].values)
-        mc_uncs_down = np.zeros_like(f_theory[theory_unc_names_down[0]].values)
 
         for unc in theory_unc_names_up:
             mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
@@ -253,7 +247,7 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
     # ax.fill_between(bins[:-1], mc_ratio*mc_uncs_up, mc_ratio*mc_uncs_down, where='post', color='gray', alpha=0.5)
 
     # Aesthetics for the top panel
-    ax.set_ylabel(ylabels[tag])
+    ax.set_ylabel(f'{ylabels[tag]} {year}')
     ax.set_ylim(0,0.3) 
     ax.legend()
 
@@ -287,7 +281,7 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
     if not os.path.exists(outdir):
         os.makedirs(outdir)
         
-    outpath = pjoin(outdir, f'{tag}_data_validation_{variable}.pdf')
+    outpath = pjoin(outdir, f'{tag}_{year}_data_validation_{variable}.pdf')
     fig.savefig(outpath)
     plt.close(fig)
     print(f'MSG% File saved: {outpath}')
@@ -304,12 +298,13 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    create_data_validation_plot(acc, tag='zll_over_wlv', outtag=outtag, region1='zll', 
-                region2='wlv', year=2017, variable='ak4_eta0'
-                )
-    create_data_validation_plot(acc, tag='zll_over_gjets', outtag=outtag, region1='zll', 
-                region2='cr_g_vbf', year=2017, variable='ak4_eta0'
-                )
+    for year in [2017, 2018]:
+        create_data_validation_plot(acc, tag='zll_over_wlv', outtag=outtag, region1='zll', 
+                    region2='wlv', year=year, variable='ak4_eta0'
+                    )
+        create_data_validation_plot(acc, tag='zll_over_gjets', outtag=outtag, region1='zll', 
+                    region2='cr_g_vbf', year=year, variable='ak4_eta0'
+                    )
 
 if __name__ == '__main__':
     main()
