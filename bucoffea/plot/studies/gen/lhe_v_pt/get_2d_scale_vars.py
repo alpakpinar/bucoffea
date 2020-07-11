@@ -140,6 +140,9 @@ def get_2d_ratios(sumw_var, tag, var1, var2):
     elif 'goverz' in tag:
         tag1 = 'gjets'
         tag2 = 'dy'
+    elif 'zoverg' in tag:
+        tag1 = 'dy'
+        tag2 = 'gjets'
     elif 'woverg' in tag:
         tag1 = 'wjet'
         tag2 = 'gjets'
@@ -329,6 +332,8 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfi
             fig_title = r'$Z(\ell \ell)$ ' + var_to_label[var1] + r' / $W(\ell \nu)$ ' + var_to_label[var2] 
         elif tag == 'goverz':
             fig_title = r'$\gamma$ + jets ' + var_to_label[var1] + r' / $Z(\ell \ell)$ ' + var_to_label[var2] 
+        elif tag == 'zoverg':
+            fig_title = r'$Z(\ell \ell)$ ' + var_to_label[var1] + r' / $\gamma$ + jets ' + var_to_label[var2] 
         elif tag == 'woverg':
             fig_title = r'$W(\ell \nu)$ ' + var_to_label[var1] + r' / $\gamma$ + jets ' + var_to_label[var2] 
 
@@ -415,7 +420,7 @@ def main():
 
     # After filling out sumw_var, now calculate the variations on ratios
     # Two ratios: Z/W and photons/Z
-    ratio_tags = ['zoverw', 'goverz', 'zoverw_ind', 'goverz_ind', 'woverg']
+    ratio_tags = ['zoverw', 'goverz', 'zoverw_ind', 'goverz_ind', 'woverg', 'zoverg']
 
     # Create the output ROOT file to save the 
     # 2D scale uncertainties on ratios as a function of v-pt and mjj
@@ -425,6 +430,7 @@ def main():
     
     outputrootfile_z_over_w = uproot.recreate( pjoin(outputrootpath, 'zoverw_scale_unc_2d.root') )
     outputrootfile_g_over_z = uproot.recreate( pjoin(outputrootpath, 'goverz_scale_unc_2d.root') )
+    outputrootfile_z_over_g = uproot.recreate( pjoin(outputrootpath, 'zoverg_scale_unc_2d.root') )
     outputrootfile_w_over_g = uproot.recreate( pjoin(outputrootpath, 'woverg_scale_unc_2d.root') )
     outputrootfile_z_over_w_ind = uproot.recreate( pjoin(outputrootpath, 'zoverw_scale_unc_2d_individual_unc.root') )
     outputrootfile_g_over_z_ind = uproot.recreate( pjoin(outputrootpath, 'goverz_scale_unc_2d_individual_unc.root') )
@@ -432,6 +438,7 @@ def main():
     outputrootfiles = {
         'zoverw' : outputrootfile_z_over_w,
         'goverz' : outputrootfile_g_over_z,
+        'zoverg' : outputrootfile_z_over_g,
         'woverg' : outputrootfile_w_over_g,
         'zoverw_ind' : outputrootfile_z_over_w_ind,
         'goverz_ind' : outputrootfile_g_over_z_ind

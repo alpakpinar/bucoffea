@@ -312,17 +312,12 @@ def plot_ratio(noms, uncs, tag, vpt_axis, mjj_axis, outputrootfile, mjj_integrat
                     clims = (1.00,1.03)
                 elif variation_tag == 'down':
                     clims = (0.97,1.00)
-            elif tag == 'g_over_z':
+            elif tag in ['g_over_z', 'w_over_g', 'z_over_g']:
                 if variation_tag == 'up':
                     clims = (0.97,0.98)
                 elif variation_tag == 'down':
                     clims = (1.02,1.03)
-            elif tag == 'w_over_g':
-                if variation_tag == 'up':
-                    clims = (0.97,0.98)
-                elif variation_tag == 'down':
-                    clims = (1.02,1.03)
-            
+
             im.set_clim(*clims)
             
             # Set figure title
@@ -332,6 +327,8 @@ def plot_ratio(noms, uncs, tag, vpt_axis, mjj_axis, outputrootfile, mjj_integrat
                 fig_title = r'$\gamma + jets \ / \ Z(\ell \ell)$: PDF {}'.format(variation_tag)
             elif tag == 'w_over_g':
                 fig_title = r'$W(\ell \nu) \ / \ \gamma + jets$: PDF {}'.format(variation_tag)
+            elif tag == 'z_over_g':
+                fig_title = r'$Z(\ell \ell) \ / \ \gamma + jets$: PDF {}'.format(variation_tag)
             
             ax.set_title(fig_title)
 
@@ -387,6 +384,7 @@ def main():
     outputrootfile_z_over_w = uproot.recreate( pjoin(outputrootpath, f'zoverw_pdf_unc{rootfile_suffix}.root') )
     outputrootfile_g_over_z = uproot.recreate( pjoin(outputrootpath, f'goverz_pdf_unc{rootfile_suffix}.root') )
     outputrootfile_w_over_g = uproot.recreate( pjoin(outputrootpath, f'woverg_pdf_unc{rootfile_suffix}.root') )
+    outputrootfile_z_over_g = uproot.recreate( pjoin(outputrootpath, f'zoverg_pdf_unc{rootfile_suffix}.root') )
 
     w_nom, w_unc = get_pdf_uncertainty(acc, regex='WNJetsToLNu.*', tag='wjet', integrate_mjj=False)
     dy_nom, dy_unc = get_pdf_uncertainty(acc, regex='DYNJetsToLL.*', tag='dy', integrate_mjj=False)
@@ -395,7 +393,8 @@ def main():
     data_for_ratio = {
         'z_over_w' : {'noms' : (dy_nom, w_nom), 'uncs' : (dy_unc, w_unc), 'rootfile' : outputrootfile_z_over_w},
         'g_over_z' : {'noms' : (gjets_nom, dy_nom), 'uncs' : (gjets_unc, dy_unc), 'rootfile' : outputrootfile_g_over_z},
-        'w_over_g' : {'noms' : (w_nom, gjets_nom), 'uncs' : (w_unc, gjets_unc), 'rootfile' : outputrootfile_w_over_g}
+        'w_over_g' : {'noms' : (w_nom, gjets_nom), 'uncs' : (w_unc, gjets_unc), 'rootfile' : outputrootfile_w_over_g},
+        'z_over_g' : {'noms' : (dy_nom, gjets_nom), 'uncs' : (dy_unc, gjets_unc), 'rootfile' : outputrootfile_z_over_g}
     }
     
     for tag, entry in data_for_ratio.items():
