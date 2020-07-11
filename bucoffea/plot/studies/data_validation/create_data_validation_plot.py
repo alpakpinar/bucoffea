@@ -42,13 +42,6 @@ to_be_combined = {
     'wlv' : ('cr_1m_vbf', 'cr_1e_vbf')
 }
 
-# Flat uncertainty values
-flat_uncs = {
-    'zll_over_wlv' : {
-        'jes_jer' : 0.02, # 2% for JES/JER uncertainties
-    }
-}
-
 def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variable='ak4_eta0'):
     '''Create data validation plot, given the input accumulator and two regions being considered.'''
     acc.load(variable)
@@ -153,29 +146,85 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
     f_theory = uproot.open(theory_unc_file)
     theory_uncs_up = {}
     theory_uncs_down = {}
-    if region2 == 'wlv':
+
+    # Calculate uncertainties
+    if tag == 'zll_over_wlv':
         theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_wlnu' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
         theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_wlnu' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
 
-        for unc in theory_unc_names_up:
-            theory_uncs_up[unc] = f_theory[unc].values - 1
-        for unc in theory_unc_names_down:
-            theory_uncs_down[unc] = f_theory[unc].values - 1
+        # Initialize an array of zeros for accumulating up and down variations in MC
+        mc_uncs_up = np.zeros_like(f_theory[theory_unc_names_up[0]].values)
+        mc_uncs_down = np.zeros_like(f_theory[theory_unc_names_down[0]].values)
 
-        # Combine the theory uncertainties
-        combined_theory_uncs_up = sum(theory_uncs_up.values())
-        combined_theory_uncs_down = sum(theory_uncs_down.values())
-        
-        print(combined_theory_uncs_up)
-        print(combined_theory_uncs_down)
+        for unc in theory_unc_names_up:
+            mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
+        for unc in theory_unc_names_down:
+            mc_uncs_down += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
 
         # Add in the flat uncertainties
         jes_jer_unc = 0.02
-        mc_uncs_up = 1 + np.hypot(combined_theory_uncs_up, jes_jer_unc)
-        mc_uncs_down = 1 - np.hypot(combined_theory_uncs_down, jes_jer_unc)
+        ele_unc = 0.03
+        mu_unc = 0.01
 
-        print(mc_uncs_up)
-        print(mc_uncs_down)
+        mu_varied_ratio_up = ( (mc_region1_sumw_1 * (1 + mu_unc)) + mc_region1_sumw_2)     / ((mc_region2_sumw_1 * (1 + mu_unc)) + mc_region2_sumw_2) 
+        mu_varied_ratio_down = ( (mc_region1_sumw_1 * (1 - mu_unc)) + mc_region1_sumw_2)   / ((mc_region2_sumw_1 * (1 - mu_unc)) + mc_region2_sumw_2) 
+        ele_varied_ratio_up = (mc_region1_sumw_1 + (mc_region1_sumw_2 * (1 + ele_unc) ))   / ( mc_region2_sumw_1 + (mc_region2_sumw_2 * (1 + ele_unc) )) 
+        ele_varied_ratio_down = (mc_region1_sumw_1 + (mc_region1_sumw_2 * (1 - ele_unc) )) / ( mc_region2_sumw_1 + (mc_region2_sumw_2 * (1 - ele_unc) )) 
+
+        mu_variation_up = mu_varied_ratio_up - mc_ratio
+        mu_variation_down = mu_varied_ratio_down - mc_ratio
+        ele_variation_up = ele_varied_ratio_up - mc_ratio
+        ele_variation_down = ele_varied_ratio_down - mc_ratio
+
+        mc_uncs_up += jes_jer_unc**2 + mu_variation_up**2 + ele_variation_up**2
+        mc_uncs_down += jes_jer_unc**2 + mu_variation_down**2 + ele_variation_down**2
+
+        mc_uncs_up = 1 + np.sqrt(mc_uncs_up)
+        mc_uncs_down = 1 - np.sqrt(mc_uncs_down)
+
+    elif tag in ['zll_over_gjets', 'wlv_over_gjets']:
+        if tag == 'zll_over_gjets':
+            theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_gjets' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
+            theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_gjets' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
+        
+        elif tag == 'wlv_over_gjets':
+            theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'wlv_over_gjets' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
+            theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'wlv_over_gjets' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
+
+        # Initialize an array of zeros for accumulating up and down variations in MC
+        mc_uncs_up = np.zeros_like(f_theory[theory_unc_names_up[0]].values)
+        mc_uncs_down = np.zeros_like(f_theory[theory_unc_names_down[0]].values)
+
+        for unc in theory_unc_names_up:
+            mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
+        for unc in theory_unc_names_down:
+            mc_uncs_down += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
+
+        # Add in the flat uncertainties
+        jes_jer_unc = 0.02
+        ele_unc = 0.03
+        mu_unc = 0.01
+        ph_unc = 0.05
+
+        mu_varied_ratio_up    = ( (mc_region1_sumw_1 * (1 + mu_unc)) + mc_region1_sumw_2)  / mc_region2_sumw
+        mu_varied_ratio_down  = ( (mc_region1_sumw_1 * (1 - mu_unc)) + mc_region1_sumw_2)  / mc_region2_sumw
+        ele_varied_ratio_up   = (mc_region1_sumw_1 + (mc_region1_sumw_2 * (1 + ele_unc) )) / mc_region2_sumw
+        ele_varied_ratio_down = (mc_region1_sumw_1 + (mc_region1_sumw_2 * (1 - ele_unc) )) / mc_region2_sumw
+        ph_varied_ratio_up    = (mc_region1_sumw) / (mc_region2_sumw * (1 + ph_unc) )
+        ph_varied_ratio_down  = (mc_region1_sumw) / (mc_region2_sumw * (1 - ph_unc) )
+
+        mu_variation_up    = mu_varied_ratio_up - mc_ratio
+        mu_variation_down  = mu_varied_ratio_down - mc_ratio
+        ele_variation_up   = ele_varied_ratio_up - mc_ratio
+        ele_variation_down = ele_varied_ratio_down - mc_ratio
+        ph_variation_up    = ph_varied_ratio_up - mc_ratio
+        ph_variation_down  = ph_varied_ratio_down - mc_ratio
+
+        mc_uncs_up += jes_jer_unc**2 + mu_variation_up**2 + ele_variation_up**2 + ph_variation_up**2
+        mc_uncs_down += jes_jer_unc**2 + mu_variation_down**2 + ele_variation_down**2 + ph_variation_down**2
+
+        mc_uncs_up = 1 + np.sqrt(mc_uncs_up)
+        mc_uncs_down = 1 - np.sqrt(mc_uncs_down)
 
     data_err_opts = {
         'linestyle':'none',
@@ -205,8 +254,7 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
 
     # Aesthetics for the top panel
     ax.set_ylabel(ylabels[tag])
-    if tag in ['zll_over_wlv']:
-        ax.set_ylim(0,0.3) 
+    ax.set_ylim(0,0.3) 
     ax.legend()
 
     # Calculate the double ratio: Data ratio / MC ratio
@@ -218,6 +266,13 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
 
     # Plot the ratio
     hep.histplot(dratio, bins, yerr=data_ratio_err_percent, ax=rax, histtype='errorbar', **data_err_opts)
+
+    centers = ( (bins + np.roll(bins, -1))/2)[:-1]
+
+    rax.fill_between(centers, mc_uncs_up, mc_uncs_down, color='gray', alpha=0.5)
+    # hep.histplot(mc_uncs_up, bins, ax=rax, histtype='step', label='MC up', color='gray')
+    # hep.histplot(mc_uncs_down, bins, ax=rax, histtype='step', label='MC down', color='gray')
+
     rax.set_xlabel(xlabels[variable])
     rax.set_ylabel('Ratio in Data / Ratio in MC')
     rax.grid(True)
@@ -251,6 +306,9 @@ def main():
 
     create_data_validation_plot(acc, tag='zll_over_wlv', outtag=outtag, region1='zll', 
                 region2='wlv', year=2017, variable='ak4_eta0'
+                )
+    create_data_validation_plot(acc, tag='zll_over_gjets', outtag=outtag, region1='zll', 
+                region2='cr_g_vbf', year=2017, variable='ak4_eta0'
                 )
 
 if __name__ == '__main__':
