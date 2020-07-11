@@ -224,10 +224,10 @@ default:
       histogram: zoverg_renScaleUp
       file: data/sf/theory/unc/zoverg_scale_unc_2d.root
     unc_zoverg_nlo_pdf_down:
-      histogram: w_over_g_pdfDown 
+      histogram: z_over_g_pdfDown 
       file: data/sf/theory/unc/zoverg_pdf_unc_2d.root
     unc_zoverg_nlo_pdf_up:
-      histogram: w_over_g_pdfUp 
+      histogram: z_over_g_pdfUp 
       file: data/sf/theory/unc/zoverg_pdf_unc_2d.root
     unc_w_ewkcorr_overz_common_up:
       histogram: w_ewkcorr_overz_Upcommon
