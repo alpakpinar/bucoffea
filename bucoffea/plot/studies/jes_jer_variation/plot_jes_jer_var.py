@@ -28,12 +28,10 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][:5]
 # Legend labels for each variation
 var_to_legend_label = {
     ''         : 'Nominal',
-    '_jerup'   : 'JER up',
-    '_jerdown' : 'JER down',
-    '_jesup'   : 'JES up',
-    '_jesdown' : 'JES down'
-    # '_jesTotalUp'   : 'JES up',
-    # '_jesTotalDown' : 'JES down'
+    '_jerUp'   : 'JER up',
+    '_jerDown' : 'JER down',
+    '_jesTotalUp'   : 'JES up',
+    '_jesTotalDown' : 'JES down'
 }
 
 def parse_commandline():
@@ -395,7 +393,7 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag,
     elif plot_onlyJER:
         variations = ['', '_jerUp', '_jerDown']
     else:
-        variations = ['', '_jerup', '_jerdown', '_jesup', '_jesdown']
+        variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     for idx, var_name in enumerate(variations):
         ratio_arr = ratios[var_name]
@@ -526,11 +524,15 @@ def plot_combined_variations(combined_variations, combined_errs, bins, out_tag, 
     for var_name, ratios in ratios.items():
         hep.histplot(ratios, bins, ax=rax, label=var_to_legend_label[var_name], histtype='errorbar')
 
+    centers = ( (bins + np.roll(bins, -1))/2 )[:-1]
+
+    # Plot uncertainty band for the ratio pad
+    rax.fill_between(centers, 1-(combined_errs['']/combined_variations['']), 1+(combined_errs['']/combined_variations['']), color='gray', alpha=0.5)
+
     if variable == 'ak4_eta0':
         rax.set_xlabel(r'Leading Jet $\eta$')
     elif variable == 'ak4_eta1':
         rax.set_xlabel(r'Trailing Jet $\eta$')
-    
     rax.legend()
     rax.set_ylim(0.8,1.2)
     rax.grid(True)
