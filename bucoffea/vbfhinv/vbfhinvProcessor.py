@@ -642,7 +642,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             # Uncertainty variations for Z
             if df['is_lo_z'] or df['is_nlo_z'] or df['is_lo_z_ewk']:
                 # Get uncertainties on Z variations only
-                theory_uncs = [x for x in cfg.SF.keys() if x.startswith('unc') and 'zoverw' in x]
+                theory_uncs = [x for x in cfg.SF.keys() if x.startswith('unc') and ('zoverw' in x or 'zoverg' in x)]
                 for unc in theory_uncs:
                     reweight = evaluator[unc](df['mjj'], gen_v_pt)
                     w = (region_weights.weight() * reweight)[mask]
