@@ -517,7 +517,10 @@ def plot_combined_variations(combined_variations, combined_errs, bins, out_tag, 
             ratios[var_name] = values / combined_variations['']
 
     ax.legend(title='Variations')
-    ax.set_ylim(0,0.5)
+    if 'wlnu_over_gjets' not in ratio_tag:
+        ax.set_ylim(0,0.5)
+    else:
+        ax.set_ylim(0.7,1.3)
     ax.set_ylabel(tag_to_ylabel_combined[ratio_tag])
 
     # Plot the ratios
