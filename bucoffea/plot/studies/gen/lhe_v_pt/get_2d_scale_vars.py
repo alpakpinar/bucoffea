@@ -140,6 +140,9 @@ def get_2d_ratios(sumw_var, tag, var1, var2):
     elif 'goverz' in tag:
         tag1 = 'gjets'
         tag2 = 'dy'
+    elif 'woverg' in tag:
+        tag1 = 'wjet'
+        tag2 = 'gjets'
 
     # Get varied and nominal NLO weights for
     # the given scale variation
@@ -410,7 +413,7 @@ def main():
 
     # After filling out sumw_var, now calculate the variations on ratios
     # Two ratios: Z/W and photons/Z
-    ratio_tags = ['zoverw', 'goverz', 'zoverw_ind', 'goverz_ind']
+    ratio_tags = ['zoverw', 'goverz', 'zoverw_ind', 'goverz_ind', 'woverg']
 
     # Create the output ROOT file to save the 
     # 2D scale uncertainties on ratios as a function of v-pt and mjj
@@ -420,12 +423,14 @@ def main():
     
     outputrootfile_z_over_w = uproot.recreate( pjoin(outputrootpath, 'zoverw_scale_unc_2d.root') )
     outputrootfile_g_over_z = uproot.recreate( pjoin(outputrootpath, 'goverz_scale_unc_2d.root') )
+    outputrootfile_w_over_g = uproot.recreate( pjoin(outputrootpath, 'woverg_scale_unc_2d.root') )
     outputrootfile_z_over_w_ind = uproot.recreate( pjoin(outputrootpath, 'zoverw_scale_unc_2d_individual_unc.root') )
     outputrootfile_g_over_z_ind = uproot.recreate( pjoin(outputrootpath, 'goverz_scale_unc_2d_individual_unc.root') )
 
     outputrootfiles = {
         'zoverw' : outputrootfile_z_over_w,
         'goverz' : outputrootfile_g_over_z,
+        'woverg' : outputrootfile_w_over_g,
         'zoverw_ind' : outputrootfile_z_over_w_ind,
         'goverz_ind' : outputrootfile_g_over_z_ind
     }
