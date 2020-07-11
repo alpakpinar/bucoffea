@@ -329,6 +329,8 @@ def plot_ratio_variation(sumw_var, tag, vpt_axis, mjj_axis, outtag, outputrootfi
             fig_title = r'$Z(\ell \ell)$ ' + var_to_label[var1] + r' / $W(\ell \nu)$ ' + var_to_label[var2] 
         elif tag == 'goverz':
             fig_title = r'$\gamma$ + jets ' + var_to_label[var1] + r' / $Z(\ell \ell)$ ' + var_to_label[var2] 
+        elif tag == 'woverg':
+            fig_title = r'$W(\ell \nu)$ ' + var_to_label[var1] + r' / $\gamma$ + jets ' + var_to_label[var2] 
 
         ax.set_title(fig_title)
 

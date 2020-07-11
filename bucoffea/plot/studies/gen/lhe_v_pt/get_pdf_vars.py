@@ -317,6 +317,11 @@ def plot_ratio(noms, uncs, tag, vpt_axis, mjj_axis, outputrootfile, mjj_integrat
                     clims = (0.97,0.98)
                 elif variation_tag == 'down':
                     clims = (1.02,1.03)
+            elif tag == 'w_over_g':
+                if variation_tag == 'up':
+                    clims = (0.97,0.98)
+                elif variation_tag == 'down':
+                    clims = (1.02,1.03)
             
             im.set_clim(*clims)
             
