@@ -158,9 +158,9 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
         pprint(theory_unc_names_down)
 
         for unc in theory_unc_names_up:
-            mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
+            mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1))**2
         for unc in theory_unc_names_down:
-            mc_uncs_down += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
+            mc_uncs_down += ( 0.5 * (f_theory[unc].values - 1) )**2
 
         # Add in the flat uncertainties
         jes_jer_unc = 0.02
