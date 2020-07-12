@@ -87,7 +87,7 @@ def from_coffea(inpath, outfile, run_z_w_only=False, run_qcd_only=False, variabl
         h_z_mumu_unc = acc[f'{variable}_unc'][re.compile(f'DYJetsToLL.*HT.*{year}')].integrate('region', 'cr_2m_vbf').integrate('dataset')
         # pprint(h_z_mumu_unc.axis('uncertainty').identifiers())
         for unc in map(str, h_z_mumu_unc.axis('uncertainty').identifiers()):
-            if 'goverz' in unc or 'ewkcorr' in unc or 'denom' in unc:
+            if not re.match('.*zover(w|g).*', unc):
                 continue
             # pprint(h_z_mumu_unc.identifiers('uncertainty'))
             h = h_z_mumu_unc.integrate(h_z_mumu_unc.axis('uncertainty'), unc)
@@ -96,27 +96,52 @@ def from_coffea(inpath, outfile, run_z_w_only=False, run_qcd_only=False, variabl
         # Scale + PDF variations for QCD Z(ee)
         h_z_ee_unc = acc[f'{variable}_unc'][re.compile(f'DYJetsToLL.*HT.*{year}')].integrate('region', 'cr_2e_vbf').integrate('dataset')
         for unc in map(str, h_z_ee_unc.axis('uncertainty').identifiers()):
-            if 'goverz' in unc or 'ewkcorr' in unc or 'denom' in unc:
+            if not re.match('.*zover(w|g).*', unc):
                 continue
+            print(unc)
             h = h_z_ee_unc.integrate(h_z_ee_unc.axis('uncertainty'), unc)
             f[f'zee_qcd_{variable}_{unc}_{year}'] = export1d(h)
 
+        # Scale + PDF variations for QCD W(munu)
+        h_w_munu_unc = acc[f'{variable}_unc'][re.compile(f'WJetsToLNu.*HT.*{year}')].integrate('region', 'cr_1m_vbf').integrate('dataset')
+        for unc in map(str, h_w_munu_unc.axis('uncertainty').identifiers()):
+            if not re.match('.*woverg.*', unc):
+                continue
+            # pprint(h_z_mumu_unc.identifiers('uncertainty'))
+            print(unc)
+            h = h_w_munu_unc.integrate(h_w_munu_unc.axis('uncertainty'), unc)
+            f[f'wmunu_qcd_{variable}_{unc}_{year}'] = export1d(h)
+            
+        # Scale + PDF variations for QCD W(enu)
+        h_w_enu_unc = acc[f'{variable}_unc'][re.compile(f'WJetsToLNu.*HT.*{year}')].integrate('region', 'cr_1e_vbf').integrate('dataset')
+        for unc in map(str, h_w_enu_unc.axis('uncertainty').identifiers()):
+            if not re.match('.*woverg.*', unc):
+                continue
+            # pprint(h_z_mumu_unc.identifiers('uncertainty'))
+            print(unc)
+            h = h_w_enu_unc.integrate(h_w_enu_unc.axis('uncertainty'), unc)
+            f[f'wenu_qcd_{variable}_{unc}_{year}'] = export1d(h)
+            
         # Scale + PDF variations for QCD photons
-        if not run_z_w_only:
-            h_ph_unc = acc[f'{variable}_unc'][re.compile(f'GJets_DR-0p4.*HT.*{year}')].integrate('region', 'cr_g_vbf').integrate('dataset')
-            for unc in map(str, h_ph_unc.axis('uncertainty').identifiers()):
-                if 'zoverw' in unc or 'ewkcorr' in unc:
-                    continue
-                h = h_ph_unc.integrate(h_ph_unc.axis('uncertainty'), unc)
-                f[f'gjets_qcd_{variable}_{unc}_{year}'] = export1d(h)
+        # if not run_z_w_only:
+            # h_ph_unc = acc[f'{variable}_unc'][re.compile(f'GJets_DR-0p4.*HT.*{year}')].integrate('region', 'cr_g_vbf').integrate('dataset')
+            # for unc in map(str, h_ph_unc.axis('uncertainty').identifiers()):
+                # if re.match('.*(zoverw|woverg|zoverg|ewkcorr).*', unc):
+                    # continue
+                # h = h_ph_unc.integrate(h_ph_unc.axis('uncertainty'), unc)
+                # f[f'gjets_qcd_{variable}_{unc}_{year}'] = export1d(h)
     
         # EWK V
         if not run_qcd_only:
-            h_z = acc[variable][re.compile(f'.*EWKZ.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
-            f[f'z_ewk_{variable}_nominal_{year}'] = export1d(h_z)
+            h_z_mumu_ewk = acc[variable][re.compile(f'.*EWKZ.*ZToLL.*{year}')].integrate('region', 'cr_2m_vbf').integrate('dataset')
+            h_z_ee_ewk = acc[variable][re.compile(f'.*EWKZ.*ZToLL.*{year}')].integrate('region', 'cr_2e_vbf').integrate('dataset')
+            f[f'zmumu_ewk_{variable}_nominal_{year}'] = export1d(h_z_mumu_ewk)
+            f[f'zee_ewk_{variable}_nominal_{year}'] = export1d(h_z_ee_ewk)
     
-            h_w = acc[variable][re.compile(f'.*EWKW.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
-            f[f'w_ewk_{variable}_nominal_{year}'] = export1d(h_w)
+            h_w_munu_ewk = acc[variable][re.compile(f'.*EWKW.*{year}')].integrate('region', 'cr_1m_vbf').integrate('dataset')
+            h_w_enu_ewk = acc[variable][re.compile(f'.*EWKW.*{year}')].integrate('region', 'cr_1e_vbf').integrate('dataset')
+            f[f'wmunu_ewk_{variable}_nominal_{year}'] = export1d(h_w_munu_ewk)
+            f[f'wenu_ewk_{variable}_nominal_{year}'] = export1d(h_w_enu_ewk)
     
             if not run_z_w_only:
                 h_ph = acc[variable][re.compile(f'GJets_SM_5f_EWK.*{year}')].integrate('region', 'cr_g_vbf').integrate('dataset')
@@ -124,21 +149,39 @@ def from_coffea(inpath, outfile, run_z_w_only=False, run_qcd_only=False, variabl
                 print(h_ph.values())
     
             # Scale + PDF variations for EWK Z
-            h_z_unc = acc[f'{variable}_unc'][re.compile(f'.*EWKZ.*{year}')].integrate('region', 'sr_vbf').integrate('dataset')
-            for unc in map(str, h_z_unc.axis('uncertainty').identifiers()):
-                if 'goverz' in unc or 'ewkcorr' in unc:
+            h_z_mumu_ewk_unc = acc[f'{variable}_unc'][re.compile(f'.*EWKZ.*ZToLL.*{year}')].integrate('region', 'cr_2m_vbf').integrate('dataset')
+            for unc in map(str, h_z_mumu_ewk_unc.axis('uncertainty').identifiers()):
+                if not re.match('.*zover(w|g).*', unc):
                     continue
-                h = h_z_unc.integrate(h_z_unc.axis('uncertainty'), unc)
-                f[f'z_ewk_{variable}_{unc}_{year}'] = export1d(h)
+                print(unc)
+                h = h_z_mumu_ewk_unc.integrate(h_z_mumu_ewk_unc.axis('uncertainty'), unc)
+                f[f'zmumu_ewk_{variable}_{unc}_{year}'] = export1d(h)
+
+            h_z_ee_ewk_unc = acc[f'{variable}_unc'][re.compile(f'.*EWKZ.*ZToLL.*{year}')].integrate('region', 'cr_2e_vbf').integrate('dataset')
+            for unc in map(str, h_z_ee_ewk_unc.axis('uncertainty').identifiers()):
+                if not re.match('.*zover(w|g).*', unc):
+                    continue
+                print(unc)
+                h = h_z_ee_ewk_unc.integrate(h_z_ee_ewk_unc.axis('uncertainty'), unc)
+                f[f'zee_ewk_{variable}_{unc}_{year}'] = export1d(h)
     
-            # Scale + PDF variations for EWK photons
-            if not run_z_w_only:
-                h_ph_unc = acc[f'{variable}_unc'][re.compile(f'GJets_SM.*{year}')].integrate('region', 'cr_g_vbf').integrate('dataset')
-                for unc in map(str, h_ph_unc.axis('uncertainty').identifiers()):
-                    if 'zoverw' in unc or 'ewkcorr' in unc:
-                        continue
-                    h = h_ph_unc.integrate(h_ph_unc.axis('uncertainty'), unc)
-                    f[f'gjets_ewk_{variable}_{unc}_{year}'] = export1d(h)
+            # Scale + PDF variations for EWK W
+            h_w_munu_ewk_unc = acc[f'{variable}_unc'][re.compile(f'.*EWKW.*{year}')].integrate('region', 'cr_1m_vbf').integrate('dataset')
+            for unc in map(str, h_w_munu_ewk_unc.axis('uncertainty').identifiers()):
+                if not re.match('.*woverg.*', unc):
+                    continue
+                print(unc)
+                h = h_w_munu_ewk_unc.integrate(h_w_munu_ewk_unc.axis('uncertainty'), unc)
+                f[f'wmunu_ewk_{variable}_{unc}_{year}'] = export1d(h)
+
+            h_w_enu_ewk_unc = acc[f'{variable}_unc'][re.compile(f'.*EWKW.*{year}')].integrate('region', 'cr_1e_vbf').integrate('dataset')
+            for unc in map(str, h_w_enu_ewk_unc.axis('uncertainty').identifiers()):
+                if not re.match('.*woverg.*', unc):
+                    continue
+                print(unc)
+                h = h_w_enu_ewk_unc.integrate(h_w_enu_ewk_unc.axis('uncertainty'), unc)
+                f[f'wenu_ewk_{variable}_{unc}_{year}'] = export1d(h)
+
 
 def make_ratios(infile, run_z_w_only=False, run_qcd_only=False, variable='mjj'):
     f = r.TFile(infile)
@@ -154,24 +197,34 @@ def make_ratios(infile, run_z_w_only=False, run_qcd_only=False, variable='mjj'):
             denominator_wenu = f.Get(f'wenu_{source}_{variable}_nominal_{year}')
             denominator_gjets = f.Get(f'gjets_{source}_{variable}_nominal_{year}')
             for name in map(lambda x:x.GetName(), f.GetListOfKeys()):
-                if name.startswith(f'zmumu_{source}'):
+                # Z(mumu) / W(munu)
+                if name.startswith(f'zmumu_{source}') and 'zoverw' in name:
                     if not f"{year}" in name or 'ewkcorr' in name:
                         continue
                     if 'nominal' in name:
                         unc_tag = f'nominal_{year}'
                     else:
                         unc_tag = re.findall('unc_.*', name)[0]
+                    print(name)
                     # Ratio: Z(mumu) / W(munu)
                     ratio_mu = f.Get(name).Clone(f'zmumu_over_wmunu_{unc_tag}')
                     ratio_mu.Divide(denominator_wmunu)
                     ratio_mu.SetDirectory(of)
                     ratio_mu.Write()
+                elif name.startswith(f'zmumu_{source}') and 'zoverg' in name: 
+                    if not f"{year}" in name or 'ewkcorr' in name:
+                        continue
+                    if 'nominal' in name:
+                        unc_tag = f'nominal_{year}'
+                    else:
+                        unc_tag = re.findall('unc_.*', name)[0]
+                    print(name)
                     # Ratio: Z(mumu) / GJets
                     ratio_gjets = f.Get(name).Clone(f'zmumu_over_gjets_{unc_tag}')
                     ratio_gjets.Divide(denominator_gjets)
                     ratio_gjets.SetDirectory(of)
                     ratio_gjets.Write()
-                elif name.startswith(f'zee_{source}'):
+                elif name.startswith(f'zee_{source}') and 'zoverw' in name:
                     if not f"{year}" in name or 'ewkcorr' in name:
                         continue
                     if 'nominal' in name:
@@ -183,32 +236,42 @@ def make_ratios(infile, run_z_w_only=False, run_qcd_only=False, variable='mjj'):
                     ratio_e.Divide(denominator_wenu)
                     ratio_e.SetDirectory(of)
                     ratio_e.Write()
-                    # Ratio: Z(ee) / GJets
-                    ratio_gjets = f.Get(name).Clone(f'zee_over_gjets_{unc_tag}')
-                    ratio_gjets.Divide(denominator_gjets)
-                    ratio_gjets.SetDirectory(of)
-                    ratio_gjets.Write()
-                # Calculate W(munu) / GJets ratios
-                elif name.startswith(f'wmunu_{source}'):
+                elif name.startswith(f'zee_{source}') and 'zoverg' in name:
                     if not f"{year}" in name or 'ewkcorr' in name:
                         continue
                     if 'nominal' in name:
                         unc_tag = f'nominal_{year}'
                     else:
                         unc_tag = re.findall('unc_.*', name)[0]
+                    # Ratio: Z(ee) / GJets
+                    ratio_gjets = f.Get(name).Clone(f'zee_over_gjets_{unc_tag}')
+                    ratio_gjets.Divide(denominator_gjets)
+                    ratio_gjets.SetDirectory(of)
+                    ratio_gjets.Write()
+                
+                # Calculate W(munu) / GJets ratios
+                elif name.startswith(f'wmunu_{source}') and 'woverg' in name:
+                    if not f"{year}" in name or 'ewkcorr' in name:
+                        continue
+                    if 'nominal' in name:
+                        unc_tag = f'nominal_{year}'
+                    else:
+                        unc_tag = re.findall('unc_.*', name)[0]
+                    print(name)
                     # Ratio: W(munu) / GJets
                     ratio_gjets = f.Get(name).Clone(f'wmunu_over_gjets_{unc_tag}')
                     ratio_gjets.Divide(denominator_gjets)
                     ratio_gjets.SetDirectory(of)
                     ratio_gjets.Write()
                 # Calculate W(enu) / GJets ratios
-                elif name.startswith(f'wenu_{source}'):
+                elif name.startswith(f'wenu_{source}') and 'woverg' in name:
                     if not f"{year}" in name or 'ewkcorr' in name:
                         continue
                     if 'nominal' in name:
                         unc_tag = f'nominal_{year}'
                     else:
                         unc_tag = re.findall('unc_.*', name)[0]
+                    print(name)
                     # Ratio: W(enu) / GJets
                     ratio_gjets = f.Get(name).Clone(f'wenu_over_gjets_{unc_tag}')
                     ratio_gjets.Divide(denominator_gjets)
