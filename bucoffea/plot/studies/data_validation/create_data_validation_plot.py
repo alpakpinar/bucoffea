@@ -25,7 +25,7 @@ ylabels = {
     'zee_over_gjets'   : r'$Z(ee) \ / \ \gamma + jets$',
     'wmunu_over_gjets' : r'$W(\mu\nu) \ / \ \gamma + jets$',
     'wenu_over_gjets'  : r'$W(e\nu) \ / \ \gamma + jets$',
-    'wlnu_over_gjets'  : r'$W(\ell\nu) \ / \ \gamma + jets$'
+    'wlv_over_gjets'   : r'$W(\ell\nu) \ / \ \gamma + jets$'
 }
 
 binning = {
@@ -154,6 +154,9 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
         theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_wlnu' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
         theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_wlnu' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
 
+        pprint(theory_unc_names_up)
+        pprint(theory_unc_names_down)
+
         for unc in theory_unc_names_up:
             mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
         for unc in theory_unc_names_down:
@@ -188,6 +191,9 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
         elif tag == 'wlv_over_gjets':
             theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'wlv_over_gjets' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
             theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'wlv_over_gjets' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
+
+        pprint(theory_unc_names_up)
+        pprint(theory_unc_names_down)
 
         for unc in theory_unc_names_up:
             mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
@@ -248,7 +254,10 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
 
     # Aesthetics for the top panel
     ax.set_ylabel(f'{ylabels[tag]} {year}')
-    ax.set_ylim(0,0.3) 
+    if tag in ['zll_over_wlv', 'zll_over_gjets']:
+        ax.set_ylim(0,0.3) 
+    else:
+        ax.set_ylim(0.8,1.5) 
     ax.legend()
 
     # Calculate the double ratio: Data ratio / MC ratio
@@ -303,6 +312,9 @@ def main():
                     region2='wlv', year=year, variable='ak4_eta0'
                     )
         create_data_validation_plot(acc, tag='zll_over_gjets', outtag=outtag, region1='zll', 
+                    region2='cr_g_vbf', year=year, variable='ak4_eta0'
+                    )
+        create_data_validation_plot(acc, tag='wlv_over_gjets', outtag=outtag, region1='wlv', 
                     region2='cr_g_vbf', year=year, variable='ak4_eta0'
                     )
 
