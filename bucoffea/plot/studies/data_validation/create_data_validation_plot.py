@@ -150,17 +150,21 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
     mc_uncs_down = mc_ratio_stat_err**2
 
     # Calculate uncertainties
+    uncs_up = {}
+    uncs_down = {}
     if tag == 'zll_over_wlv':
-        theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_wlnu' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
-        theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_wlnu' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
+        theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if re.match(f'.*zll_over_wlnu.*_up_{year}.*', unc.decode('utf-8'))]
+        theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if re.match(f'.*zll_over_wlnu.*_down_{year}.*', unc.decode('utf-8'))]
 
         pprint(theory_unc_names_up)
         pprint(theory_unc_names_down)
 
         for unc in theory_unc_names_up:
             mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1))**2
+            uncs_up[unc] = ( 0.5 * (f_theory[unc].values - 1))**2
         for unc in theory_unc_names_down:
-            mc_uncs_down += ( 0.5 * (f_theory[unc].values - 1) )**2
+            mc_uncs_down += ( 0.5 * (f_theory[unc].values - 1))**2
+            uncs_down[unc] = ( 0.5 * (f_theory[unc].values - 1))**2
 
         # Add in the flat uncertainties
         jes_jer_unc = 0.02
@@ -177,28 +181,49 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
         ele_variation_up = ele_varied_ratio_up - mc_ratio
         ele_variation_down = ele_varied_ratio_down - mc_ratio
 
+        uncs_up['jes_jer'] = jes_jer_unc**2
+        uncs_up['mu'] = mu_variation_up**2
+        uncs_up['ele'] = ele_variation_up**2
+        uncs_down['jes_jer'] = jes_jer_unc**2
+        uncs_down['mu'] = mu_variation_down**2
+        uncs_down['ele'] = ele_variation_down**2
+
         mc_uncs_up += jes_jer_unc**2 + mu_variation_up**2 + ele_variation_up**2
         mc_uncs_down += jes_jer_unc**2 + mu_variation_down**2 + ele_variation_down**2
 
         mc_uncs_up = 1 + np.sqrt(mc_uncs_up)
         mc_uncs_down = 1 - np.sqrt(mc_uncs_down)
 
+        total_var_up = sum(uncs_up.values())
+        total_var_down = sum(uncs_down.values())
+
+        for varup in uncs_up.values():
+            varup /= (total_var_up/100.)
+        for vardown in uncs_down.values():
+            vardown /= (total_var_down/100.)
+
+        print(f'Ratio tag: {tag}')
+        pprint(uncs_up)
+        pprint(uncs_down)
+
     elif tag in ['zll_over_gjets', 'wlv_over_gjets']:
         if tag == 'zll_over_gjets':
-            theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_gjets' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
-            theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'zll_over_gjets' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
-        
+            theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if re.match(f'.*zll_over_gjets.*_up_{year}.*', unc.decode('utf-8'))]
+            theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if re.match(f'.*zll_over_gjets.*_down_{year}.*', unc.decode('utf-8'))]
+
         elif tag == 'wlv_over_gjets':
-            theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if 'wlv_over_gjets' in unc.decode('utf-8') and 'up' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
-            theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if 'wlv_over_gjets' in unc.decode('utf-8') and 'down' in unc.decode('utf-8') and f'{year}' in unc.decode('utf-8')]
+            theory_unc_names_up = [unc.decode('utf-8') for unc in f_theory.keys() if re.match(f'.*wlv_over_gjets.*_up_{year}.*', unc.decode('utf-8'))]
+            theory_unc_names_down = [unc.decode('utf-8') for unc in f_theory.keys() if re.match(f'.*wlv_over_gjets.*_down_{year}.*', unc.decode('utf-8'))]
 
         pprint(theory_unc_names_up)
         pprint(theory_unc_names_down)
 
         for unc in theory_unc_names_up:
-            mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
+            mc_uncs_up += ( 0.5 * (f_theory[unc].values - 1))**2
+            uncs_up[unc] = ( 0.5 * (f_theory[unc].values - 1))**2
         for unc in theory_unc_names_down:
-            mc_uncs_down += ( 0.5 * (f_theory[unc].values - 1) * mc_ratio)**2
+            mc_uncs_down += ( 0.5 * (f_theory[unc].values - 1))**2
+            uncs_down[unc] = ( 0.5 * (f_theory[unc].values - 1))**2
 
         # Add in the flat uncertainties
         jes_jer_unc = 0.02
@@ -220,11 +245,32 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
         ph_variation_up    = ph_varied_ratio_up - mc_ratio
         ph_variation_down  = ph_varied_ratio_down - mc_ratio
 
+        uncs_up['jes_jer'] = jes_jer_unc**2
+        uncs_up['mu'] = mu_variation_up**2
+        uncs_up['ele'] = ele_variation_up**2
+        uncs_up['ph'] = ph_variation_up**2
+        uncs_down['jes_jer'] = jes_jer_unc**2
+        uncs_down['mu'] = mu_variation_down**2
+        uncs_down['ele'] = ele_variation_down**2
+        uncs_down['ph'] = ph_variation_down**2
+
+        total_var_up = sum(uncs_up.values())
+        total_var_down = sum(uncs_down.values())
+
+        for varup in uncs_up.values():
+            varup /= (total_var_up/100.)
+        for vardown in uncs_down.values():
+            vardown /= (total_var_down/100.)
+
         mc_uncs_up += jes_jer_unc**2 + mu_variation_up**2 + ele_variation_up**2 + ph_variation_up**2
         mc_uncs_down += jes_jer_unc**2 + mu_variation_down**2 + ele_variation_down**2 + ph_variation_down**2
 
         mc_uncs_up = 1 + np.sqrt(mc_uncs_up)
         mc_uncs_down = 1 - np.sqrt(mc_uncs_down)
+
+        print(f'Ratio tag: {tag}')
+        pprint(uncs_up)
+        pprint(uncs_down)
 
     data_err_opts = {
         'linestyle':'none',
@@ -257,7 +303,7 @@ def create_data_validation_plot(acc, tag, outtag, region1, region2, year, variab
     if tag in ['zll_over_wlv', 'zll_over_gjets']:
         ax.set_ylim(0,0.3) 
     else:
-        ax.set_ylim(0.8,1.5) 
+        ax.set_ylim(0,3) 
     ax.legend()
 
     # Calculate the double ratio: Data ratio / MC ratio
