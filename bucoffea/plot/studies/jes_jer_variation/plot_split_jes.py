@@ -49,6 +49,9 @@ titles_two_nuisances = {
 mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
 mjj_binning_single_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,3500])
 
+recoil_bins_2016_monoj = hist.Bin('recoil', 'Recoil (GeV)', [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400])
+recoil_bins_2016_monov = hist.Bin('recoil', 'Recoil (GeV)', ([250,300,350,400,500,600,750,1000])
+
 met_binning_v1_2016 = hist.Bin('recoil', 'Recoil (GeV)', list(range(0,500,50)) + list(range(500,1100,100))) 
 met_binning_v2_2016 = hist.Bin('recoil', 'Recoil (GeV)', [250,275,300,350,400,450,500,650,800,1150,1500]) 
 met_binning_v1_2017 = hist.Bin('recoil', 'Recoil (GeV)', list(range(250,550,100)) + list(range(550,1300,250))) 
@@ -57,7 +60,8 @@ met_binning_coarse = hist.Bin('recoil', 'Recoil (GeV)', [250,300,400,500,800,150
 
 binnings = {
     'recoil' : {
-        'initial' : {'2016' : met_binning_v2_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
+        # 'initial' : {'2016' : met_binning_v2_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
+        'initial' : {'2016' : recoil_bins_2016_monoj, '2017': recoil_bins_2016_monoj, '2018' : recoil_bins_2016_monoj},
         'single bin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
         'coarse' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
     },
