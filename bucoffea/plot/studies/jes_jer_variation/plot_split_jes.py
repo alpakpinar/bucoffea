@@ -58,18 +58,6 @@ met_binning_v1_2017 = hist.Bin('recoil', 'Recoil (GeV)', list(range(250,550,100)
 met_binning_single_bin = hist.Bin('recoil', 'Recoil (GeV)', [250,1500])
 met_binning_coarse = hist.Bin('recoil', 'Recoil (GeV)', [250,300,400,500,800,1500])
 
-binnings = {
-    'recoil' : {
-        # 'initial' : {'2016' : met_binning_v2_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
-        'initial' : {'2016' : recoil_bins_2016_monoj, '2017': recoil_bins_2016_monoj, '2018' : recoil_bins_2016_monoj},
-        'single bin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
-        'coarse' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
-    },
-    'mjj' : {
-        'initial' : {'2016' : mjj_binning_v1, '2017': mjj_binning_v1, '2018': mjj_binning_v1},
-        'single bin' : {'2016': mjj_binning_single_bin, '2017': mjj_binning_single_bin, '2018': mjj_binning_single_bin}
-    }
-}
 
 def parse_cli():
     parser = argparse.ArgumentParser()
@@ -80,12 +68,17 @@ def parse_cli():
     parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
     parser.add_argument('--tabulate', help='Tabulate unc/variation values.', action='store_true')
     parser.add_argument('--znunu2016', help='Only run over Z(vv) 2016.', action='store_true')
+    parser.add_argument('--use_monov_binning', help='If this option is specified, use mono-V analysis binning for MET.', action='store_true')
+    parser.add_argument('--use_monoj_binning', help='If this option is specified, use monojet analysis binning for MET.', action='store_true')
     args = parser.parse_args()
     return args
 
 # Bin selection should be one of the following:
 # Coarse, single bin, initial
-def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=True, bin_selection='initial', analysis='vbf', root_config={'save': False, 'file': None}, tabulate_top5=False):
+def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True, skimmed=True, 
+            bin_selection='initial', analysis='vbf', root_config={'save': False, 'file': None}, 
+            tabulate_top5=False, use_monoj_binning=False, use_monov_binning=False
+            ):
     '''Plot all split JEC uncertainties on the same plot.'''
     # Load the relevant variable to analysis, select binning
     variable_to_use = 'mjj' if analysis == 'vbf' else 'recoil'
@@ -196,7 +189,13 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
     ax.grid(True)
 
     # Save figure
-    outdir = f'./output/{out_tag}/splitJEC/{analysis}'
+    if use_monoj_binning:
+        outdir = f'./output/{out_tag}/splitJEC/{analysis}/monojet_binning'
+    elif use_monov_binning:
+        outdir = f'./output/{out_tag}/splitJEC/{analysis}/monoV_binning'
+    else:
+        outdir = f'./output/{out_tag}/splitJEC/{analysis}'
+    
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -263,7 +262,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, plot_total=True, skimmed=
 
         print(f'MSG% Table saved at: {outfile}')
 
-def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='initial', analysis='vbf'):
+def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, binnings, bin_selection='initial', analysis='vbf'):
     '''Plot split JEC uncertainties regrouped into two:
     1. Correlated across years
     2. Uncorrelated across years
@@ -428,7 +427,13 @@ def main():
         out_tag = inpath.split('/')[-1]
 
     # Create an output root file to save the uncertainties
-    outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root'
+    if args.analysis == 'monojet' and args.use_monoj_binning:
+        outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root/monojet_binning'
+    elif args.analysis == 'monojet' and args.use_monov_binning:
+        outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root/monoV_binning'
+    else:
+        outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root'
+        
     if not os.path.exists(outputrootdir):
         os.makedirs(outputrootdir)
 
@@ -448,6 +453,27 @@ def main():
     else:
         dataset_tags = ['ZJetsToNuNu2016']
 
+    # Figure out the binnings to be used
+    binnings = {
+        'recoil' : {
+            'initial' : {'2016' : met_binning_v2_2016, '2017': met_binning_v1_2017, '2018' : met_binning_v1_2017},
+            'single bin' : {'2016' : met_binning_single_bin, '2017' : met_binning_single_bin, '2018' : met_binning_single_bin},
+            'coarse' : {'2016' : met_binning_coarse, '2017' : met_binning_coarse, '2018': met_binning_coarse}
+        },
+        'mjj' : {
+            'initial' : {'2016' : mjj_binning_v1, '2017': mjj_binning_v1, '2018': mjj_binning_v1},
+            'single bin' : {'2016': mjj_binning_single_bin, '2017': mjj_binning_single_bin, '2018': mjj_binning_single_bin}
+        }
+    }
+
+    if args.analysis == 'monojet' and args.use_monoj_binning:
+        for year in binnings['recoil']['initial'].keys():
+            binnings['recoil']['initial'][year] = recoil_bins_2016_monoj
+
+    elif args.analysis == 'monojet' and args.use_monov_binning:
+        for year in binnings['recoil']['initial'].keys():
+            binnings['recoil']['initial'][year] = recoil_bins_2016_monov
+
     for dataset_tag in dataset_tags:
         print(f'MSG% Working on: {dataset_tag}')
 
@@ -457,6 +483,7 @@ def main():
             skip=True
             for tag in args.onlyRun:
                 if tag in dataset_tag:
+                    skip=False
                     break
 
         if skip:
@@ -474,14 +501,23 @@ def main():
         # 1. All uncertainty sources plotted on a single bin
         # 2. Only the largest sources are plotted, with multiple bins
         # 3. Plot all the sources and save them into a ROOT file as a shape uncertainty
-        plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=False, bin_selection='single bin', tabulate_top5=args.tabulate)
-        plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=True, bin_selection='initial')
+        plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
+                    analysis=args.analysis, skimmed=False, bin_selection='single bin', tabulate_top5=args.tabulate,
+                    use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning
+                    )
+        plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
+                    analysis=args.analysis, skimmed=True, bin_selection='initial',
+                    use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning
+                    )
         # Only save to ROOT file the unskimmed shapes
-        plot_split_jecunc(acc, out_tag, dataset_tag, year, analysis=args.analysis, skimmed=False, bin_selection='initial', root_config=root_config)
+        plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
+                    analysis=args.analysis, skimmed=False, bin_selection='initial', root_config=root_config,
+                    use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning
+                    )
     
         # Produce the plots with regrouping, if requested:
         if args.regroup:
-            plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, bin_selection='initial', analysis=args.analysis)
+            plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, binnings, bin_selection='initial', analysis=args.analysis)
 
 if __name__ == '__main__':
     main()
