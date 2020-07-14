@@ -50,7 +50,7 @@ mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) +
 mjj_binning_single_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,3500])
 
 recoil_bins_2016_monoj = hist.Bin('recoil', 'Recoil (GeV)', [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400])
-recoil_bins_2016_monov = hist.Bin('recoil', 'Recoil (GeV)', ([250,300,350,400,500,600,750,1000])
+recoil_bins_2016_monov = hist.Bin('recoil', 'Recoil (GeV)', [250,300,350,400,500,600,750,1000])
 
 met_binning_v1_2016 = hist.Bin('recoil', 'Recoil (GeV)', list(range(0,500,50)) + list(range(500,1100,100))) 
 met_binning_v2_2016 = hist.Bin('recoil', 'Recoil (GeV)', [250,275,300,350,400,450,500,650,800,1150,1500]) 
