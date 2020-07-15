@@ -619,6 +619,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         if 'sumEt' in cfg.RUN.SAVE.VARIABLES:
                             output['tree_float16'][region]['MET_sumEt'] += processor.column_accumulator(df['MET_sumEt' if df['year'] == 2018 else 'METFixEE2017_sumEt'][mask])
 
+                        output['tree_float16'][region]['PV_npvs']                += processor.column_accumulator(df["PV_npvs"][mask])
+                        output['tree_float16'][region]['PV_npvsGood']            += processor.column_accumulator(df["PV_npvsGood"][mask])
+
                         # MC quantities
                         if not df['is_data']:
                             if gen_v_pt is not None:
@@ -633,8 +636,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
                             output['tree_float16'][region]['Pileup_nPU']             += processor.column_accumulator(df["Pileup_nPU"][mask])
                             output['tree_float16'][region]['Pileup_sumEOOT']         += processor.column_accumulator(df["Pileup_sumEOOT"][mask])
                             output['tree_float16'][region]['Pileup_sumLOOT']         += processor.column_accumulator(df["Pileup_sumLOOT"][mask])
-                            output['tree_float16'][region]['PV_npvs']                += processor.column_accumulator(df["PV_npvs"][mask])
-                            output['tree_float16'][region]['PV_npvsGood']            += processor.column_accumulator(df["PV_npvsGood"][mask])
                             
                             if df['has_lhe_v_pt']:
                                 output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(df['mjj_gen'][mask])
