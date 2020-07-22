@@ -451,10 +451,14 @@ def setup_candidates(df, cfg):
     )
     ak8 = ak8[ak8.tightId & object_overlap(ak8, muons) & object_overlap(ak8, electrons) & object_overlap(ak8, photons)]
 
-    if extract_year(df['dataset']) == 2017:
-        met_branch = 'METFixEE2017'
-    else:
+    # If processing UL data, always use the MET branch (EE fix already included in 2017)
+    if cfg.RUN.PROCESS_UL:
         met_branch = 'MET'
+    else:
+        if extract_year(df['dataset']) == 2017:
+            met_branch = 'METFixEE2017'
+        else:
+            met_branch = 'MET'
 
     met_pt = df[f'{met_branch}_pt{jes_suffix_met}']
     met_phi = df[f'{met_branch}_phi{jes_suffix_met}']

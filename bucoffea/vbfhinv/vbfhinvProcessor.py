@@ -477,6 +477,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             output['sumw_pileup'][dataset] +=  weights._weights['pileup'].sum()
 
         regions = vbfhinv_regions(cfg)
+        print(regions.keys())
 
         veto_weights = get_veto_weights(df, evaluator, electrons, muons, taus)
         for region, cuts in regions.items():
@@ -515,8 +516,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             rweight = region_weights.partial_weight(exclude=exclude)
 
             # Blinding
-            if(self._blind and df['is_data'] and region.startswith('sr')):
-                continue
+            # if(self._blind and df['is_data'] and region.startswith('sr')):
+                # continue
 
             # Cutflow plot for signal and control regions
             if any(x in region for x in ["sr", "cr", "tr"]):
@@ -539,12 +540,19 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
                     # Save quantities for other regions 
                     else:
+                        if cfg.RUN.PROCESS_UL:
+                            met_pt_nojer = df['MET_pt']
+                            met_phi_nojer = df['MET_phi']
+                        else:
+                            met_pt_nojer = df['MET_pt_nom' if df['year']==2018 else 'METFixEE2017_pt_nom']
+                            met_phi_nojer = df['MET_phi_nom' if df['year']==2018 else 'METFixEE2017_phi_nom']
+
                         output['tree_float16'][region]["recoil_pt"]       +=  processor.column_accumulator(df["recoil_pt"][mask])
                         output['tree_float16'][region]["recoil_phi"]      +=  processor.column_accumulator(df["recoil_phi"][mask])
                         output['tree_float16'][region]["met_pt"]          +=  processor.column_accumulator(met_pt[mask])
                         output['tree_float16'][region]["met_phi"]         +=  processor.column_accumulator(met_phi[mask])
-                        output['tree_float16'][region]["met_pt_nojer"]    +=  processor.column_accumulator(df['MET_pt_nom' if df['year']==2018 else 'METFixEE2017_pt_nom'][mask])
-                        output['tree_float16'][region]["met_phi_nojer"]   +=  processor.column_accumulator(df['MET_phi_nom' if df['year']==2018 else 'METFixEE2017_phi_nom'][mask])
+                        output['tree_float16'][region]["met_pt_nojer"]    +=  processor.column_accumulator(met_pt_nojer[mask])
+                        output['tree_float16'][region]["met_phi_nojer"]   +=  processor.column_accumulator(met_phi_nojer[mask])
                         output['tree_float16'][region]["mjj"]             +=  processor.column_accumulator(df["mjj"][mask])
                         output['tree_float16'][region]["dphijj"]          +=  processor.column_accumulator(df["dphijj"][mask])
                         output['tree_float16'][region]["detajj"]          +=  processor.column_accumulator(df["detajj"][mask])
@@ -617,7 +625,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
                             output['tree_float16'][region]["HTmiss_jetsNotInEndcap_phi"]  +=  processor.column_accumulator(df["HTmiss_jetsNotInEndcap_phi"][mask])
 
                         if 'sumEt' in cfg.RUN.SAVE.VARIABLES:
-                            output['tree_float16'][region]['MET_sumEt'] += processor.column_accumulator(df['MET_sumEt' if df['year'] == 2018 else 'METFixEE2017_sumEt'][mask])
+                            if cfg.RUN.PROCESS_UL:
+                                met_sumEt = df['MET_sumEt']
+                            else:
+                                met_sumEt = df['MET_sumEt' if df['year'] == 2018 else 'METFixEE2017_sumEt']
+                            output['tree_float16'][region]['MET_sumEt'] += processor.column_accumulator(met_sumEt[mask])
 
                         output['tree_float16'][region]['PV_npvs']                += processor.column_accumulator(df["PV_npvs"][mask])
                         output['tree_float16'][region]['PV_npvsGood']            += processor.column_accumulator(df["PV_npvsGood"][mask])
