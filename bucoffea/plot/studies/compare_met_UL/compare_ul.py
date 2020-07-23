@@ -7,12 +7,19 @@ import uproot
 import pandas as pd
 import numpy as np
 import mplhep as hep
+import argparse
 from matplotlib import pyplot as plt
 from bucoffea.helpers.paths import bucoffea_path
 
 pjoin = os.path.join
 
 # Script to compare MET datasets: One being currently used and the UL dataset
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--variables', help='The list of variables to plot the comparison.', default=['met_pt'], nargs='*')
+    args = parser.parse_args()
+    return args
 
 def prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take):
     '''Given the input trees and the branches to take, prepare a merged dataframe, merged on run/lumi/event information.'''
@@ -25,33 +32,47 @@ def prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take):
 
     return merged_df
 
-def plot_met_comparison_for_large_eta(merged_df, eta_range=(3.0,5.0)):
+def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
     '''Given the merged dataframe and the eta range, plot distribution of MET for UL and non-UL.'''
     leading_jet_abseta = np.abs(merged_df['leadak4_eta_05Jun20v5'])
     trailing_jet_abseta = np.abs(merged_df['trailak4_eta_05Jun20v5'])
-    met_pt_05Jun20v5 = merged_df['met_pt_05Jun20v5']
-    met_pt_UL = merged_df['met_pt_UL']
+
+    # Get the relevant variable (met pt by default)
+    arr_05Jun20v5 = merged_df[f'{variable}_05Jun20v5']
+    arr_UL = merged_df[f'{variable}_UL']
 
     # Get the events where one of the leading jets is in the given eta range
     if eta_range is not None:
         low_eta, high_eta = eta_range
         mask = ((leading_jet_abseta > low_eta) & (leading_jet_abseta < high_eta)) | ((trailing_jet_abseta > low_eta) & (trailing_jet_abseta < high_eta))
     else:
-        mask = np.ones_like(met_pt_05Jun20v5, dtype=bool)
+        mask = np.ones_like(arr_05Jun20v5, dtype=bool)
 
-    met_pt_05Jun20v5_masked = met_pt_05Jun20v5[mask]
-    met_pt_UL_masked = met_pt_UL[mask]
+    arr_05Jun20v5_masked = arr_05Jun20v5[mask]
+    arr_UL_masked = arr_UL[mask]
 
     # Make a histogram for both cases and plot them both
-    met_bins = [ 150, 175, 200, 225, 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640]
-    met_histo_05Jun20v5, bins = np.histogram(met_pt_05Jun20v5_masked, bins=met_bins)
-    met_histo_UL, bins = np.histogram(met_pt_UL_masked, bins=met_bins)
+    binning = {
+        'met_pt' : [ 150, 175, 200, 225, 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640],
+        'leadak4_pt' : list(range(80,600,20)),
+        'trailak4_pt' : list(range(40,500,20)),
+    }
+
+    bins = binning[variable]
+    histo_05Jun20v5, bins = np.histogram(arr_05Jun20v5_masked, bins=bins)
+    histo_UL, bins = np.histogram(arr_UL_masked, bins=bins)
 
     fig, ax = plt.subplots()
-    hep.histplot(met_histo_05Jun20v5, bins, ax=ax, histtype='step', label='05Jun20v5')
-    hep.histplot(met_histo_UL, bins, ax=ax, histtype='step', label='UL')
+    hep.histplot(histo_05Jun20v5, bins, ax=ax, histtype='step', label='05Jun20v5')
+    hep.histplot(histo_UL, bins, ax=ax, histtype='step', label='UL')
 
-    ax.set_xlabel('MET (GeV)')
+    xlabels = {
+        'met_pt' : 'MET (GeV)',
+        'leadak4_pt' : r'Leading Jet $p_T$ (GeV)',
+        'trailak4_pt' : r'Trailing Jet $p_T$ (GeV)',
+    }
+
+    ax.set_xlabel(xlabels[variable])
     ax.set_ylabel('Events in Data')
     ax.legend()
 
@@ -69,9 +90,9 @@ def plot_met_comparison_for_large_eta(merged_df, eta_range=(3.0,5.0)):
         os.makedirs(outdir)
 
     if eta_range is not None:
-        filename = f'etaRange_{str(low_eta).replace(".", "_")}_{str(high_eta).replace(".","_")}.pdf' 
+        filename = f'{variable}_etaRange_{str(low_eta).replace(".", "_")}_{str(high_eta).replace(".","_")}.pdf' 
     else:
-        filename = f'etaRange_inclusive.pdf' 
+        filename = f'{variable}_etaRange_inclusive.pdf' 
 
     outpath = pjoin(outdir, filename)    
     fig.savefig(outpath)
@@ -95,10 +116,15 @@ def main():
 
     merged_df = prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take)
 
-    # Plot the MET comparison
-    plot_met_comparison_for_large_eta(merged_df)
-    plot_met_comparison_for_large_eta(merged_df, eta_range=(2.5,3.0))
-    plot_met_comparison_for_large_eta(merged_df, eta_range=None)
+    # Read in the list of variables
+    args = parse_cli()
+    variables = args.variables
+
+    for variable in variables:
+        # Plot the MET comparison
+        plot_met_comparison_for_large_eta(merged_df, variable=variable)
+        plot_met_comparison_for_large_eta(merged_df, variable=variable, eta_range=(2.5,3.0))
+        plot_met_comparison_for_large_eta(merged_df, variable=variable, eta_range=None)
 
 if __name__ == '__main__':
     main()
