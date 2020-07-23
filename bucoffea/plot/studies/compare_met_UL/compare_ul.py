@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import mplhep as hep
 import argparse
+import matplotlib.ticker
 from matplotlib import pyplot as plt
 from bucoffea.helpers.paths import bucoffea_path
 
@@ -26,6 +27,13 @@ def prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take):
     # Transform the individual trees into dataframes
     df_05Jun20v5 = tree_05Jun20v5.pandas.df()[branches_to_take]
     df_UL = tree_UL.pandas.df()[branches_to_take]
+
+    # Add in the missing dphijj < 1.5 cut!
+    dphijj_05Jun20v5 = df_05Jun20v5['dphijj']
+    dphijj_UL = df_UL['dphijj']
+
+    df_05Jun20v5 = df_05Jun20v5[dphijj_05Jun20v5 < 1.5]
+    df_UL = df_UL[dphijj_UL < 1.5]
 
     # Merge the two dataframes on event/run/lumi information
     merged_df = pd.merge(df_05Jun20v5, df_UL, how='inner', on=['run', 'lumi', 'event'], suffixes=('_05Jun20v5','_UL'))
@@ -53,16 +61,17 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
 
     # Make a histogram for both cases and plot them both
     binning = {
-        'met_pt' : [ 150, 175, 200, 225, 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640],
-        'leadak4_pt' : list(range(80,600,20)),
-        'trailak4_pt' : list(range(40,500,20)),
+        'met_pt' : [ 150, 175, 200, 225, 250,  280,  310,  340,  370,  400, 430, 470, 510, 550, 590, 640],
+        'leadak4_pt' : list(range(80,500,20)),
+        'trailak4_pt' : list(range(40,400,20)),
     }
 
     bins = binning[variable]
     histo_05Jun20v5, bins = np.histogram(arr_05Jun20v5_masked, bins=bins)
     histo_UL, bins = np.histogram(arr_UL_masked, bins=bins)
 
-    fig, ax = plt.subplots()
+    # fig, ax = plt.subplots()
+    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     hep.histplot(histo_05Jun20v5, bins, ax=ax, histtype='step', label='05Jun20v5')
     hep.histplot(histo_UL, bins, ax=ax, histtype='step', label='UL')
 
@@ -72,7 +81,6 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
         'trailak4_pt' : r'Trailing Jet $p_T$ (GeV)',
     }
 
-    ax.set_xlabel(xlabels[variable])
     ax.set_ylabel('Events in Data')
     ax.legend()
 
@@ -83,6 +91,38 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
         fig_title = r'One Leading Jet In ${} < |\eta| < {}$'.format(low_eta, high_eta)
 
     ax.set_title(fig_title)
+
+    ylim = ax.get_ylim()
+    ax.plot([250., 250.], ylim, 'k')
+    ax.set_ylim(ylim)
+
+    # Calculate and plot the ratio
+    ratio = histo_UL / histo_05Jun20v5
+    # Guard against NaN values
+    ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.0
+
+    data_err_opts = {
+        'linestyle' : 'none',
+        'marker' : '.',
+        'markersize' : '10.',
+        'color' : 'k'
+    }
+
+    hep.histplot(ratio, bins, ax=rax, histtype='errorbar', **data_err_opts)
+
+    rax.set_xlabel(xlabels[variable])
+    rax.set_ylabel('UL / 05Jun20v5')
+    rax.grid(True)
+
+    rax.plot([250., 250.], [0.6, 1.4], color='blue')
+    rax.set_ylim(0.6, 1.4)
+
+    loc = matplotlib.ticker.MultipleLocator(base=0.1)
+    rax.yaxis.set_major_locator(loc)
+
+    xlim = rax.get_xlim()
+    rax.plot(xlim, [1., 1.], 'r')
+    rax.set_xlim(xlim)
 
     # Save figure
     outdir = f'./output/'
@@ -112,6 +152,7 @@ def main():
         'met_pt', 'met_phi',
         'leadak4_pt', 'leadak4_eta', 
         'trailak4_pt', 'trailak4_eta', 
+        'dphijj', 'detajj'
     ]
 
     merged_df = prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take)
