@@ -477,7 +477,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             output['sumw_pileup'][dataset] +=  weights._weights['pileup'].sum()
 
         regions = vbfhinv_regions(cfg)
-        print(regions.keys())
 
         veto_weights = get_veto_weights(df, evaluator, electrons, muons, taus)
         for region, cuts in regions.items():
