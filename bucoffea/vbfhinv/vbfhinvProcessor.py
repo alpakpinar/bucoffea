@@ -227,7 +227,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                                 '_jesTotalUp', '_jesTotalDown'
                                 ]
         else:
-            self._variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
+            self._variations = ['_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown', '']
 
         self._accumulator = vbfhinv_accumulator(cfg, variations=self._variations)
 
@@ -402,6 +402,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             df[f"minDPhiJetRecoil{var}"] = min_dphi_jet_met(ak4, df[f'recoil_phi{var}'], njet=4, ptmin=30, etamax=5.0, var=var)
             df[f"minDPhiJetMet{var}"] = min_dphi_jet_met(ak4, met_phi, njet=4, ptmin=30, etamax=5.0, var=var)
         
+            df[f"dPFTkSR{var}"] = (met_pt - df["TkMET_pt"]) / met_pt
+
             selection.add(f'mindphijr{var}',df[f'minDPhiJetRecoil{var}'] > cfg.SELECTION.SIGNAL.MINDPHIJR)
             selection.add(f'dpfcalo{var}',np.abs(df[f'dPFCalo{var}']) < cfg.SELECTION.SIGNAL.DPFCALO)
             selection.add(f'recoil{var}', df[f'recoil_pt{var}']>cfg.SELECTION.SIGNAL.RECOIL)
@@ -433,20 +435,26 @@ class vbfhinvProcessor(processor.ProcessorABC):
             selection.add(f'dphijj{var}', df[f'dphijj{var}'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
             selection.add(f'detajj{var}', df[f'detajj{var}'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
 
+            # Horn veto
+            leading_jet_in_horn = ((diak4.i0.abseta<3.2) & (diak4.i0.abseta>2.8)).any()
+            trailing_jet_in_horn = ((diak4.i1.abseta<3.2) & (diak4.i1.abseta>2.8)).any()
+
+            selection.add(f'hornveto{var}', (df[f'dPFTkSR{var}'] < 0.8) | ~(leading_jet_in_horn | trailing_jet_in_horn))
+
             # Calculate ratios: Varied / Nominal
-            if var != '':
-                df[f'mjj{var}_over_nom'] = df[f'mjj{var}']/df['mjj'] - 1 
-                df[f'detajj{var}_over_nom'] = df[f'detajj{var}']/df['detajj'] - 1 
-                df[f'dphijj{var}_over_nom'] = df[f'dphijj{var}']/df['dphijj'] - 1 
-                df[f'recoil_pt{var}_over_nom'] = df[f'recoil_pt{var}']/df['recoil_pt'] - 1 
+            # if var != '':
+                # df[f'mjj{var}_over_nom'] = df[f'mjj{var}']/df['mjj'] - 1 
+                # df[f'detajj{var}_over_nom'] = df[f'detajj{var}']/df['detajj'] - 1 
+                # df[f'dphijj{var}_over_nom'] = df[f'dphijj{var}']/df['dphijj'] - 1 
+                # df[f'recoil_pt{var}_over_nom'] = df[f'recoil_pt{var}']/df['recoil_pt'] - 1 
 
-                # Get nominal leading and trailing jet pt
-                diak4_nom = vmap.get_diak4(var='') 
-                lead_jetpt_nom = diak4_nom.i0.pt 
-                trail_jetpt_nom = diak4_nom.i1.pt 
+                # # Get nominal leading and trailing jet pt
+                # diak4_nom = vmap.get_diak4(var='') 
+                # lead_jetpt_nom = diak4_nom.i0.pt 
+                # trail_jetpt_nom = diak4_nom.i1.pt 
 
-                df[f'ak4_pt0{var}_over_nom'] = (lead_jet_pt / lead_jetpt_nom - 1).flatten()
-                df[f'ak4_pt1{var}_over_nom'] = (trail_jet_pt / trail_jetpt_nom - 1).flatten()
+                # df[f'ak4_pt0{var}_over_nom'] = (lead_jet_pt / lead_jetpt_nom - 1).flatten()
+                # df[f'ak4_pt1{var}_over_nom'] = (trail_jet_pt / trail_jetpt_nom - 1).flatten()
 
         # Divide into three categories for trigger study
         if cfg.RUN.TRIGGER_STUDY:
@@ -788,11 +796,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 ezfill("tau_pt", pt=taus.pt[mask].flatten(), weight=w_all_taus)
 
             # Variation / Nominal ratio plots for signal region
-            if region.startswith('sr') and var != '':
-                ezfill('recoil_varovernom',       ratio=df[f'recoil_pt{var}_over_nom'], weight=rweight)             
-                ezfill('mjj_varovernom',          ratio=df[f'mjj{var}_over_nom'],    weight=rweight)             
-                ezfill('detajj_varovernom',       ratio=df[f'detajj{var}_over_nom'], weight=rweight)             
-                ezfill('dphijj_varovernom',       ratio=df[f'dphijj{var}_over_nom'], weight=rweight)             
+            # if region.startswith('sr') and var != '':
+                # ezfill('recoil_varovernom',       ratio=df[f'recoil_pt{var}_over_nom'], weight=rweight)             
+                # ezfill('mjj_varovernom',          ratio=df[f'mjj{var}_over_nom'],    weight=rweight)             
+                # ezfill('detajj_varovernom',       ratio=df[f'detajj{var}_over_nom'], weight=rweight)             
+                # ezfill('dphijj_varovernom',       ratio=df[f'dphijj{var}_over_nom'], weight=rweight)             
 
             # PV
             if region in ['sr_vbf', 'cr_1m_vbf', 'cr_2m_vbf', 'cr_1e_vbf', 'cr_2e_vbf']:

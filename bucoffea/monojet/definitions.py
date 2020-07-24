@@ -467,7 +467,7 @@ def setup_candidates(df, cfg, variations):
         for var in variations:
             if var == '':
                 continue
-            ak8_pt = df[f'FatJet_pt_{var}']
+            ak8_pt = df[f'FatJet_pt{var}']
             argdict = {f'pt{var}' : ak8_pt}
             ak8.add_attributes(**argdict)
 
