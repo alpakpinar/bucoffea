@@ -14,12 +14,12 @@ default:
           deta: 4
       leadak4:
         pt: 80   # min
-        eta: 5.0  # max
+        eta: 4.7  # max
         nhf: 0.8  # max
         chf: 0.1  # min
       trailak4:
         pt: 40   # min
-        eta: 5.0  # max
+        eta: 4.7  # max
         nhf: 0.8  # max
         chf: 0.1  # min
       mindphijr : 0.5 # min
@@ -83,7 +83,7 @@ default:
       id: Electron_cutBased
   btag:
     pt: 20
-    eta: 2.4
+    eta: 2.5
   overlap:
     electron:
       muon:
@@ -154,6 +154,9 @@ default:
     qcd_nlo_z_2017_2d: # 2D QCD k factor for QCD Z
       histogram: 2d_dy_vbf
       file: data/sf/theory/2017_gen_v_pt_qcd_sf.root
+    qcd_nlo_znn_2017_2d:
+      histogram: kfactors_shape/kfactor_vbf
+      file: data/sf/theory/2Dkfactor_VBF_znn.root
     qcd_nlo_g_2017_2d: # 2D QCD k factor for QCD photon
       histogram: 2d_gjets_vbf
       file: data/sf/theory/2017_gen_v_pt_qcd_sf.root
@@ -323,7 +326,7 @@ era2016:
       histogram: "sf2017_down"
       file: "data/sf/pileup/pileup.root"
     trigger_met:
-        histogram: 120pfht_mu_recoil_1m_2017
+        histogram: 120pfht_mu_recoil_1m_2017_all
         file: data/sf/trigger/trig_sf_vbf.root
     trigger_electron:
       histogram: EGamma_SF2D
@@ -460,7 +463,7 @@ era2017:
       file: "data/sf/pileup/pileup.root"
 
     trigger_met:
-      histogram: 120pfht_mu_recoil_1m_2017
+      histogram: 120pfht_mu_recoil_1m_2017_all
       file: data/sf/trigger/trig_sf_vbf.root
     trigger_electron:
       histogram: EGamma_SF2D
@@ -592,7 +595,7 @@ era2018:
       file: "data/sf/pileup/pileup.root"
 
     trigger_met:
-      histogram: 120pfht_mu_recoil_1m_2018
+      histogram: 120pfht_mu_recoil_1m_2018_all
       file: data/sf/trigger/trig_sf_vbf.root
     trigger_electron:
       histogram: EGamma_SF2D
