@@ -210,6 +210,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         else:
             cfg.ENV_FOR_DYNACONF = f"default"
         cfg.reload()
+        
         if cfg.RUN.SPLIT_JECS:
             # All the split JES uncertainties, "" represents the nominal case with no variation
             self._variations = ['', '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
@@ -227,6 +228,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                                 ]
         else:
             self._variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
+
         self._accumulator = vbfhinv_accumulator(cfg, variations=self._variations)
 
     def process(self, df):
@@ -243,9 +245,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
         df['is_nlo_w'] = is_nlo_w(dataset)
         df['has_lhe_v_pt'] = df['is_lo_w'] | df['is_lo_z'] | df['is_nlo_z'] | df['is_nlo_w'] | df['is_lo_g'] | df['is_lo_w_ewk'] | df['is_lo_z_ewk']
         df['is_data'] = is_data(dataset)
-
-        if df['is_data']:
-            return self.accumulator.identity()
 
         gen_v_pt = None
         if df['is_lo_w'] or df['is_lo_z'] or df['is_nlo_z'] or df['is_nlo_w'] or df['is_lo_z_ewk'] or df['is_lo_w_ewk']:
@@ -349,6 +348,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         # Process for each JES/JER variation
         for var in self._variations:
+            # No JES/JER variations for data
             # Get the correct objects/quantities for each variation
             # For other variations, copy the common selections and
             # add on top of those.
@@ -358,6 +358,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 selection = copy.deepcopy(selection_nom) 
                 vmap.set_selection_packer(var=var, sel=selection)    
 
+            if df['is_data'] and var != '':
+                continue
 
             bjets = vmap.get_bjets(var)
             ak4 = vmap.get_ak4(var) 
@@ -566,8 +568,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             rweight = region_weights.partial_weight(exclude=exclude)
 
             # Blinding
-            if(self._blind and df['is_data'] and region.startswith('sr')):
-                continue
+            # if(self._blind and df['is_data'] and region.startswith('sr')):
+                # continue
             # Get relevant variation name for each region
             if ('Up' in region) or ('Down' in region):
                 if str(df["year"]) not in region:
@@ -576,6 +578,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     var = '_' + '_'.join(region.split('_')[-2:])
             else:
                 var = ''
+
+            if df['is_data'] and var != '':
+                continue
 
             # Get the correct objects/quantities for each variation
             selection = vmap.get_selection_packer(var)

@@ -417,14 +417,15 @@ def setup_candidates(df, cfg, variations):
         # cef=df['Jet_chEmEF'],
     )
     # Get variated jet properties for each JEC variation
-    for var in variations:
-        if var == '':
-            continue
-        ak4_pt = df[f'Jet_pt{var}']
-        ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt>50)
-        # Set the jet values
-        argdict = {f'pt{var}' : ak4_pt, f'puid{var}' : ak4_puid}
-        ak4.add_attributes(**argdict)
+    if not df['is_data']:
+        for var in variations:
+            if var == '':
+                continue
+            ak4_pt = df[f'Jet_pt{var}']
+            ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt>50)
+            # Set the jet values
+            argdict = {f'pt{var}' : ak4_pt, f'puid{var}' : ak4_puid}
+            ak4.add_attributes(**argdict)
         
     # Before cleaning, apply HEM veto
     hem_ak4 = ak4[ (ak4.pt>30) &
@@ -443,10 +444,6 @@ def setup_candidates(df, cfg, variations):
     ak8 = JaggedCandidateArray.candidatesfromcounts(
         df['nFatJet'],
         pt=df[f'FatJet_pt{jes_suffix}'],
-        pt_jerup=df['FatJet_pt_jerUp'],
-        pt_jerdown=df['FatJet_pt_jerDown'],
-        pt_jesup=df['FatJet_pt_jesTotalUp'],
-        pt_jesdown=df['FatJet_pt_jesTotalDown'],
         eta=df['FatJet_eta'],
         abseta=np.abs(df['FatJet_eta']),
         phi=df['FatJet_phi'],
@@ -466,6 +463,14 @@ def setup_candidates(df, cfg, variations):
         wvstqcd=df['FatJet_deepTag_WvsQCD']*(1-df['FatJet_deepTag_TvsQCD'])/(1-df['FatJet_deepTag_WvsQCD']*df['FatJet_deepTag_TvsQCD']),
         wvstqcdmd=df['FatJet_deepTagMD_WvsQCD']*(1-df['FatJet_deepTagMD_TvsQCD'])/(1-df['FatJet_deepTagMD_WvsQCD']*df['FatJet_deepTagMD_TvsQCD']),
     )
+    if not df['is_data']:
+        for var in variations:
+            if var == '':
+                continue
+            ak8_pt = df[f'FatJet_pt_{var}']
+            argdict = {f'pt{var}' : ak8_pt}
+            ak8.add_attributes(**argdict)
+
     ak8 = ak8[ak8.tightId & object_overlap(ak8, muons) & object_overlap(ak8, electrons) & object_overlap(ak8, photons)]
 
     if extract_year(df['dataset']) == 2017:
@@ -483,20 +488,23 @@ def setup_candidates(df, cfg, variations):
         mass=np.zeros(df.size) # dummy
     )
     # Get variated MET properties for each JEC variation
-    for var in variations:
-        if var == '':
-            continue
-        met_pt = df[f'{met_branch}_pt{var}']
-        met_phi = df[f'{met_branch}_phi{var}']
-        # Set the MET values
-        argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
-        met.add_attributes(**argdict)
+    if not df['is_data']:
+        for var in variations:
+            if var == '':
+                continue
+            met_pt = df[f'{met_branch}_pt{var}']
+            met_phi = df[f'{met_branch}_phi{var}']
+            # Set the MET values
+            argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
+            met.add_attributes(**argdict)
 
     # Different sets of jets/b-jets/met for each 
     # JES/JER variation
     vmap = VarMap(variations=variations)
     
     for var in variations:
+        if df['is_data'] and var != '':
+            continue
         ak4_pt = getattr(ak4, f'pt{var}')
         # Sort AK4 jets according to relevant pt
         _ak4 = ak4[ak4_pt.argsort()]
