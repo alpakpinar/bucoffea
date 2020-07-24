@@ -210,20 +210,23 @@ class vbfhinvProcessor(processor.ProcessorABC):
         else:
             cfg.ENV_FOR_DYNACONF = f"default"
         cfg.reload()
-        # All the split JES uncertainties, "" represents the nominal case with no variation
-        self._variations = ['', '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
-                            '_jesRelativeBalUp', '_jesRelativeBalDown',
-                            '_jesHFUp', '_jesHFDown',
-                            '_jesBBEC1Up', '_jesBBEC1Down',
-                            '_jesEC2Up', '_jesEC2Down',
-                            '_jesAbsoluteUp', '_jesAbsoluteDown',
-                            f'_jesBBEC1_{self._year}Up', f'_jesBBEC1_{self._year}Down',
-                            f'_jesEC2_{self._year}Up', f'_jesEC2_{self._year}Down',
-                            f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
-                            f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
-                            f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
-                            '_jesTotalUp', '_jesTotalDown'
-                            ]
+        if cfg.RUN.SPLIT_JECS:
+            # All the split JES uncertainties, "" represents the nominal case with no variation
+            self._variations = ['', '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
+                                '_jesRelativeBalUp', '_jesRelativeBalDown',
+                                '_jesHFUp', '_jesHFDown',
+                                '_jesBBEC1Up', '_jesBBEC1Down',
+                                '_jesEC2Up', '_jesEC2Down',
+                                '_jesAbsoluteUp', '_jesAbsoluteDown',
+                                f'_jesBBEC1_{self._year}Up', f'_jesBBEC1_{self._year}Down',
+                                f'_jesEC2_{self._year}Up', f'_jesEC2_{self._year}Down',
+                                f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
+                                f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
+                                f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
+                                '_jesTotalUp', '_jesTotalDown'
+                                ]
+        else:
+            self._variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
         self._accumulator = vbfhinv_accumulator(cfg, variations=self._variations)
 
     def process(self, df):
@@ -584,6 +587,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             met_pt_nom = met.pt_nom.flatten() # MET_pt_nom in nanoAOD
             met_pt_jer = met.pt.flatten()     # MET_pt_jer in nanoAOD
             met_pt = getattr(met, f'pt{var}').flatten() # Varied MET pt 
+            met_phi = getattr(met, f'phi{var}').flatten() # Varied MET phi 
 
             # Cutflow plot for signal and control regions
             if any(x in region for x in ["sr", "cr", "tr"]):
@@ -593,6 +597,51 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     output['cutflow_' + region][dataset][cutname] += np.nansum(region_weights.weight()[selection.all(*cuts[:icut+1])] )
 
             mask = selection.all(*cuts)
+
+            # Save to tree if configured so
+            if cfg.RUN.SAVE.TREE:
+                if re.match(cfg.RUN.SAVE.TREEREGIONS, region):
+                    # General properties
+                    output['tree_int64'][region]['event']       += processor.column_accumulator(df["event"][mask])
+                    output['tree_int64'][region]['run']         += processor.column_accumulator(df["run"][mask])
+                    output['tree_int64'][region]['lumi']        += processor.column_accumulator(df["luminosityBlock"][mask])
+
+                    output['tree_float16'][region]['recoil_pt']    += processor.column_accumulator(df[f'recoil_pt{var}'][mask])
+                    output['tree_float16'][region]['recoil_phi']   += processor.column_accumulator(df[f'recoil_phi{var}'][mask])
+                    output['tree_float16'][region]['met_pt']       += processor.column_accumulator(met_pt[mask])
+                    output['tree_float16'][region]['met_phi']      += processor.column_accumulator(met_phi[mask])
+                    output['tree_float16'][region]['mjj']          += processor.column_accumulator(df[f'mjj{var}'][mask])
+                    output['tree_float16'][region]['detajj']       += processor.column_accumulator(df[f'detajj{var}'][mask])
+                    output['tree_float16'][region]['dphijj']       += processor.column_accumulator(df[f'dphijj{var}'][mask])
+
+                    # Leading jet
+                    output['tree_float16'][region]['leadak4_pt']      += processor.column_accumulator(diak4.i0.pt.max()[mask])
+                    output['tree_float16'][region]['leadak4_eta']     += processor.column_accumulator(diak4.i0.eta.max()[mask])
+                    output['tree_float16'][region]['leadak4_phi']     += processor.column_accumulator(diak4.i0.phi.max()[mask])
+                    output['tree_float16'][region]['leadak4_chHEF']   += processor.column_accumulator(diak4.i0.chf.max()[mask])
+                    output['tree_float16'][region]['leadak4_neHEF']   += processor.column_accumulator(diak4.i0.nhf.max()[mask])
+                    output['tree_float16'][region]['leadak4_neEmEF']  += processor.column_accumulator(diak4.i0.nef.max()[mask])
+
+                    # Trailing jet
+                    output['tree_float16'][region]['trailak4_pt']      += processor.column_accumulator(diak4.i1.pt.max()[mask])
+                    output['tree_float16'][region]['trailak4_eta']     += processor.column_accumulator(diak4.i1.eta.max()[mask])
+                    output['tree_float16'][region]['trailak4_phi']     += processor.column_accumulator(diak4.i1.phi.max()[mask])
+                    output['tree_float16'][region]['trailak4_chHEF']   += processor.column_accumulator(diak4.i1.chf.max()[mask])
+                    output['tree_float16'][region]['trailak4_neHEF']   += processor.column_accumulator(diak4.i1.nhf.max()[mask])
+                    output['tree_float16'][region]['trailak4_neEmEF']  += processor.column_accumulator(diak4.i1.nef.max()[mask])
+
+                    output['tree_float16'][region]['minDPhiJetMet']    += processor.column_accumulator(df[f'minDPhiJetMet{var}'][mask])
+
+                    # MC quantities
+                    if not df['is_data']:
+                        if gen_v_pt is not None:
+                            output['tree_float16'][region]['gen_v_pt']     += processor.column_accumulator(gen_v_pt[mask])
+                            output['tree_float16'][region]['GenMET_pt']    += processor.column_accumulator(df['GenMET_pt'][mask])
+                            output['tree_float16'][region]['GenMET_phi']   += processor.column_accumulator(df['GenMET_phi'][mask])
+
+                    # Fill in the event weights
+                    for wname, wvalue in region_weights._weights.items():
+                        output['tree_float16'][region][f'weight_{wname}']   += processor.column_accumulator(np.float16(wvalue[mask]))
 
             # Save the event numbers of events passing this selection
             if cfg.RUN.SAVE.PASSING:

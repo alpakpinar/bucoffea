@@ -203,9 +203,12 @@ default:
       mode: nano
 
   run:
+    split_jecs: False # Set to True to run with split JECs
     sync: False
     save:
       passing: False
+      tree: True # Set to True to save an output tree
+      treeregions: "^sr_vbf.*"
     kinematics:
       save: False
       events:
