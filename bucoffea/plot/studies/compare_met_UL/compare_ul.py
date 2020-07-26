@@ -9,6 +9,7 @@ import numpy as np
 import mplhep as hep
 import argparse
 import matplotlib.ticker
+import matplotlib.colors as colors
 from matplotlib import pyplot as plt
 from bucoffea.helpers.paths import bucoffea_path
 
@@ -19,6 +20,7 @@ pjoin = os.path.join
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('--variables', help='The list of variables to plot the comparison.', default=['met_pt'], nargs='*')
+    parser.add_argument('--plot2d', help='Plot 2D histogram of UL and non-UL MET.', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -40,8 +42,17 @@ def prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take):
 
     return merged_df
 
-def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
-    '''Given the merged dataframe and the eta range, plot distribution of MET for UL and non-UL.'''
+def get_mask_from_eta_range(eta_range, leading_jet_abseta, trailing_jet_abseta):
+    # Get the events where one of the leading jets is in the given eta range
+    if eta_range is not None:
+        low_eta, high_eta = eta_range
+        mask = ((leading_jet_abseta > low_eta) & (leading_jet_abseta < high_eta)) | ((trailing_jet_abseta > low_eta) & (trailing_jet_abseta < high_eta))
+    else:
+        mask = np.ones_like(leading_jet_abseta, dtype=bool)
+
+    return mask
+
+def get_masked_array(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
     leading_jet_abseta = np.abs(merged_df['leadak4_eta_05Jun20v5'])
     trailing_jet_abseta = np.abs(merged_df['trailak4_eta_05Jun20v5'])
 
@@ -49,15 +60,120 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
     arr_05Jun20v5 = merged_df[f'{variable}_05Jun20v5']
     arr_UL = merged_df[f'{variable}_UL']
 
-    # Get the events where one of the leading jets is in the given eta range
-    if eta_range is not None:
-        low_eta, high_eta = eta_range
-        mask = ((leading_jet_abseta > low_eta) & (leading_jet_abseta < high_eta)) | ((trailing_jet_abseta > low_eta) & (trailing_jet_abseta < high_eta))
-    else:
-        mask = np.ones_like(arr_05Jun20v5, dtype=bool)
+    mask = get_mask_from_eta_range(eta_range, leading_jet_abseta, trailing_jet_abseta)
 
     arr_05Jun20v5_masked = arr_05Jun20v5[mask]
     arr_UL_masked = arr_UL[mask]
+
+    arrays = {
+        '05Jun20v5' : arr_05Jun20v5_masked,
+        'UL' : arr_UL_masked
+    }
+    return arrays
+
+def eta_distribution_for_events_with_high_met_diff(merged_df, met_thresh=50):
+    '''Plot the leading/trailing jet eta distributions for events with high MET difference between UL and non-UL.'''
+    met_arrays = get_masked_array(merged_df, variable='met_pt', eta_range=None)
+    met_05Jun20v5 = met_arrays['05Jun20v5']
+    met_UL = met_arrays['UL']
+
+    leading_jet_eta = merged_df['leadak4_eta_05Jun20v5']
+    trailing_jet_eta = merged_df['trailak4_eta_05Jun20v5']
+
+    mask = np.abs(met_05Jun20v5 - met_UL) > met_thresh
+
+    events_with_high_met_diff = {
+        'leadak4_eta' : leading_jet_eta[mask],
+        'trailak4_eta' : trailing_jet_eta[mask]
+    }
+
+    binning = {
+        'leadak4_eta' : np.linspace(-5,5,51),
+        'trailak4_eta' : np.linspace(-5,5,51),
+    }
+
+    for tag in ['leadak4_eta', 'trailak4_eta']:
+        fig, ax = plt.subplots()
+        h, bins = np.histogram(events_with_high_met_diff[tag], bins=binning[tag])
+        hep.histplot(h, bins, histtype='step', ax=ax)
+        
+        if tag == 'leadak4_eta':
+            ax.set_xlabel(r'Leading jet $\eta$')
+        elif tag == 'trailak4_eta':
+            ax.set_xlabel(r'Trailing jet $\eta$')
+        ax.set_ylabel('Number of Events')
+    
+        fig_title = f'Events with MET difference > {met_thresh} GeV'
+        ax.set_title(fig_title)
+    
+        ax.set_yscale('log')
+        ax.set_ylim(1e-1, 1e4)
+
+        outdir = f'./output/events_with_high_met_diff'
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
+        outpath = pjoin(outdir, f'{tag}_thresh_{met_thresh}.pdf')
+        fig.savefig(outpath)
+        plt.close(fig)
+
+def plot_2d_histogram(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
+    '''Plot 2D histogram: UL MET vs non-UL MET.'''
+    arrays = get_masked_array(merged_df, variable, eta_range)
+    arr_05Jun20v5_masked = arrays['05Jun20v5']
+    arr_UL_masked = arrays['UL']
+
+    # Make a histogram for both cases and plot them both
+    binning = {
+        'met_pt' : np.arange(200,360,10),
+        # 'met_pt' : [ 150, 175, 200, 225, 250,  280,  310,  340,  370,  400, 430, 470, 510, 550, 590, 640],
+        'leadak4_pt' : list(range(80,500,20)),
+        'trailak4_pt' : list(range(40,400,20)),
+    }
+
+    if eta_range is not None:
+        low_eta, high_eta = eta_range
+    bins = binning[variable]
+
+    fig, ax = plt.subplots()
+    if eta_range is None:
+        vmin, vmax = 1e-1, 5e2
+    else:
+        vmin, vmax = 1e-1, 1e2
+    h, xedges, yedges, im = ax.hist2d(arr_05Jun20v5_masked, arr_UL_masked, bins=(bins, bins), norm=colors.LogNorm(vmin=vmin, vmax=vmax))
+    ax.set_xlabel('MET: 05Jun20v5 (GeV)')
+    ax.set_ylabel('MET: UL (GeV)')
+
+    cb = fig.colorbar(im)
+    cb.set_label('Number of Events')
+
+    # Set fig title
+    if eta_range is None:
+        fig_title = r'$\eta$ Inclusive'
+    else:
+        fig_title = r'One Leading Jet In ${} < |\eta| < {}$'.format(low_eta, high_eta)
+
+    ax.set_title(fig_title)
+    
+    # Save figure
+    outdir = f'./output/2d'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    if eta_range is not None:
+        filename = f'{variable}_etaRange_{str(low_eta).replace(".", "_")}_{str(high_eta).replace(".","_")}.pdf' 
+    else:
+        filename = f'{variable}_etaRange_inclusive.pdf' 
+
+    outpath = pjoin(outdir, filename)    
+    fig.savefig(outpath)
+    print(f'MSG% File saved: {outpath}')
+
+def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
+    '''Given the merged dataframe and the eta range, plot distribution of MET for UL and non-UL.'''
+    arrays = get_masked_array(merged_df, variable, eta_range)
+    arr_05Jun20v5_masked = arrays['05Jun20v5']
+    arr_UL_masked = arrays['UL']
 
     # Make a histogram for both cases and plot them both
     binning = {
@@ -66,6 +182,8 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
         'trailak4_pt' : list(range(40,400,20)),
     }
 
+    if eta_range is not None:
+        low_eta, high_eta = eta_range
     bins = binning[variable]
     histo_05Jun20v5, bins = np.histogram(arr_05Jun20v5_masked, bins=bins)
     histo_UL, bins = np.histogram(arr_UL_masked, bins=bins)
@@ -166,6 +284,14 @@ def main():
         plot_met_comparison_for_large_eta(merged_df, variable=variable)
         plot_met_comparison_for_large_eta(merged_df, variable=variable, eta_range=(2.5,3.0))
         plot_met_comparison_for_large_eta(merged_df, variable=variable, eta_range=None)
+
+        if args.plot2d:
+            plot_2d_histogram(merged_df, variable=variable)
+            plot_2d_histogram(merged_df, variable=variable, eta_range=(2.5,3.0))
+            plot_2d_histogram(merged_df, variable=variable, eta_range=None)
+
+    eta_distribution_for_events_with_high_met_diff(merged_df)
+    eta_distribution_for_events_with_high_met_diff(merged_df, met_thresh=10)
 
 if __name__ == '__main__':
     main()
