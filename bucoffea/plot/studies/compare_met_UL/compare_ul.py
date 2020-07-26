@@ -20,11 +20,12 @@ pjoin = os.path.join
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('--variables', help='The list of variables to plot the comparison.', default=['met_pt'], nargs='*')
+    parser.add_argument('--applyMetCut', help='Apply MET>250 cut.', action='store_true')
     parser.add_argument('--plot2d', help='Plot 2D histogram of UL and non-UL MET.', action='store_true')
     args = parser.parse_args()
     return args
 
-def prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take):
+def prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take, apply_met_cut=False):
     '''Given the input trees and the branches to take, prepare a merged dataframe, merged on run/lumi/event information.'''
     # Transform the individual trees into dataframes
     df_05Jun20v5 = tree_05Jun20v5.pandas.df()[branches_to_take]
@@ -34,8 +35,19 @@ def prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take):
     dphijj_05Jun20v5 = df_05Jun20v5['dphijj']
     dphijj_UL = df_UL['dphijj']
 
-    df_05Jun20v5 = df_05Jun20v5[dphijj_05Jun20v5 < 1.5]
-    df_UL = df_UL[dphijj_UL < 1.5]
+    mask_05Jun20v5 = dphijj_05Jun20v5 < 1.5
+    mask_UL = dphijj_UL < 1.5
+
+    # If requested, apply the MET > 250 GeV cut (trees should have >150 cut applied)
+    if apply_met_cut:
+        met_05Jun20v5 = df_05Jun20v5['met_pt']
+        met_UL = df_UL['met_pt']
+
+        mask_05Jun20v5 = mask_05Jun20v5 & (met_05Jun20v5 > 250)
+        mask_UL = mask_UL & (met_UL > 250)
+
+    df_05Jun20v5 = df_05Jun20v5[mask_05Jun20v5]
+    df_UL = df_UL[mask_UL]
 
     # Merge the two dataframes on event/run/lumi information
     merged_df = pd.merge(df_05Jun20v5, df_UL, how='inner', on=['run', 'lumi', 'event'], suffixes=('_05Jun20v5','_UL'))
@@ -71,7 +83,7 @@ def get_masked_array(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
     }
     return arrays
 
-def eta_distribution_for_events_with_high_met_diff(merged_df, met_thresh=50):
+def eta_distribution_for_events_with_high_met_diff(merged_df, met_diff_factor=0.2):
     '''Plot the leading/trailing jet eta distributions for events with high MET difference between UL and non-UL.'''
     met_arrays = get_masked_array(merged_df, variable='met_pt', eta_range=None)
     met_05Jun20v5 = met_arrays['05Jun20v5']
@@ -80,7 +92,7 @@ def eta_distribution_for_events_with_high_met_diff(merged_df, met_thresh=50):
     leading_jet_eta = merged_df['leadak4_eta_05Jun20v5']
     trailing_jet_eta = merged_df['trailak4_eta_05Jun20v5']
 
-    mask = np.abs(met_05Jun20v5 - met_UL) > met_thresh
+    mask = ( np.abs(met_05Jun20v5 - met_UL) / met_05Jun20v5 ) > met_diff_factor
 
     events_with_high_met_diff = {
         'leadak4_eta' : leading_jet_eta[mask],
@@ -103,7 +115,7 @@ def eta_distribution_for_events_with_high_met_diff(merged_df, met_thresh=50):
             ax.set_xlabel(r'Trailing jet $\eta$')
         ax.set_ylabel('Number of Events')
     
-        fig_title = f'Events with MET difference > {met_thresh} GeV'
+        fig_title = f'Events with % MET difference > {met_diff_factor*100}%'
         ax.set_title(fig_title)
     
         ax.set_yscale('log')
@@ -113,8 +125,9 @@ def eta_distribution_for_events_with_high_met_diff(merged_df, met_thresh=50):
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
-        outpath = pjoin(outdir, f'{tag}_thresh_{met_thresh}.pdf')
+        outpath = pjoin(outdir, f'{tag}_met_diff_factor_{str(met_diff_factor).replace(".", "_")}.pdf')
         fig.savefig(outpath)
+        print(f'MSG% File saved: {outpath}')
         plt.close(fig)
 
 def plot_2d_histogram(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
@@ -125,7 +138,7 @@ def plot_2d_histogram(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
 
     # Make a histogram for both cases and plot them both
     binning = {
-        'met_pt' : np.arange(200,360,10),
+        'met_pt' : np.arange(150,360,10),
         # 'met_pt' : [ 150, 175, 200, 225, 250,  280,  310,  340,  370,  400, 430, 470, 510, 550, 590, 640],
         'leadak4_pt' : list(range(80,500,20)),
         'trailak4_pt' : list(range(40,400,20)),
@@ -169,8 +182,8 @@ def plot_2d_histogram(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
     fig.savefig(outpath)
     print(f'MSG% File saved: {outpath}')
 
-def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
-    '''Given the merged dataframe and the eta range, plot distribution of MET for UL and non-UL.'''
+def plot_comparison(merged_df, variable='met_pt', eta_range=(3.0,5.0), apply_met_cut=False):
+    '''Given the merged dataframe and the eta range, plot distribution of a variable (MET by default) for UL and non-UL.'''
     arrays = get_masked_array(merged_df, variable, eta_range)
     arr_05Jun20v5_masked = arrays['05Jun20v5']
     arr_UL_masked = arrays['UL']
@@ -180,10 +193,13 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
         'met_pt' : [ 150, 175, 200, 225, 250,  280,  310,  340,  370,  400, 430, 470, 510, 550, 590, 640],
         'leadak4_pt' : list(range(80,500,20)),
         'trailak4_pt' : list(range(40,400,20)),
+        'leadak4_eta' : np.arange(-5,5.25,0.25),
+        'trailak4_eta' : np.arange(-5,5.25,0.25),
     }
 
     if eta_range is not None:
         low_eta, high_eta = eta_range
+        
     bins = binning[variable]
     histo_05Jun20v5, bins = np.histogram(arr_05Jun20v5_masked, bins=bins)
     histo_UL, bins = np.histogram(arr_UL_masked, bins=bins)
@@ -197,9 +213,13 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
         'met_pt' : 'MET (GeV)',
         'leadak4_pt' : r'Leading Jet $p_T$ (GeV)',
         'trailak4_pt' : r'Trailing Jet $p_T$ (GeV)',
+        'leadak4_eta' : r'Leading Jet $\eta$',
+        'trailak4_eta' : r'Trailing Jet $\eta$',
     }
 
     ax.set_ylabel('Events in Data')
+    ax.set_yscale('log')
+    ax.set_ylim(1e-1, 1e5)
     ax.legend()
 
     # Set fig title
@@ -210,9 +230,10 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
 
     ax.set_title(fig_title)
 
-    ylim = ax.get_ylim()
-    ax.plot([250., 250.], ylim, 'k')
-    ax.set_ylim(ylim)
+    if variable == 'met_pt':
+        ylim = ax.get_ylim()
+        ax.plot([250., 250.], ylim, 'k')
+        ax.set_ylim(ylim)
 
     # Calculate and plot the ratio
     ratio = histo_UL / histo_05Jun20v5
@@ -232,7 +253,8 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
     rax.set_ylabel('UL / 05Jun20v5')
     rax.grid(True)
 
-    rax.plot([250., 250.], [0.6, 1.4], color='blue')
+    if variable == 'met_pt':
+        rax.plot([250., 250.], [0.6, 1.4], color='blue')
     rax.set_ylim(0.6, 1.4)
 
     loc = matplotlib.ticker.MultipleLocator(base=0.1)
@@ -243,7 +265,10 @@ def plot_met_comparison_for_large_eta(merged_df, variable='met_pt', eta_range=(3
     rax.set_xlim(xlim)
 
     # Save figure
-    outdir = f'./output/'
+    if not apply_met_cut:
+        outdir = f'./output/'
+    else:
+        outdir = f'./output/with_met_250_cut'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -272,18 +297,18 @@ def main():
         'trailak4_pt', 'trailak4_eta', 
         'dphijj', 'detajj'
     ]
-
-    merged_df = prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take)
-
     # Read in the list of variables
     args = parse_cli()
     variables = args.variables
+    apply_met_cut = args.applyMetCut
+
+    merged_df = prepare_merged_df(tree_05Jun20v5, tree_UL, branches_to_take, apply_met_cut=apply_met_cut)
 
     for variable in variables:
         # Plot the MET comparison
-        plot_met_comparison_for_large_eta(merged_df, variable=variable)
-        plot_met_comparison_for_large_eta(merged_df, variable=variable, eta_range=(2.5,3.0))
-        plot_met_comparison_for_large_eta(merged_df, variable=variable, eta_range=None)
+        plot_comparison(merged_df, variable=variable, apply_met_cut=apply_met_cut)
+        plot_comparison(merged_df, variable=variable, eta_range=(2.5,3.0), apply_met_cut=apply_met_cut)
+        plot_comparison(merged_df, variable=variable, eta_range=None, apply_met_cut=apply_met_cut)
 
         if args.plot2d:
             plot_2d_histogram(merged_df, variable=variable)
@@ -291,8 +316,8 @@ def main():
             plot_2d_histogram(merged_df, variable=variable, eta_range=None)
 
     eta_distribution_for_events_with_high_met_diff(merged_df)
-    eta_distribution_for_events_with_high_met_diff(merged_df, met_thresh=10)
-    eta_distribution_for_events_with_high_met_diff(merged_df, met_thresh=100)
+    eta_distribution_for_events_with_high_met_diff(merged_df, met_diff_factor=0.3)
+    eta_distribution_for_events_with_high_met_diff(merged_df, met_diff_factor=0.1)
 
 if __name__ == '__main__':
     main()
