@@ -168,6 +168,9 @@ def plot_2d_histogram(merged_df, variable='met_pt', eta_range=(3.0,5.0)):
 
     ax.set_title(fig_title)
     
+    # Diagonal line plot
+    ax.plot(bins, bins, color='red')
+
     # Save figure
     outdir = f'./output/2d'
     if not os.path.exists(outdir):
