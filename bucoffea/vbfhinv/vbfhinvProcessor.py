@@ -15,7 +15,9 @@ from bucoffea.helpers import (
                               mt,
                               recoil,
                               weight_shape,
-                              candidates_in_hem
+                              candidates_in_hem,
+                              calculate_vecB,
+                              calculate_vecDPhi
                               )
 from bucoffea.helpers.dataset import (
                                       extract_year,
@@ -347,6 +349,22 @@ class vbfhinvProcessor(processor.ProcessorABC):
             selection.add("metphihemextveto", pass_all)
             selection.add('no_el_in_hem', pass_all)
 
+        vec_b = calculate_vecB(ak4, met_pt, met_phi)
+        vec_dphi = calculate_vecDPhi(ak4, met_pt, met_phi, df['TkMET_phi'])
+
+        no_jet_in_trk = (diak4.i0.abseta>2.5).any() & (diak4.i1.abseta>2.5).any()
+        no_jet_in_hf = (diak4.i0.abseta<3.0).any() & (diak4.i1.abseta<3.0).any()
+
+        at_least_one_jet_in_hf = (diak4.i0.abseta>3.0).any() | (diak4.i1.abseta>3.0).any()
+        at_least_one_jet_in_trk = (diak4.i0.abseta<2.5).any() | (diak4.i1.abseta<2.5).any()
+
+        # Categorized cleaning cuts
+        eemitigation = (
+                        (no_jet_in_hf | at_least_one_jet_in_trk) & (vec_dphi < 1.0)
+                    ) | (
+                        (no_jet_in_trk & at_least_one_jet_in_hf) & (vec_b < 0.2)
+                    )
+
         selection.add('two_jets', diak4.counts>0)
         selection.add('leadak4_pt_eta', leadak4_pt_eta.any())
         selection.add('trailak4_pt_eta', trailak4_pt_eta.any())
@@ -556,6 +574,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         output['tree_float16'][region]["dphijj"]          +=  processor.column_accumulator(df["dphijj"][mask])
                         output['tree_float16'][region]["detajj"]          +=  processor.column_accumulator(df["detajj"][mask])
                         
+                        # Save info about the cleaning cuts
+                        output['tree_bool'][region]['pass_cleaning_cut']  += processor.column_accumulator(eemitigation[mask])
+                        output['tree_float16'][region]['vecB']     += processor.column_accumulator(vec_b[mask])            
+                        output['tree_float16'][region]['vecDPhi']  += processor.column_accumulator(vec_dphi[mask])            
+
                         # Number of jets
                         good_jets = ak4[ak4.pt>30]
                         nJet = good_jets.counts

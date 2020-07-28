@@ -207,7 +207,7 @@ default:
 
   run:
     sync: False
-    process_ul: True # Flag for processing UL datasets
+    process_ul: False # Flag for processing UL datasets
     save:
       passing: False
       tree: True
