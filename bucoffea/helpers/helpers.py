@@ -203,6 +203,40 @@ def candidates_in_hem(candidates):
     """Returns a mask telling you which candidates are in the HEM region"""
     return (-3.0 < candidates.eta) & (candidates.eta < -1.3) & (-1.8 < candidates.phi) & (candidates.phi < -0.6)
 
+def get_filtered_jets(ak4, selection='inclusive', jet_pt_thresh=30):
+    '''Get the list of filtered jets.'''
+    filtered_ak4 = ak4[ak4.pt > jet_pt_thresh]
+    # Additional filtering, if requested
+    if selection == 'jetsInHF':
+        filtered_ak4 = filtered_ak4[filtered_ak4.abseta > 3.0]
+    elif selection == 'jetsInEndcap':
+        filtered_ak4 = filtered_ak4[ (filtered_ak4.abseta > 2.5) & (filtered_ak4.abseta < 3.0) ]
+    elif selection == 'jetsInBarrel':
+        filtered_ak4 = filtered_ak4[(filtered_ak4.abseta < 2.5)]
+    elif selection == 'jetsNotInEndcap':
+        jet_not_in_endcap = ~ ((filtered_ak4.abseta > 2.5) & (filtered_ak4.abseta < 3.0))
+        filtered_ak4 = filtered_ak4[jet_not_in_endcap]
+
+    return filtered_ak4
+
+def calculate_HT(ak4, selection='inclusive', jet_pt_thresh=30):
+    '''Calculate the HT in the event.'''
+    filtered_ak4 = get_filtered_jets(ak4, selection, jet_pt_thresh)
+    return filtered_ak4.pt.sum()
+
+def calculate_HTmiss(ak4, selection='inclusive', jet_pt_thresh=30):
+    '''Calculate the missing HT in the event.'''
+    filtered_ak4 = get_filtered_jets(ak4, selection, jet_pt_thresh)
+    
+    mht_p4 = filtered_ak4.p4.sum()
+    mht_x  = - mht_p4.pt * np.cos(mht_p4.phi)
+    mht_y  = - mht_p4.pt * np.sin(mht_p4.phi)
+
+    mht_pt = np.hypot(mht_x, mht_y)
+    mht_phi = np.arctan2(mht_y, mht_x)
+
+    return mht_pt, mht_phi
+
 def calculate_vecB(ak4, met_pt, met_phi):
     '''Calculate vecB (balance) quantity, based on jets and MET.'''
     mht_p4 = ak4[ak4.pt>30].p4.sum()
