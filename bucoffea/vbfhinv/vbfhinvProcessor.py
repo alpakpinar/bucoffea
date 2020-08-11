@@ -325,6 +325,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         (no_jet_in_trk & at_least_one_jet_in_hf) & (vec_b < 0.2)
                     )
 
+        # Mask if both leading jets are in HF
+        two_jets_in_hf = (diak4.i0.abseta>3.0).any() & (diak4.i1.abseta>3.0).any()
+
         selection.add('two_jets', diak4.counts>0)
         selection.add('leadak4_pt_eta', leadak4_pt_eta.any())
         selection.add('trailak4_pt_eta', trailak4_pt_eta.any())
@@ -536,6 +539,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         
                         # Save info about the cleaning cuts
                         output['tree_bool'][region]['pass_cleaning_cut']  += processor.column_accumulator(eemitigation[mask])
+                        output['tree_bool'][region]['two_jets_in_hf']     += processor.column_accumulator(two_jets_in_hf[mask])
                         output['tree_float16'][region]['vecB']     += processor.column_accumulator(vec_b[mask])            
                         output['tree_float16'][region]['vecDPhi']  += processor.column_accumulator(vec_dphi[mask])            
 
