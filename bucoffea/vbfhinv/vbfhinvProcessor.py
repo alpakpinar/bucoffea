@@ -68,7 +68,7 @@ def gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt):
     selection.add('ak4_neEmEF', (lead_ak4.nef < 0.7).any())
 
     # MET cut
-    selection.add('met_pt', (met_pt < 50).any())
+    selection.add('met_pt', met_pt < 50)
 
     return selection
 
