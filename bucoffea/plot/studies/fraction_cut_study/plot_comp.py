@@ -15,9 +15,10 @@ REBIN = {
     'ak4_pt0' : hist.Bin('jetpt', r'Jet $p_T$ (GeV)', 25, 0, 1000)
 }
 
-XLABEL = {
+XLABELS = {
     'ak4_pt0' : r'Jet $p_T$ (GeV)',
-    'ak4_eta0' : r'Jet $\eta$'
+    'ak4_eta0' : r'Jet $\eta$',
+    'ak4_nef0' : 'Jet Neutral EM Fraction'
 }
 
 def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
@@ -46,7 +47,7 @@ def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
     h_denom = h.integrate('region', 'cr_g_noEmEF')
     hist.plotratio(h_num, h_denom, ax=rax, error_opts=data_err_opts, unc='num')
 
-    rax.set_xlabel(XLABEL[variable])
+    rax.set_xlabel(XLABELS[variable])
     rax.set_ylabel('With cut / without cut')
     rax.grid(True)
     rax.set_ylim(0.8, 1.2)
@@ -100,7 +101,7 @@ def main():
         outtag = inpath.split('/')[-1]
 
     # Variables to plot
-    variables = ['ak4_pt0', 'ak4_eta0']
+    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0']
 
     for variable in variables:
         plot_comparison(acc, outtag, variable=variable)
