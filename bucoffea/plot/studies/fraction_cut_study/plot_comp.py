@@ -16,7 +16,8 @@ REBIN = {
 }
 
 XLABEL = {
-    'ak4_pt0' : r'Jet $p_T$ (GeV)'
+    'ak4_pt0' : r'Jet $p_T$ (GeV)',
+    'ak4_eta0' : r'Jet $\eta$'
 }
 
 def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
@@ -43,7 +44,7 @@ def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
     # Plot the ratio
     h_num = h.integrate('region', 'cr_g_withEmEF')
     h_denom = h.integrate('region', 'cr_g_noEmEF')
-    hist.plotratio(h_num, h_denom, ax=rax, error_opts=data_err_opts)
+    hist.plotratio(h_num, h_denom, ax=rax, error_opts=data_err_opts, unc='num')
 
     rax.set_xlabel(XLABEL[variable])
     rax.set_ylabel('With cut / without cut')
@@ -98,7 +99,11 @@ def main():
     else:
         outtag = inpath.split('/')[-1]
 
-    plot_comparison(acc, outtag)
+    # Variables to plot
+    variables = ['ak4_pt0', 'ak4_eta0']
+
+    for variable in variables:
+        plot_comparison(acc, outtag, variable=variable)
 
 if __name__ == '__main__':
     main()
