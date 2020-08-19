@@ -31,7 +31,7 @@ def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
     ax.set_yscale('log')
     ax.set_ylim(1e-1,1e8)
     titles = {
-        'data' : 'EGamma 2017',
+        'data' : 'Single Photon 2017',
         'mc' : 'GJets 2017',
     }
     ax.set_title(titles[mode])
