@@ -97,6 +97,7 @@ def vbfhinv_accumulator(cfg):
     items["ak4_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
     items["ak4_chf0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nhf0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
+    items["ak4_nef0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nconst0"] = Hist("Counts", dataset_ax, region_ax, nconst_ax)
 
     items["ak4_pt1"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
@@ -169,6 +170,7 @@ def vbfhinv_accumulator(cfg):
     items['photon_phi0'] = Hist("Counts", dataset_ax, region_ax, phi_ax)
 
     items['photon_pt0_recoil'] = Hist("Counts", dataset_ax, region_ax, pt_ax, recoil_ax)
+    items['dphi_photon_jet'] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
 
     items["tau_pt"] = Hist("Counts", dataset_ax, region_ax, pt_ax_tau)
 
@@ -276,6 +278,13 @@ def vbfhinv_regions(cfg):
     cr_g_cuts.remove('veto_photon')
 
     regions['cr_g_vbf'] = cr_g_cuts
+
+    if cfg and cfg.RUN.EFF_STUDY:
+        # Two new regions for the efficency study for G+jets samples:
+        # Select events with one good photon and back-to-back jet, create two regions with and without
+        # the neutral EM energy fraction cut applied on the jet.
+        regions['cr_g_noEmEF']   = ['trig_photon', 'one_photon', 'at_least_one_tight_photon', 'photon_pt', 'ak4_pt', 'ak4_id', 'dphi_photon_jet']
+        regions['cr_g_withEmEF'] = ['trig_photon', 'one_photon', 'at_least_one_tight_photon', 'photon_pt', 'ak4_pt', 'ak4_id', 'dphi_photon_jet', 'ak4_neEmEF']
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [

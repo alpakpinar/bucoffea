@@ -217,6 +217,7 @@ default:
 
   run:
     sync: False
+    eff_study: True
     save:
       passing: False
       tree: False

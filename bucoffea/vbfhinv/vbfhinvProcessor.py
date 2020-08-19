@@ -51,6 +51,23 @@ from bucoffea.vbfhinv.definitions import (
                                            vbfhinv_regions
                                          )
 
+def gammajet_selection(df, selection, lead_photon, lead_ak4):
+    '''The selection to use for selecting gamma+jet events.'''
+    # Selections for one good jet, back to back with the photon
+    selection.add('ak4_pt', (lead_ak4.pt > 80).any())
+    
+    has_track = np.abs(lead_ak4.eta) <= 2.5
+    leadak4_id = lead_ak4.tightId & (has_track * ((lead_ak4.chf > 0.1) & (lead_ak4.nhf < 0.8)) + ~has_track)
+    selection.add('ak4_id', leadak4_id.any())
+
+    df['dphi_photon_jet'] = dphi(lead_ak4.phi.min(), lead_photon.phi.max())
+    selection.add('dphi_photon_jet', df['dphi_photon_jet'] > 2.7)
+
+    # Neutral EM energy fraction cut on the jet
+    selection.add('ak4_neEmEF', (lead_ak4.nef < 0.7).any())
+
+    return selection
+
 def trigger_selection(selection, df, cfg):
     pass_all = np.zeros(df.size) == 0
     pass_none = ~pass_all
@@ -332,6 +349,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('photon_pt', photons.pt.max() > cfg.PHOTON.CUTS.TIGHT.PT)
         selection.add('photon_pt_trig', photons.pt.max() > cfg.PHOTON.CUTS.TIGHT.PTTRIG)
 
+        # Cuts about the efficiency study
+        if cfg.RUN.EFF_STUDY:
+            lead_ak4 = ak4[leadak4_index]
+            lead_photon = photons[leadphoton_index]
+            selection = gammajet_selection(df, selection, lead_photon, lead_ak4)
+
         # Fill histograms
         output = self.accumulator.identity()
 
@@ -546,6 +569,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_ptraw0',    jetpt=diak4.i0.ptraw[mask].flatten(),   weight=w_diak4)
             ezfill('ak4_chf0',      frac=diak4.i0.chf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nhf0',      frac=diak4.i0.nhf[mask].flatten(),      weight=w_diak4)
+            ezfill('ak4_nef0',      frac=diak4.i0.nef[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nconst0',   nconst=diak4.i0.nconst[mask].flatten(), weight=w_diak4)
 
             # Trailing ak4
@@ -556,6 +580,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_chf1',      frac=diak4.i1.chf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nhf1',      frac=diak4.i1.nhf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nconst1',   nconst=diak4.i1.nconst[mask].flatten(), weight=w_diak4)
+
+            # Save quantities related to photon+jet region
+            if cfg.RUN.EFF_STUDY:
+                ezfill('dphi_photon_jet',  dphi=df['dphi_photon_jet'][mask], weight=rweight[mask])
 
             # B tag discriminator
             btag = getattr(ak4, cfg.BTAG.ALGO)
