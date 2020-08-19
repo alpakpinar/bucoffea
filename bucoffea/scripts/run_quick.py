@@ -18,8 +18,8 @@ def parse_commandline():
 def main():
 
     fileset = {
-        "VBF_HToInvisible_M125_pow_pythia8_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/27Oct19/VBF_HToInvisible_M125_13TeV_TuneCP5_powheg_pythia8/VBF_HToInvisible_M125_pow_pythia8_2017/191027_233758/0000/tree_1.root"
+        "GJets_DR-0p4_HT-400To600-MLM_v2_2017" : [
+            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/05Jun20v5/GJets_DR-0p4_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8_v2/GJets_DR-0p4_HT-400To600-MLM_v2_2017/200605_224607/0000/tree_1.root"
         ]
     }
 
