@@ -12,13 +12,15 @@ from pprint import pprint
 pjoin = os.path.join
 
 REBIN = {
-    'ak4_pt0' : hist.Bin('jetpt', r'Jet $p_T$ (GeV)', 25, 0, 1000)
+    'ak4_pt0' : hist.Bin('jetpt', r'Jet $p_T$ (GeV)', 25, 0, 1000),
+    'met' : hist.Bin('met', r'$p_T^{miss}$ (GeV)', list(range(0,500,50)))
 }
 
 XLABELS = {
     'ak4_pt0' : r'Jet $p_T$ (GeV)',
     'ak4_eta0' : r'Jet $\eta$',
-    'ak4_nef0' : 'Jet Neutral EM Fraction'
+    'ak4_nef0' : 'Jet Neutral EM Fraction',
+    'met' : r'$p_T^{miss}$ (GeV)'
 }
 
 def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
@@ -73,7 +75,11 @@ def plot_comparison(acc, outtag, variable='ak4_pt0'):
 
     # Rebin, if neccessary
     if variable in REBIN.keys():
-        h = h.rebin('jetpt', REBIN[variable])
+        if variable == 'ak4_pt0':
+            h = h.rebin('jetpt', REBIN[variable])
+        elif variable == 'met':
+            h = h.rebin('met', REBIN[variable])
+    
 
     # Get data and MC (EGamma)
     h_data = h.integrate('dataset', 'EGamma_2017')[re.compile('.*EmEF.*')]
@@ -101,7 +107,7 @@ def main():
         outtag = inpath.split('/')[-1]
 
     # Variables to plot
-    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0']
+    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'met']
 
     for variable in variables:
         plot_comparison(acc, outtag, variable=variable)
