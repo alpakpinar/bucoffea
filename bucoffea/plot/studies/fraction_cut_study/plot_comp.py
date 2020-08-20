@@ -93,14 +93,17 @@ def plot_comparison(acc, outtag, variable='ak4_pt0'):
     make_plot(h_data, outtag, mode='data', variable=variable)
     make_plot(h_mc, outtag, mode='mc', variable=variable)
 
-def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0'):
-    '''Plot data/MC comparison for the given variable, without the EM fraction cut.'''
+def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut'):
+    '''Plot data/MC comparison for the given variable, with or without the EM fraction cut.'''
     acc.load(variable)
     h = acc[variable]
     h = preprocess(h, acc, variable)
 
-    # Get the region without EM fraction cut applied
-    h = h.integrate('region', 'cr_g_noEmEF')
+    # Get the relevant region
+    if mode == 'before_cut':
+        h = h.integrate('region', 'cr_g_noEmEF')
+    elif mode == 'after_cut':
+        h = h.integrate('region', 'cr_g_withEmEF')
 
     # Plot the two histograms, and their ratio
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
@@ -139,7 +142,7 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0'):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outname = f'data_mc_comp_{variable}.pdf'
+    outname = f'data_mc_comp_{variable}_{mode}.pdf'
     outpath = pjoin(outdir, outname)
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
@@ -166,7 +169,8 @@ def main():
 
     for variable in variables:
         plot_comparison(acc, outtag, variable=variable)
-        plot_data_mc_comparison(acc, outtag, variable=variable)
+        plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut')
+        plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut')
 
 if __name__ == '__main__':
     main()
