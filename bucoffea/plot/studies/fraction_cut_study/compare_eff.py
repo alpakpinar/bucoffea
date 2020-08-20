@@ -11,7 +11,7 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-def compare_eff(acc):
+def compare_eff(acc, outtag):
     '''Calculate the efficiency of neutral EM fraction cut as a function of the jet eta, plot the efficiency for data and MC.'''
     acc.load('ak4_eta0')
     h = acc['ak4_eta0']
@@ -49,7 +49,13 @@ def compare_eff(acc):
     ax.legend()
 
     # Save figure
-    fig.savefig('test.pdf')
+    outdir = f'./output/{outtag}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outpath = pjoin(outdir, 'eff_comparison_data_mc.pdf')
+    fig.savefig(outpath)
+    print(f'File saved: {outpath}')
 
 def main():
     inpath = sys.argv[1]
@@ -63,7 +69,12 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    compare_eff(acc)
+    if inpath.endswith('/'):
+        outtag = inpath.split('/')[-2]
+    else:
+        outtag = inpath.split('/')[-1]
+
+    compare_eff(acc, outtag)
 
 if __name__ == '__main__':
     main()
