@@ -51,7 +51,7 @@ from bucoffea.vbfhinv.definitions import (
                                            vbfhinv_regions
                                          )
 
-def gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt):
+def gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt, ak4):
     '''The selection to use for selecting gamma+jet events.'''
     # Selections for one good jet, back to back with the photon
     lead_ak4_pt_eta = (lead_ak4.pt > 80) & (np.abs(lead_ak4.eta) < 4.7)
@@ -63,6 +63,9 @@ def gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt):
 
     df['dphi_photon_jet'] = dphi(lead_ak4.phi.min(), lead_photon.phi.max())
     selection.add('dphi_photon_jet', df['dphi_photon_jet'] > 2.7)
+
+    # Should be exactly one jet
+    selection.add('exactly_one_jet', ak4.counts==1)
 
     # Neutral EM energy fraction cut on the jet
     selection.add('ak4_neEmEF', (lead_ak4.nef < 0.7).any())
@@ -357,7 +360,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         if cfg.RUN.EFF_STUDY:
             lead_ak4 = ak4[leadak4_index]
             lead_photon = photons[leadphoton_index]
-            selection = gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt)
+            selection = gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt, ak4)
 
         # Fill histograms
         output = self.accumulator.identity()
