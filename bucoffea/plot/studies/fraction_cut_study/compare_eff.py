@@ -32,7 +32,8 @@ def compare_eff(acc, outtag):
     h_mc_withoutCut = h_mc.integrate('region', 'cr_g_noEmEF')
 
     # Calculate and plot efficiencies for data and MC
-    fig, ax = plt.subplots()
+    fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
+    
     data_err_opts = {
         'linestyle':'none',
         'marker': '.',
@@ -42,11 +43,22 @@ def compare_eff(acc, outtag):
     hist.plotratio(h_data_withCut, h_data_withoutCut, ax=ax, error_opts=data_err_opts, label='Single Photon')
     hist.plotratio(h_mc_withCut, h_mc_withoutCut, ax=ax, error_opts=data_err_opts, clear=False, label='GJets_DR-0p4')
 
-    ax.set_xlabel(r'Jet $\eta$')
     ax.set_ylabel('Efficiency')
     ax.set_ylim(0.8,1.1)
     ax.grid(True)
     ax.legend()
+
+    # Plot the double ratio on the ratio pad (scale factor)
+    ratio_num = h_data_withCut.values()[()] / h_data_withoutCut.values()[()] 
+    ratio_denom = h_mc_withCut.values()[()] / h_mc_withoutCut.values()[()] 
+    dratio = ratio_num / ratio_denom
+    centers = h_data_withCut.axes()[0].centers()
+
+    rax.plot(centers, dratio, marker='o', ls='', color='k')
+    rax.set_xlabel(r'Jet $\eta$')
+    rax.set_ylabel('Data / MC SF')
+    rax.set_ylim(0.8,1.2)
+    rax.grid(True)
 
     # Save figure
     outdir = f'./output/{outtag}'
