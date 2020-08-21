@@ -359,7 +359,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         if cfg.RUN.EFF_STUDY.SAVE:
             lead_ak4 = ak4[leadak4_index]
             # Selections for one good jet, back to back with the V-boson
-            lead_ak4_pt_eta = (lead_ak4.pt > 100) & (np.abs(lead_ak4.eta) < 4.7)
+            lead_ak4_pt_eta = (lead_ak4.pt > 80) & (np.abs(lead_ak4.eta) < 4.7)
             selection.add('lead_ak4_pt_eta', lead_ak4_pt_eta.any())
             
             has_track = np.abs(lead_ak4.eta) <= 2.5
@@ -587,10 +587,17 @@ class vbfhinvProcessor(processor.ProcessorABC):
             w_alljets = weight_shape(ak4[mask].eta, rweight[mask])
             w_alljets_nopref = weight_shape(ak4[mask].eta, region_weights.partial_weight(exclude=exclude+['prefire'])[mask])
 
-            ezfill('ak4_eta0',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets)
-            ezfill('ak4_phi0',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets)
-            ezfill('ak4_pt0',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets)
-            ezfill('ak4_nef0',    frac=ak4[mask].nef.flatten(),   weight=w_alljets)
+            ezfill('ak4_eta',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets)
+            ezfill('ak4_phi',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets)
+            ezfill('ak4_pt',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets)
+
+            if cfg.RUN.EFF_STUDY.SAVE:
+                if region == 'inclusive':
+                    continue
+                ezfill('ak4_eta0',    jeteta=lead_ak4[mask].eta.flatten(), weight=rweight[mask])
+                ezfill('ak4_phi0',    jetphi=lead_ak4[mask].phi.flatten(), weight=rweight[mask])
+                ezfill('ak4_pt0',     jetpt=lead_ak4[mask].pt.flatten(),   weight=rweight[mask])
+                ezfill('ak4_nef0',    frac=lead_ak4[mask].nef.flatten(),   weight=rweight[mask])
 
             ezfill('ak4_eta_nopref',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets_nopref)
             ezfill('ak4_phi_nopref',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets_nopref)
