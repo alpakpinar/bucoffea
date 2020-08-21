@@ -298,6 +298,10 @@ def vbfhinv_regions(cfg):
             regions['cr_2m_withEmEF'] = ['two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'veto_ele', 'dimuon_charge',
                     'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'exactly_one_jet', 'met_pt', 'ak4_neEmEF']
 
+        if cfg.RUN.EFF_STUDY.GEN_CHECK:
+            regions['sr_no_gen_requirement'] = ['lead_ak4_pt_eta', 'lead_ak4_id', 'exactly_one_jet']
+            regions['sr_with_gen_requirement'] = ['lead_ak4_pt_eta', 'lead_ak4_id', 'exactly_one_jet', 'matches_to_gen_jet']
+
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [
                                         'filt_met',
@@ -318,7 +322,7 @@ def vbfhinv_regions(cfg):
 
     tmp = {}
     for region in regions.keys():
-        if not region.startswith("sr_"):
+        if not region.startswith("sr_") or 'gen' in region:
             continue
         new_region = f"{region}_no_veto_all"
         tmp[new_region] = copy.deepcopy(regions[region])

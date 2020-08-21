@@ -299,3 +299,8 @@ def isnu(pdg):
     """Returns True if the PDG ID represents a neutrino."""
     abspdg = np.abs(pdg)
     return (12==abspdg) | (14==abspdg) | (16==abspdg)
+
+def matches_to_gen_jet(lead_ak4, genjets):
+    '''Returns a mask whether the leading jet in each event matches to a GEN-level jet.'''
+    gen_mask = lead_ak4.match(genjets, deltaRCut=0.4).any()
+    return gen_mask

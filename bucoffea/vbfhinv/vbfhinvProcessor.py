@@ -27,13 +27,15 @@ from bucoffea.helpers.dataset import (
                                       is_lo_z_ewk,
                                       is_nlo_w,
                                       is_nlo_z,
-                                      is_lo_znunu
+                                      is_lo_znunu,
+                                      is_signal
                                       )
 from bucoffea.helpers.gen import (
                                   setup_gen_candidates,
                                   setup_dressed_gen_candidates,
                                   setup_lhe_cleaned_genjets,
-                                  fill_gen_v_info
+                                  fill_gen_v_info,
+                                  matches_to_gen_jet
                                  )
 from bucoffea.helpers.weights import (
                                   get_veto_weights
@@ -165,6 +167,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         df['is_nlo_w'] = is_nlo_w(dataset)
         df['has_lhe_v_pt'] = df['is_lo_w'] | df['is_lo_z'] | df['is_nlo_z'] | df['is_nlo_w'] | df['is_lo_g'] | df['is_lo_w_ewk'] | df['is_lo_z_ewk']
         df['is_data'] = is_data(dataset)
+        df['is_signal'] = is_signal(dataset)
 
         gen_v_pt = None
         if df['is_lo_w'] or df['is_lo_z'] or df['is_nlo_z'] or df['is_nlo_w'] or df['is_lo_z_ewk'] or df['is_lo_w_ewk']:
@@ -188,7 +191,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             digenjet = genjets[:,:2].distincts()
             df['mjj_gen'] = digenjet.mass.max()
             df['mjj_gen'] = np.where(df['mjj_gen'] > 0, df['mjj_gen'], 0)
-
 
         # Candidates
         # Already pre-filtered!
@@ -375,6 +377,17 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 selection = gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt, ak4)
             elif cfg.RUN.EFF_STUDY.EVENTS == 'Zmumu':
                 selection = zmumu_jet_selection(df, selection, dimuons, lead_ak4, met_pt, ak4)
+
+            if cfg.RUN.EFF_STUDY.GEN_CHECK:
+                # For the signal sample, get a mask for which the leading jet in the event matches to a 
+                # GEN-level jet or not.
+                if df['is_signal']:
+                    genjets = setup_lhe_cleaned_genjets(df)
+                    gen_mask = matches_to_gen_jet(lead_ak4, genjets)
+                else:
+                    gen_mask = np.ones(df.size)
+                    
+                selection.add('matches_to_gen_jet', gen_mask)
 
         # Fill histograms
         output = self.accumulator.identity()

@@ -220,6 +220,7 @@ default:
     eff_study: 
       save: True
       events: GJets 
+      gen_check: True
     save:
       passing: False
       tree: False
