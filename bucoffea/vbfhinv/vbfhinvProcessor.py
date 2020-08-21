@@ -385,7 +385,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     genjets = setup_lhe_cleaned_genjets(df)
                     gen_mask = matches_to_gen_jet(lead_ak4, genjets)
                 else:
-                    gen_mask = np.ones(df.size)
+                    gen_mask = np.ones(df.size, dtype=bool)
                     
                 selection.add('matches_to_gen_jet', gen_mask)
 
