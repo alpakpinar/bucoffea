@@ -15,7 +15,7 @@ from bucoffea.helpers import (
                               recoil,
                               weight_shape,
                               candidates_in_hem,
-                              calculate_z_pt_phi
+                              calculate_z_pt_eta_phi
                               )
 from bucoffea.helpers.dataset import (
                                       extract_year,
@@ -57,7 +57,7 @@ def zmumu_jet_selection(df, selection, dimuons, leadak4, met_pt, ak4):
     # Calculate Z pt and phi from the dimuons
     z_pt, z_eta, z_phi = calculate_z_pt_eta_phi(dimuons)
 
-    z_pt_eta = (z.pt > 100) & (np.abs(z_eta) < 4.7)
+    z_pt_eta = (z_pt > 100) & (np.abs(z_eta) < 4.7)
     selection.add('z_pt_eta', z_pt_eta.any())
 
     df['dphi_z_jet'] = dphi(z_phi.min(), leadak4.phi.max())
