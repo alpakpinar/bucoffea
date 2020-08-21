@@ -279,15 +279,24 @@ def vbfhinv_regions(cfg):
 
     regions['cr_g_vbf'] = cr_g_cuts
 
-    if cfg and cfg.RUN.EFF_STUDY:
-        # Two new regions for the efficency study for G+jets samples:
-        # Select events with one good photon and back-to-back jet, create two regions with and without
-        # the neutral EM energy fraction cut applied on the jet.
-        regions['cr_g_noEmEF']   = ['trig_photon', 'one_photon', 'at_least_one_tight_photon', 
-                    'photon_pt', 'lead_ak4_pt_eta', 'ak4_id', 'exactly_one_jet', 'dphi_photon_jet', 'met_pt']
-                    
-        regions['cr_g_withEmEF'] = ['trig_photon', 'one_photon', 'at_least_one_tight_photon', 
-                    'photon_pt', 'lead_ak4_pt_eta', 'ak4_id', 'exactly_one_jet', 'dphi_photon_jet', 'met_pt', 'ak4_neEmEF']
+    if cfg and cfg.RUN.EFF_STUDY.SAVE:
+        if cfg.RUN.EFF_STUDY.EVENTS == 'GJets':
+            # Two new regions for the efficency study for G+jets samples:
+            # Select events with one good photon and back-to-back jet, create two regions with and without
+            # the neutral EM energy fraction cut applied on the jet.
+            regions['cr_g_noEmEF']   = ['trig_photon', 'one_photon', 'at_least_one_tight_photon', 
+                        'photon_pt', 'lead_ak4_pt_eta', 'lead_ak4_id', 'exactly_one_jet', 'dphi_photon_jet', 'met_pt']
+                        
+            regions['cr_g_withEmEF'] = ['trig_photon', 'one_photon', 'at_least_one_tight_photon', 
+                        'photon_pt', 'lead_ak4_pt_eta', 'lead_ak4_id', 'exactly_one_jet', 'dphi_photon_jet', 'met_pt', 'ak4_neEmEF']
+
+        elif cfg.RUN.EFF_STUDY.EVENTS == 'Zmumu':
+            # Same logic, but for Zmumu events
+            regions['cr_2m_noEmEF'] = ['trig_met','two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'veto_ele', 'dimuon_charge',
+                    'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'exactly_one_jet', 'met_pt']
+
+            regions['cr_2m_withEmEF'] = ['trig_met','two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'veto_ele', 'dimuon_charge',
+                    'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'exactly_one_jet', 'met_pt', 'ak4_neEmEF']
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [

@@ -217,7 +217,9 @@ default:
 
   run:
     sync: False
-    eff_study: True
+    eff_study: 
+      save: True
+      events: GJets 
     save:
       passing: False
       tree: False

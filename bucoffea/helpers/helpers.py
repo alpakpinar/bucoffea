@@ -180,3 +180,11 @@ def exponential(x, a, b, c):
 def candidates_in_hem(candidates):
     """Returns a mask telling you which candidates are in the HEM region"""
     return (-3.0 < candidates.eta) & (candidates.eta < -1.3) & (-1.8 < candidates.phi) & (candidates.phi < -0.6)
+
+def calculate_z_pt_phi(dileptons):
+    '''Based on the dilepton system, calculate the pt and phi of Z boson.'''
+    p4_sum = dileptons.i0.p4 + dileptons.i1.p4
+    z_pt = p4_sum.pt
+    z_eta = p4_sum.eta
+    z_phi = p4_sum.phi
+    return z_pt, z_eta, z_phi 

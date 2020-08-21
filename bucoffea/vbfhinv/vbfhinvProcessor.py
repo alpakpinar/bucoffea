@@ -14,7 +14,8 @@ from bucoffea.helpers import (
                               mt,
                               recoil,
                               weight_shape,
-                              candidates_in_hem
+                              candidates_in_hem,
+                              calculate_z_pt_phi
                               )
 from bucoffea.helpers.dataset import (
                                       extract_year,
@@ -51,27 +52,23 @@ from bucoffea.vbfhinv.definitions import (
                                            vbfhinv_regions
                                          )
 
+def zmumu_jet_selection(df, selection, dimuons, leadak4, met_pt, ak4):
+    '''The set of selections to be used for selecting Z(mumu) + jet events.'''
+    # Calculate Z pt and phi from the dimuons
+    z_pt, z_eta, z_phi = calculate_z_pt_eta_phi(dimuons)
+
+    z_pt_eta = (z.pt > 100) & (np.abs(z_eta) < 4.7)
+    selection.add('z_pt_eta', z_pt_eta.any())
+
+    df['dphi_z_jet'] = dphi(z_phi.min(), leadak4.phi.max())
+    selection.add('dphi_z_jet', df['dphi_z_jet'] > 2.7)
+
+    return selection
+
 def gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt, ak4):
     '''The selection to use for selecting gamma+jet events.'''
-    # Selections for one good jet, back to back with the photon
-    lead_ak4_pt_eta = (lead_ak4.pt > 80) & (np.abs(lead_ak4.eta) < 4.7)
-    selection.add('lead_ak4_pt_eta', lead_ak4_pt_eta.any())
-    
-    has_track = np.abs(lead_ak4.eta) <= 2.5
-    leadak4_id = lead_ak4.tightId & (has_track * ((lead_ak4.chf > 0.1) & (lead_ak4.nhf < 0.8)) + ~has_track)
-    selection.add('ak4_id', leadak4_id.any())
-
     df['dphi_photon_jet'] = dphi(lead_ak4.phi.min(), lead_photon.phi.max())
     selection.add('dphi_photon_jet', df['dphi_photon_jet'] > 2.7)
-
-    # Should be exactly one jet
-    selection.add('exactly_one_jet', ak4.counts==1)
-
-    # Neutral EM energy fraction cut on the jet
-    selection.add('ak4_neEmEF', (lead_ak4.nef < 0.7).any())
-
-    # MET cut
-    selection.add('met_pt', met_pt < 50)
 
     return selection
 
@@ -357,10 +354,27 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('photon_pt_trig', photons.pt.max() > cfg.PHOTON.CUTS.TIGHT.PTTRIG)
 
         # Cuts about the efficiency study
-        if cfg.RUN.EFF_STUDY:
+        if cfg.RUN.EFF_STUDY.SAVE:
             lead_ak4 = ak4[leadak4_index]
-            lead_photon = photons[leadphoton_index]
-            selection = gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt, ak4)
+            # Selections for one good jet, back to back with the V-boson
+            lead_ak4_pt_eta = (lead_ak4.pt > 100) & (np.abs(lead_ak4.eta) < 4.7)
+            selection.add('lead_ak4_pt_eta', lead_ak4_pt_eta.any())
+            
+            has_track = np.abs(lead_ak4.eta) <= 2.5
+            leadak4_id = lead_ak4.tightId & (has_track * ((lead_ak4.chf > 0.1) & (lead_ak4.nhf < 0.8)) + ~has_track)
+            selection.add('lead_ak4_id', leadak4_id.any())
+            # Should be exactly one jet
+            selection.add('exactly_one_jet', ak4.counts==1)
+            # Neutral EM energy fraction cut on the jet
+            selection.add('ak4_neEmEF', (lead_ak4.nef < 0.7).any())
+            # MET cut
+            selection.add('met_pt', met_pt < 50)
+
+            if cfg.RUN.EFF_STUDY.EVENTS == 'GJets':
+                lead_photon = photons[leadphoton_index]
+                selection = gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt, ak4)
+            elif cfg.RUN.EFF_STUDY.EVENTS == 'Zmumu':
+                selection = zmumu_jet_selection(df, selection, dimuons, lead_ak4, met_pt, ak4)
 
         # Fill histograms
         output = self.accumulator.identity()
@@ -560,37 +574,21 @@ class vbfhinvProcessor(processor.ProcessorABC):
             w_alljets = weight_shape(ak4[mask].eta, rweight[mask])
             w_alljets_nopref = weight_shape(ak4[mask].eta, region_weights.partial_weight(exclude=exclude+['prefire'])[mask])
 
-            ezfill('ak4_eta',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets)
-            ezfill('ak4_phi',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets)
-            ezfill('ak4_pt',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets)
+            ezfill('ak4_eta0',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets)
+            ezfill('ak4_phi0',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets)
+            ezfill('ak4_pt0',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets)
+            ezfill('ak4_nef0',    frac=ak4[mask].nef.flatten(),   weight=w_alljets)
 
             ezfill('ak4_eta_nopref',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets_nopref)
             ezfill('ak4_phi_nopref',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets_nopref)
             ezfill('ak4_pt_nopref',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets_nopref)
 
-            # Leading ak4
-            w_diak4 = weight_shape(diak4.pt[mask], rweight[mask])
-            ezfill('ak4_eta0',      jeteta=diak4.i0.eta[mask].flatten(),    weight=w_diak4)
-            ezfill('ak4_phi0',      jetphi=diak4.i0.phi[mask].flatten(),    weight=w_diak4)
-            ezfill('ak4_pt0',       jetpt=diak4.i0.pt[mask].flatten(),      weight=w_diak4)
-            ezfill('ak4_ptraw0',    jetpt=diak4.i0.ptraw[mask].flatten(),   weight=w_diak4)
-            ezfill('ak4_chf0',      frac=diak4.i0.chf[mask].flatten(),      weight=w_diak4)
-            ezfill('ak4_nhf0',      frac=diak4.i0.nhf[mask].flatten(),      weight=w_diak4)
-            ezfill('ak4_nef0',      frac=diak4.i0.nef[mask].flatten(),      weight=w_diak4)
-            ezfill('ak4_nconst0',   nconst=diak4.i0.nconst[mask].flatten(), weight=w_diak4)
-
-            # Trailing ak4
-            ezfill('ak4_eta1',      jeteta=diak4.i1.eta[mask].flatten(),    weight=w_diak4)
-            ezfill('ak4_phi1',      jetphi=diak4.i1.phi[mask].flatten(),    weight=w_diak4)
-            ezfill('ak4_pt1',       jetpt=diak4.i1.pt[mask].flatten(),      weight=w_diak4)
-            ezfill('ak4_ptraw1',    jetpt=diak4.i1.ptraw[mask].flatten(),   weight=w_diak4)
-            ezfill('ak4_chf1',      frac=diak4.i1.chf[mask].flatten(),      weight=w_diak4)
-            ezfill('ak4_nhf1',      frac=diak4.i1.nhf[mask].flatten(),      weight=w_diak4)
-            ezfill('ak4_nconst1',   nconst=diak4.i1.nconst[mask].flatten(), weight=w_diak4)
-
             # Save quantities related to photon+jet region
-            if cfg.RUN.EFF_STUDY:
-                ezfill('dphi_photon_jet',  dphi=df['dphi_photon_jet'][mask], weight=rweight[mask])
+            if cfg.RUN.EFF_STUDY.SAVE:
+                if cfg.RUN.EFF_STUDY.EVENTS == 'GJets':
+                    ezfill('dphi_photon_jet',  dphi=df['dphi_photon_jet'][mask], weight=rweight[mask])
+                elif cfg.RUN.EFF_STUDY.EVENTS == 'Zmumu':
+                    ezfill('dphi_z_jet',  dphi=df['dphi_z_jet'][mask], weight=rweight[mask])
 
             # B tag discriminator
             btag = getattr(ak4, cfg.BTAG.ALGO)
