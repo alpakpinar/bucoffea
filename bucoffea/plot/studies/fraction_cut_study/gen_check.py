@@ -67,7 +67,9 @@ def check_gen_efficiency(acc, outtag, variable='ak4_eta0'):
 
     h_num = h.integrate('region', 'sr_with_gen_requirement')
     h_denom = h.integrate('region', 'sr_no_gen_requirement')
-    hist.plotratio(h_num, h_denom, unc='num', ax=rax, error_opts=data_err_opts)
+    centers = h_num.axes()[0].centers()
+    r = h_num.values()[()] / h_denom.values()[()]
+    rax.plot(centers, r, **data_err_opts)
 
     rax.set_xlabel(XLABELS[variable])
     rax.set_ylim(0.97,1.03)
