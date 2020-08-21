@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import matplotlib.ticker
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -69,8 +70,11 @@ def check_gen_efficiency(acc, outtag, variable='ak4_eta0'):
     hist.plotratio(h_num, h_denom, unc='num', ax=rax, error_opts=data_err_opts)
 
     rax.set_xlabel(XLABELS[variable])
-    rax.set_ylim(0.9,1.1)
+    rax.set_ylim(0.97,1.03)
     rax.set_ylabel('With GEN matching / without')
+
+    loc = matplotlib.ticker.MultipleLocator(base=0.01)
+    rax.yaxis.set_major_locator(loc)
     rax.grid(True)
 
     # Save figure
