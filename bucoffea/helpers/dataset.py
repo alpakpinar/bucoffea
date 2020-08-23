@@ -42,7 +42,7 @@ def has_v_jet(dataset):
     return bool(re.match(r'(WW|WZ|ZZ|TTJets|TTToHadronic|.*WToQQ|.*ZToQQ).*', dataset))
 
 def is_data(dataset):
-    tags = ['EGamma','MET','SingleElectron','SingleMuon','SinglePhoton','JetHT']
+    tags = ['EGamma','MET','SingleElectron','SingleMuon','SinglePhoton','JetHT','DoubleMuon']
     if any([dataset.startswith(itag) for itag in tags ]):
         return True
     if re.match('QCD_data_(\d)+',dataset):
