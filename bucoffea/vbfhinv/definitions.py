@@ -171,6 +171,7 @@ def vbfhinv_accumulator(cfg):
 
     items['photon_pt0_recoil'] = Hist("Counts", dataset_ax, region_ax, pt_ax, recoil_ax)
     items['dphi_photon_jet'] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
+    items['dphi_z_jet'] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
 
     items["tau_pt"] = Hist("Counts", dataset_ax, region_ax, pt_ax_tau)
 
