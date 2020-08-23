@@ -38,7 +38,7 @@ def preprocess(h, acc, variable):
     
     return h
 
-def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
+def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0'):
     '''Make the comparison plot for data or MC and save it.'''
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     hist.plot1d(h, ax=ax, overlay='region')
@@ -48,10 +48,10 @@ def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
     ax.set_yscale('log')
     ax.set_ylim(1e-1,1e8)
     titles = {
-        'data' : 'Single Photon 2017',
-        'mc' : 'GJets 2017',
+        'data' : {'cr_g': 'Single Photon 2017', 'cr_2m': 'Double Muon 2017'},
+        'mc' : {'cr_g': 'GJets 2017', 'cr_2m': 'DY 2017'}
     }
-    ax.set_title(titles[mode])
+    ax.set_title(titles[mode][region])
 
     data_err_opts = {
         'linestyle':'none',
@@ -60,8 +60,8 @@ def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
         'color':'k'
     }
     # Plot the ratio
-    h_num = h.integrate('region', 'cr_g_withEmEF')
-    h_denom = h.integrate('region', 'cr_g_noEmEF')
+    h_num = h.integrate('region', f'{region}_withEmEF')
+    h_denom = h.integrate('region', f'{region}_noEmEF')
     hist.plotratio(h_num, h_denom, ax=rax, error_opts=data_err_opts, unc='num')
 
     rax.set_xlabel(XLABELS[variable])
@@ -74,26 +74,30 @@ def make_plot(h, outtag, mode='data', variable='ak4_pt0'):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outname = f'{variable}_comp_{mode}.pdf'
+    outname = f'{variable}_comp_{region}_{mode}.pdf'
     outpath = pjoin(outdir, outname)
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
-def plot_comparison(acc, outtag, variable='ak4_pt0'):
+def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m'):
     '''Plot spectrum for the given variable, with and without the EM fraction cut.'''
     acc.load(variable)
     h = acc[variable]
     h = preprocess(h, acc, variable)
 
-    # Get data and MC (EGamma)
-    h_data = h.integrate('dataset', 'EGamma_2017')[re.compile('.*EmEF.*')]
-    h_mc = h.integrate('dataset', re.compile('GJets_DR-0p4.*2017'))[re.compile('.*EmEF.*')]
+    # Get data and MC, for GJets or Zmumu events
+    if region == 'cr_g':
+        h_data = h.integrate('dataset', 'EGamma_2017')[re.compile('.*EmEF.*')]
+        h_mc = h.integrate('dataset', re.compile('GJets_DR-0p4.*2017'))[re.compile('.*EmEF.*')]
+    elif region == 'cr_2m':
+        h_data = h.integrate('dataset', 'DoubleMuon_2017')[re.compile('.*EmEF.*')]
+        h_mc = h.integrate('dataset', re.compile('DYJetsToLL.*2017'))[re.compile('.*EmEF.*')]
 
     # Make the plots for data and MC
-    make_plot(h_data, outtag, mode='data', variable=variable)
-    make_plot(h_mc, outtag, mode='mc', variable=variable)
+    make_plot(h_data, outtag, mode='data', variable=variable, region=region)
+    make_plot(h_mc, outtag, mode='mc', variable=variable, region=region)
 
-def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut'):
+def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', region='cr_2m'):
     '''Plot data/MC comparison for the given variable, with or without the EM fraction cut.'''
     acc.load(variable)
     h = acc[variable]
@@ -101,9 +105,9 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut'):
 
     # Get the relevant region
     if mode == 'before_cut':
-        h = h.integrate('region', 'cr_g_noEmEF')
+        h = h.integrate('region', f'{region}_noEmEF')
     elif mode == 'after_cut':
-        h = h.integrate('region', 'cr_g_withEmEF')
+        h = h.integrate('region', f'{region}_withEmEF')
 
     # Plot the two histograms, and their ratio
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
@@ -119,8 +123,13 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut'):
         'markersize': 10.,
         'color':'k'
     }
-    h_num = h.integrate('dataset', 'EGamma_2017')
-    h_denom = h.integrate('dataset', re.compile('GJets_DR-0p4.*2017'))
+    if region == 'cr_g':
+        h_num = h.integrate('dataset', 'EGamma_2017')
+        h_denom = h.integrate('dataset', re.compile('GJets_DR-0p4.*2017'))
+    elif region == 'cr_2m':
+        h_num = h.integrate('dataset', 'DoubleMuon_2017')
+        h_denom = h.integrate('dataset', re.compile('DYJetsToLL.*2017'))
+        
     hist.plotratio(h_num, h_denom, ax=rax, error_opts=data_err_opts, unc='num')
 
     rax.set_xlabel(XLABELS[variable])
@@ -142,7 +151,7 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut'):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outname = f'data_mc_comp_{variable}_{mode}.pdf'
+    outname = f'data_mc_comp_{variable}_{region}_{mode}.pdf'
     outpath = pjoin(outdir, outname)
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
@@ -164,11 +173,17 @@ def main():
     else:
         outtag = inpath.split('/')[-1]
 
+    # Determine the type of events from the submission title
+    if 'zmumu' in outtag:
+        region = 'cr_2m'
+    else:
+        region = 'cr_g'
+
     # Variables to plot
     variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0']
 
     for variable in variables:
-        plot_comparison(acc, outtag, variable=variable)
+        plot_comparison(acc, outtag, variable=variable, region=region)
         plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut')
         plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut')
 
