@@ -184,8 +184,8 @@ def main():
 
     for variable in variables:
         plot_comparison(acc, outtag, variable=variable, region=region)
-        plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut')
-        plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut')
+        plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region)
+        plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region)
 
 if __name__ == '__main__':
     main()
