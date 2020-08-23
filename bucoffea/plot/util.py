@@ -201,11 +201,13 @@ def merge_datasets(histogram):
         'JetHT_2016' : [x for x in all_datasets if re.match('JetHT_.*2016[A-Z]+',x)],
 
         'SingleMuon_2017' : [x for x in all_datasets if re.match('SingleMuon_.*2017[A-Z]+',x)],
+        'DoubleMuon_2017' : [x for x in all_datasets if re.match('DoubleMuon_.*2017[A-Z]+',x)],
         'EGamma_2017' : [x for x in all_datasets if re.match('SingleElectron_.*2017[A-Z]+',x) or re.match('SinglePhoton_2017[A-Z]+',x)],
         'MET_2017' : [x for x in all_datasets if re.match('MET_.*2017[A-Z]+',x)],
         'JetHT_2017' : [x for x in all_datasets if re.match('JetHT_.*2017[A-Z]+',x)],
 
         'SingleMuon_2018' : [x for x in all_datasets if re.match('SingleMuon_.*2018[A-Z]+',x)],
+        'DoubleMuon_2018' : [x for x in all_datasets if re.match('DoubleMuon_.*2018[A-Z]+',x)],
         'EGamma_2018' : [x for x in all_datasets if re.match('EGamma_.*2018[A-Z]+',x)],
         'MET_2018' : [x for x in all_datasets if re.match('MET_.*2018[A-Z]+',x)],
         'JetHT_2018' : [x for x in all_datasets if re.match('JetHT_.*2018[A-Z]+',x)],
