@@ -359,7 +359,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         if cfg.RUN.EFF_STUDY.SAVE:
             lead_ak4 = ak4[leadak4_index]
             # Selections for one good jet, back to back with the V-boson
-            lead_ak4_pt_eta = (lead_ak4.pt > 80) & (np.abs(lead_ak4.eta) < 4.7)
+            lead_ak4_pt_eta = (lead_ak4.pt > 100) & (np.abs(lead_ak4.eta) < 4.7)
             selection.add('lead_ak4_pt_eta', lead_ak4_pt_eta.any())
             
             has_track = np.abs(lead_ak4.eta) <= 2.5
