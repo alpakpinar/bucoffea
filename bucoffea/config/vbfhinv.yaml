@@ -219,8 +219,8 @@ default:
     sync: False
     eff_study: 
       save: True
-      events: GJets 
-      gen_check: True
+      events: Zmumu 
+      gen_check: False
     save:
       passing: False
       tree: False
