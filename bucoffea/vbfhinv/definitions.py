@@ -276,6 +276,11 @@ def vbfhinv_regions(cfg):
 
     regions['cr_g_vbf'] = cr_g_cuts
 
+    if cfg and cfg.RUN.MITIGATION_CUT_STUDY:
+        # Two different signal regions with two different cleaning cuts
+        regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1']
+        regions['sr_vbf_eemitigationv2'] = regions['sr_vbf'] + ['eemitigation_v2']
+
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [
                                         'filt_met',

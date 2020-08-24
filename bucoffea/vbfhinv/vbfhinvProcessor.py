@@ -319,11 +319,26 @@ class vbfhinvProcessor(processor.ProcessorABC):
         at_least_one_jet_in_trk = (diak4.i0.abseta<2.5).any() | (diak4.i1.abseta<2.5).any()
 
         # Categorized cleaning cuts
-        eemitigation = (
+        eemitigation_v1 = (
                         (no_jet_in_hf | at_least_one_jet_in_trk) & (vec_dphi < 1.0)
                     ) | (
                         (no_jet_in_trk & at_least_one_jet_in_hf) & (vec_b < 0.2)
                     )
+
+        selection.add('eemitigation_v1', eemitigation_v1)
+
+        # Another possible mitigation cut
+        pt_over_met_leading_jet = diak4.i0.pt / met_pt
+        eemitigation_v2_leading_jet = (diak4.i0.pt > 100) & (diak4.i0.abseta > 2.9) & (diak4.i0.abseta < 3.3) \
+                    & (dphi(diak4.i0.phi, met_phi) > 2.9) & (pt_over_met_leading_jet > 0.7) & (pt_over_met_leading_jet < 1.3)
+
+        pt_over_met_trailing_jet = diak4.i1.pt / met_pt
+        eemitigation_v2_trailing_jet = (diak4.i1.pt > 100) & (diak4.i1.abseta > 2.9) & (diak4.i1.abseta < 3.3) \
+                    & (dphi(diak4.i1.phi, met_phi) > 2.9) & (pt_over_met_trailing_jet > 0.7) & (pt_over_met_trailing_jet < 1.3)
+        
+        eemitigation_v2 = eemitigation_v2_leading_jet | eemitigation_v2_trailing_jet
+
+        selection.add('eemitigation_v2', ~eemitigation_v2.any())
 
         # Mask if both leading jets are in HF
         two_jets_in_hf = (diak4.i0.abseta>3.0).any() & (diak4.i1.abseta>3.0).any()
