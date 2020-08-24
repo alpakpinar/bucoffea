@@ -553,7 +553,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         output['tree_float16'][region]["detajj"]          +=  processor.column_accumulator(df["detajj"][mask])
                         
                         # Save info about the cleaning cuts
-                        output['tree_bool'][region]['pass_cleaning_cut']  += processor.column_accumulator(eemitigation[mask])
+                        output['tree_bool'][region]['pass_cleaning_cut']  += processor.column_accumulator(eemitigation_v1[mask])
                         output['tree_bool'][region]['two_jets_in_hf']     += processor.column_accumulator(two_jets_in_hf[mask])
                         output['tree_float16'][region]['vecB']     += processor.column_accumulator(vec_b[mask])            
                         output['tree_float16'][region]['vecDPhi']  += processor.column_accumulator(vec_dphi[mask])            
