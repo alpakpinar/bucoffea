@@ -452,10 +452,10 @@ def setup_candidates(df, cfg, variations):
 
     met = JaggedCandidateArray.candidatesfromcounts(
         np.ones(df.size),
-        pt=df[f'{met_branch}_T1Smear_pt'],
-        pt_nom=df[f'{met_branch}_T1_pt'],
-        phi=df[f'{met_branch}_T1Smear_phi'],
-        phi_nom=df[f'{met_branch}_T1_phi'],
+        pt=df[f'{met_branch}_T1_pt'],
+        # pt_nom=df[f'{met_branch}_T1_pt'],
+        phi=df[f'{met_branch}_T1_phi'],
+        # phi_nom=df[f'{met_branch}_T1_phi'],
         eta=np.zeros(df.size), # dummy
         mass=np.zeros(df.size) # dummy
     )
@@ -463,8 +463,8 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
-        met_pt = df[f'{met_branch}_T1Smear_pt{var}']
-        met_phi = df[f'{met_branch}_T1Smear_phi{var}']
+        met_pt = df[f'{met_branch}_T1_pt{var}']
+        met_phi = df[f'{met_branch}_T1_phi{var}']
         # Set the MET values
         argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
         met.add_attributes(**argdict)

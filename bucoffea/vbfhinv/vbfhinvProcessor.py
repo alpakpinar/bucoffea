@@ -213,17 +213,17 @@ class vbfhinvProcessor(processor.ProcessorABC):
         cfg.reload()
         # All the split JES uncertainties, "" represents the nominal case with no variation
         self._variations = ['', 
-                            # '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
-                            # '_jesRelativeBalUp', '_jesRelativeBalDown',
-                            # '_jesHFUp', '_jesHFDown',
-                            # '_jesBBEC1Up', '_jesBBEC1Down',
-                            # '_jesEC2Up', '_jesEC2Down',
-                            # '_jesAbsoluteUp', '_jesAbsoluteDown',
-                            # f'_jesBBEC1_{self._year}Up', f'_jesBBEC1_{self._year}Down',
-                            # f'_jesEC2_{self._year}Up', f'_jesEC2_{self._year}Down',
-                            # f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
-                            # f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
-                            # f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
+                            '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
+                            '_jesRelativeBalUp', '_jesRelativeBalDown',
+                            '_jesHFUp', '_jesHFDown',
+                            '_jesBBEC1Up', '_jesBBEC1Down',
+                            '_jesEC2Up', '_jesEC2Down',
+                            '_jesAbsoluteUp', '_jesAbsoluteDown',
+                            f'_jesBBEC1_{self._year}Up', f'_jesBBEC1_{self._year}Down',
+                            f'_jesEC2_{self._year}Up', f'_jesEC2_{self._year}Down',
+                            f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
+                            f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
+                            f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
                             '_jesTotalUp', '_jesTotalDown',
                             '_jerUp', '_jerDown'
                             ]
@@ -590,8 +590,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             diak4 = vmap.get_diak4(var) 
             met = vmap.get_met(var)
 
-            met_pt_nom = met.pt_nom.flatten() # MET_pt_nom in nanoAOD
-            met_pt_jer = met.pt.flatten()     # MET_pt_jer in nanoAOD
+            met_pt = met.pt.flatten() # MET_pt_nom in nanoAOD
             met_pt = getattr(met, f'pt{var}').flatten() # Varied MET pt 
 
             # Cutflow plot for signal and control regions
@@ -674,11 +673,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('mjj',                mjj=df[f"mjj{var}"][mask],      weight=rweight[mask] )
 
             # Inclusive and masked, JER smeared and nominal (not JER smeared) MET
-            if region in ['sr_vbf', 'cr_1e_vbf', 'cr_2e_vbf', 'cr_1m_vbf', 'cr_2m_vbf', 'cr_g_vbf']:
-                ezfill('met_jer',       met=met_pt_jer[mask],       weight=rweight[mask])
-                ezfill('met_nom',       met=met_pt_nom[mask],       weight=rweight[mask])
-                ezfill('met_jer_inc',   met=met_pt_jer,       weight=rweight)
-                ezfill('met_nom_inc',   met=met_pt_nom,       weight=rweight)
+            # if region in ['sr_vbf', 'cr_1e_vbf', 'cr_2e_vbf', 'cr_1m_vbf', 'cr_2m_vbf', 'cr_g_vbf']:
+                # ezfill('met_jer',       met=met_pt_jer[mask],       weight=rweight[mask])
+                # ezfill('met_nom',       met=met_pt_nom[mask],       weight=rweight[mask])
+                # ezfill('met_jer_inc',   met=met_pt_jer,       weight=rweight)
+                # ezfill('met_nom_inc',   met=met_pt_nom,       weight=rweight)
 
             # Muons
             if region in ['cr_1m_vbf', 'cr_2m_vbf']:
@@ -731,14 +730,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
                 # w_drphoton_jet = weight_shape(df['dRPhotonJet'][mask], rweight[mask])
         
-            # Look at varied / nominal MET pt for different nominal MET pt bins
-            if re.match('cr_(1e|2e|1m|2m)_vbf.*', region) and var != '':
-                met_bins = np.arange(100,350,50)
-                met_ratio_dict, weight_dict = get_met_ratios(met_pt[mask], met_pt_jer[mask], met_bins, rweight[mask])
-                for tag, ratio in met_ratio_dict.items():
-                    wratio = weight_dict[tag]
-                    ezfill('met_ratio', ratio=ratio, metbin=tag, weight=wratio)
-
             # Tau
             if 'no_veto' in region:
                 w_all_taus = weight_shape(taus.pt[mask], rweight[mask])
