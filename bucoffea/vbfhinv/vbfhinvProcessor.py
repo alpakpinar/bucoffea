@@ -341,7 +341,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('eemitigation_v2', ~eemitigation_v2.any())
 
         # Mask if both leading jets are in HF
-        two_jets_in_hf = (diak4.i0.abseta>3.0).any() & (diak4.i1.abseta>3.0).any()
+        two_jets_in_hf = (diak4.i0.abseta>3.0) & (diak4.i1.abseta>3.0)
+        selection.add('veto_hfhf', ~two_jets_in_hf.any())
 
         selection.add('two_jets', diak4.counts>0)
         selection.add('leadak4_pt_eta', leadak4_pt_eta.any())

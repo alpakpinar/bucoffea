@@ -280,6 +280,7 @@ def vbfhinv_regions(cfg):
         # Two different signal regions with two different cleaning cuts
         regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1']
         regions['sr_vbf_eemitigationv2'] = regions['sr_vbf'] + ['eemitigation_v2']
+        regions['sr_vbf_eemitigationv1_vetohfhf'] = regions['sr_vbf'] + ['eemitigation_v2', 'veto_hfhf']
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [
@@ -301,7 +302,7 @@ def vbfhinv_regions(cfg):
 
     tmp = {}
     for region in regions.keys():
-        if not region.startswith("sr_"):
+        if not region.startswith("sr_") or 'ee' in region:
             continue
         new_region = f"{region}_no_veto_all"
         tmp[new_region] = copy.deepcopy(regions[region])
