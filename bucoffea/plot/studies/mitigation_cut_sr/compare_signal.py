@@ -17,6 +17,20 @@ REBIN = {
     'mjj' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
 }
 
+def compute_loss(h_nom, h_mitigated):
+    '''Compute the additional loss of signal with the mitigation cut, by calculating the area under the histograms.'''
+    vals_nom = h_nom.values()[()]
+    vals_mitigated = h_mitigated.values()[()]
+    bins = h_nom.axes()[0].edges()
+    bin_widths = np.diff(bins)
+
+    integral_nom = np.sum(vals_nom * bin_widths)
+    integral_mitigated = np.sum(vals_mitigated * bin_widths)
+
+    # Calculate percentage difference between the two
+    percent_diff = (integral_nom - integral_mitigated) / integral_nom * 100
+    return percent_diff
+
 def compare_signal(acc, outtag, variable='mjj'):
     '''Compare the signal distribution with two different noise mitigation cuts applied.'''
     acc.load(variable)
@@ -45,6 +59,10 @@ def compare_signal(acc, outtag, variable='mjj'):
     h_sr_vbf = h.integrate('region', 'sr_vbf')
     h_eemitigation_v1 = h.integrate('region', 'sr_vbf_eemitigationv1')
     h_eemitigation_v2 = h.integrate('region', 'sr_vbf_eemitigationv2')
+
+    # Compute the percent losses in yield for both mitigation strategies
+    loss_v1 = compute_loss(h_sr_vbf, h_eemitigation_v1)
+    loss_v2 = compute_loss(h_sr_vbf, h_eemitigation_v2)
 
     centers = h_sr_vbf.axes()[0].centers()
     r_eemitigation_v1 = h_eemitigation_v1.values()[()] / h_sr_vbf.values()[()]
