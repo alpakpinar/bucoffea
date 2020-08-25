@@ -200,7 +200,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
     skimming_suffix = '_skimmed' if skimmed else ''
 
-    filename = f'{transfer_factor_tag}_splitJEC{skimming_suffix}_{bin_selection}.pdf'
+    filename = f'{transfer_factor_tag}_{process}_splitJEC{skimming_suffix}_{bin_selection}.pdf'
     outpath = pjoin(outdir, filename)
 
     fig.savefig(outpath)
