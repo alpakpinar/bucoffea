@@ -375,14 +375,14 @@ def setup_candidates(df, cfg, variations):
 
     ak4 = JaggedCandidateArray.candidatesfromcounts(
         df['nJet'],
-        pt=df[f'Jet_pt{jes_suffix}'],
+        pt=df[f'Jet_pt{jes_suffix}'] / df['Jet_corr_JER'],
         eta=df['Jet_eta'],
         abseta=np.abs(df['Jet_eta']),
         phi=df['Jet_phi'],
         mass=np.zeros_like(df['Jet_pt']),
         looseId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
         tightId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
-        puid=((df['Jet_puId']&2>0) | (df[f'Jet_pt{jes_suffix}']>50)), # medium pileup jet ID
+        puid=((df['Jet_puId']&2>0) | ((df[f'Jet_pt{jes_suffix}'] / df['Jet_corr_JER']) > 50)), # medium pileup jet ID
         csvv2=df["Jet_btagCSVV2"],
         deepcsv=df['Jet_btagDeepB'],
         # nef=df['Jet_neEmEF'],
@@ -397,7 +397,8 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
-        ak4_pt = df[f'Jet_pt{var}']
+        # Get the unsmeared jet pt
+        ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
         ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt>50)
         # Set the jet values
         argdict = {f'pt{var}' : ak4_pt, f'puid{var}' : ak4_puid}
