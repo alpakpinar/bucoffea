@@ -136,6 +136,16 @@ def plot_settings():
                 'ylim' : (1e-1,1e6)
             }
         },
+        'sr_vbf_eemitigationv1': {
+            'mjj' : {
+                 'ylim' : (1e-3,1e5)   
+            }
+        },
+        'sr_vbf_eemitigationv2': {
+            'mjj' : {
+                 'ylim' : (1e-3,1e5)   
+            }
+        },
         'sr_j' : {
             'recoil' : {
                 'ylim' : (1e-3,1e4)
