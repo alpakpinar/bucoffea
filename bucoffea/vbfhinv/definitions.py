@@ -280,7 +280,7 @@ def vbfhinv_regions(cfg):
         # Two different signal regions with two different cleaning cuts
         regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1']
         regions['sr_vbf_eemitigationv2'] = regions['sr_vbf'] + ['eemitigation_v2']
-        regions['sr_vbf_eemitigationv1_vetohfhf'] = regions['sr_vbf'] + ['eemitigation_v2', 'veto_hfhf']
+        regions['sr_vbf_eemitigationv1_vetohfhf'] = regions['sr_vbf'] + ['eemitigation_v1', 'veto_hfhf']
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [
