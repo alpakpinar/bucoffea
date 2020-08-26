@@ -158,6 +158,17 @@ def plot_settings():
                 'ylim' : (1e-3,1e7)
             }
         },
+        'sr_vbf_eemitigationv1_vetohfhf': {
+            'mjj' : {
+                 'ylim' : (1e-3,1e5)   
+            },
+            'ak4_eta0' : {
+                'ylim' : (1e-3,1e7)
+            },
+            'ak4_eta1' : {
+                'ylim' : (1e-3,1e7)
+            }
+        },
         'sr_j' : {
             'recoil' : {
                 'ylim' : (1e-3,1e4)
