@@ -344,6 +344,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
         two_jets_in_hf = (diak4.i0.abseta>3.0) & (diak4.i1.abseta>3.0)
         selection.add('veto_hfhf', ~two_jets_in_hf.any())
 
+        # Define cut on maximum of the neutral EM fraction of two leading jets
+        max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
+        selection.add('max_neEmEF', (max_neEmEF<0.7).any())
+
         selection.add('two_jets', diak4.counts>0)
         selection.add('leadak4_pt_eta', leadak4_pt_eta.any())
         selection.add('trailak4_pt_eta', trailak4_pt_eta.any())
