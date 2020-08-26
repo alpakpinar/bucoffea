@@ -44,11 +44,11 @@ def compare_data(acc, outtag, variable='ak4_eta0'):
             h = h.rebin(variable, REBIN[variable])
 
     # Get the MET dataset
-    h = h.integrate('dataset', 'MET_2017')[re.compile('^sr_vbf((?!veto).)*$')]
+    h = h.integrate('dataset', 'MET_2017')[re.compile('^sr_vbf((?!veto_all).)*$')]
 
     # Plot comparison
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
-    hist.plot1d(h, ax=ax, overlay='region')
+    hist.plot1d(h, ax=ax, overlay='region', overflow='over')
     
     ax.set_xlabel('')
     ax.set_yscale('log')
@@ -66,18 +66,21 @@ def compare_data(acc, outtag, variable='ak4_eta0'):
     h_sr_vbf = h.integrate('region', 'sr_vbf')
     h_eemitigation_v1 = h.integrate('region', 'sr_vbf_eemitigationv1')
     h_eemitigation_v2 = h.integrate('region', 'sr_vbf_eemitigationv2')
+    h_eemitigation_v1_vetohfhf = h.integrate('region', 'sr_vbf_eemitigationv1_vetohfhf')
 
-    centers = h_sr_vbf.axes()[0].centers()
-    r_eemitigation_v1 = h_eemitigation_v1.values()[()] / h_sr_vbf.values()[()]
-    r_eemitigation_v2 = h_eemitigation_v2.values()[()] / h_sr_vbf.values()[()]
+    centers = h_sr_vbf.axes()[0].centers(overflow='over')
+    r_eemitigation_v1 = h_eemitigation_v1.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
+    r_eemitigation_v2 = h_eemitigation_v2.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
+    r_eemitigation_v1_vetohfhf = h_eemitigation_v1_vetohfhf.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
     rax.plot(centers, r_eemitigation_v1, ls='', marker='o', label='EEv1')
     rax.plot(centers, r_eemitigation_v2, ls='', marker='o', label='EEv2')
+    rax.plot(centers, r_eemitigation_v1_vetohfhf, ls='', marker='o', label='EEv1 + HF-HF veto')
     
     rax.grid(True)
     rax.set_ylim(0.8,1.2)
     rax.set_ylabel('Ratio to nominal SR')
     rax.set_xlabel(XLABELS[variable])
-    rax.legend()
+    rax.legend(ncol=3)
 
     if 'ak4_eta' in variable:
         ylim = rax.get_ylim()
