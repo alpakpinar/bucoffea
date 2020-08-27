@@ -35,6 +35,7 @@ def vbfhinv_accumulator(cfg):
     jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
 
     jet_mass_ax = Bin("mass", r"$M_{jet}$ (GeV)", 100,0,300)
+    jet_pt_over_met_ax = Bin("jmet", r'Jet $p_T$ / MET', 50, 0, 2)
 
     dpfcalo_ax = Bin("dpfcalo", r"$(PFMET-CaloMET) / Recoil$", 20, -1, 1)
     btag_ax = Bin("btag", r"B tag discriminator", 20, 0, 1)
@@ -98,6 +99,9 @@ def vbfhinv_accumulator(cfg):
     items["ak4_chf0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nhf0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nconst0"] = Hist("Counts", dataset_ax, region_ax, nconst_ax)
+
+    items["ak4_pt0_over_met"] = Hist("Counts", dataset_ax, region_ax, jet_pt_over_met_ax)
+    items["dphi_ak40_met"] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
 
     items["ak4_pt1"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_ptraw1"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
@@ -281,6 +285,9 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1']
         regions['sr_vbf_eemitigationv2'] = regions['sr_vbf'] + ['eemitigation_v2']
         regions['sr_vbf_eemitigationv1_vetohfhf'] = regions['sr_vbf'] + ['eemitigation_v1', 'veto_hfhf']
+
+        regions['sr_vbf_leadak4_ee'] = regions['sr_vbf'] + ['leadak4_ee']
+        regions['sr_vbf_leadak4_ee_pt'] = regions['sr_vbf'] + ['leadak4_ee', 'leadak4_pt']
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [

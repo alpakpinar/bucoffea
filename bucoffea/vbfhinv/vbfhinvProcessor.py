@@ -340,6 +340,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         selection.add('eemitigation_v2', ~eemitigation_v2.any())
 
+        # Selections for additional SRs for investigation
+        lead_ak4_in_transition_region = (diak4.i0.abseta > 2.9) & (diak4.i0.abseta < 3.3)
+        selection.add('leadak4_ee', lead_ak4_in_transition_region.any())
+        selection.add('leadak4_pt', (diak4.i0.pt > 100).any())
+
         # Mask if both leading jets are in HF
         two_jets_in_hf = (diak4.i0.abseta>3.0) & (diak4.i1.abseta>3.0)
         selection.add('veto_hfhf', ~two_jets_in_hf.any())
@@ -764,6 +769,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_chf1',      frac=diak4.i1.chf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nhf1',      frac=diak4.i1.nhf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nconst1',   nconst=diak4.i1.nconst[mask].flatten(), weight=w_diak4)
+
+            if region in ['sr_vbf_leadak4_ee', 'sr_vbf_leadak4_ee_pt']:
+                ezfill('ak4_pt0_over_met', jmet=pt_over_met_leading_jet[mask].flatten(), weight=w_diak4)
+                ezfill('dphi_ak40_met', dphi=df['dPhiLeadingJetMet'][mask], weight=w_diak4)
 
             # B tag discriminator
             btag = getattr(ak4, cfg.BTAG.ALGO)
