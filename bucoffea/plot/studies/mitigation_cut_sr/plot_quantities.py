@@ -17,6 +17,8 @@ REBIN = {
     'mjj' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
     'ak4_pt0' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(0,600,20)) + list(range(600,1000,20)) ),
     'ak4_pt1' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) ),
+    'ak4_pt0_over_met' : hist.Bin('jmet', r'Leading Jet $p_T$ / $MET$', 25, 0, 2),
+    'dphi_ak40_met' : hist.Bin('dphi', r'$\Delta \phi(ak4_0, MET)$', 25, 0, 3.5)
 }
 
 XLABELS = {
@@ -26,6 +28,43 @@ XLABELS = {
     'ak4_pt0' : r'Leading Jet $p_T$',
     'ak4_pt1' : r'Trailing Jet $p_T$'
 }
+
+def plot_2d(acc, outtag, region):
+    '''Plot 2D histogram of the two cut variables for data in SR.'''
+    variable = 'dphi_ak40_met_ak4_pt0_over_met'
+    acc.load(variable)
+    h = acc[variable]
+
+    h = merge_extensions(h, acc, reweight_pu=False)
+    scale_xs_lumi(h)
+    h = merge_datasets(h)
+
+    # Rebin the two variables
+    h = h.rebin('jmet', REBIN['ak4_pt0_over_met'])
+    h = h.rebin('dphi', REBIN['dphi_ak40_met'])
+
+    # Get the MET dataset and the relevant region
+    h = h.integrate('dataset', 'MET_2017').integrate('region', region)
+
+    fig, ax = plt.subplots()
+    hist.plot2d(h, xaxis='dphi', ax=ax)
+
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    ax.plot(xlim, [0.7, 0.7], color='red', lw=2)
+    ax.plot(xlim, [1.3, 1.3], color='red', lw=2)
+    ax.plot([2.9, 2.9], ylim, color='red', lw=2)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+
+    # Save figure
+    outdir = f'./output/{outtag}/2d'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outpath = pjoin(outdir, f'{region}_dphi_pt_over_met_2d.pdf')
+    fig.savefig(outpath)
+    print(f'File saved: {outpath}')
 
 def plot_quantity(acc, outtag, variable, region):
     '''Plot the given quantity for data in given region.'''
@@ -103,12 +142,13 @@ def main():
     else:
         outtag = inpath.split('/')[-1]
 
-    # variables = ['ak4_pt0_over_met', 'ak4_pt0', 'ak4_eta0', 'dphi_ak40_met']
-    variables = ['ak4_pt0_over_met']
+    variables = ['ak4_pt0_over_met', 'ak4_pt0', 'ak4_eta0', 'dphi_ak40_met']
     regions = ['sr_vbf_leadak4_ee_pt', 'sr_vbf_leadak4_ee']
     for region in regions:
         for variable in variables:
             plot_quantity(acc, outtag, variable, region)
+
+        plot_2d(acc, outtag, region=region)
 
 if __name__ == '__main__':
     main()
