@@ -102,6 +102,7 @@ def vbfhinv_accumulator(cfg):
 
     items["ak4_pt0_over_met"] = Hist("Counts", dataset_ax, region_ax, jet_pt_over_met_ax)
     items["dphi_ak40_met"] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
+    items["dphi_ak40_met_ak4_pt0_over_met"] = Hist("Counts", dataset_ax, region_ax, dphi_ax, jet_pt_over_met_ax)
 
     items["ak4_pt1"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_ptraw1"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)

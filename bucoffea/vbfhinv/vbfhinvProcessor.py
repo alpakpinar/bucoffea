@@ -773,6 +773,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
             if region in ['sr_vbf_leadak4_ee', 'sr_vbf_leadak4_ee_pt']:
                 ezfill('ak4_pt0_over_met', jmet=pt_over_met_leading_jet[mask].flatten(), weight=w_diak4)
                 ezfill('dphi_ak40_met', dphi=df['dPhiLeadingJetMet'][mask], weight=w_diak4)
+                ezfill('dphi_ak40_met_ak4_pt0_over_met', 
+                        dphi=df['dPhiLeadingJetMet'][mask], 
+                        jmet=pt_over_met_leading_jet[mask].flatten(), 
+                        weight=w_diak4)
 
             # B tag discriminator
             btag = getattr(ak4, cfg.BTAG.ALGO)
