@@ -19,10 +19,13 @@ REBIN = {
 
 def compute_loss(h_nom, h_mitigated):
     '''Compute the additional loss of signal with the mitigation cut, by calculating the area under the histograms.'''
-    vals_nom = h_nom.values()[()]
-    vals_mitigated = h_mitigated.values()[()]
-    bins = h_nom.axes()[0].edges()
+    vals_nom = h_nom.values(overflow='over')[()]
+    vals_mitigated = h_mitigated.values(overflow='over')[()]
+    bins = h_nom.axes()[0].edges(overflow='over')
     bin_widths = np.diff(bins)
+
+    print(vals_nom)
+    print(vals_mitigated)
 
     integral_nom = np.sum(vals_nom * bin_widths)
     integral_mitigated = np.sum(vals_mitigated * bin_widths)
