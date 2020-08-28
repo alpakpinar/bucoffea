@@ -64,7 +64,7 @@ def parse_cli():
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
-    parser.add_argument('--onlyRun', help='If specified, only run over these processes.', nargs='*')
+    parser.add_argument('--onlyRun', help='Specify regex to only run over some transfer factors and skip others.')
     parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
     parser.add_argument('--tabulate', help='Tabulate unc/variation values.', action='store_true')
     parser.add_argument('--znunu2016', help='Only run over Z(vv) 2016.', action='store_true')
@@ -475,21 +475,12 @@ def main():
             binnings['recoil']['initial'][year] = recoil_bins_2016_monov
 
     for dataset_tag in dataset_tags:
-        print(f'MSG% Working on: {dataset_tag}')
-
         # If specified, run only on specified processes, skip otherwise
-        skip=False
-        if args.onlyRun:
-            skip=True
-            for tag in args.onlyRun:
-                if tag in dataset_tag:
-                    skip=False
-                    break
-
-        if skip:
+        if not re.match(args.onlyRun, dataset_tag):
             print(f'MSG% Skipping: {dataset_tag}')
             continue
 
+        print(f'MSG% Working on: {dataset_tag}')
         # Determine the year of the dataset
         if '2017' in dataset_tag:
             year = '2017' # 2017 VBF + ggH signals or Z(nunu)
