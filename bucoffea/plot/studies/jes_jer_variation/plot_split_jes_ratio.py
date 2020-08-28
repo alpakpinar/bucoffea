@@ -68,7 +68,7 @@ def parse_cli():
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--run', help='Which samples to run on: qcd, ewk.', nargs='*')
-    parser.add_argument('--skip', help='Which processes to skip over.', nargs='*')
+    parser.add_argument('--onlyRun', help='Specify regex to only run over some transfer factors and skip others.')
     parser.add_argument('--tabulate', help='Tabulate the variation/unc values.', action='store_true')
     args = parser.parse_args()
     return args
@@ -297,15 +297,10 @@ def main():
         year = 2017 if '17' in transfer_factor_tag else 2018
 
         # Skip over some TFs if requested so
-        if args.skip:
-            for tag in args.skip:
-                if tag in transfer_factor_tag:
-                    skip=True
-                    break
-
-        if skip:
-            print(f'MSG% Skipping: {transfer_factor_tag}')
-            continue
+        if args.onlyRun:
+            if not re.match(args.onlyRun, transfer_factor_tag):
+                print(f'MSG% Skipping: {transfer_factor_tag}')
+                continue
 
         # Run QCD ratio
         if 'qcd' in args.run:
