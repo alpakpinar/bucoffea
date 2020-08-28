@@ -437,7 +437,7 @@ def main():
     if not os.path.exists(outputrootdir):
         os.makedirs(outputrootdir)
 
-    outputrootfile = pjoin(outputrootdir, 'monojet_shape_jes_uncs.root')
+    outputrootfile = pjoin(outputrootdir, f'{args.analysis}_shape_jes_uncs.root')
     rootfile = uproot.recreate(outputrootfile)
     print(f'MSG% ROOT file is created: {rootfile}')
 

@@ -205,6 +205,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
     fig.savefig(outpath)
     print(f'MSG% File created: {outpath}')
+    plt.close(fig)
     
     # Sort the sources
     if tabulate_top5:
