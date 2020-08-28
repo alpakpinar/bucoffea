@@ -75,7 +75,7 @@ tag_to_dataset_pairs = {
             'dataset2' : {'regex' : 'ZJetsToNuNu.*2018', 'region' : 'sr'},
         },
         'ewk': {
-            'dataset1' : {'regex' : 'GJets_SM_5f_EWK.*2018', 'region' : 'cr_g'},
+            'dataset1' : {'regex' : 'GJets_SM_5f_EWK.*2017', 'region' : 'cr_g'},
             'dataset2' : {'regex' : 'EWKZ2Jets_ZToNuNu.*2018', 'region' : 'sr'},
         }
     },
@@ -191,7 +191,7 @@ dataset_regex = {
     },
     'gjets18' : {
         'qcd' : {'title' : r'QCD $\gamma$ + jets', 'regex' : 'GJets_DR-0p4.*2018', 'region' : 'cr_g'},
-        'ewk' : {'title' : r'EWK $\gamma$ + jets', 'regex' : 'GJets_SM_5f_EWK.*2018', 'region' : 'cr_g'}
+        'ewk' : {'title' : r'EWK $\gamma$ + jets', 'regex' : 'GJets_SM_5f_EWK.*2017', 'region' : 'cr_g'}
     }
     
 }
