@@ -320,6 +320,8 @@ GJets_SM_5f_EWK-mg_2017:
   gen: 32.91
 GJets_SM_5f_EWK-mg_ext1_2017:
   gen: 32.91
+GJets_SM_5f_EWK-mg_2018:
+  gen: 32.91
 GluGlu_HToInvisible_M125_PSweights_pow_pythia8_2018:
   gen: 21.46
   nnnlo: 4.858E+01
