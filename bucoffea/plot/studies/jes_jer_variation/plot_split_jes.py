@@ -152,12 +152,23 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
 
         # As we loop through each uncertainty source, save into ROOT file if this is requested
         if root_config['save']:
-            ratio = h_var.values()[()] / h_nom.values()[()]
-            edges = h_nom.axis(variable_to_use).edges()
-            # Guard against inf/nan values
-            ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
             rootfile = root_config['file']
-            rootfile[f'{dataset_tag}_{var_label}'] = (ratio, edges)
+            if not "jer" in region.name:
+                ratio = h_var.values()[()] / h_nom.values()[()]
+                edges = h_nom.axis(variable_to_use).edges()
+                # Guard against inf/nan values
+                ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
+                rootfile[f'{dataset_tag}_{var_label}'] = (ratio, edges)
+            else:
+                # Symmetric JER up/down variation calculation 
+                ratio_jerUp = h_var.values()[()] / h_nom.values()[()]
+                ratio_jerDown = 2 - ratio_jerUp
+
+                ratio_jerUp[np.isnan(ratio_jerUp) | np.isinf(ratio_jerUp)] = 1.
+                ratio_jerDown[np.isnan(ratio_jerDown) | np.isinf(ratio_jerDown)] = 1.
+
+                rootfile[f'{dataset_tag}_jerUp'] = (ratio_jerUp, edges)
+                rootfile[f'{dataset_tag}_jerDown'] = (ratio_jerDown, edges)
 
         # Store all uncertainties, later to be tabulated (top 5 only + total)
         if tabulate_top5:

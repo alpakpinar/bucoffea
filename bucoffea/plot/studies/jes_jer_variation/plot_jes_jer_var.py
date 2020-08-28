@@ -140,9 +140,16 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     # Calculate the ratios of each variation
     # with respect to nominal counts
     ratios = {}
-    variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
+    variations = ['', '_jer', '_jesTotalUp', '_jesTotalDown']
     for variation in variations:
-        ratios[variation] = h.integrate('region', f'{region}{analysis_tag}{variation}').values()[()] / h_nom
+        if variation != '_jer':
+            ratios[variation] = h.integrate('region', f'{region}{analysis_tag}{variation}').values()[()] / h_nom
+        else:
+            # Calculate symmetric up and down variations for JER
+            ratio_jerUp = h.integrate('region', f'{region}{analysis_tag}{variation}').values()[()] / h_nom
+            ratio_jerDown = 2 - ratio_jerUp
+            ratios['_jerUp'] = ratio_jerUp
+            ratios['_jerDown'] = ratio_jerDown
 
     edges = h.axes()[1].edges()
     centers = h.axes()[1].centers()
@@ -153,7 +160,8 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     # Plot the variation + ratio pad
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 2)}, sharex=True)
     for idx, (var, ratio_arr) in enumerate(ratios.items()):
-        h_var = h.integrate('region', f'{region}{analysis_tag}{var}').values()[()]
+        # Retrieve the varied weights
+        h_var = ratio_arr * h_nom
         hep.histplot(h_var, 
                      edges, 
                      label=var_to_legend_label[var],
@@ -305,10 +313,21 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
             var_name = ''
         else:
             var_name = f'_{region1[0].split("_")[-1]}'
-        ratios[var_name] = h1_sumw / h2_sumw 
+        
+        if var_name != '_jer':
+            ratios[var_name] = h1_sumw / h2_sumw 
+        else:
+            # Symmetric JER up/down variations
+            ratios['_jerUp'] = h1_sumw / h2_sumw
+            ratios['_jerDown'] = 1 - h1_sumw / h2_sumw
+        
         # Gaussian error propagation
         gaus_error = np.sqrt((h2_sumw*np.sqrt(h1_sumw2))**2 + (h1_sumw*np.sqrt(h2_sumw2))**2)/h2_sumw**2
-        err[var_name] = gaus_error
+        if var_name != '_jer':
+            err[var_name] = gaus_error
+        else:
+            err['_jerUp'] = gaus_error
+            err['_jerDown'] = gaus_error
 
     # Set y-label for either QCD or EWK samples
     sample_label = sample_type.upper()
@@ -354,14 +373,12 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
                      edges, 
                      label=var_to_legend_label[var_name],
                      ax=ax,
-                    #  stack=True,
                      histtype='step',
                      yerr=err[var_name]
                      )
 
         if var_name != '':
             r = ratios[var_name] / ratios['']
-            # rax.errorbar(centers, r, yerr=err['']/ratios[''], marker='o', ls='', label=var_to_legend_label[var_name], c=colors[idx])
             rax.plot(centers, r, 'o', label=var_to_legend_label[var_name], c=colors[idx])
             rax.fill_between(centers, 1-(err['']/ratios['']), 1+(err['']/ratios['']), color='gray', alpha=0.5)
 

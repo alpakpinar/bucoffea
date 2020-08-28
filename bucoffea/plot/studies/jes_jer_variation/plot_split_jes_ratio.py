@@ -155,25 +155,45 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         h_varied_den = h_den.integrate('region', region_for_den)
 
         # Get the varied ratio and store it
-        varied_ratio = h_varied_num.values()[()] / h_varied_den.values()[()]
+        if 'jer' not in region.name:
+            varied_ratio = h_varied_num.values()[()] / h_varied_den.values()[()]
+            dratio = varied_ratio / nominal_ratio
+            ax.plot(centers, dratio, marker='o', label=var_label)
 
+            # Save the uncertainties to an output root file
+            hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
+            outputrootfile[hist_name] = (dratio, edges)
+    
+            # Store the uncs and variations
+            uncs[var_label] = np.abs(dratio - 1) * 100
+            varied[var_label] = varied_ratio
+
+        else:
+            varied_ratio_jerUp = h_varied_num.values()[()] / h_varied_den.values()[()]
+            varied_ratio_jerDown = 2 - varied_ratio_jerUp
+
+            dratio_jerUp = varied_ratio_jerUp / nominal_ratio
+            dratio_jerDown = varied_ratio_jerDown / nominal_ratio
+
+            ax.plot(centers, dratio_jerUp, marker='o', label='JER up')
+            ax.plot(centers, dratio_jerDown, marker='o', label='JER down')
+
+            # Save the uncertainties to an output root file
+            hist_name_jerUp = f'{transfer_factor_tag}_{process}_jerUp'
+            hist_name_jerDown = f'{transfer_factor_tag}_{process}_jerDown'
+            outputrootfile[hist_name_jerUp] = (dratio_jerUp, edges)
+            outputrootfile[hist_name_jerDown] = (dratio_jerDown, edges)
+    
+            # Store the uncs and variations
+            uncs['_jerUp'] = np.abs(dratio_jerUp - 1) * 100
+            uncs['_jerDown'] = np.abs(dratio_jerDown - 1) * 100
+            varied['_jerUp'] = varied_ratio_jerUp
+            varied['_jerDown'] = varied_ratio_jerDown
+    
         if skimmed:
             if var_label_skimmed not in vars_to_look_at:
                 continue
         
-        dratio = varied_ratio / nominal_ratio
-        # Do not plot JER for now
-        if not 'jer' in region.name:
-            ax.plot(centers, dratio, marker='o', label=var_label)
-
-        # Save the uncertainties to an output root file
-        hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
-        outputrootfile[hist_name] = (dratio, edges)
-
-        # Store the uncs and variations
-        uncs[var_label] = np.abs(dratio - 1) * 100
-        varied[var_label] = varied_ratio
-
     # Aesthetics
     ax.grid(True)
     if analysis == 'vbf':
