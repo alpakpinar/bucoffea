@@ -24,8 +24,11 @@ from bucoffea.helpers.dataset import (
                                       is_lo_w,
                                       is_lo_z,
                                       is_lo_znunu,
+                                      is_lo_dy,
                                       is_lo_w_ewk,
                                       is_lo_z_ewk,
+                                      is_lo_znunu_ewk,
+                                      is_lo_zll_ewk,
                                       is_nlo_w,
                                       is_nlo_z
                                       )
@@ -224,8 +227,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                             f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
                             f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
                             f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
-                            '_jesTotalUp', '_jesTotalDown',
-                            '_jerUp', '_jerDown'
+                            '_jesTotalUp', '_jesTotalDown', '_jer'
                             ]
         self._accumulator = vbfhinv_accumulator(cfg, variations=self._variations)
 
@@ -236,7 +238,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
         dataset = df['dataset']
         df['is_lo_w'] = is_lo_w(dataset)
         df['is_lo_z'] = is_lo_z(dataset)
-        df['is_lo_znunu'] = is_lo_znunu(dataset)
         df['is_lo_w_ewk'] = is_lo_w_ewk(dataset)
         df['is_lo_z_ewk'] = is_lo_z_ewk(dataset)
         df['is_lo_g'] = is_lo_g(dataset)
@@ -244,6 +245,24 @@ class vbfhinvProcessor(processor.ProcessorABC):
         df['is_nlo_w'] = is_nlo_w(dataset)
         df['has_lhe_v_pt'] = df['is_lo_w'] | df['is_lo_z'] | df['is_nlo_z'] | df['is_nlo_w'] | df['is_lo_g'] | df['is_lo_w_ewk'] | df['is_lo_z_ewk']
         df['is_data'] = is_data(dataset)
+
+        # Further flags to determine which regions to run on
+        df['is_lo_znunu'] = is_lo_znunu(dataset)
+        df['is_lo_zll'] = is_lo_dy(dataset)
+        df['is_lo_znunu_ewk'] = is_lo_znunu_ewk(dataset)
+        df['is_lo_zll_ewk'] = is_lo_zll_ewk(dataset)
+
+        # Determine which regions are going to be processed
+        if df['is_lo_znunu'] or df ['is_lo_znunu_ewk']:
+            region_regex = 'sr_.*vbf.*'
+        elif df['is_lo_zll'] or df['is_lo_zll_ewk']:
+            region_regex = 'cr_2(e|m).*vbf.*'
+        elif df['is_lo_g']:
+            region_regex = 'cr_g.*vbf.*'
+        elif df['is_lo_w'] or df['is_lo_w_ewk']:
+            region_regex = 'sr|cr_1(m|e).*vbf.*'
+        else:
+            region_regex = '.*vbf.*'
 
         if df['is_data']:
             return self.accumulator.identity()
@@ -348,6 +367,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
      
         vmap.set_selection_packer(var='', sel=selection_nom)
 
+        # Temp selection object to be used later for other variations
+        selection_nom_to_copy = copy.deepcopy(selection_nom)
+
         # Process for each JES/JER variation
         for var in self._variations:
             # Get the correct objects/quantities for each variation
@@ -356,9 +378,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             if var == '':
                 selection = vmap.get_selection_packer(var='')
             else:
-                selection = copy.deepcopy(selection_nom) 
+                selection = copy.deepcopy(selection_nom_to_copy) 
                 vmap.set_selection_packer(var=var, sel=selection)    
-
 
             bjets = vmap.get_bjets(var)
             ak4 = vmap.get_ak4(var) 
@@ -536,6 +557,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         regions = vbfhinv_regions(cfg, variations=self._variations)
 
         for region, cuts in regions.items():
+            if not re.match(region_regex, region):
+                continue
             exclude = [None]
             region_weights = copy.deepcopy(weights)
 
@@ -580,6 +603,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     var = '_' + region.split('_')[-1]
                 else:
                     var = '_' + '_'.join(region.split('_')[-2:])
+            elif '_jer' in region:
+                var = '_jer'
             else:
                 var = ''
 

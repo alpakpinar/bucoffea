@@ -401,13 +401,18 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
-        # Get the unsmeared jet pt
-        if not cfg.AK4.JER:
-            ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
-            ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt>50)
+        # JER varied jet pt is the fully smeared jet pt
+        if var == '_jer':
+            ak4_pt = df[f'Jet_pt{jes_suffix}']
+        # Jet quantities for JES variations
         else:
-            ak4_pt = df[f'Jet_pt{var}']
-            ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt>50)
+            if not cfg.AK4.JER:
+                ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
+            else:
+                ak4_pt = df[f'Jet_pt{var}']
+
+        ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt > 50)
+
         # Set the jet values
         argdict = {f'pt{var}' : ak4_pt, f'puid{var}' : ak4_puid}
         ak4.add_attributes(**argdict)
@@ -458,9 +463,7 @@ def setup_candidates(df, cfg, variations):
     met = JaggedCandidateArray.candidatesfromcounts(
         np.ones(df.size),
         pt=df[f'{met_branch}_T1_pt'],
-        # pt_nom=df[f'{met_branch}_T1_pt'],
         phi=df[f'{met_branch}_T1_phi'],
-        # phi_nom=df[f'{met_branch}_T1_phi'],
         eta=np.zeros(df.size), # dummy
         mass=np.zeros(df.size) # dummy
     )
@@ -468,8 +471,14 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
-        met_pt = df[f'{met_branch}_T1_pt{var}']
-        met_phi = df[f'{met_branch}_T1_phi{var}']
+        # JER varied MET pt/phi are the fully smeared MET pt/phi values
+        if var == '_jer':
+            met_pt = df[f'{met_branch}_T1Smear_pt']
+            met_phi = df[f'{met_branch}_T1Smear_phi']
+        # JES variations of MET pt/phi
+        else:
+            met_pt = df[f'{met_branch}_T1_pt{var}']
+            met_phi = df[f'{met_branch}_T1_phi{var}']
         # Set the MET values
         argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
         met.add_attributes(**argdict)

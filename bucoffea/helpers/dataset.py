@@ -1,12 +1,21 @@
 import re
-def is_lo_znunu(dataset):
-    return bool(re.match(r'Z(\d*)Jet.*(mg|MLM|madgraph).*', dataset))
-
 def is_lo_z(dataset):
     return bool(re.match(r'(DY|Z)(\d*)Jet.*(mg|MLM|madgraph).*', dataset))
 
+def is_lo_znunu(dataset):
+    return bool(re.match(r'Z(\d*)Jet.*(mg|MLM|madgraph).*', dataset))
+
+def is_lo_dy(dataset):
+    return bool(re.match(r'(DY)(\d*)Jet.*(mg|MLM|madgraph).*', dataset))
+
 def is_lo_z_ewk(dataset):
     return bool(re.match(r'EWKZ2Jets_ZTo.', dataset))
+
+def is_lo_znunu_ewk(dataset):
+    return bool(re.match(r'EWKZ2Jets_ZToNuNu.*', dataset))
+
+def is_lo_zll_ewk(dataset):
+    return bool(re.match(r'EWKZ2Jets_ZToLL.*', dataset))
 
 def is_lo_w(dataset):
     return bool(re.match(r'W(\d*)Jet.*(mg|MLM).*', dataset))
