@@ -7,8 +7,8 @@ import uproot
 import numpy as np
 from matplotlib import pyplot as plt
 
-def get_ak4_pt0_variations(trial_file, num_events=10):
-    '''Get all leading jet pt variations.'''
+def get_ak4_pt0_variations(trial_file, num_events=10, thresh=1e-3):
+    '''Check jet pt JES variations, returns True if all num_events have total JES unc close to individual ones combined.'''
     f = uproot.open(trial_file)['Events']
     # Get dataframe with T1 MET and all its variations (first 10 events)
     df = f.pandas.df(['Jet_pt*', 'Jet_phi*'])[:num_events]
@@ -46,15 +46,18 @@ def get_ak4_pt0_variations(trial_file, num_events=10):
     combined_unc_py_down = py_down_ratios.apply(get_quad_sum, axis=1) 
 
     # Get diffs with Total up/down uncertainties
-    diff_px_up = combined_unc_px_up - px_up_ratios['Jet_pt_jesTotalUp'] 
-    diff_py_up = combined_unc_py_up - py_up_ratios['Jet_pt_jesTotalUp'] 
-    diff_px_down = combined_unc_px_down - px_down_ratios['Jet_pt_jesTotalDown'] 
-    diff_py_down = combined_unc_py_down - py_down_ratios['Jet_pt_jesTotalDown'] 
+    diff_px_up = np.abs(combined_unc_px_up - px_up_ratios['Jet_pt_jesTotalUp']) 
+    diff_py_up = np.abs(combined_unc_py_up - py_up_ratios['Jet_pt_jesTotalUp'])
+    diff_px_down = np.abs(combined_unc_px_down - px_down_ratios['Jet_pt_jesTotalDown'])
+    diff_py_down = np.abs(combined_unc_py_down - py_down_ratios['Jet_pt_jesTotalDown'])
 
-    print(diff_px_up)
-    print(diff_py_up)
-    print(diff_px_down)
-    print(diff_py_down)
+    mask = (diff_px_up < thresh).all() & (diff_py_up < thresh).all() & \
+        (diff_py_up < thresh).all() & (diff_py_down < thresh).all()
+
+    # Maximum difference
+    max_diff = max(diff_px_up.max(), diff_px_down.max(), diff_py_up.max(), diff_py_down.max())
+
+    return mask, max_diff
 
 def get_met_variations(trial_file, num_events=10):
     '''Get all MET variations.'''
@@ -86,7 +89,14 @@ def main():
     }
     trial_file = trial_files[trial_mode]
 
-    get_ak4_pt0_variations(trial_file)
+    print('Checking leading jet pt...')
+    mask, max_diff = get_ak4_pt0_variations(trial_file)
+    if mask:
+        print('Combined/total JES uncs agree!')
+        print(f'Maximum difference: {max_diff:.5f}')
+    else:
+        print('Combined/total JES uncs do not agree within tolerance!')
+        print(f'Maximum difference: {max_diff:.5f}')
 
 if __name__ == '__main__':
     main()
