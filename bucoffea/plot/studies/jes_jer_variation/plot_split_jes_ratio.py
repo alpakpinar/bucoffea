@@ -125,7 +125,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     
     # Setup the color map
     colormap = plt.cm.nipy_spectral
-    num_plots = len(vars_to_look_at) if skimmed else 12
+    num_plots = len(vars_to_look_at) if skimmed else 13 # 12 JES variations + 1 JER variation
     colors = []
     for i in np.linspace(0,0.9,num_plots):
         colors.append([colormap(i), colormap(i)])
@@ -170,7 +170,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
         else:
             varied_ratio_jerUp = h_varied_num.values()[()] / h_varied_den.values()[()]
-            varied_ratio_jerDown = 2 - varied_ratio_jerUp
+            varied_ratio_jerDown = nominal_ratio - (varied_ratio_jerUp - nominal_ratio)
 
             dratio_jerUp = varied_ratio_jerUp / nominal_ratio
             dratio_jerDown = varied_ratio_jerDown / nominal_ratio

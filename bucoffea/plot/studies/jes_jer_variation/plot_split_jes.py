@@ -166,6 +166,8 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
 
                 ratio_jerUp[np.isnan(ratio_jerUp) | np.isinf(ratio_jerUp)] = 1.
                 ratio_jerDown[np.isnan(ratio_jerDown) | np.isinf(ratio_jerDown)] = 1.
+                
+                edges = h_nom.axis(variable_to_use).edges()
 
                 rootfile[f'{dataset_tag}_jerUp'] = (ratio_jerUp, edges)
                 rootfile[f'{dataset_tag}_jerDown'] = (ratio_jerDown, edges)
@@ -487,9 +489,10 @@ def main():
 
     for dataset_tag in dataset_tags:
         # If specified, run only on specified processes, skip otherwise
-        if not re.match(args.onlyRun, dataset_tag):
-            print(f'MSG% Skipping: {dataset_tag}')
-            continue
+        if args.onlyRun:
+            if not re.match(args.onlyRun, dataset_tag):
+                print(f'MSG% Skipping: {dataset_tag}')
+                continue
 
         print(f'MSG% Working on: {dataset_tag}')
         # Determine the year of the dataset

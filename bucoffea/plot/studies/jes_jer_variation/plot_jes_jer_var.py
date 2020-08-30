@@ -319,7 +319,7 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
         else:
             # Symmetric JER up/down variations
             ratios['_jerUp'] = h1_sumw / h2_sumw
-            ratios['_jerDown'] = 1 - h1_sumw / h2_sumw
+            ratios['_jerDown'] = ratios[''] - (ratios['_jerUp'] - ratios[''])
         
         # Gaussian error propagation
         gaus_error = np.sqrt((h2_sumw*np.sqrt(h1_sumw2))**2 + (h1_sumw*np.sqrt(h2_sumw2))**2)/h2_sumw**2
