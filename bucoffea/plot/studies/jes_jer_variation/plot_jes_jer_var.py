@@ -32,16 +32,13 @@ var_to_legend_label = {
 def parse_commandline():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing input coffea files.')
-    parser.add_argument('-r', '--ratio', help='Only plot ratios.', action='store_true')
-    parser.add_argument('--individual', help='Only plot individual distributions, do not plot ratios.', action='store_true')
-    parser.add_argument('--qcd', help='Only run over QCD samples.', action='store_true')
-    parser.add_argument('--ewk', help='Only run over EWK samples.', action='store_true')
-    parser.add_argument('--all', help='Run over both QCD and EWK samples.', action='store_true')
+    parser.add_argument('--calc', help='List specifying calculation of individual processes, ratios or both. Specify "ind" for individual procs, "ratio" for ratios.', nargs='*', default=['ind','ratio'])
+    parser.add_argument('--run', help='Which samples to run on: qcd, ewk.', nargs='*', default=['qcd', 'ewk'])
     parser.add_argument('--analysis', help='Type of analysis, VBF or monojet. Default is VBF', default='vbf')
     parser.add_argument('--onlyJES', help='Only plot JES uncertainties.', action='store_true')
     parser.add_argument('--onlyJER', help='Only plot JER uncertainties.', action='store_true')
     parser.add_argument('--save_to_df', help='Save results to output pandas dataframe, stored in an output pkl file.', action='store_true')
-    parser.add_argument('--only', help='Only run over a subset of the samples', nargs='*')
+    parser.add_argument('--onlyRun', help='Specify regex to only run over some transfer factors and skip others.')
     args = parser.parse_args()
     return args
 
@@ -475,31 +472,22 @@ def main():
     else:
         out_tag = inpath.split('/')[-1]
 
-    run_over_samples = {
-        'qcd' : args.qcd or args.all,
-        'ewk' : args.ewk or args.all 
-    }
+    # Determine which processes (QCD/EWK) to run on from the command line option
+    run_over_samples = {}
+    for proc in ['qcd', 'ewk']:
+        run_over_samples[proc] = proc in args.run
 
-    # Get the processes to run over, if some "only" option is specified
-    if args.only:
-        all_tags = dataset_regex.keys()
-        processes_to_look_at = []
-        if "Znunu" in args.only:
-            z_procs = [tag for tag in all_tags if tag.startswith('znunu')]
-            processes_to_look_at.extend(z_procs)
-        if "Wlnu" in args.only:
-            w_procs = [tag for tag in all_tags if tag.startswith('wlnu')]
-            processes_to_look_at.extend(w_procs)
-
-    # Plot individual distributions unless "ratio only" option is specified
-    if not args.ratio:
+    if 'ind' in args.calc:
         for tag, data_dict in dataset_regex.items():
             for sample_type, run in run_over_samples.items():
                 if not run:
                     continue
-                if args.only:
-                    if not tag in processes_to_look_at:
+                # If "onlyRun" option is specified, skip the procs which do not match to the regular expression 
+                if args.onlyRun:
+                    if not re.match(args.onlyRun, tag):
+                        print(f'Skipping: {tag}')
                         continue
+                    
                 title, regex, region = data_dict[sample_type].values()
                 plot_jes_jer_var(acc, regex=regex, 
                     title=title, 
@@ -509,48 +497,24 @@ def main():
                     sample_type=sample_type,
                     analysis=args.analysis)
 
-    # Run for only specific ratios if an "only" option is specified to the script
-    if args.only:
-        all_ratios = tag_to_dataset_pairs.keys()
-        ratios_to_look_at = []
-        if 'Znunu' in args.only and 'Wlnu' in args.only:
-            z_over_w_procs = [tag for tag in all_ratios if tag.startswith('znunu_over_wlnu')]
-            ratios_to_look_at.extend(z_over_w_procs)
-        if 'Znunu' in args.only and 'Zee' in args.only:
-            z_over_zee_procs = [tag for tag in all_ratios if tag.startswith('znunu_over_zee')]
-            ratios_to_look_at.extend(z_over_zee_procs)
-        if 'Znunu' in args.only and 'Zmumu' in args.only:
-            z_over_zmumu_procs = [tag for tag in all_ratios if tag.startswith('znunu_over_zmumu')]
-            ratios_to_look_at.extend(z_over_zmumu_procs)
-        if 'Wlnu' in args.only and 'Wenu' in args.only:
-            w_over_wenu_procs = [tag for tag in all_ratios if tag.startswith('wlnu_over_wenu')]
-            ratios_to_look_at.extend(w_over_wenu_procs)
-        if 'Wlnu' in args.only and 'Wmunu' in args.only:
-            w_over_wmunu_procs = [tag for tag in all_ratios if tag.startswith('wlnu_over_wmunu')]
-            ratios_to_look_at.extend(w_over_wmunu_procs)
-        if 'GJets' in args.only and 'Znunu' in args.only:
-            g_over_z_procs = [tag for tag in all_ratios if tag.startswith('gjets_over_znunu')]
-            ratios_to_look_at.extend(g_over_z_procs)
-        if 'GJets' in args.only and 'Wlnu' in args.only:
-            w_over_g_procs = [tag for tag in all_ratios if tag.startswith('wlnu_over_gjets')]
-            ratios_to_look_at.extend(w_over_g_procs)
-
     # All bin types for the ratio plot
     # For now: Just plot single bin (not interested in shape information for TFs)
     bin_types = ['singleBin']
 
-    # Plot ratios unless "individual plots only option is specified"
-    if not args.individual:
+    if 'ratio' in args.calc:
         # Store the ratios and dataset names/types to tabulate values (using pandas) later
         ratio_list = []
         index_list = []
         for tag, data_dict in tag_to_dataset_pairs.items():
-            if args.only:
-                if tag not in ratios_to_look_at:
-                    continue
             for sample_type, run in run_over_samples.items():
                 if not run:
                     continue
+                # If "onlyRun" option is specified, skip the procs which do not match to the regular expression 
+                if args.onlyRun:
+                    if not re.match(args.onlyRun, tag):
+                        print(f'Skipping: {tag}')
+                        continue
+                    
                 index_list.append(indices_from_tags[tag][sample_type])
                 datapair_dict = data_dict[sample_type] 
                 data1_info = datapair_dict['dataset1']
