@@ -32,6 +32,8 @@ titles = {
     'znunu_over_zmumu18' : r'$Z(\nu\nu) \ / \ Z(\mu\mu) \ 2018$',
     'znunu_over_zee17' : r'$Z(\nu\nu) \ / \ Z(ee) \ 2017$',
     'znunu_over_zee18' : r'$Z(\nu\nu) \ / \ Z(ee) \ 2018$',
+    'znunu_over_zll17' : r'$Z(\nu\nu) \ / \ Z(\ell \ell) \ 2017$',
+    'znunu_over_zll18' : r'$Z(\nu\nu) \ / \ Z(\ell \ell) \ 2018$',
     'wlnu_over_wenu17' : r'$W(\ell\nu) \ / \ W(e\nu) \ 2017$',
     'wlnu_over_wenu18' : r'$W(\ell\nu) \ / \ W(e\nu) \ 2018$',
     'wlnu_over_wmunu17' : r'$W(\ell\nu) \ / \ W(\mu\nu) \ 2017$',
@@ -73,7 +75,8 @@ def parse_cli():
     args = parser.parse_args()
     return args
 
-def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, process, outputrootfile, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf', tabulate_top5=False):
+def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, year, process, 
+            outputrootfile, plot_total=True, skimmed=True, bin_selection='defaultBinning', analysis='vbf', tabulate_top5=False):
     '''Plot all split JEC uncertainties on transfer factors in the same plot.'''
     # Load the relevant variable to analysis, select binning
     print(f'MSG% Working on: {transfer_factor_tag}')
@@ -102,8 +105,9 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     h_num = h.integrate('dataset', re.compile(regex_num))[re.compile(f'{region_num}{region_suffix}.*')]
     h_den = h.integrate('dataset', re.compile(regex_den))[re.compile(f'{region_den}{region_suffix}.*')]
 
-    h_nominal_num = h_num.integrate('region', f'{region_num}{region_suffix}')
-    h_nominal_den = h_den.integrate('region', f'{region_den}{region_suffix}')
+    h_nominal_num = h_num.integrate('region', re.compile(f'^{region_num}{region_suffix}$'))
+    h_nominal_den = h_den.integrate('region', re.compile(f'^{region_den}{region_suffix}$'))
+
     # Get the nominal ratio and store it in a dict
     ratios = {}
     nominal_ratio = h_nominal_num.values()[()] / h_nominal_den.values()[()]
@@ -151,8 +155,8 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         region_for_num = f'{region_num}{region_suffix}_{var_label}'
         region_for_den = f'{region_den}{region_suffix}_{var_label}'
 
-        h_varied_num = h_num.integrate('region', region_for_num)
-        h_varied_den = h_den.integrate('region', region_for_den)
+        h_varied_num = h_num.integrate('region', re.compile(f'^{region_for_num}$'))
+        h_varied_den = h_den.integrate('region', re.compile(f'^{region_for_den}$'))
 
         # Get the varied ratio and store it
         if 'jer' not in region.name:

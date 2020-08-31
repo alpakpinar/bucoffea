@@ -297,19 +297,22 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     # for each JES/JER variation
     ratios = {}
     err = {}
-    h1_vals = h1.values(sumw2=True)
-    h2_vals = h2.values(sumw2=True)
 
-    for region1, region2 in zip(h1_vals.keys(), h2_vals.keys()):
-        # Get sumw and sumw2 from respective regions for two samples
-        h1_sumw, h1_sumw2 = h1_vals[region1]
-        h2_sumw, h2_sumw2 = h2_vals[region2]
-        # Get the variation name out of region names
-        region_name = region1[0]
+    for region in h1.values().keys():
+        region_name = region[0]
+        # Extract the variation type from the region name
         if region_name.endswith('_vbf') or region_name.endswith('_j'):
             var_name = ''
         else:
-            var_name = f'_{region1[0].split("_")[-1]}'
+            var_name = f'_{region_name.split("_")[-1]}'
+
+        # Only plot the total JES/JER variations in this script
+        if var_name not in ['', '_jer', '_jesTotalUp', '_jesTotalDown']:
+            continue
+
+        # Get sumw and sumw2 from respective regions for two samples
+        h1_sumw, h1_sumw2 = h1.integrate('region', re.compile(f'^{region1}{analysis_tag}{var_name}$')).values(sumw2=True)[()]
+        h2_sumw, h2_sumw2 = h2.integrate('region', re.compile(f'^{region2}{analysis_tag}{var_name}$')).values(sumw2=True)[()]
         
         if var_name != '_jer':
             ratios[var_name] = h1_sumw / h2_sumw 
@@ -337,6 +340,8 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
         'znunu_over_zmumu18' : r'{} $Z\rightarrow \nu \nu$ SR / {} $Z\rightarrow \mu \mu$ CR'.format(sample_label, sample_label),
         'znunu_over_zee17' : r'{} $Z\rightarrow \nu \nu$ SR / {} $Z\rightarrow ee$ CR'.format(sample_label, sample_label),
         'znunu_over_zee18' : r'{} $Z\rightarrow \nu \nu$ SR / {} $Z\rightarrow ee$ CR'.format(sample_label, sample_label),
+        'znunu_over_zll17' : r'{} $Z\rightarrow \nu \nu$ SR / {} $Z\rightarrow \ell \ell$ CR'.format(sample_label, sample_label),
+        'znunu_over_zll18' : r'{} $Z\rightarrow \nu \nu$ SR / {} $Z\rightarrow \ell \ell$ CR'.format(sample_label, sample_label),
         'gjets_over_znunu17' : r'{} $\gamma$ + jets CR / {} $Z\rightarrow \nu \nu$ SR'.format(sample_label, sample_label),
         'gjets_over_znunu18' : r'{} $\gamma$ + jets CR / {} $Z\rightarrow \nu \nu$ SR'.format(sample_label, sample_label),
         'wlnu_over_wenu17' : r'{} $W\rightarrow \ell \nu$ SR / {} $W\rightarrow e\nu$ CR'.format(sample_label, sample_label),
