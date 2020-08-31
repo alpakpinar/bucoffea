@@ -7,10 +7,12 @@ import uproot
 import numpy as np
 from matplotlib import pyplot as plt
 
-def get_ak4_pt0_variations(trial_file, num_events=10, thresh=1e-3):
+pjoin = os.path.join
+
+def get_ak4_pt0_variations(trial_file, trial_mode, num_events=10000, thresh=1e-3):
     '''Check jet pt JES variations, returns True if all num_events have total JES unc close to individual ones combined.'''
     f = uproot.open(trial_file)['Events']
-    # Get dataframe with T1 MET and all its variations (first 10 events)
+    # Get dataframe with T1 MET and all its variations 
     df = f.pandas.df(['Jet_pt*', 'Jet_phi*'])[:num_events]
 
     jet_pt_nom = df['Jet_pt_nom']
@@ -44,6 +46,38 @@ def get_ak4_pt0_variations(trial_file, num_events=10, thresh=1e-3):
     combined_unc_py_up = py_up_ratios.apply(get_quad_sum, axis=1) 
     combined_unc_px_down = px_down_ratios.apply(get_quad_sum, axis=1) 
     combined_unc_py_down = py_down_ratios.apply(get_quad_sum, axis=1) 
+
+    # Store a histogram: (Combined / Total) - 1, for each variation
+    combined_over_total_px_up = (combined_unc_px_up / px_up_ratios['Jet_pt_jesTotalUp']) - 1 
+    combined_over_total_py_up = (combined_unc_py_up / py_up_ratios['Jet_pt_jesTotalUp']) - 1 
+    combined_over_total_px_down = (combined_unc_px_down / px_down_ratios['Jet_pt_jesTotalDown']) - 1 
+    combined_over_total_py_down = (combined_unc_py_down / py_down_ratios['Jet_pt_jesTotalDown']) - 1 
+
+    fig, axes = plt.subplots(2,2,figsize=(12,8))
+    bins = np.linspace(-0.1,0.1)
+
+    axes[0,0].hist(combined_over_total_px_up, bins=bins)
+    axes[0,0].set_title(r'$p_x$ JES up')
+    axes[0,0].set_ylabel('Counts')
+
+    axes[0,1].hist(combined_over_total_py_up, bins=bins)
+    axes[0,1].set_title(r'$p_y$ JES up')
+    axes[0,1].set_ylabel('Counts')
+
+    axes[1,0].hist(combined_over_total_px_down, bins=bins)
+    axes[1,0].set_title(r'$p_x$ JES down')
+    axes[1,0].set_ylabel('Counts')
+
+    axes[1,1].hist(combined_over_total_py_down, bins=bins)
+    axes[1,1].set_title(r'$p_y$ JES down')
+    axes[1,1].set_ylabel('Counts')
+
+    outdir = './output'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    outpath = pjoin(outdir, f'{trial_mode}_jet_pt_combined_over_total.pdf')
+    fig.savefig(outpath)
+    print(f'File saved: {outpath}')
 
     # Get diffs with Total up/down uncertainties
     diff_px_up = np.abs(combined_unc_px_up - px_up_ratios['Jet_pt_jesTotalUp']) 
@@ -90,7 +124,7 @@ def main():
     trial_file = trial_files[trial_mode]
 
     print('Checking leading jet pt...')
-    mask, max_diff = get_ak4_pt0_variations(trial_file)
+    mask, max_diff = get_ak4_pt0_variations(trial_file, trial_mode)
     if mask:
         print('Combined/total JES uncs agree!')
         print(f'Maximum difference: {max_diff:.5f}')
