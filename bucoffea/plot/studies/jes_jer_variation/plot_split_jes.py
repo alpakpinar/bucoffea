@@ -20,6 +20,7 @@ from pprint import pprint
 from itertools import chain
 from tabulate import tabulate
 from collections import OrderedDict
+from scipy.signal import savgol_filter
 
 pjoin = os.path.join
 
@@ -73,11 +74,17 @@ def parse_cli():
     args = parser.parse_args()
     return args
 
+def smooth_histogram(x,y):
+    '''Smooth out the given histogram.'''
+    smooth = savgol_filter(y,min(len(x),7),1)
+    return smooth
+
 # Bin selection should be one of the following:
 # Coarse, single bin, initial
 def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True, skimmed=True, 
             bin_selection='initial', analysis='vbf', root_config={'save': False, 'file': None}, 
-            tabulate_top5=False, use_monoj_binning=False, use_monov_binning=False
+            tabulate_top5=False, use_monoj_binning=False, use_monov_binning=False, 
+            plot_smooth=False, save_smooth=True
             ):
     '''Plot all split JEC uncertainties on the same plot.'''
     # Load the relevant variable to analysis, select binning
@@ -147,8 +154,18 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
             if var_label_skimmed not in vars_to_look_at:
                 continue
         # Do not plot JER for now
-        if not "jer" in region.name:
-            hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
+        if not plot_smooth:
+            if not "jer" in region.name:
+                hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
+
+        edges = h_nom.axis(variable_to_use).edges()
+        centers = h_nom.axis(variable_to_use).centers()
+        vals = h_var.values()[()] / h_nom.values()[()]
+        smooth_hist = smooth_histogram(edges, vals)
+
+        if plot_smooth:
+            # Plot only the smoothed out distributions
+            ax.plot(centers, smooth_hist, label=var_label)
 
         # As we loop through each uncertainty source, save into ROOT file if this is requested
         if root_config['save']:
@@ -159,6 +176,9 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
                 # Guard against inf/nan values
                 ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
                 rootfile[f'{dataset_tag}_{var_label}'] = (ratio, edges)
+                if save_smooth:
+                    # Save the smoothed version as well
+                    rootfile[f'{dataset_tag}_{var_label}_smoothed'] = (smooth_hist, edges)
             else:
                 # Symmetric JER up/down variation calculation 
                 ratio_jerUp = h_var.values()[()] / h_nom.values()[()]
@@ -171,6 +191,11 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
 
                 rootfile[f'{dataset_tag}_jerUp'] = (ratio_jerUp, edges)
                 rootfile[f'{dataset_tag}_jerDown'] = (ratio_jerDown, edges)
+
+                if save_smooth:
+                    # Save the smoothed version as well
+                    rootfile[f'{dataset_tag}_jerUp_smoothed'] = (smooth_hist, edges)
+                    rootfile[f'{dataset_tag}_jerDown_smoothed'] = (2-smooth_hist, edges)
 
         # Store all uncertainties, later to be tabulated (top 5 only + total)
         if tabulate_top5:
@@ -506,18 +531,19 @@ def main():
         # 1. All uncertainty sources plotted on a single bin
         # 2. Only the largest sources are plotted, with multiple bins
         # 3. Plot all the sources and save them into a ROOT file as a shape uncertainty
-        plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
-                    analysis=args.analysis, skimmed=False, bin_selection='single bin', tabulate_top5=args.tabulate,
-                    use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning
-                    )
+        # plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
+                    # analysis=args.analysis, skimmed=False, bin_selection='single bin', tabulate_top5=args.tabulate,
+                    # use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning
+                    # )
         plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
                     analysis=args.analysis, skimmed=True, bin_selection='initial',
-                    use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning
+                    use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning, plot_smooth=True
                     )
         # Only save to ROOT file the unskimmed shapes
         plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
                     analysis=args.analysis, skimmed=False, bin_selection='initial', root_config=root_config,
-                    use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning
+                    use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning, 
+                    plot_smooth=False, save_smooth=True
                     )
     
         # Produce the plots with regrouping, if requested:
