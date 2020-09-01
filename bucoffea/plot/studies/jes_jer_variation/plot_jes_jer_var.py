@@ -23,8 +23,7 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][:5]
 # Legend labels for each variation
 var_to_legend_label = {
     ''         : 'Nominal',
-    '_jerUp'   : 'JER up',
-    '_jerDown' : 'JER down',
+    '_jer'     : 'JER',
     '_jesTotalUp'   : 'JES up',
     '_jesTotalDown' : 'JES down'
 }
@@ -139,14 +138,7 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
     ratios = {}
     variations = ['', '_jer', '_jesTotalUp', '_jesTotalDown']
     for variation in variations:
-        if variation != '_jer':
-            ratios[variation] = h.integrate('region', f'{region}{analysis_tag}{variation}').values()[()] / h_nom
-        else:
-            # Calculate symmetric up and down variations for JER
-            ratio_jerUp = h.integrate('region', f'{region}{analysis_tag}{variation}').values()[()] / h_nom
-            ratio_jerDown = 2 - ratio_jerUp
-            ratios['_jerUp'] = ratio_jerUp
-            ratios['_jerDown'] = ratio_jerDown
+        ratios[variation] = h.integrate('region', f'{region}{analysis_tag}{variation}').values()[()] / h_nom
 
     edges = h.axes()[1].edges()
     centers = h.axes()[1].centers()
@@ -211,7 +203,7 @@ def plot_jes_jer_var(acc, regex, region, tag, out_tag, title, sample_type, analy
         rax.set_xlabel(r'$M_{jj} \ (GeV)$')
     elif analysis == 'monojet':
         rax.set_xlabel(r'Recoil (GeV)')
-    rax.legend(ncol=2)
+    rax.legend()
     rax.grid(True)
 
     # Save figure
@@ -314,20 +306,11 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
         h1_sumw, h1_sumw2 = h1.integrate('region', re.compile(f'^{region1}{analysis_tag}{var_name}$')).values(sumw2=True)[()]
         h2_sumw, h2_sumw2 = h2.integrate('region', re.compile(f'^{region2}{analysis_tag}{var_name}$')).values(sumw2=True)[()]
         
-        if var_name != '_jer':
-            ratios[var_name] = h1_sumw / h2_sumw 
-        else:
-            # Symmetric JER up/down variations
-            ratios['_jerUp'] = h1_sumw / h2_sumw
-            ratios['_jerDown'] = ratios[''] - (ratios['_jerUp'] - ratios[''])
+        ratios[var_name] = h1_sumw / h2_sumw 
         
         # Gaussian error propagation
         gaus_error = np.sqrt((h2_sumw*np.sqrt(h1_sumw2))**2 + (h1_sumw*np.sqrt(h2_sumw2))**2)/h2_sumw**2
-        if var_name != '_jer':
-            err[var_name] = gaus_error
-        else:
-            err['_jerUp'] = gaus_error
-            err['_jerDown'] = gaus_error
+        err[var_name] = gaus_error
 
     # Set y-label for either QCD or EWK samples
     sample_label = sample_type.upper()
@@ -365,9 +348,9 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
     if plot_onlyJES:
         variations = ['', '_jesTotalUp', '_jesTotalDown']
     elif plot_onlyJER:
-        variations = ['', '_jerUp', '_jerDown']
+        variations = ['', '_jer']
     else:
-        variations = ['', '_jerUp', '_jerDown', '_jesTotalUp', '_jesTotalDown']
+        variations = ['', '_jer', '_jesTotalUp', '_jesTotalDown']
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     for idx, var_name in enumerate(variations):
         ratio_arr = ratios[var_name]
@@ -383,12 +366,6 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
             r = ratios[var_name] / ratios['']
             rax.plot(centers, r, 'o', label=var_to_legend_label[var_name], c=colors[idx])
             rax.fill_between(centers, 1-(err['']/ratios['']), 1+(err['']/ratios['']), color='gray', alpha=0.5)
-
-    # Aesthetics
-    if analysis == 'vbf':
-        xlim = (200,4000)
-    elif analysis == 'monojet':
-        xlim = (250,2000)
 
     edges = binning_to_use.edges()
 
@@ -426,8 +403,7 @@ def plot_jes_jer_var_ratio(acc, regex1, regex2, region1, region2, tag, out_tag, 
         rax.set_xlabel(r'$M_{jj} \ (GeV)$')
     elif analysis == 'monojet':
         rax.set_xlabel(r'Recoil (GeV)')
-    ncol_for_legend = 1 if (plot_onlyJES or plot_onlyJER) else 2
-    rax.legend(ncol=ncol_for_legend)
+    rax.legend()
     rax.grid(True)
 
     # Save the figure
@@ -545,8 +521,7 @@ def main():
     if args.save_to_df:
         rename_columns = {
             '' : 'Nominal',
-            '_jerUp' : 'JER up',
-            '_jerDown' : 'JER down',
+            '_jer' : 'JER',
             '_jesTotalUp' : 'JES up',
             '_jesTotalDown' : 'JES down'
         }
@@ -554,8 +529,7 @@ def main():
         df.rename(columns=rename_columns, inplace=True)
         # Save to pkl file
         pkl_file = 'ratios_df.pkl'
-        with open(pkl_file, 'wb+') as f:
-            df.to_pickle(pkl_file)
+        df.to_pickle(pkl_file)
 
 if __name__ == '__main__':
     main()
