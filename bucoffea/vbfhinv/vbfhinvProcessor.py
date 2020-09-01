@@ -15,7 +15,9 @@ from bucoffea.helpers import (
                               mjj,
                               mt, 
                               recoil,
-                              weight_shape
+                              weight_shape,
+                              calculate_vecB,
+                              calculate_vecDPhi
                               )
 from bucoffea.helpers.dataset import (
                                       extract_year,
@@ -332,7 +334,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection_nom.add('veto_photon', photons.counts==0)
         selection_nom.add('veto_tau', taus.counts==0)
 
-        if(cfg.MITIGATION.HEM and extract_year(df['dataset']) == 2018 and not cfg.RUN.SYNC):
+        if (cfg.MITIGATION.HEM and extract_year(df['dataset']) == 2018 and not cfg.RUN.SYNC):
             selection_nom.add('hemveto', df['hemveto'])
         else:
             selection_nom.add('hemveto', np.ones(df.size)==1)
@@ -419,6 +421,24 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
             selection.add(f'veto_b{var}', bjets.counts==0)
             
+            vec_b = calculate_vecB(ak4, met_pt, met_phi)
+            vec_dphi = calculate_vecDPhi(ak4, met_pt, met_phi, df['TkMET_phi'])
+    
+            no_jet_in_trk = (diak4.i0.abseta>2.5).any() & (diak4.i1.abseta>2.5).any()
+            no_jet_in_hf = (diak4.i0.abseta<3.0).any() & (diak4.i1.abseta<3.0).any()
+    
+            at_least_one_jet_in_hf = (diak4.i0.abseta>3.0).any() | (diak4.i1.abseta>3.0).any()
+            at_least_one_jet_in_trk = (diak4.i0.abseta<2.5).any() | (diak4.i1.abseta<2.5).any()
+    
+            # Categorized cleaning cuts
+            eemitigation = (
+                            (no_jet_in_hf | at_least_one_jet_in_trk) & (vec_dphi < 1.0)
+                        ) | (
+                            (no_jet_in_trk & at_least_one_jet_in_hf) & (vec_b < 0.2)
+                        )
+
+            selection.add(f'eemitigation{var}', eemitigation)
+
             # Remove the jets in noisy region, in accordance with the v2 recipe
             if df['year'] == 2017:
                 ak4 = ak4[(ak4.ptraw>50) | (ak4.abseta<2.65) | (ak4.abseta>3.139)]

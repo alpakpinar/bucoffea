@@ -182,3 +182,24 @@ def sigmoid(x,a,b,c,d):
 def exponential(x, a, b, c):
     """Exponential function for scale factor fits."""
     return a * np.exp(-b * x) + c
+
+def calculate_vecB(ak4, met_pt, met_phi):
+    '''Calculate vecB (balance) quantity, based on jets and MET.'''
+    mht_p4 = ak4[ak4.pt>30].p4.sum()
+    mht_x = - mht_p4.pt * np.cos(mht_p4.phi) 
+    mht_y = - mht_p4.pt * np.sin(mht_p4.phi) 
+
+    met_x = met_pt * np.cos(met_phi)
+    met_y = met_pt * np.sin(met_phi)
+
+    vec_b = np.hypot(met_x-mht_x, met_y-mht_y) / np.hypot(met_x+mht_x, met_y+mht_y) 
+
+    return vec_b
+
+def calculate_vecDPhi(ak4, met_pt, met_phi, tk_met_phi):
+    '''Calculate vecDPhi quantitity.'''
+    vec_b = calculate_vecB(ak4, met_pt, met_phi)
+    dphitkpf = dphi(met_phi, tk_met_phi)
+    vec_dphi = np.hypot(3.33 * vec_b, dphitkpf)
+
+    return vec_dphi
