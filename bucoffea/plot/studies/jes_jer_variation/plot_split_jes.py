@@ -32,6 +32,8 @@ titles = {
     'ZJetsToNuNu2016' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties',
     'ZJetsToNuNu2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties',
     'ZJetsToNuNu2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties',
+    'EWKZ2Jets_ZToNuNu2017' : r'EWK $Z(\nu\nu) \ 2017$ split JEC uncertainties',
+    'EWKZ2Jets_ZToNuNu2018' : r'EWK $Z(\nu\nu) \ 2018$ split JEC uncertainties',
     'WJetsToLNu2017' : r'$W(\ell\nu) \ 2017$ split JEC uncertainties',
     'WJetsToLNu2018' : r'$W(\ell\nu) \ 2018$ split JEC uncertainties'
 }
@@ -101,7 +103,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
     h = merge_datasets(h)
 
     # Determine the region to take the data from
-    if re.match('GluGlu|VBF|ZJets|WJets.*', dataset_tag):
+    if re.match('(GluGlu|VBF|ZJets|EWKZ|WJets).*', dataset_tag):
         region_to_use = 'sr'
     else:
         raise NotImplementedError('Not implemented for this region yet.')
@@ -140,6 +142,9 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
         uncs = {}
         varied = {}
 
+    # Store the total up/down variations in this dictionary
+    total_variations = {}
+
     for region in h.identifiers('region'):
         if region.name == f'{region_to_use}{region_suffix}':
             continue
@@ -160,8 +165,21 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
 
         edges = h_nom.axis(variable_to_use).edges()
         centers = h_nom.axis(variable_to_use).centers()
-        vals = h_var.values()[()] / h_nom.values()[()]
-        smooth_hist = smooth_histogram(edges, vals)
+        # Var over nominal ratio
+        ratio = h_var.values()[()] / h_nom.values()[()]
+        # Smoothed out ratio
+        smooth_hist = smooth_histogram(edges, ratio)
+
+        # Save the ratio, smoothed out ratio, the errors and the centers (for later plotting use) for JES total variations
+        if "Total" in region.name:
+            # Calculate the errors in coffea-way (unc='num' in the func call above), to save and plot later
+            sumw_var, sumw2_var = h_var.values(sumw2=True)[()]
+            sumw_nom, _ = h_nom.values(sumw2=True)[()]
+            rsumw = sumw_var / sumw_nom
+            err = np.abs(hist.poisson_interval(rsumw, sumw2_var / sumw_nom**2) - rsumw)
+
+            # Save the quantities
+            total_variations[var_label] = {'ratio' : ratio, 'smooth' : smooth_hist, 'error': err, 'centers' : centers}
 
         if plot_smooth:
             # Plot only the smoothed out distributions
@@ -170,32 +188,12 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
         # As we loop through each uncertainty source, save into ROOT file if this is requested
         if root_config['save']:
             rootfile = root_config['file']
-            if not "jer" in region.name:
-                ratio = h_var.values()[()] / h_nom.values()[()]
-                edges = h_nom.axis(variable_to_use).edges()
-                # Guard against inf/nan values
-                ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
-                rootfile[f'{dataset_tag}_{var_label}'] = (ratio, edges)
-                if save_smooth:
-                    # Save the smoothed version as well
-                    rootfile[f'{dataset_tag}_{var_label}_smoothed'] = (smooth_hist, edges)
-            else:
-                # Symmetric JER up/down variation calculation 
-                ratio_jerUp = h_var.values()[()] / h_nom.values()[()]
-                ratio_jerDown = 2 - ratio_jerUp
-
-                ratio_jerUp[np.isnan(ratio_jerUp) | np.isinf(ratio_jerUp)] = 1.
-                ratio_jerDown[np.isnan(ratio_jerDown) | np.isinf(ratio_jerDown)] = 1.
-                
-                edges = h_nom.axis(variable_to_use).edges()
-
-                rootfile[f'{dataset_tag}_jerUp'] = (ratio_jerUp, edges)
-                rootfile[f'{dataset_tag}_jerDown'] = (ratio_jerDown, edges)
-
-                if save_smooth:
-                    # Save the smoothed version as well
-                    rootfile[f'{dataset_tag}_jerUp_smoothed'] = (smooth_hist, edges)
-                    rootfile[f'{dataset_tag}_jerDown_smoothed'] = (2-smooth_hist, edges)
+            # Guard against inf/nan values
+            ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
+            rootfile[f'{dataset_tag}_{var_label}'] = (ratio, edges)
+            if save_smooth:
+                # Save the smoothed version as well
+                rootfile[f'{dataset_tag}_{var_label}_smoothed'] = (smooth_hist, edges)
 
         # Store all uncertainties, later to be tabulated (top 5 only + total)
         if tabulate_top5:
@@ -299,6 +297,8 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
             f.write(t)
 
         print(f'MSG% Table saved at: {outfile}')
+
+    return total_variations
 
 def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, binnings, bin_selection='initial', analysis='vbf'):
     '''Plot split JEC uncertainties regrouped into two:
@@ -445,6 +445,64 @@ def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, binnings, bin_s
     outpath = pjoin(outdir, filename)
     fig.savefig(outpath)
 
+def compare_total_variations(total_variations_all, out_tag, year, samples=['VBF2017', 'ZJetsToNuNu2017', 'EWKZ2Jets_ZToNuNu2017']):
+    '''Make a comparison plot, comparing total variations for several different samples as a function of mjj.'''
+    var_legend_labels = {
+        'jesTotalUp' : 'JES up',
+        'jesTotalDown' : 'JES down'
+    }
+    sample_legend_labels = {
+        'VBF.*' : r'VBF $H(inv)$',
+        'ZJetsToNuNu.*' : r'QCD $Z(\nu\nu)$',
+        'EWKZ.*' : r'EWK $Z(\nu\nu)$'
+    }
+
+    fig, ax = plt.subplots()
+    # Setup the color map
+    colormap = plt.cm.nipy_spectral
+
+    for idx, sample in enumerate(samples):
+        total_variations = total_variations_all[sample]
+        color = colormap(idx*0.2 + 0.1)
+        for var in ['jesTotalUp', 'jesTotalDown']:
+            rsumw = total_variations[var]['ratio']
+            yerr = total_variations[var]['error']
+            smoothed_rsumw = total_variations[var]['smooth'] 
+            centers = total_variations[var]['centers']
+
+            var_legend_label = var_legend_labels[var]
+            for regex, label in sample_legend_labels.items():
+                if re.match(regex, sample):
+                    sample_legend_label = label
+            
+            legend_label = f'{sample_legend_label} {var_legend_label}'
+
+            ax.errorbar(centers, rsumw, yerr=yerr, marker='o', label=legend_label, color=color)
+
+    # Aesthetics
+    ax.set_xlabel(r'$M_{jj} \ (GeV)$')
+    ax.set_ylabel('JES Total Variation')
+    ax.set_title(f'{year}: JES Comparison')
+    ax.legend()
+
+    xlim = ax.get_xlim()
+    ax.plot(xlim, [1., 1.], color='k')
+    ax.set_xlim(xlim)
+
+    loc = matplotlib.ticker.MultipleLocator(base=0.1)
+    ax.yaxis.set_major_locator(loc)
+    ax.set_ylim(0.5, 1.5)
+    ax.grid(True)
+
+    # Save figure
+    outdir = f'./output/{out_tag}/splitJEC/vbf/total_variation_comparison'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    outpath = pjoin(outdir, f'{year}_total_var_comp.pdf')
+    fig.savefig(outpath)
+    print(f'File saved: {outpath}')
+
 def main():
     args = parse_cli()
     inpath = args.inpath
@@ -475,19 +533,25 @@ def main():
     if not os.path.exists(outputrootdir):
         os.makedirs(outputrootdir)
 
-    outputrootfile = pjoin(outputrootdir, f'{args.analysis}_shape_jes_uncs.root')
-    rootfile = uproot.recreate(outputrootfile)
-    print(f'MSG% ROOT file is created: {rootfile}')
-
     # Configure root usage for the function 
-    root_config = {
-        'save' : args.save_to_root,
-        'file' : rootfile if args.save_to_root else None
-    }
+    if args.save_to_root:
+        outputrootfile = pjoin(outputrootdir, f'{args.analysis}_shape_jes_uncs.root')
+        rootfile = uproot.recreate(outputrootfile)
+        print(f'MSG% ROOT file is created: {rootfile}')
+
+        root_config = {
+            'save' : args.save_to_root,
+            'file' : rootfile if args.save_to_root else None
+        }
+    else:
+        root_config = {
+            'save' : False,
+            'file' : None
+        }
 
     # If requested so, only run over Z(nunu) 2016
     if not args.znunu2016:
-        dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'WJetsToLNu2017', 'WJetsToLNu2018', 'VBF2017', 'VBF2018', 'GluGlu2017', 'GluGlu2018']
+        dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'EWKZ2Jets_ZToNuNu2017', 'EWKZ2Jets_ZToNuNu2018', 'VBF2017', 'VBF2018']
     else:
         dataset_tags = ['ZJetsToNuNu2016']
 
@@ -511,6 +575,9 @@ def main():
     elif args.analysis == 'monojet' and args.use_monov_binning:
         for year in binnings['recoil']['initial'].keys():
             binnings['recoil']['initial'][year] = recoil_bins_2016_monov
+
+    # Dictionary to store the JES total variations for all samples
+    total_variations_all = {}
 
     for dataset_tag in dataset_tags:
         # If specified, run only on specified processes, skip otherwise
@@ -540,7 +607,7 @@ def main():
                     use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning, plot_smooth=True
                     )
         # Only save to ROOT file the unskimmed shapes
-        plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
+        total_variations_all[dataset_tag] = plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
                     analysis=args.analysis, skimmed=False, bin_selection='initial', root_config=root_config,
                     use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning, 
                     plot_smooth=False, save_smooth=True
@@ -549,6 +616,11 @@ def main():
         # Produce the plots with regrouping, if requested:
         if args.regroup:
             plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, binnings, bin_selection='initial', analysis=args.analysis)
+
+    # Compare JES total variations as a function of mjj for both years
+    for year in [2017, 2018]:
+        samples=[f'VBF{year}', f'ZJetsToNuNu{year}', f'EWKZ2Jets_ZToNuNu{year}']
+        compare_total_variations(total_variations_all, out_tag, year=year, samples=samples)
 
 if __name__ == '__main__':
     main()
