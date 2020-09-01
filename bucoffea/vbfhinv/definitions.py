@@ -294,10 +294,10 @@ def vbfhinv_regions(cfg):
         elif cfg.RUN.EFF_STUDY.EVENTS == 'Zmumu':
             # Same logic, but for Zmumu events
             regions['cr_2m_noEmEF'] = ['two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'veto_ele', 'dimuon_charge',
-                    'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'exactly_one_jet', 'met_pt']
+                    'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'exactly_one_jet', 'met_pt', 'z_pt_over_jet_pt']
 
             regions['cr_2m_withEmEF'] = ['two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'veto_ele', 'dimuon_charge',
-                    'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'exactly_one_jet', 'met_pt', 'ak4_neEmEF']
+                    'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'exactly_one_jet', 'met_pt', 'z_pt_over_jet_pt', 'ak4_neEmEF']
 
         if cfg.RUN.EFF_STUDY.GEN_CHECK:
             regions['sr_no_gen_requirement'] = ['lead_ak4_pt_eta', 'lead_ak4_id', 'exactly_one_jet']

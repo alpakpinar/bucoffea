@@ -65,6 +65,10 @@ def zmumu_jet_selection(df, selection, dimuons, leadak4, met_pt, ak4):
     df['dphi_z_jet'] = dphi(z_phi.min(), leadak4.phi.max())
     selection.add('dphi_z_jet', df['dphi_z_jet'] > 2.7)
 
+    # Add balance cut for the pt of Z and the jet
+    pt_frac = np.abs((z_pt.max() / leadak4.pt.max()) - 1)
+    selection.add('z_pt_over_jet_pt', pt_frac < 0.15)
+
     return selection
 
 def gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt, ak4):
