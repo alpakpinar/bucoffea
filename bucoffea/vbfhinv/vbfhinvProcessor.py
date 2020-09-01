@@ -300,7 +300,14 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # First process the part which is 
         # unrelated to JES/JER variations
         #################################
-        
+
+        # Filter out HEM candidates 
+        if df['year'] == 2018:        
+            muons     = muons[~candidates_in_hem(muons)]
+            electrons = electrons[~candidates_in_hem(electrons)]
+            taus      = taus[~candidates_in_hem(taus)]
+            photons   = photons[~candidates_in_hem(photons)]
+
         # Muons
         df['is_tight_muon'] = muons.tightId \
                       & (muons.iso < cfg.MUON.CUTS.TIGHT.ISO) \
@@ -393,10 +400,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             if df["year"] == 2018:
                 ak4       = ak4[~candidates_in_hem(ak4)]
                 bjets     = bjets[~candidates_in_hem(bjets)]
-                muons     = muons[~candidates_in_hem(muons)]
-                electrons = electrons[~candidates_in_hem(electrons)]
-                taus      = taus[~candidates_in_hem(taus)]
-                photons   = photons[~candidates_in_hem(photons)]
 
             met_pt = getattr(met, f'pt{var}').flatten()
             met_phi = getattr(met, f'phi{var}').flatten()
