@@ -445,7 +445,7 @@ def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, binnings, bin_s
     outpath = pjoin(outdir, filename)
     fig.savefig(outpath)
 
-def compare_total_variations(total_variations_all, out_tag, year, samples=['VBF2017', 'ZJetsToNuNu2017', 'EWKZ2Jets_ZToNuNu2017']):
+def compare_total_variations(total_variations_all, out_tag, year, samples=['VBF2017', 'ZJetsToNuNu2017', 'EWKZ2Jets_ZToNuNu2017'], plot_smoothed=False):
     '''Make a comparison plot, comparing total variations for several different samples as a function of mjj.'''
     var_legend_labels = {
         'jesTotalUp' : 'JES up',
@@ -459,15 +459,18 @@ def compare_total_variations(total_variations_all, out_tag, year, samples=['VBF2
 
     fig, ax = plt.subplots()
     # Setup the color map
-    colormap = plt.cm.nipy_spectral
+    colors = ['red', 'blue', 'orange']
 
     for idx, sample in enumerate(samples):
         total_variations = total_variations_all[sample]
-        color = colormap(idx*0.2 + 0.1)
+        color = colors[idx]
         for var in ['jesTotalUp', 'jesTotalDown']:
-            rsumw = total_variations[var]['ratio']
-            yerr = total_variations[var]['error']
-            smoothed_rsumw = total_variations[var]['smooth'] 
+            if plot_smoothed:
+                smoothed_rsumw = total_variations[var]['smooth']
+            else:
+                rsumw = total_variations[var]['ratio']
+                yerr = total_variations[var]['error']
+            
             centers = total_variations[var]['centers']
 
             var_legend_label = var_legend_labels[var]
@@ -477,13 +480,20 @@ def compare_total_variations(total_variations_all, out_tag, year, samples=['VBF2
             
             legend_label = f'{sample_legend_label} {var_legend_label}'
 
-            ax.errorbar(centers, rsumw, yerr=yerr, marker='o', label=legend_label, color=color)
+            # Plot smoothed version of the curve if requested, otherwise plot the raw variations
+            if plot_smoothed:
+                ax.plot(centers, smoothed_rsumw, marker='o', label=legend_label, color=color)
+            else:
+                ax.errorbar(centers, rsumw, yerr=yerr, marker='o', label=legend_label, color=color)
 
     # Aesthetics
     ax.set_xlabel(r'$M_{jj} \ (GeV)$')
     ax.set_ylabel('JES Total Variation')
-    ax.set_title(f'{year}: JES Comparison')
-    ax.legend()
+    if plot_smoothed:
+        ax.set_title(f'{year}: JES Comparison (Smoothed)')
+    else:
+        ax.set_title(f'{year}: JES Comparison')
+    ax.legend(prop={'size' : 8})
 
     xlim = ax.get_xlim()
     ax.plot(xlim, [1., 1.], color='k')
@@ -499,9 +509,13 @@ def compare_total_variations(total_variations_all, out_tag, year, samples=['VBF2
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    outpath = pjoin(outdir, f'{year}_total_var_comp.pdf')
+    if plot_smoothed:
+        outpath = pjoin(outdir, f'{year}_total_var_comp_smoothed.pdf')
+    else:
+        outpath = pjoin(outdir, f'{year}_total_var_comp.pdf')
+    
     fig.savefig(outpath)
-    print(f'File saved: {outpath}')
+    print(f'MSG% File saved: {outpath}')
 
 def main():
     args = parse_cli()
@@ -619,8 +633,10 @@ def main():
 
     # Compare JES total variations as a function of mjj for both years
     for year in [2017, 2018]:
-        samples=[f'VBF{year}', f'ZJetsToNuNu{year}', f'EWKZ2Jets_ZToNuNu{year}']
+        samples = [f'VBF{year}', f'ZJetsToNuNu{year}', f'EWKZ2Jets_ZToNuNu{year}']
         compare_total_variations(total_variations_all, out_tag, year=year, samples=samples)
+        # Make a comparison plot for the smoothed variations as well
+        compare_total_variations(total_variations_all, out_tag, year=year, samples=samples, plot_smoothed=True)
 
 if __name__ == '__main__':
     main()

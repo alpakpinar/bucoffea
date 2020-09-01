@@ -61,7 +61,7 @@ def get_unc(d, edges, out_tag, tag, sample_type):
     for idx, entry in enumerate(nom):
         bin_ = arr[:, idx]
         rng = bin_.max() - bin_.min()
-        unc[idx] = rng/(2*nom[idx])
+        unc[idx] = rng/(2*entry)
         
     # Dump the results to a .txt file
     outdir = f'./output/{out_tag}/txt'
