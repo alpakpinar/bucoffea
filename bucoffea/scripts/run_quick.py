@@ -20,7 +20,7 @@ def main():
 
     fileset = {
         "ZJetsToNuNu_HT-100To200-mg_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aakpinar/nanopost/18Jun20_splitJEC/ZJetsToNuNu_HT-100To200_13TeV-madgraph/ZJetsToNuNu_HT-100To200-mg_2017/200618_121605/0000/tree_1.root"
+            "root://cmsxrootd.fnal.gov//store/user/aakpinar/nanopost/25Aug20_splitJEC/ZJetsToNuNu_HT-100To200_13TeV-madgraph/ZJetsToNuNu_HT-100To200-mg_2017/200825_205559/0000/tree_1.root"
         ]
     }
 
