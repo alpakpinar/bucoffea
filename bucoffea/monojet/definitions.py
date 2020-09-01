@@ -389,7 +389,7 @@ def setup_candidates(df, cfg, variations):
         puid=((df['Jet_puId']&2>0) | ((df[f'Jet_pt{jes_suffix}'] if (df['is_data'] or cfg.AK4.JER) else df[f'Jet_pt{jes_suffix}']/df['Jet_corr_JER'])>50)), # medium pileup jet ID
         csvv2=df["Jet_btagCSVV2"],
         deepcsv=df['Jet_btagDeepB'],
-        # nef=df['Jet_neEmEF'],
+        nef=df['Jet_neEmEF'],
         nhf=df['Jet_neHEF'],
         chf=df['Jet_chHEF'],
         ptraw=df['Jet_pt']*(1-df['Jet_rawFactor']),

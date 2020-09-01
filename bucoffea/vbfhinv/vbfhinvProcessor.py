@@ -413,6 +413,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
             selection.add(f'hornveto{var}', (df[f'dPFTkSR{var}'] < 0.8) | ~(leading_jet_in_horn | trailing_jet_in_horn))
 
+            # Cleaning cuts for signal region
+            max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
+            selection.add(f'max_neEmEF{var}', (max_neEmEF < 0.7).any())
+
             selection.add(f'veto_b{var}', bjets.counts==0)
             
             # Remove the jets in noisy region, in accordance with the v2 recipe
