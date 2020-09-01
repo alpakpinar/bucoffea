@@ -66,8 +66,8 @@ def zmumu_jet_selection(df, selection, dimuons, leadak4, met_pt, ak4):
     selection.add('dphi_z_jet', df['dphi_z_jet'] > 2.7)
 
     # Add balance cut for the pt of Z and the jet
-    pt_frac = np.abs((z_pt.max() / leadak4.pt.max()) - 1)
-    selection.add('z_pt_over_jet_pt', pt_frac < 0.15)
+    df['z_pt_over_jet_pt'] = (z_pt.max() / leadak4.pt.max()) - 1
+    selection.add('z_pt_over_jet_pt', np.abs(df['z_pt_over_jet_pt']) < 0.15)
 
     return selection
 
@@ -613,6 +613,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     ezfill('dphi_photon_jet',  dphi=df['dphi_photon_jet'][mask], weight=rweight[mask])
                 elif cfg.RUN.EFF_STUDY.EVENTS == 'Zmumu':
                     ezfill('dphi_z_jet',  dphi=df['dphi_z_jet'][mask], weight=rweight[mask])
+                    ezfill('z_pt_over_jet_pt', ptfrac=df['z_pt_over_jet_pt'][mask], weight=rweight[mask])
 
             # B tag discriminator
             btag = getattr(ak4, cfg.BTAG.ALGO)
@@ -667,9 +668,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         uncertainty=unc,
                         weight=w)
 
-            # Two dimensional
-            ezfill('recoil_mjj',         recoil=df["recoil_pt"][mask], mjj=df["mjj"][mask], weight=rweight[mask] )
-
             # Muons
             if '_1m_' in region or '_2m_' in region or 'no_veto' in region:
                 w_allmu = weight_shape(muons.pt[mask], rweight[mask])
@@ -720,10 +718,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 ezfill('photon_pt0',              pt=photons[leadphoton_index].pt[mask].flatten(),    weight=w_leading_photon)
                 ezfill('photon_eta0',             eta=photons[leadphoton_index].eta[mask].flatten(),  weight=w_leading_photon)
                 ezfill('photon_phi0',             phi=photons[leadphoton_index].phi[mask].flatten(),  weight=w_leading_photon)
-                ezfill('photon_pt0_recoil',       pt=photons[leadphoton_index].pt[mask].flatten(), recoil=df['recoil_pt'][mask&(leadphoton_index.counts>0)],  weight=w_leading_photon)
-                ezfill('photon_eta_phi',          eta=photons[leadphoton_index].eta[mask].flatten(), phi=photons[leadphoton_index].phi[mask].flatten(),  weight=w_leading_photon)
-
-                # w_drphoton_jet = weight_shape(df['dRPhotonJet'][mask], rweight[mask])
 
             # Tau
             if 'no_veto' in region:

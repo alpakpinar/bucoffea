@@ -71,6 +71,7 @@ def vbfhinv_accumulator(cfg):
     nvtx_ax = Bin('nvtx','Number of vertices',100,-0.5,99.5)
     rho_ax = Bin('rho','Energy density',100, 0, 100)
     frac_ax = Bin('frac','Fraction', 50, 0, 1)
+    ptfrac_ax = Bin('ptfrac',r'$p_T$ fraction', 50, -0.5, 0.5)
     Hist = hist.Hist
     items = {}
     items["genvpt_check"] = Hist("Counts", dataset_ax, type_ax, vpt_ax)
@@ -121,9 +122,6 @@ def vbfhinv_accumulator(cfg):
     items["ak4_phi_nopref"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
     items["ak4_btag"] = Hist("Counts", dataset_ax, region_ax, btag_ax)
 
-    items["recoil_mjj"] = Hist("Counts", dataset_ax, region_ax, recoil_ax, mjj_ax)
-    items["photon_eta_phi"] = Hist("Counts", dataset_ax, region_ax, eta_ax_coarse, phi_ax_coarse)
-
     items["dpfcalo_cr"] = Hist("Counts", dataset_ax, region_ax, dpfcalo_ax)
     items["dpfcalo_sr"] = Hist("Counts", dataset_ax, region_ax, dpfcalo_ax)
     items["dphijm"] = Hist("min(4 leading jets, MET)", dataset_ax, region_ax, dphi_ax)
@@ -169,9 +167,9 @@ def vbfhinv_accumulator(cfg):
     items['photon_eta0'] = Hist("Counts", dataset_ax, region_ax, eta_ax)
     items['photon_phi0'] = Hist("Counts", dataset_ax, region_ax, phi_ax)
 
-    items['photon_pt0_recoil'] = Hist("Counts", dataset_ax, region_ax, pt_ax, recoil_ax)
     items['dphi_photon_jet'] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
     items['dphi_z_jet'] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
+    items['z_pt_over_jet_pt'] = Hist("Counts", dataset_ax, region_ax, ptfrac_ax)
 
     items["tau_pt"] = Hist("Counts", dataset_ax, region_ax, pt_ax_tau)
 
