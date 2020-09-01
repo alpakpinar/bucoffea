@@ -53,7 +53,8 @@ from bucoffea.vbfhinv.definitions import (
                                            get_met_ratios
                                          )
 
-from pprint import pprint
+def candidates_in_hem(candidates):
+    return (-3.0 < candidates.eta) & (candidates.eta < -1.3) & (-1.8 < candidates.phi) & (candidates.phi < -0.6)
 
 def trigger_selection(selection, df, cfg):
     pass_all = np.zeros(df.size) == 0
@@ -386,8 +387,31 @@ class vbfhinvProcessor(processor.ProcessorABC):
             diak4 = vmap.get_diak4(var) 
             met = vmap.get_met(var) 
 
+            # Filter out hem candidates
+            if df["year"] == 2018:
+                ak4       = ak4[~candidates_in_hem(ak4)]
+                bjets     = bjets[~candidates_in_hem(bjets)]
+                muons     = muons[~candidates_in_hem(muons)]
+                electrons = electrons[~candidates_in_hem(electrons)]
+                taus      = taus[~candidates_in_hem(taus)]
+                photons   = photons[~candidates_in_hem(photons)]
+
             met_pt = getattr(met, f'pt{var}').flatten()
             met_phi = getattr(met, f'phi{var}').flatten()
+
+            # HEM + JME cleaning cuts
+            if df["year"] == 2018:
+                selection.add(f'metphihemextveto{var}', ((-1.8 > met_phi)|(met_phi>-0.6)))
+                selection.add('no_el_in_hem', electrons[candidates_in_hem(electrons)].counts==0)
+            else:
+                selection.add(f'metphihemextveto{var}', pass_all)
+                selection.add('no_el_in_hem', pass_all)
+
+            df[f"dPFTkSR{var}"] = (met_pt - df["TkMET_pt"]) / met_pt
+            leading_jet_in_horn = ((diak4.i0.abseta<3.2) & (diak4.i0.abseta>2.8)).any()
+            trailing_jet_in_horn = ((diak4.i1.abseta<3.2) & (diak4.i1.abseta>2.8)).any()
+
+            selection.add(f'hornveto{var}', (df[f'dPFTkSR{var}'] < 0.8) | ~(leading_jet_in_horn | trailing_jet_in_horn))
 
             selection.add(f'veto_b{var}', bjets.counts==0)
             
