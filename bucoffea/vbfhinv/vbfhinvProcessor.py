@@ -69,6 +69,10 @@ def zmumu_jet_selection(df, selection, dimuons, leadak4, met_pt, ak4):
     df['z_pt_over_jet_pt'] = (z_pt.max() / leadak4.pt.max()) - 1
     selection.add('z_pt_over_jet_pt', np.abs(df['z_pt_over_jet_pt']) < 0.15)
 
+    # Add in the single muon trigger selection
+    single_mu_trig = cfg.TRIGGERS.MUON.SINGLE[0]
+    selection.add('single_mu_trig', df[single_mu_trig])
+
     return selection
 
 def gammajet_selection(df, selection, lead_photon, lead_ak4, met_pt, ak4):
