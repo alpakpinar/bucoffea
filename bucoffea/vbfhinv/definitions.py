@@ -291,17 +291,26 @@ def vbfhinv_regions(cfg):
 
         elif cfg.RUN.EFF_STUDY.EVENTS == 'Zmumu':
             # Same logic, but for Zmumu events
-            regions['cr_2m_noEmEF'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe',
-                    'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt', 'z_pt_over_jet_pt']
-
-            regions['cr_2m_withEmEF'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe', 
-                    'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt', 'z_pt_over_jet_pt', 'ak4_neEmEF']
-                    
-            regions['cr_2m_noEmEF_tightptcut'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe',
-                    'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt', 'z_pt_over_jet_pt_tight']
-
-            regions['cr_2m_withEmEF_tightptcut'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe', 
-                    'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt', 'z_pt_over_jet_pt_tight', 'ak4_neEmEF']
+            if 'nobal' in cfg.RUN.EFF_STUDY.REGIONS:
+                regions['cr_2m_noEmEF_nobal'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe',
+                        'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt']
+    
+                regions['cr_2m_withEmEF_nobal'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe', 
+                        'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt', 'ak4_neEmEF']
+            
+            if 'regular' in cfg.RUN.EFF_STUDY.REGIONS:
+                regions['cr_2m_noEmEF'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe',
+                        'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt', 'z_pt_over_jet_pt']
+    
+                regions['cr_2m_withEmEF'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe', 
+                        'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt', 'z_pt_over_jet_pt', 'ak4_neEmEF']
+                        
+            if 'tight' in cfg.RUN.EFF_STUDY.REGIONS:
+                regions['cr_2m_noEmEF_tightptcut'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe',
+                        'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt', 'z_pt_over_jet_pt_tight']
+    
+                regions['cr_2m_withEmEF_tightptcut'] = ['single_mu_trig', 'two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'mu_pt_trig_safe', 
+                        'veto_ele', 'dimuon_charge', 'lead_ak4_pt_eta', 'lead_ak4_id', 'z_pt_eta', 'met_pt', 'z_pt_over_jet_pt_tight', 'ak4_neEmEF']
                     
 
         if cfg.RUN.EFF_STUDY.GEN_CHECK:

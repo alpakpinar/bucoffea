@@ -219,7 +219,11 @@ default:
     sync: False
     eff_study: 
       save: True
-      events: Zmumu 
+      events: Zmumu
+      regions:
+        - nobal
+        - regular
+        - tight 
       gen_check: False
     save:
       passing: False
