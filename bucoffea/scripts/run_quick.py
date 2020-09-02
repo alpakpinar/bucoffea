@@ -18,8 +18,8 @@ def parse_commandline():
 def main():
 
     fileset = {
-        "VBF_HToInvisible_M125_pow_pythia8_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/05Jun20v5/VBF_HToInvisible_M125_13TeV_TuneCP5_powheg_pythia8/VBF_HToInvisible_M125_pow_pythia8_2017/200605_233117/0000/tree_1.root"
+        "SingleMuon_2017B" : [
+            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/05Jun20v5/SingleMuon/SingleMuon_2017B/200605_234418/0000/tree_1.root"
         ]
     }
 
