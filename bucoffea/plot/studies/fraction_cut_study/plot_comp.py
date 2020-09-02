@@ -49,6 +49,14 @@ def preprocess(h, acc, variable):
 def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', tight=False):
     '''Make the comparison plot for data or MC and save it.'''
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
+    cut_suffix = '_tightptcut' if tight else ''
+
+    # Get the relevant regions
+    if tight:
+        h = h[re.compile(f'^.*{cut_suffix}$')]
+    else:
+        h = h[re.compile(f'^.*EmEF$')]
+
     hist.plot1d(h, ax=ax, overlay='region')
 
     ax.set_xlabel('')
@@ -68,10 +76,9 @@ def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', tight=
         'color':'k'
     }
     # Plot the ratio
-    cut_suffix = '_tightptcut' if tight else ''
-    h_num = h.integrate('region', f'{region}_withEmEF{cut_suffix}')
-    h_denom = h.integrate('region', f'{region}_noEmEF{cut_suffix}')
-    hist.plotratio(h_num, h_denom, ax=rax, error_opts=data_err_opts, unc='num')
+    h_num = h.integrate('region', re.compile(f'.*withEmEF{cut_suffix}'))
+    h_den = h.integrate('region', re.compile(f'.*noEmEF{cut_suffix}'))
+    hist.plotratio(h_num, h_den, ax=rax, error_opts=data_err_opts, unc='num')
 
     rax.set_xlabel(XLABELS[variable])
     rax.set_ylabel('With cut / without cut')
