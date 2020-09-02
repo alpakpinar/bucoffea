@@ -301,13 +301,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # unrelated to JES/JER variations
         #################################
 
-        # Filter out HEM candidates 
-        if df['year'] == 2018:        
-            muons     = muons[~candidates_in_hem(muons)]
-            electrons = electrons[~candidates_in_hem(electrons)]
-            taus      = taus[~candidates_in_hem(taus)]
-            photons   = photons[~candidates_in_hem(photons)]
-
         # Muons
         df['is_tight_muon'] = muons.tightId \
                       & (muons.iso < cfg.MUON.CUTS.TIGHT.ISO) \
@@ -396,11 +389,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             diak4 = vmap.get_diak4(var) 
             met = vmap.get_met(var) 
 
-            # Filter out hem candidates
-            if df["year"] == 2018:
-                ak4       = ak4[~candidates_in_hem(ak4)]
-                bjets     = bjets[~candidates_in_hem(bjets)]
-
             met_pt = getattr(met, f'pt{var}').flatten()
             met_phi = getattr(met, f'phi{var}').flatten()
 
@@ -421,8 +409,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             # Cleaning cuts for signal region
             max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
             selection.add(f'max_neEmEF{var}', (max_neEmEF < 0.7).any())
-
-            selection.add(f'veto_b{var}', bjets.counts==0)
             
             vec_b = calculate_vecB(ak4, met_pt, met_phi)
             vec_dphi = calculate_vecDPhi(ak4, met_pt, met_phi, df['TkMET_phi'])
@@ -442,17 +428,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
             selection.add(f'eemitigation{var}', eemitigation)
 
-            # Remove the jets in noisy region, in accordance with the v2 recipe
-            if df['year'] == 2017:
-                ak4 = ak4[(ak4.ptraw>50) | (ak4.abseta<2.65) | (ak4.abseta>3.139)]
-                bjets = bjets[(bjets.ptraw>50) | (bjets.abseta<2.65) | (bjets.abseta>3.139)]
-
-            # Remove the jets if they fail the PU ID
-            ak4_puid = getattr(ak4, f'puid{var}')
-            bjets_puid = getattr(bjets, f'puid{var}')
-
-            ak4 = ak4[ak4_puid]
-            bjets = bjets[bjets_puid] 
+            selection.add(f'veto_b{var}', bjets.counts==0)
 
             ak4_pt = getattr(ak4, f'pt{var}')
 
