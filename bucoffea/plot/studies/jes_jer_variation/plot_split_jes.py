@@ -83,7 +83,7 @@ def smooth_histogram(x,y):
 
 # Bin selection should be one of the following:
 # Coarse, single bin, initial
-def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True, skimmed=True, 
+def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True, 
             bin_selection='initial', analysis='vbf', root_config={'save': False, 'file': None}, 
             tabulate_top5=False, use_monoj_binning=False, use_monov_binning=False, 
             plot_smooth=False, save_smooth=True
@@ -123,12 +123,12 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
 
     fig, ax = plt.subplots()
 
-    # Look at only certain variations if we are not to plot everything
-    vars_to_look_at = ['jesRelativeBal', f'jesRelativeSample_{year}', 'jesAbsolute', f'jesAbsolute_{year}', 'jesFlavorQCD', 'jesTotal']
+    # Plot only the largest variations
+    vars_to_plot = ['jesRelativeBal', f'jesRelativeSample_{year}', 'jesAbsolute', f'jesAbsolute_{year}', 'jesFlavorQCD', 'jesTotal']
     
     # Setup the color map
     colormap = plt.cm.nipy_spectral
-    num_plots = len(vars_to_look_at) if skimmed else 12
+    num_plots = len(vars_to_plot) 
     colors = []
     for i in np.linspace(0,0.9,num_plots):
         colors.append([colormap(i), colormap(i)])
@@ -155,13 +155,11 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
         h_var = h.integrate('region', region)
         var_label = region.name.replace(f'{region_to_use}{region_suffix}_', '')
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
-        if skimmed:
-            if var_label_skimmed not in vars_to_look_at:
-                continue
         # Do not plot JER for now
         if not plot_smooth:
             if not "jer" in region.name:
-                hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
+                if var_label_skimmed in vars_to_plot:
+                    hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
 
         edges = h_nom.axis(variable_to_use).edges()
         centers = h_nom.axis(variable_to_use).centers()
@@ -183,7 +181,8 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
 
         if plot_smooth:
             # Plot only the smoothed out distributions
-            ax.plot(centers, smooth_hist, label=var_label)
+            if var_label_skimmed in vars_to_plot:
+                ax.plot(centers, smooth_hist, label=var_label)
 
         # As we loop through each uncertainty source, save into ROOT file if this is requested
         if root_config['save']:
@@ -235,13 +234,18 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    if bin_selection == 'coarse':
-        fname = f'{dataset_tag}_splitJEC_skimmed_METbinsv2.pdf' if skimmed else f'{dataset_tag}_splitJEC_METbinsv2.pdf'
-    elif bin_selection == 'single bin':
-        fname = f'{dataset_tag}_splitJEC_skimmed_singlebin.pdf' if skimmed else f'{dataset_tag}_splitJEC_singlebin.pdf'
-    elif bin_selection == 'initial':
-        fname = f'{dataset_tag}_splitJEC_skimmed.pdf' if skimmed else f'{dataset_tag}_splitJEC.pdf'
-        
+    bin_tags = {
+        'coarse' : '_METbinsv2',
+        'single bin' : '_singlebin',
+        'initial' : ''
+    }
+
+    bin_tag = bin_tags[bin_selection]
+    if plot_smooth:
+        fname = f'{dataset_tag}_splitJEC{bin_tag}_smoothed.pdf'
+    else:
+        fname = f'{dataset_tag}_splitJEC{bin_tag}.pdf'
+
     outfile = pjoin(outdir, fname)
     fig.savefig(outfile)
     print(f'MSG% File saved: {outfile}')
@@ -617,12 +621,12 @@ def main():
                     # use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning
                     # )
         plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
-                    analysis=args.analysis, skimmed=True, bin_selection='initial',
+                    analysis=args.analysis, bin_selection='initial',
                     use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning, plot_smooth=True
                     )
         # Only save to ROOT file the unskimmed shapes
         total_variations_all[dataset_tag] = plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, 
-                    analysis=args.analysis, skimmed=False, bin_selection='initial', root_config=root_config,
+                    analysis=args.analysis, bin_selection='initial', root_config=root_config,
                     use_monoj_binning=args.use_monoj_binning, use_monov_binning=args.use_monov_binning, 
                     plot_smooth=False, save_smooth=True
                     )
