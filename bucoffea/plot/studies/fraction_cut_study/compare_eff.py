@@ -11,7 +11,7 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-def compare_eff(acc, outtag, region='cr_2m'):
+def compare_eff(acc, outtag, region='cr_2m', tight=False):
     '''Calculate the efficiency of neutral EM fraction cut as a function of the jet eta, plot the efficiency for data and MC.'''
     acc.load('ak4_eta0')
     h = acc['ak4_eta0']
@@ -25,15 +25,16 @@ def compare_eff(acc, outtag, region='cr_2m'):
         h_data = h.integrate('dataset', 'EGamma_2017')[re.compile('.*EmEF.*')]
         h_mc = h.integrate('dataset', re.compile('GJets_DR-0p4.*2017'))[re.compile('.*EmEF.*')]
     elif region == 'cr_2m':
-        h_data = h.integrate('dataset', 'DoubleMuon_2017')[re.compile('.*EmEF.*')]
+        h_data = h.integrate('dataset', 'SingleMuon_2017')[re.compile('.*EmEF.*')]
         h_mc = h.integrate('dataset', re.compile('DYJetsToLL.*2017'))[re.compile('.*EmEF.*')]
 
     # Get the event yields with and without the fraction cut applied
-    h_data_withCut = h_data.integrate('region', f'{region}_withEmEF')
-    h_data_withoutCut = h_data.integrate('region', f'{region}_noEmEF')
+    cut_suffix = '_tightptcut' if tight else ''
+    h_data_withCut = h_data.integrate('region', f'{region}_withEmEF{cut_suffix}')
+    h_data_withoutCut = h_data.integrate('region', f'{region}_noEmEF{cut_suffix}')
 
-    h_mc_withCut = h_mc.integrate('region', f'{region}_withEmEF')
-    h_mc_withoutCut = h_mc.integrate('region', f'{region}_noEmEF')
+    h_mc_withCut = h_mc.integrate('region', f'{region}_withEmEF{cut_suffix}')
+    h_mc_withoutCut = h_mc.integrate('region', f'{region}_noEmEF{cut_suffix}')
 
     # Calculate and plot efficiencies for data and MC
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
@@ -45,7 +46,7 @@ def compare_eff(acc, outtag, region='cr_2m'):
     }
 
     labels = {
-        'data' : {'cr_2m' : 'Double Muon', 'cr_g' : 'Single Photon'},
+        'data' : {'cr_2m' : 'Single Muon', 'cr_g' : 'Single Photon'},
         'mc' : {'cr_2m' : 'DY', 'cr_g' : 'GJets'}
     }
 
@@ -74,7 +75,7 @@ def compare_eff(acc, outtag, region='cr_2m'):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'eff_comparison_data_mc_{region}.pdf')
+    outpath = pjoin(outdir, f'eff_comparison_data_mc_{region}{cut_suffix}.pdf')
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
@@ -101,7 +102,9 @@ def main():
     else:
         region = 'cr_g'
 
-    compare_eff(acc, outtag, region=region)
+    # Plot efficiency comparison plots both with the regular pt balance cut, and the tighter one (<0.1)
+    compare_eff(acc, outtag, region=region, tight=False)
+    compare_eff(acc, outtag, region=region, tight=True)
 
 if __name__ == '__main__':
     main()

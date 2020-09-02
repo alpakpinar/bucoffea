@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import argparse
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -23,6 +24,13 @@ XLABELS = {
     'met' : r'$p_T^{miss}$ (GeV)'
 }
 
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Path to merged coffea files.')
+    parser.add_argument('--plot_data_mc', help='If this is specified, data/MC plots will be plotted.', action='store_true')
+    args = parser.parse_args()
+    return args
+
 def preprocess(h, acc, variable):
     '''Preprocessing for histograms: scaling + rebinning.'''
     h = merge_extensions(h, acc, reweight_pu=False)
@@ -38,7 +46,7 @@ def preprocess(h, acc, variable):
     
     return h
 
-def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0'):
+def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', tight=False):
     '''Make the comparison plot for data or MC and save it.'''
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     hist.plot1d(h, ax=ax, overlay='region')
@@ -60,8 +68,9 @@ def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0'):
         'color':'k'
     }
     # Plot the ratio
-    h_num = h.integrate('region', f'{region}_withEmEF')
-    h_denom = h.integrate('region', f'{region}_noEmEF')
+    cut_suffix = '_tightptcut' if tight else ''
+    h_num = h.integrate('region', f'{region}_withEmEF{cut_suffix}')
+    h_denom = h.integrate('region', f'{region}_noEmEF{cut_suffix}')
     hist.plotratio(h_num, h_denom, ax=rax, error_opts=data_err_opts, unc='num')
 
     rax.set_xlabel(XLABELS[variable])
@@ -74,12 +83,12 @@ def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0'):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outname = f'{variable}_comp_{region}_{mode}.pdf'
+    outname = f'{variable}_comp_{region}_{mode}{cut_suffix}.pdf'
     outpath = pjoin(outdir, outname)
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
-def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m'):
+def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m', tight=False):
     '''Plot spectrum for the given variable, with and without the EM fraction cut.'''
     acc.load(variable)
     h = acc[variable]
@@ -90,12 +99,12 @@ def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m'):
         h_data = h.integrate('dataset', 'EGamma_2017')[re.compile('.*EmEF.*')]
         h_mc = h.integrate('dataset', re.compile('GJets_DR-0p4.*2017'))[re.compile('.*EmEF.*')]
     elif region == 'cr_2m':
-        h_data = h.integrate('dataset', 'DoubleMuon_2017')[re.compile('.*EmEF.*')]
+        h_data = h.integrate('dataset', 'SingleMuon_2017')[re.compile('.*EmEF.*')]
         h_mc = h.integrate('dataset', re.compile('DYJetsToLL.*2017'))[re.compile('.*EmEF.*')]
 
     # Make the plots for data and MC
-    make_plot(h_data, outtag, mode='data', variable=variable, region=region)
-    make_plot(h_mc, outtag, mode='mc', variable=variable, region=region)
+    make_plot(h_data, outtag, mode='data', variable=variable, region=region, tight=tight)
+    make_plot(h_mc, outtag, mode='mc', variable=variable, region=region, tight=tight)
 
 def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', region='cr_2m'):
     '''Plot data/MC comparison for the given variable, with or without the EM fraction cut.'''
@@ -127,7 +136,7 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', 
         h_num = h.integrate('dataset', 'EGamma_2017')
         h_denom = h.integrate('dataset', re.compile('GJets_DR-0p4.*2017'))
     elif region == 'cr_2m':
-        h_num = h.integrate('dataset', 'DoubleMuon_2017')
+        h_num = h.integrate('dataset', 'SingleMuon_2017')
         h_denom = h.integrate('dataset', re.compile('DYJetsToLL.*2017'))
         
     hist.plotratio(h_num, h_denom, ax=rax, error_opts=data_err_opts, unc='num')
@@ -157,7 +166,9 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', 
     print(f'File saved: {outpath}')
 
 def main():
-    inpath = sys.argv[1]
+    args = parse_cli()
+    inpath = args.inpath
+    
     acc = dir_archive(
         inpath,
         serialized=True,
@@ -183,9 +194,13 @@ def main():
     variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0']
 
     for variable in variables:
-        plot_comparison(acc, outtag, variable=variable, region=region)
-        plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region)
-        plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region)
+        # Plot comparison with the normal pt balance cut and the tighter one
+        plot_comparison(acc, outtag, variable=variable, region=region, tight=False)
+        plot_comparison(acc, outtag, variable=variable, region=region, tight=True)
+        # Plot data/MC comparison plots before and after the EM fraction cut, if requested
+        if args.plot_data_mc:
+            plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region)
+            plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region)
 
 if __name__ == '__main__':
     main()
