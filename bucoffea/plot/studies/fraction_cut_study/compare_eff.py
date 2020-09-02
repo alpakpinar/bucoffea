@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import argparse
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -11,7 +12,14 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-def compare_eff(acc, outtag, region='cr_2m', tight=False):
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Path to merged coffea files.')
+    parser.add_argument('--rtypes', help='Region types: Tight, regular and nobal', nargs='*', default=['tight', 'regular', 'nobal'])
+    args = parser.parse_args()
+    return args
+
+def compare_eff(acc, outtag, region='cr_2m', rtype='regular'):
     '''Calculate the efficiency of neutral EM fraction cut as a function of the jet eta, plot the efficiency for data and MC.'''
     acc.load('ak4_eta0')
     h = acc['ak4_eta0']
@@ -29,7 +37,13 @@ def compare_eff(acc, outtag, region='cr_2m', tight=False):
         h_mc = h.integrate('dataset', re.compile('DYJetsToLL.*2017'))[re.compile('.*EmEF.*')]
 
     # Get the event yields with and without the fraction cut applied
-    cut_suffix = '_tightptcut' if tight else ''
+    suffices = {
+        'tight' : '_tightptcut',
+        'nobal' : '_nobal',
+        'regular' : ''
+    }
+
+    cut_suffix = suffices[rtype]
     h_data_withCut = h_data.integrate('region', f'{region}_withEmEF{cut_suffix}')
     h_data_withoutCut = h_data.integrate('region', f'{region}_noEmEF{cut_suffix}')
 
@@ -80,7 +94,9 @@ def compare_eff(acc, outtag, region='cr_2m', tight=False):
     print(f'File saved: {outpath}')
 
 def main():
-    inpath = sys.argv[1]
+    args = parse_cli()
+    inpath = args.inpath
+
     acc = dir_archive(
         inpath,
         memsize=1e3,
@@ -103,8 +119,8 @@ def main():
         region = 'cr_g'
 
     # Plot efficiency comparison plots both with the regular pt balance cut, and the tighter one (<0.1)
-    compare_eff(acc, outtag, region=region, tight=False)
-    compare_eff(acc, outtag, region=region, tight=True)
+    for rtype in args.rtypes:
+        compare_eff(acc, outtag, region=region, rtype=rtype)
 
 if __name__ == '__main__':
     main()
