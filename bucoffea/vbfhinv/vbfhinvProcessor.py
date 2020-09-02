@@ -68,6 +68,7 @@ def zmumu_jet_selection(df, selection, dimuons, leadak4, met_pt, ak4):
     # Add balance cut for the pt of Z and the jet
     df['z_pt_over_jet_pt'] = (z_pt.max() / leadak4.pt.max()) - 1
     selection.add('z_pt_over_jet_pt', np.abs(df['z_pt_over_jet_pt']) < 0.15)
+    selection.add('z_pt_over_jet_pt_tight', np.abs(df['z_pt_over_jet_pt']) < 0.1)
 
     # Add in the single muon trigger selection
     single_mu_trig = cfg.TRIGGERS.MUON.SINGLE[0]
