@@ -69,7 +69,7 @@ def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
-    parser.add_argument('--run', help='Which samples to run on: qcd, ewk.', nargs='*')
+    parser.add_argument('--run', help='Which samples to run on: qcd, ewk.', nargs='*', default=['qcd', 'ewk'])
     parser.add_argument('--onlyRun', help='Specify regex to only run over some transfer factors and skip others.')
     parser.add_argument('--tabulate', help='Tabulate the variation/unc values.', action='store_true')
     args = parser.parse_args()
@@ -129,9 +129,9 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     
     # Setup the color map
     colormap = plt.cm.nipy_spectral
-    num_plots = len(vars_to_look_at) if skimmed else 13 # 12 JES variations + 1 JER variation
-    colors = []
-    for i in np.linspace(0,0.9,num_plots):
+    num_plots = len(vars_to_look_at) if skimmed else 12 # 12 JES sub-variations
+    colors = [[colormap(0)]]
+    for i in np.linspace(0.1,0.9,num_plots):
         colors.append([colormap(i), colormap(i)])
 
     # Flatten the color list
@@ -159,41 +159,18 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         h_varied_den = h_den.integrate('region', re.compile(f'^{region_for_den}$'))
 
         # Get the varied ratio and store it
-        if 'jer' not in region.name:
-            varied_ratio = h_varied_num.values()[()] / h_varied_den.values()[()]
-            dratio = varied_ratio / nominal_ratio
-            ax.plot(centers, dratio, marker='o', label=var_label)
+        varied_ratio = h_varied_num.values()[()] / h_varied_den.values()[()]
+        dratio = varied_ratio / nominal_ratio
+        ax.plot(centers, dratio, marker='o', label=var_label)
 
-            # Save the uncertainties to an output root file
-            hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
-            outputrootfile[hist_name] = (dratio, edges)
-    
-            # Store the uncs and variations
-            uncs[var_label] = np.abs(dratio - 1) * 100
-            varied[var_label] = varied_ratio
+        # Save the uncertainties to an output root file
+        hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
+        outputrootfile[hist_name] = (dratio, edges)
 
-        else:
-            varied_ratio_jerUp = h_varied_num.values()[()] / h_varied_den.values()[()]
-            varied_ratio_jerDown = nominal_ratio - (varied_ratio_jerUp - nominal_ratio)
+        # Store the uncs and variations
+        uncs[var_label] = np.abs(dratio - 1) * 100
+        varied[var_label] = varied_ratio
 
-            dratio_jerUp = varied_ratio_jerUp / nominal_ratio
-            dratio_jerDown = varied_ratio_jerDown / nominal_ratio
-
-            ax.plot(centers, dratio_jerUp, marker='o', label='JER up')
-            ax.plot(centers, dratio_jerDown, marker='o', label='JER down')
-
-            # Save the uncertainties to an output root file
-            hist_name_jerUp = f'{transfer_factor_tag}_{process}_jerUp'
-            hist_name_jerDown = f'{transfer_factor_tag}_{process}_jerDown'
-            outputrootfile[hist_name_jerUp] = (dratio_jerUp, edges)
-            outputrootfile[hist_name_jerDown] = (dratio_jerDown, edges)
-    
-            # Store the uncs and variations
-            uncs['_jerUp'] = np.abs(dratio_jerUp - 1) * 100
-            uncs['_jerDown'] = np.abs(dratio_jerDown - 1) * 100
-            varied['_jerUp'] = varied_ratio_jerUp
-            varied['_jerDown'] = varied_ratio_jerDown
-    
         if skimmed:
             if var_label_skimmed not in vars_to_look_at:
                 continue
