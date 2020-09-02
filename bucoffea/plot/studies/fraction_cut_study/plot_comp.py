@@ -64,7 +64,7 @@ def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', tight=
     ax.set_yscale('log')
     ax.set_ylim(1e-1,1e8)
     titles = {
-        'data' : {'cr_g': 'Single Photon 2017', 'cr_2m': 'Double Muon 2017'},
+        'data' : {'cr_g': 'Single Photon 2017', 'cr_2m': 'Single Muon 2017'},
         'mc' : {'cr_g': 'GJets 2017', 'cr_2m': 'DY 2017'}
     }
     ax.set_title(titles[mode][region])
