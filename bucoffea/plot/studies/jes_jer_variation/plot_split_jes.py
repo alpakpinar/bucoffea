@@ -34,8 +34,8 @@ titles = {
     'ZJetsToNuNu2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties',
     'EWKZ2Jets_ZToNuNu2017' : r'EWK $Z(\nu\nu) \ 2017$ split JEC uncertainties',
     'EWKZ2Jets_ZToNuNu2018' : r'EWK $Z(\nu\nu) \ 2018$ split JEC uncertainties',
-    'WJetsToLNu2017' : r'$W(\ell\nu) \ 2017$ split JEC uncertainties',
-    'WJetsToLNu2018' : r'$W(\ell\nu) \ 2018$ split JEC uncertainties'
+    'TTJets2017' : r'$t\bar{t} + jets \ 2017$ split JEC uncertainties',
+    'TTJets2018' : r'$t\bar{t} + jets \ 2018$ split JEC uncertainties'
 }
 
 titles_two_nuisances = {
@@ -67,7 +67,7 @@ def parse_cli():
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
-    parser.add_argument('--onlyRun', help='Specify regex to only run over some transfer factors and skip others.')
+    parser.add_argument('--onlyRun', help='Specify regex to only run over some samples and skip others.')
     parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
     parser.add_argument('--tabulate', help='Tabulate unc/variation values.', action='store_true')
     parser.add_argument('--znunu2016', help='Only run over Z(vv) 2016.', action='store_true')
@@ -103,7 +103,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
     h = merge_datasets(h)
 
     # Determine the region to take the data from
-    if re.match('(GluGlu|VBF|ZJets|EWKZ|WJets).*', dataset_tag):
+    if re.match('(GluGlu|VBF|ZJets|EWKZ|WJets|TTJets).*', dataset_tag):
         region_to_use = 'sr'
     else:
         raise NotImplementedError('Not implemented for this region yet.')
@@ -569,7 +569,8 @@ def main():
 
     # If requested so, only run over Z(nunu) 2016
     if not args.znunu2016:
-        dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'EWKZ2Jets_ZToNuNu2017', 'EWKZ2Jets_ZToNuNu2018', 'VBF2017', 'VBF2018']
+        dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'EWKZ2Jets_ZToNuNu2017', 'EWKZ2Jets_ZToNuNu2018', 
+                    'VBF2017', 'VBF2018', 'TTJets2017', 'TTJets2018']
     else:
         dataset_tags = ['ZJetsToNuNu2016']
 
