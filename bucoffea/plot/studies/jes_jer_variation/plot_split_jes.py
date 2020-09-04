@@ -34,8 +34,8 @@ titles = {
     'ZJetsToNuNu2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties',
     'EWKZ2Jets_ZToNuNu2017' : r'EWK $Z(\nu\nu) \ 2017$ split JEC uncertainties',
     'EWKZ2Jets_ZToNuNu2018' : r'EWK $Z(\nu\nu) \ 2018$ split JEC uncertainties',
-    'TTJets2017' : r'$t\bar{t} + jets \ 2017$ split JEC uncertainties',
-    'TTJets2018' : r'$t\bar{t} + jets \ 2018$ split JEC uncertainties'
+    'Top_FXFX2017' : r'$t\bar{t} + jets \ 2017$ split JEC uncertainties',
+    'Top_FXFX2018' : r'$t\bar{t} + jets \ 2018$ split JEC uncertainties'
 }
 
 titles_two_nuisances = {
@@ -103,7 +103,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
     h = merge_datasets(h)
 
     # Determine the region to take the data from
-    if re.match('(GluGlu|VBF|ZJets|EWKZ|WJets|TTJets).*', dataset_tag):
+    if re.match('(GluGlu|VBF|ZJets|EWKZ|WJets|Top).*', dataset_tag):
         region_to_use = 'sr'
     else:
         raise NotImplementedError('Not implemented for this region yet.')
@@ -570,7 +570,7 @@ def main():
     # If requested so, only run over Z(nunu) 2016
     if not args.znunu2016:
         dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'EWKZ2Jets_ZToNuNu2017', 'EWKZ2Jets_ZToNuNu2018', 
-                    'VBF2017', 'VBF2018', 'TTJets2017', 'TTJets2018']
+                    'VBF2017', 'VBF2018', 'Top_FXFX2017', 'Top_FXFX2018']
     else:
         dataset_tags = ['ZJetsToNuNu2016']
 
