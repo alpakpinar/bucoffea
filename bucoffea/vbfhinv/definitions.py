@@ -283,11 +283,19 @@ def vbfhinv_regions(cfg):
             # Two new regions for the efficency study for G+jets samples:
             # Select events with one good photon and back-to-back jet, create two regions with and without
             # the neutral EM energy fraction cut applied on the jet.
-            regions['cr_g_noEmEF']   = ['trig_photon', 'one_photon', 'at_least_one_tight_photon', 
-                        'photon_pt', 'lead_ak4_pt_eta', 'lead_ak4_id', 'exactly_one_jet', 'dphi_photon_jet', 'met_pt']
-                        
-            regions['cr_g_withEmEF'] = ['trig_photon', 'one_photon', 'at_least_one_tight_photon', 
-                        'photon_pt', 'lead_ak4_pt_eta', 'lead_ak4_id', 'exactly_one_jet', 'dphi_photon_jet', 'met_pt', 'ak4_neEmEF']
+            g_cuts = ['trig_photon', 
+                      'one_photon', 
+                      'at_least_one_tight_photon', 
+                      'photon_pt', 
+                      'lead_ak4_pt_eta', 
+                      'lead_ak4_id', 
+                      'exactly_one_jet', 
+                      'dphi_photon_jet', 
+                      'met_pt'
+                      ]
+
+            regions['cr_g_noEmEF'] = g_cuts
+            regions['cr_g_withEmEF'] = g_cuts + ['ak4_neEmEF']
 
         elif cfg.RUN.EFF_STUDY.EVENTS == 'Zmumu':
             # Same logic, but for Zmumu events
