@@ -44,7 +44,7 @@ def compare_data(acc, outtag, variable='ak4_eta0'):
             h = h.rebin(variable, REBIN[variable])
 
     # Get the MET dataset
-    h = h.integrate('dataset', 'MET_2017')[re.compile('^sr_vbf((?!veto_all).)*$')]
+    h = h.integrate('dataset', 'MET_2017')[re.compile('^sr_vbf((?!(veto_all|leadak4)).)*$')]
 
     # Plot comparison
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
@@ -66,15 +66,15 @@ def compare_data(acc, outtag, variable='ak4_eta0'):
     h_sr_vbf = h.integrate('region', 'sr_vbf')
     h_eemitigation_v1 = h.integrate('region', 'sr_vbf_eemitigationv1')
     h_eemitigation_v2 = h.integrate('region', 'sr_vbf_eemitigationv2')
-    h_eemitigation_v1_vetohfhf = h.integrate('region', 'sr_vbf_eemitigationv1_vetohfhf')
+    h_eemitigation_v3 = h.integrate('region', 'sr_vbf_eemitigationv3')
 
     centers = h_sr_vbf.axes()[0].centers(overflow='over')
     r_eemitigation_v1 = h_eemitigation_v1.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
     r_eemitigation_v2 = h_eemitigation_v2.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
-    r_eemitigation_v1_vetohfhf = h_eemitigation_v1_vetohfhf.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
+    r_eemitigation_v3 = h_eemitigation_v3.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
     rax.plot(centers, r_eemitigation_v1, ls='', marker='o', label='EEv1')
     rax.plot(centers, r_eemitigation_v2, ls='', marker='o', label='EEv2')
-    rax.plot(centers, r_eemitigation_v1_vetohfhf, ls='', marker='o', label='EEv1 + HF-HF veto')
+    rax.plot(centers, r_eemitigation_v3, ls='', marker='o', label='EEv3')
     
     rax.grid(True)
     rax.set_ylim(0.8,1.2)

@@ -24,9 +24,6 @@ def compute_loss(h_nom, h_mitigated):
     bins = h_nom.axes()[0].edges(overflow='over')
     bin_widths = np.diff(bins)
 
-    print(vals_nom)
-    print(vals_mitigated)
-
     integral_nom = np.sum(vals_nom * bin_widths)
     integral_mitigated = np.sum(vals_mitigated * bin_widths)
 
@@ -48,7 +45,7 @@ def compare_signal(acc, outtag, variable='mjj'):
         h = h.rebin(variable, REBIN[variable])
 
     # Get the signal dataset
-    h = h.integrate('dataset', re.compile('VBF_HToInv.*2017'))[re.compile('^sr_vbf((?!veto_all).)*$')]
+    h = h.integrate('dataset', re.compile('VBF_HToInv.*2017'))[re.compile('^sr_vbf((?!(veto_all|leadak4)).)*$')]
 
     # Plot comparison
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
@@ -62,28 +59,33 @@ def compare_signal(acc, outtag, variable='mjj'):
     h_sr_vbf = h.integrate('region', 'sr_vbf')
     h_eemitigation_v1 = h.integrate('region', 'sr_vbf_eemitigationv1')
     h_eemitigation_v2 = h.integrate('region', 'sr_vbf_eemitigationv2')
-    h_eemitigation_v1_vetohfhf = h.integrate('region', 'sr_vbf_eemitigationv1_vetohfhf')
+    h_eemitigation_v3 = h.integrate('region', 'sr_vbf_eemitigationv3')
 
     # Compute the percent losses in yield for both mitigation strategies
     loss_v1 = compute_loss(h_sr_vbf, h_eemitigation_v1)
     loss_v2 = compute_loss(h_sr_vbf, h_eemitigation_v2)
-    loss_v1_vetohfhf = compute_loss(h_sr_vbf, h_eemitigation_v1_vetohfhf)
+    loss_v3 = compute_loss(h_sr_vbf, h_eemitigation_v3)
+
+    # Losses from each cut
+    ax.text(0.05,0.9,f'Loss v1: {loss_v1:.3f}%', fontsize=10, transform=ax.transAxes)
+    ax.text(0.05,0.8,f'Loss v2: {loss_v2:.3f}%', fontsize=10, transform=ax.transAxes)
+    ax.text(0.05,0.7,f'Loss v3: {loss_v3:.3f}%', fontsize=10, transform=ax.transAxes)
 
     centers = h_sr_vbf.axes()[0].centers(overflow='over')
     r_eemitigation_v1 = h_eemitigation_v1.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
     r_eemitigation_v2 = h_eemitigation_v2.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
-    r_eemitigation_v1_vetohfhf = h_eemitigation_v1_vetohfhf.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
+    r_eemitigation_v3 = h_eemitigation_v3.values(overflow='over')[()] / h_sr_vbf.values(overflow='over')[()]
     rax.plot(centers, r_eemitigation_v1, ls='', marker='o', label='EEv1')
     rax.plot(centers, r_eemitigation_v2, ls='', marker='o', label='EEv2')
-    rax.plot(centers, r_eemitigation_v1_vetohfhf, ls='', marker='o', label='EEv1 + HF-HF veto')
+    rax.plot(centers, r_eemitigation_v3, ls='', marker='o', label='EEv3')
     
     rax.grid(True)
-    rax.set_ylim(0.9,1.1)
+    rax.set_ylim(0.8,1.2)
     rax.set_ylabel('Ratio to nominal SR')
     rax.set_xlabel(r'$M_{jj} \ (GeV)$')
     rax.legend(ncol=3)
 
-    loc = matplotlib.ticker.MultipleLocator(base=0.05)
+    loc = matplotlib.ticker.MultipleLocator(base=0.1)
     rax.yaxis.set_major_locator(loc)
 
     # Save figure
