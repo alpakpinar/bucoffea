@@ -419,11 +419,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
         if not df['is_data']:
             weights.add('gen', df['Generator_weight'])
 
-            try:
-                weights.add('prefire', df['PrefireWeight'])
-            except KeyError:
-                weights.add('prefire', np.ones(df.size))
-
             weights = candidate_weights(weights, df, evaluator, muons, electrons, photons, cfg)
             weights = pileup_weights(weights, df, evaluator, cfg)
             if not (gen_v_pt is None):
@@ -504,6 +499,25 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         ]
                     region_weights.add("veto",veto_weights.partial_weight(include=["nominal"]))
 
+                # For specific regions, include prefire weight up/down variations, instead of the central value
+                if re.match('^.*EmEF.*Up$', region):
+                    try:
+                        region_weights.add('prefire', df['PrefireWeight_Up'])
+                    except KeyError:
+                        region_weights.add('prefire', np.ones(df.size))
+                    
+                elif re.match('^.*EmEF.*Down$', region):
+                    try:
+                        region_weights.add('prefire', df['PrefireWeight_Down'])
+                    except KeyError:
+                        region_weights.add('prefire', np.ones(df.size))
+                    
+                # Apply regular prefire weights to other regions
+                else:
+                    try:
+                        region_weights.add('prefire', df['PrefireWeight'])
+                    except KeyError:
+                        region_weights.add('prefire', np.ones(df.size))
 
             # This is the default weight for this region
             rweight = region_weights.partial_weight(exclude=exclude)

@@ -221,10 +221,9 @@ default:
       save: True
       events: Zmumu
       regions:
-        - nobal
         - regular
-        - tight 
       gen_check: False
+      vary_prefire: True
     save:
       passing: False
       tree: False
