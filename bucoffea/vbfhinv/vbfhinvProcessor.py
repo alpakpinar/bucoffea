@@ -378,6 +378,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             selection.add('exactly_one_jet', ak4.counts==1)
             # Neutral EM energy fraction cut on the jet
             selection.add('ak4_neEmEF', (lead_ak4.nef < 0.7).any())
+            ak4_neEmEF_eeOnly = (lead_ak4.nef > 0.7) & (lead_ak4.abseta > 2.5) & (lead_ak4.abseta < 3.0)
+            selection.add('ak4_neEmEF_eeOnly', ~ak4_neEmEF_eeOnly.any())
             # MET cut
             selection.add('met_pt', met_pt < 50)
 

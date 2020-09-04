@@ -323,7 +323,8 @@ def vbfhinv_regions(cfg):
             if 'regular' in cfg.RUN.EFF_STUDY.REGIONS:
                 regions['cr_2m_noEmEF'] = two_mu_cuts  
                 regions['cr_2m_withEmEF'] = two_mu_cuts + ['ak4_neEmEF']
-                        
+                regions['cr_2m_withEmEF_eeOnly'] = two_mu_cuts + ['ak4_neEmEF_eeOnly']
+                
                 # Regions with prefire weights varied
                 if cfg.RUN.EFF_STUDY.VARY_PREFIRE:
                     regions['cr_2m_noEmEF_prefireUp'] = two_mu_cuts
