@@ -283,9 +283,9 @@ def vbfhinv_regions(cfg):
 
     if cfg and cfg.RUN.MITIGATION_CUT_STUDY:
         # Two different signal regions with two different cleaning cuts
-        regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1']
+        regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1', 'veto_hfhf']
         regions['sr_vbf_eemitigationv2'] = regions['sr_vbf'] + ['eemitigation_v2']
-        regions['sr_vbf_eemitigationv1_vetohfhf'] = regions['sr_vbf'] + ['eemitigation_v1', 'veto_hfhf']
+        regions['sr_vbf_eemitigationv3'] = regions['sr_vbf'] + ['eemitigation_v3']
 
         regions['sr_vbf_leadak4_ee'] = regions['sr_vbf'] + ['leadak4_ee']
         regions['sr_vbf_leadak4_ee_pt'] = regions['sr_vbf'] + ['leadak4_ee', 'leadak4_pt']
