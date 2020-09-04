@@ -28,7 +28,8 @@ XLABELS = {
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path to merged coffea files.')
-    parser.add_argument('--rtypes', help='Region types: Tight, regular and nobal', nargs='*', default=['tight', 'regular', 'nobal'])
+    parser.add_argument('--years', help='Years to plot.', nargs='*', type=int, default=[2017, 2018])
+    parser.add_argument('--rtypes', help='Region types: Tight, regular and nobal', nargs='*', default=['regular'])
     parser.add_argument('--plot_data_mc', help='If this is specified, data/MC plots will be plotted.', action='store_true')
     args = parser.parse_args()
     return args
@@ -48,7 +49,7 @@ def preprocess(h, acc, variable):
     
     return h
 
-def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', rtype='regular'):
+def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', rtype='regular', year=2017):
     '''Make the comparison plot for data or MC and save it.'''
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
 
@@ -75,8 +76,8 @@ def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', rtype=
     ax.set_yscale('log')
     ax.set_ylim(1e-1,1e8)
     titles = {
-        'data' : {'cr_g': 'Single Photon 2017', 'cr_2m': 'Single Muon 2017'},
-        'mc' : {'cr_g': 'GJets 2017', 'cr_2m': 'DY 2017'}
+        'data' : {'cr_g': f'Single Photon {year}', 'cr_2m': f'Single Muon {year}'},
+        'mc' : {'cr_g': f'GJets {year}', 'cr_2m': f'DY {year}'}
     }
     ax.set_title(titles[mode][region])
 
@@ -94,19 +95,22 @@ def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', rtype=
     rax.set_xlabel(XLABELS[variable])
     rax.set_ylabel('With cut / without cut')
     rax.grid(True)
-    rax.set_ylim(0.8, 1.2)
+    if year == 2017:
+        rax.set_ylim(0.8, 1.2)
+    elif year == 2018:
+        rax.set_ylim(0.7, 1.3)
 
     # Save the figure
     outdir = f'./output/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outname = f'{variable}_comp_{region}_{mode}{cut_suffix}.pdf'
+    outname = f'{variable}_comp_{region}_{mode}{cut_suffix}_{year}.pdf'
     outpath = pjoin(outdir, outname)
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
-def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m', rtype='regular'):
+def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m', rtype='regular', year=2017):
     '''Plot spectrum for the given variable, with and without the EM fraction cut.'''
     acc.load(variable)
     h = acc[variable]
@@ -114,17 +118,34 @@ def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m', rtype='regu
 
     # Get data and MC, for GJets or Zmumu events
     if region == 'cr_g':
-        h_data = h.integrate('dataset', 'EGamma_2017')[re.compile('.*EmEF.*')]
-        h_mc = h.integrate('dataset', re.compile('GJets_DR-0p4.*2017'))[re.compile('.*EmEF.*')]
+        h_data = h.integrate('dataset', f'EGamma_{year}')[re.compile('.*EmEF.*')]
+        h_mc = h.integrate('dataset', re.compile(f'GJets_DR-0p4.*{year}'))[re.compile('.*EmEF.*')]
     elif region == 'cr_2m':
-        h_data = h.integrate('dataset', 'SingleMuon_2017')[re.compile('.*EmEF.*')]
-        h_mc = h.integrate('dataset', re.compile('DYJetsToLL.*2017'))[re.compile('.*EmEF.*')]
+        h_data = h.integrate('dataset', f'SingleMuon_{year}')[re.compile('.*EmEF.*')]
+        h_mc = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}'))[re.compile('.*EmEF.*')]
 
     # Make the plots for data and MC
-    make_plot(h_data, outtag, mode='data', variable=variable, region=region, rtype=rtype)
-    make_plot(h_mc, outtag, mode='mc', variable=variable, region=region, rtype=rtype)
+    make_plot(h_data, outtag, mode='data', variable=variable, region=region, rtype=rtype, year=year)
+    make_plot(h_mc, outtag, mode='mc', variable=variable, region=region, rtype=rtype, year=year)
 
-def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', region='cr_2m', rtype='regular'):
+def plot_ee_comparison(acc, outtag, variable='ak4_eta0', region='cr_2m', year=2017):
+    '''Plot comparison of distributions when the jet fraction cut is applied on all jets vs.
+    it is applied only on jets in endcap.'''
+    acc.load(variable)
+    h = acc[variable]
+    h = preprocess(h, acc, variable)
+
+    # Get data and MC, for GJets or Zmumu events
+    if region == 'cr_g':
+        h_data = h.integrate('dataset', f'EGamma_{year}')[re.compile('.*EmEF.*')]
+        h_mc = h.integrate('dataset', re.compile(f'GJets_DR-0p4.*{year}'))[re.compile('.*EmEF.*')]
+    elif region == 'cr_2m':
+        h_data = h.integrate('dataset', f'SingleMuon_{year}')[re.compile('.*EmEF.*')]
+        h_mc = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}'))[re.compile('.*EmEF.*')]
+
+    
+
+def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', region='cr_2m', rtype='regular', year=2017):
     '''Plot data/MC comparison for the given variable, with or without the EM fraction cut.'''
     acc.load(variable)
     h = acc[variable]
@@ -159,11 +180,11 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', 
         'color':'k'
     }
     if region == 'cr_g':
-        h_num = h.integrate('dataset', 'EGamma_2017')
-        h_denom = h.integrate('dataset', re.compile('GJets_DR-0p4.*2017'))
+        h_num = h.integrate('dataset', f'EGamma_{year}')
+        h_denom = h.integrate('dataset', re.compile(f'GJets_DR-0p4.*{year}'))
     elif region == 'cr_2m':
-        h_num = h.integrate('dataset', 'SingleMuon_2017')
-        h_denom = h.integrate('dataset', re.compile('DYJetsToLL.*2017'))
+        h_num = h.integrate('dataset', f'SingleMuon_{year}')
+        h_denom = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}'))
         
     hist.plotratio(h_num, h_denom, ax=rax, error_opts=data_err_opts, unc='num')
 
@@ -186,7 +207,7 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', 
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outname = f'data_mc_comp_{variable}_{region}_{mode}{cut_suffix}.pdf'
+    outname = f'data_mc_comp_{variable}_{region}_{mode}{cut_suffix}_{year}.pdf'
     outpath = pjoin(outdir, outname)
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
@@ -211,22 +232,23 @@ def main():
         outtag = inpath.split('/')[-1]
 
     # Determine the type of events from the submission title
-    if 'zmumu' in outtag:
-        region = 'cr_2m'
-    else:
+    if 'gjets' in outtag:
         region = 'cr_g'
+    else:
+        region = 'cr_2m'
 
     # Variables to plot
     variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'z_pt_over_jet_pt']
 
-    for variable in variables:
-        for rtype in args.rtypes:
-            # Plot comparison with the normal pt balance cut and the tighter one
-            plot_comparison(acc, outtag, variable=variable, region=region, rtype=rtype)
-        # Plot data/MC comparison plots before and after the EM fraction cut, if requested
-        if args.plot_data_mc:
-            plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region, rtype=rtype)
-            plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region, rtype=rtype)
+    for year in args.years:
+        for variable in variables:
+            for rtype in args.rtypes:
+                # Plot comparison with the normal pt balance cut and the tighter one
+                plot_comparison(acc, outtag, variable=variable, region=region, rtype=rtype, year=year)
+            # Plot data/MC comparison plots before and after the EM fraction cut, if requested
+            if args.plot_data_mc:
+                plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region, rtype=rtype, year=year)
+                plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region, rtype=rtype, year=year)
 
 if __name__ == '__main__':
     main()
