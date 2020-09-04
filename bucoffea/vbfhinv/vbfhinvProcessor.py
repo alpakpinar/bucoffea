@@ -329,24 +329,14 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         # Another possible mitigation cut
         pt_over_met_leading_jet = diak4.i0.pt / met_pt
-        eemitigation_v2_leading_jet = (diak4.i0.pt > 100) & (diak4.i0.abseta > 2.9) & (diak4.i0.abseta < 3.3) \
+        eemitigation_v2 = (diak4.i0.pt > 100) & (diak4.i0.abseta > 2.9) & (diak4.i0.abseta < 3.3) \
                     & (dphi(diak4.i0.phi, met_phi) > 2.9) & (pt_over_met_leading_jet > 0.7) & (pt_over_met_leading_jet < 1.3)
-
-        pt_over_met_trailing_jet = diak4.i1.pt / met_pt
-        eemitigation_v2_trailing_jet = (diak4.i1.pt > 100) & (diak4.i1.abseta > 2.9) & (diak4.i1.abseta < 3.3) \
-                    & (dphi(diak4.i1.phi, met_phi) > 2.9) & (pt_over_met_trailing_jet > 0.7) & (pt_over_met_trailing_jet < 1.3)
-        
-        eemitigation_v2 = eemitigation_v2_leading_jet | eemitigation_v2_trailing_jet
 
         selection.add('eemitigation_v2', ~eemitigation_v2.any())
 
-        eemitigation_v3_leading_jet = (diak4.i0.pt > 100) & (diak4.i0.abseta > 2.9) & (diak4.i0.abseta < 3.3) \
+        eemitigation_v3 = (diak4.i0.pt > 100) & (diak4.i0.abseta > 2.9) & (diak4.i0.abseta < 3.3) \
                     & (dphi(diak4.i0.phi, met_phi) > 2.5)
 
-        eemitigation_v3_trailing_jet = (diak4.i1.pt > 100) & (diak4.i1.abseta > 2.9) & (diak4.i1.abseta < 3.3) \
-                    & (dphi(diak4.i1.phi, met_phi) > 2.5)
-
-        eemitigation_v3 = eemitigation_v3_leading_jet | eemitigation_v3_trailing_jet
         selection.add('eemitigation_v3', ~eemitigation_v3.any())
 
         # Selections for additional SRs for investigation
