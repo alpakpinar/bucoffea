@@ -47,18 +47,18 @@ def compare_ee_signal(acc, outtag, variable='mjj', year=2017):
     h_ee = h.integrate('region', 'sr_vbf_eeOnly')
 
     # Percent of events we lose with the nominal cut, w.r.t. EE cut
-    r = h_nom.values(overflow='over')[()] / h_ee.values(overflow='over')[()]
+    r = h_ee.values(overflow='over')[()] / h_nom.values(overflow='over')[()]
     centers = h_nom.axes()[0].centers(overflow='over')
     rax.plot(centers, r, ls='', marker='o', color='black')
 
     rax.grid(True)
     rax.set_ylim(0.8,1.2)
     rax.set_xlabel(r'$M_{jj} \ (GeV)$')
-    rax.set_ylabel('Nominal cut / EE-only cut')
+    rax.set_ylabel('EE-only cut / Nominal cut')
 
     xlim = rax.get_xlim()
-    rax.plot(xlim, [0.95, 0.95], 'r--')
     rax.plot(xlim, [1.0, 1.0], 'r--')
+    rax.plot(xlim, [1.05, 1.05], 'r--')
     rax.set_xlim(xlim)
 
     # Save figure
