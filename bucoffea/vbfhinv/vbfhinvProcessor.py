@@ -294,6 +294,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         selection.add('max_neEmEF_eeOnly', ~max_neEmEF_eeOnly.any())
 
+        selection.add('ak40_largeEmEF', (diak4.i0.nef>0.7).any())
+        selection.add('ak41_largeEmEF', (diak4.i1.nef>0.7).any())
+
         vec_b = calculate_vecB(ak4, met_pt, met_phi)
         vec_dphi = calculate_vecDPhi(ak4, met_pt, met_phi, df['TkMET_phi'])
 
