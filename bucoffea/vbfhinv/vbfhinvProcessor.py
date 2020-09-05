@@ -32,7 +32,8 @@ from bucoffea.helpers.dataset import (
                                       is_lo_znunu_ewk,
                                       is_lo_zll_ewk,
                                       is_nlo_w,
-                                      is_nlo_z
+                                      is_nlo_z,
+                                      is_ttbar
                                       )
 from bucoffea.helpers.gen import (
                                   setup_gen_candidates,
@@ -254,9 +255,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
         df['is_lo_zll'] = is_lo_dy(dataset)
         df['is_lo_znunu_ewk'] = is_lo_znunu_ewk(dataset)
         df['is_lo_zll_ewk'] = is_lo_zll_ewk(dataset)
+        df['is_ttbar'] = is_ttbar(dataset)
 
         # Determine which regions are going to be processed
-        if df['is_lo_znunu'] or df ['is_lo_znunu_ewk']:
+        if df['is_lo_znunu'] or df ['is_lo_znunu_ewk'] or df['is_ttbar']:
             region_regex = 'sr_.*vbf.*'
         elif df['is_lo_zll'] or df['is_lo_zll_ewk']:
             region_regex = 'cr_2(e|m).*vbf.*'

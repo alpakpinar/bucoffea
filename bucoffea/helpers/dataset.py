@@ -41,6 +41,9 @@ def is_nlo_z(dataset):
 def is_nlo_w(dataset):
     return bool(re.match(r'W(\d*)Jet.*FXFX.*', dataset))
 
+def is_ttbar(dataset):
+    return bool(re.match(r'TTJets.*', dataset))
+
 def has_v_jet(dataset):
     return bool(re.match(r'(WW|WZ|ZZ|TTJets|TTToHadronic|.*WToQQ|.*ZToQQ).*', dataset))
 
