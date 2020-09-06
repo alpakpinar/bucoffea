@@ -136,6 +136,39 @@ def plot_settings():
                 'ylim' : (1e-1,1e6)
             }
         },
+        'sr_vbf_noHFHFveto' : {
+            'mjj' :  {
+                'ylim' : (1e-3,1e5)
+            },
+            'ak4_eta0' : {
+                'ylim' : (1e-3,1e8)
+            },
+            'detajj' : {
+                'ylim' : (1e-1,1e6)
+            }
+        },
+        'sr_vbf_noJetsInHF' : {
+            'mjj' :  {
+                'ylim' : (1e-3,1e5)
+            },
+            'ak4_eta0' : {
+                'ylim' : (1e-3,1e8)
+            },
+            'detajj' : {
+                'ylim' : (1e-1,1e6)
+            }
+        },
+        'sr_vbf_noJetsInHF_noCleaningCuts' : {
+            'mjj' :  {
+                'ylim' : (1e-3,1e5)
+            },
+            'ak4_eta0' : {
+                'ylim' : (1e-3,1e8)
+            },
+            'detajj' : {
+                'ylim' : (1e-1,1e6)
+            },
+        },
         'sr_j' : {
             'recoil' : {
                 'ylim' : (1e-3,1e4)
