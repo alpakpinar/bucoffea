@@ -57,10 +57,7 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    if inpath.endswith('/'):
-        outtag = inpath.split('/')[-2]
-    else:
-        outtag = inpath.split('/')[-1]
+    outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
     for year in [2017, 2018]:
         plot_jet_eta(acc, outtag, year=year, jet='leading')
