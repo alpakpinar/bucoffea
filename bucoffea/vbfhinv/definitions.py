@@ -230,6 +230,15 @@ def vbfhinv_regions(cfg):
 
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation', 'max_neEmEF', 'veto_hfhf']
+    
+    # Signal region: "No jets in HF category"
+    regions['sr_vbf_noJetsInHF'] = regions['sr_vbf'] + ['no_jets_in_hf']
+    regions['sr_vbf_noJetsInHF'].remove('veto_hfhf')
+
+    # "No jets in HF category" without the cleaning cuts applied
+    regions['sr_vbf_noJetsInHF_noCleaningCuts'] = copy.deepcopy(regions['sr_vbf_noJetsInHF'])
+    regions['sr_vbf_noJetsInHF_noCleaningCuts'].remove('eemitigation')
+    regions['sr_vbf_noJetsInHF_noCleaningCuts'].remove('max_neEmEF')
 
     # For sync mode
     if cfg and cfg.RUN.SYNC:
