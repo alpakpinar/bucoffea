@@ -236,6 +236,9 @@ def vbfhinv_regions(cfg):
     regions['sr_vbf_noJetsInHF'] = regions['sr_vbf'] + ['no_jets_in_hf']
     regions['sr_vbf_noJetsInHF'].remove('veto_hfhf')
 
+    regions['sr_vbf_noJetsInHF_noEmEFCut'] = copy.deepcopy(regions['sr_vbf_noJetsInHF'])
+    regions['sr_vbf_noJetsInHF_noEmEFCut'].remove('max_neEmEF')
+
     # "No jets in HF category" without the cleaning cuts applied
     regions['sr_vbf_noJetsInHF_noCleaningCuts'] = copy.deepcopy(regions['sr_vbf_noJetsInHF'])
     regions['sr_vbf_noJetsInHF_noCleaningCuts'].remove('eemitigation')
