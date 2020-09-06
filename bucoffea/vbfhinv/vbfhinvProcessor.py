@@ -339,6 +339,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         selection.add('eemitigation_v3', ~eemitigation_v3.any())
 
+        # Selection to identify events that pass "v3" selection, but fail the "v1" one
+        pass_v3_fail_v1 = (~eemitigation_v3.any()) & (~eemitigation_v1)
+        selection.add('passv3_failv1', pass_v3_fail_v1)
+
         # Selections for additional SRs for investigation
         lead_ak4_in_transition_region = (diak4.i0.abseta > 2.9) & (diak4.i0.abseta < 3.3)
         selection.add('leadak4_ee', lead_ak4_in_transition_region.any())

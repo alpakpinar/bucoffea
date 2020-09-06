@@ -286,6 +286,7 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1', 'veto_hfhf']
         regions['sr_vbf_eemitigationv2'] = regions['sr_vbf'] + ['eemitigation_v2']
         regions['sr_vbf_eemitigationv3'] = regions['sr_vbf'] + ['eemitigation_v3']
+        regions['sr_vbf_passv3_failv1'] = regions['sr_vbf'] + ['passv3_failv1']
 
         regions['sr_vbf_leadak4_ee'] = regions['sr_vbf'] + ['leadak4_ee']
         regions['sr_vbf_leadak4_ee_pt'] = regions['sr_vbf'] + ['leadak4_ee', 'leadak4_pt']
