@@ -13,8 +13,9 @@ from pprint import pprint
 pjoin = os.path.join
 
 REBIN = {
-    'ak4_pt0' : hist.Bin('jetpt', r'Jet $p_T$ (GeV)', 25, 0, 1000),
-    'met' : hist.Bin('met', r'$p_T^{miss}$ (GeV)', list(range(0,500,50)))
+    'ak4_pt0' : hist.Bin('jetpt', r'Jet $p_T$ (GeV)', 20, 0, 1000),
+    'met' : hist.Bin('met', r'$p_T^{miss}$ (GeV)', list(range(0,500,50))),
+    'muon_pt0' : hist.Bin('pt',r'Leading muon $p_{T}$ (GeV)',list(range(0,600,20)))
 }
 
 XLABELS = {
@@ -22,7 +23,8 @@ XLABELS = {
     'ak4_eta0' : r'Jet $\eta$',
     'ak4_nef0' : 'Jet Neutral EM Fraction',
     'met' : r'$p_T^{miss}$ (GeV)',
-    'z_pt_over_jet_pt' : r'$p_T^Z / p_T^j - 1$'
+    'z_pt_over_jet_pt' : r'$p_T^Z / p_T^j - 1$',
+    'muon_pt0' : r'Leading $\mu \ p_T \ (GeV)$'
 }
 
 def parse_cli():
@@ -46,7 +48,9 @@ def preprocess(h, acc, variable):
             h = h.rebin('jetpt', REBIN[variable])
         elif variable == 'met':
             h = h.rebin('met', REBIN[variable])
-    
+        elif variable == 'muon_pt0':
+            h = h.rebin('pt', REBIN[variable])
+
     return h
 
 def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', rtype='regular', year=2017):
@@ -238,7 +242,7 @@ def main():
         region = 'cr_2m'
 
     # Variables to plot
-    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'z_pt_over_jet_pt']
+    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'z_pt_over_jet_pt', 'muon_pt0']
 
     for year in args.years:
         for variable in variables:
