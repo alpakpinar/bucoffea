@@ -230,6 +230,7 @@ def vbfhinv_regions(cfg):
 
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation', 'max_neEmEF', 'veto_hfhf']
+    regions['sr_vbf_noHFHFveto'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation', 'max_neEmEF']
     
     # Signal region: "No jets in HF category"
     regions['sr_vbf_noJetsInHF'] = regions['sr_vbf'] + ['no_jets_in_hf']
