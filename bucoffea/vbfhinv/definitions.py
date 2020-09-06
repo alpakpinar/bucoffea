@@ -233,7 +233,7 @@ def vbfhinv_regions(cfg):
     regions['inclusive'] = ['inclusive']
 
     # Signal regions (v = mono-V, j = mono-jet)
-    regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto','max_neEmEF'] + common_cuts + ['dpfcalo_sr']
+    regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr']
 
     # For sync mode
     if cfg and cfg.RUN.SYNC:
@@ -282,8 +282,8 @@ def vbfhinv_regions(cfg):
     regions['cr_g_vbf'] = cr_g_cuts
 
     if cfg and cfg.RUN.MITIGATION_CUT_STUDY:
-        # Two different signal regions with two different cleaning cuts
-        regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1', 'veto_hfhf']
+        # Different signal regions with different cleaning cuts
+        regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1', 'veto_hfhf', 'max_neEmEF'] # Currently used in VBF analysis
         regions['sr_vbf_eemitigationv2'] = regions['sr_vbf'] + ['eemitigation_v2']
         regions['sr_vbf_eemitigationv3'] = regions['sr_vbf'] + ['eemitigation_v3']
         regions['sr_vbf_passv3_failv1'] = regions['sr_vbf'] + ['passv3_failv1']
