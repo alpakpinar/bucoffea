@@ -75,7 +75,8 @@ def main():
 
     outtag = re.findall('^merged_.*', inpath)[0].replace('/','')
 
-    plot_ef_by_jeteta(acc, outtag, year=2017)
+    for year in [2017, 2018]:
+        plot_ef_by_jeteta(acc, outtag, year=year)
 
 if __name__ == '__main__':
     main()
