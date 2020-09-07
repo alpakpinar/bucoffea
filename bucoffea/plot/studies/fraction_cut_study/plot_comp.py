@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import argparse
+import warnings
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -11,6 +12,8 @@ from klepto.archives import dir_archive
 from pprint import pprint
 
 pjoin = os.path.join
+
+warnings.filterwarnings('ignore')
 
 REBIN = {
     'ak4_pt0' : hist.Bin('jetpt', r'Jet $p_T$ (GeV)', 20, 0, 1000),
@@ -245,7 +248,7 @@ def main():
         region = 'cr_2m'
 
     # Variables to plot
-    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'z_pt_over_jet_pt', 'muon_pt0', 'met']
+    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'muon_pt0', 'met']
 
     for year in args.years:
         for variable in variables:

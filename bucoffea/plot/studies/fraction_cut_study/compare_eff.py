@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import argparse
+import warnings
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -11,6 +12,8 @@ from klepto.archives import dir_archive
 from pprint import pprint
 
 pjoin = os.path.join
+
+warnings.filterwarnings('ignore')
 
 def parse_cli():
     parser = argparse.ArgumentParser()
