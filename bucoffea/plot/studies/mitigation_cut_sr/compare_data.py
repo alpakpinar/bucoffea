@@ -108,10 +108,7 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    if inpath.endswith('/'):
-        outtag = inpath.split('/')[-2]
-    else:
-        outtag = inpath.split('/')[-1]
+    outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
     variables = ['ak4_eta0', 'ak4_eta1', 'ak4_pt0', 'ak4_pt1'] 
     for variable in variables:

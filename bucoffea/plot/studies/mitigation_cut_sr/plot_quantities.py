@@ -137,10 +137,7 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    if inpath.endswith('/'):
-        outtag = inpath.split('/')[-2]
-    else:
-        outtag = inpath.split('/')[-1]
+    outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
     variables = ['ak4_pt0_over_met', 'ak4_pt0', 'ak4_eta0', 'dphi_ak40_met']
     regions = ['sr_vbf_leadak4_ee_pt', 'sr_vbf_leadak4_ee']

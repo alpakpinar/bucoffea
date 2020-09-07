@@ -104,10 +104,7 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    if inpath.endswith('/'):
-        outtag = inpath.split('/')[-2]
-    else:
-        outtag = inpath.split('/')[-1]
+    outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
     compare_signal(acc, outtag)
 
