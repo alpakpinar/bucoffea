@@ -310,7 +310,8 @@ def vbfhinv_regions(cfg):
                 'lead_ak4_id', 
                 'z_pt_eta', 
                 'met_pt', 
-                'z_pt_over_jet_pt'
+                'z_pt_over_jet_pt',
+                'veto_b'
                 ]
 
             if 'nobal' in cfg.RUN.EFF_STUDY.REGIONS:
@@ -323,7 +324,6 @@ def vbfhinv_regions(cfg):
             if 'regular' in cfg.RUN.EFF_STUDY.REGIONS:
                 regions['cr_2m_noEmEF'] = two_mu_cuts  
                 regions['cr_2m_withEmEF'] = two_mu_cuts + ['ak4_neEmEF']
-                regions['cr_2m_withEmEF_eeOnly'] = two_mu_cuts + ['ak4_neEmEF_eeOnly']
                 
                 # Regions with prefire weights varied
                 if cfg.RUN.EFF_STUDY.VARY_PREFIRE:
