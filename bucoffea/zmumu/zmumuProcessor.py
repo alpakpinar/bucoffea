@@ -181,14 +181,20 @@ class zmumuProcessor(processor.ProcessorABC):
         leadmuon_index=muons.pt.argmax()
         
         selection.add('at_least_one_tight_mu', df['is_tight_muon'].any())
-        selection.add('dimuon_mass', ((dimuons.mass > 60) \
-                                    & (dimuons.mass < 120)).any())
+        selection.add('dimuon_mass', ((dimuons.mass > cfg.SELECTION.CONTROL.DOUBLEMU.MASS.MIN) \
+                                    & (dimuons.mass < cfg.SELECTION.CONTROL.DOUBLEMU.MASS.MAX)).any())
 
         dimuon_charge = dimuons.i0['charge'] + dimuons.i1['charge']
         selection.add('dimuon_charge', (dimuon_charge==0).any())
 
         selection.add('two_muons', muons.counts==2)
         selection.add('mu_pt_trig_safe', muons.pt.max() > 30)
+
+        # Eta cuts for the leading jet
+        selection.add('jet_eta_lt_2_3', (leadak4.abseta < 2.3).any())
+        selection.add('jet_eta_gt_2_3_lt_2_7', ((leadak4.abseta >= 2.3) & (leadak4.abseta < 2.7)).any() )
+        selection.add('jet_eta_gt_2_7_lt_3_0', ((leadak4.abseta >= 2.7) & (leadak4.abseta < 3.0)).any() )
+        selection.add('jet_eta_gt_3_0', (leadak4.abseta >= 3.0).any())
 
         # Start to fill output
         output = self.accumulator.identity()

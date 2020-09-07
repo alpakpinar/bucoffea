@@ -27,13 +27,14 @@ def zmumu_accumulator(cfg):
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
     jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
     pt_ax = Bin("pt", r"$p_{T}$ (GeV)", 100, 0, 1000)
+    eta_ax = Bin("eta", r"$\eta$", 50, -5, 5)
     phi_ax = Bin("phi", r"$\phi$", 50,-np.pi, np.pi)
+
     dphi_ax = Bin("dphi", r"$\Delta\phi$", 50, 0, 3.5)
     deta_ax = Bin("deta", r"$\Delta\eta$", 50, 0, 10)
     dilepton_mass_ax = Bin("dilepton_mass", r"$M(\ell\ell)$ (GeV)", 100,50,150)
     ptfrac_ax = Bin('ptfrac',r'$p_T$ fraction', 50, -0.5, 0.5)
     frac_ax = Bin('frac','Fraction', 50, 0, 1)
-    eta_ax = Bin("eta", r"$\eta$", 50, -5, 5)
     
     weight_type_ax = Cat("weight_type", "Weight type")
     weight_ax = Bin("weight_value", "Weight",100,0.5,1.5)
@@ -90,5 +91,11 @@ def zmumu_regions(cfg):
     regions = {}
     regions['cr_2m_noEmEF'] = two_mu_cuts
     regions['cr_2m_withEmEF'] = two_mu_cuts + ['ak4_neEmEF']
+
+    # Regions categorized by jet eta
+    regions['cr_2m_noEmEF_jeteta_lt_2_3'] = two_mu_cuts + ['jet_eta_lt_2_3']
+    regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_3_lt_2_7'] = two_mu_cuts + ['jet_eta_gt_2_3_lt_2_7']
+    regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_7_lt_3_0'] = two_mu_cuts + ['jet_eta_gt_2_7_lt_3_0']
+    regions['cr_2m_noEmEF_jeteta_gt_3_0'] = two_mu_cuts + ['jet_eta_gt_3_0']
 
     return regions
