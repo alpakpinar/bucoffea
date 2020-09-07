@@ -169,6 +169,8 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', 
     elif mode == 'after_cut':
         h = h.integrate('region', f'{region}_withEmEF{cut_suffix}')
 
+    h = h[re.compile(f'.*{year}')]
+
     # Plot the two histograms, and their ratio
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     hist.plot1d(h, ax=ax, overlay='dataset')
