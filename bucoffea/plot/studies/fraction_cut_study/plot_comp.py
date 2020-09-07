@@ -197,7 +197,7 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', 
 
     rax.set_xlabel(XLABELS[variable])
     rax.set_ylabel('Data / MC')
-    rax.set_ylim(0.8,1.2)
+    rax.set_ylim(0.4,1.6)
     rax.grid(True)
 
     if variable == 'ak4_nef0':
