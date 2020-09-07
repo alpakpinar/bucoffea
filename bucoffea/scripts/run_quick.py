@@ -44,6 +44,9 @@ def main():
     elif args.processor == 'sumw':
         from bucoffea.gen import mcSumwProcessor
         processorInstance = mcSumwProcessor()
+    elif args.processor == 'zmumu':
+        from bucoffea.zmumu.zmumuProcessor import zmumuProcessor
+        processorInstance = zmumuProcessor()
 
     for dataset, filelist in fileset.items():
         newlist = []
