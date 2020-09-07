@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import warnings
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -11,13 +12,17 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+warnings.filterwarnings('ignore')
+
 XLABELS = {
     'ak4_eta0' : r'Leading jet $\eta$',
     'ak4_eta1' : r'Trailing jet $\eta$',
     'ak4_phi0' : r'Leading jet $\phi$',
     'ak4_phi1' : r'Trailing jet $\phi$',
     'ak4_nef0' : r'Leading jet neutral EM fraction',
-    'ak4_nef1' : r'Trailing jet neutral EM fraction'
+    'ak4_nef1' : r'Trailing jet neutral EM fraction',
+    'ak4_nhf0' : r'Leading jet neutral hadron fraction',
+    'ak4_nhf1' : r'Trailing jet neutral hadron fraction'
 }
 
 def plot_events(acc, outtag, variable):
@@ -56,7 +61,7 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
-    variables = ['ak4_eta0', 'ak4_eta1', 'ak4_phi0', 'ak4_phi1', 'ak4_nef0', 'ak4_nef1']
+    variables = ['ak4_eta0', 'ak4_eta1', 'ak4_phi0', 'ak4_phi1', 'ak4_nef0', 'ak4_nef1', 'ak4_nhf0', 'ak4_nhf1']
     for variable in variables:
         plot_events(acc, outtag, variable=variable)
 
