@@ -150,9 +150,9 @@ class zmumuProcessor(processor.ProcessorABC):
 
         # Muons
         df['is_tight_muon'] = muons.tightId \
-                      & (muons.iso < 0.15) \
-                      & (muons.pt>20) \
-                      & (muons.abseta<2.4)
+                      & (muons.iso < cfg.MUON.CUTS.TIGHT.ISO) \
+                      & (muons.pt > cfg.MUON.CUTS.TIGHT.PT) \
+                      & (muons.abseta < cfg.MUON.CUTS.TIGHT.ETA)
 
         # Electrons
         df['is_tight_electron'] = electrons.tightId \
