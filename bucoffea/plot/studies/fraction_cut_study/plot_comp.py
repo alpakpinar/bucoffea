@@ -14,7 +14,7 @@ pjoin = os.path.join
 
 REBIN = {
     'ak4_pt0' : hist.Bin('jetpt', r'Jet $p_T$ (GeV)', 20, 0, 1000),
-    'met' : hist.Bin('met', r'$p_T^{miss}$ (GeV)', list(range(0,500,50))),
+    'met' : hist.Bin('met', r'$p_T^{miss}$ (GeV)', list(range(0,60,10))),
     'muon_pt0' : hist.Bin('pt',r'Leading muon $p_{T}$ (GeV)',list(range(0,600,20)))
 }
 
@@ -33,6 +33,7 @@ def parse_cli():
     parser.add_argument('--years', help='Years to plot.', nargs='*', type=int, default=[2017, 2018])
     parser.add_argument('--rtypes', help='Region types: Tight, regular and nobal', nargs='*', default=['regular'])
     parser.add_argument('--plot_data_mc', help='If this is specified, data/MC plots will be plotted.', action='store_true')
+    parser.add_argument('--distribution', help='Regex to plot for data/MC comparison plots.', default='.*')
     args = parser.parse_args()
     return args
 
@@ -244,10 +245,12 @@ def main():
         region = 'cr_2m'
 
     # Variables to plot
-    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'z_pt_over_jet_pt', 'muon_pt0']
+    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'z_pt_over_jet_pt', 'muon_pt0', 'met']
 
     for year in args.years:
         for variable in variables:
+            if not re.match(args.distribution, variable):
+                continue
             for rtype in args.rtypes:
                 # Plot comparison with the normal pt balance cut and the tighter one
                 plot_comparison(acc, outtag, variable=variable, region=region, rtype=rtype, year=year)
