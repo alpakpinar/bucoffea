@@ -217,9 +217,6 @@ class zmumuProcessor(processor.ProcessorABC):
             exclude = [None]
             region_weights = copy.deepcopy(weights)
 
-            if not df['is_data']:
-                region_weights.add('trigger_met', evaluator["trigger_met"](df['recoil_pt']))
-            
             mask = selection.all(*cuts)
 
             def ezfill(name, **kwargs):
