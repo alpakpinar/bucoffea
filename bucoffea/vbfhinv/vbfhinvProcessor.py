@@ -343,11 +343,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
         pass_v3_fail_v1 = (~eemitigation_v3.any()) & (~eemitigation_v1)
         selection.add('passv3_failv1', pass_v3_fail_v1)
 
-        # Selections for additional SRs for investigation
-        lead_ak4_in_transition_region = (diak4.i0.abseta > 2.9) & (diak4.i0.abseta < 3.3)
-        selection.add('leadak4_ee', lead_ak4_in_transition_region.any())
-        selection.add('leadak4_pt', (diak4.i0.pt > 100).any())
-
         # Mask if both leading jets are in HF
         two_jets_in_hf = (diak4.i0.abseta>3.0) & (diak4.i1.abseta>3.0)
         selection.add('veto_hfhf', ~two_jets_in_hf.any())
@@ -355,6 +350,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
         # Define cut on maximum of the neutral EM fraction of two leading jets
         max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
         selection.add('max_neEmEF', (max_neEmEF<0.7).any())
+
+        selection.add('low_EmEF', (diak4.i0.nef<0.1).any())
+        selection.add('high_EmEF', (diak4.i0.nef>0.9).any())
+        selection.add('low_HEF', (diak4.i0.nhf<0.1).any())
+        selection.add('high_HEF', (diak4.i0.nhf>0.9).any())
 
         selection.add('two_jets', diak4.counts>0)
         selection.add('leadak4_pt_eta', leadak4_pt_eta.any())

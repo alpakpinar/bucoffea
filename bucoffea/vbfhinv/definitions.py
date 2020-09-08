@@ -290,8 +290,12 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_eemitigationv3'] = regions['sr_vbf'] + ['eemitigation_v3']
         regions['sr_vbf_passv3_failv1'] = regions['sr_vbf'] + ['passv3_failv1']
 
-        regions['sr_vbf_leadak4_ee'] = regions['sr_vbf'] + ['leadak4_ee']
-        regions['sr_vbf_leadak4_ee_pt'] = regions['sr_vbf'] + ['leadak4_ee', 'leadak4_pt']
+        if cfg.RUN.SAVE.LOW_HIGH_JET_FRAC:
+            # Save regions that contains events passing v3 selection, failing v1 and have very low or very high jet fractions
+            regions['sr_vbf_passv3_failv1_lowEmEF'] = copy.deepcopy(regions['sr_vbf_passv3_failv1']) + ['low_EmEF']
+            regions['sr_vbf_passv3_failv1_highEmEF'] = copy.deepcopy(regions['sr_vbf_passv3_failv1']) + ['high_EmEF']
+            regions['sr_vbf_passv3_failv1_lowHEF'] = copy.deepcopy(regions['sr_vbf_passv3_failv1']) + ['low_HEF']
+            regions['sr_vbf_passv3_failv1_highHEF'] = copy.deepcopy(regions['sr_vbf_passv3_failv1']) + ['high_HEF']
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [

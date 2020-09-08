@@ -208,11 +208,12 @@ default:
   run:
     sync: False
     process_ul: False # Flag for processing UL datasets
-    mitigation_cut_study: True  
+    mitigation_cut_study: True
     save:
       passing: False
       tree: False
       treeregions: "^sr_vbf$"
+      low_high_jet_frac: True
       variables:
         - HT
         - HTmiss
