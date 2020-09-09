@@ -570,7 +570,7 @@ def main():
     # If requested so, only run over Z(nunu) 2016
     if not args.znunu2016:
         dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'EWKZ2Jets_ZToNuNu2017', 'EWKZ2Jets_ZToNuNu2018', 
-                    'VBF2017', 'VBF2018', 'Top_FXFX2017', 'Top_FXFX2018']
+                    'VBF2017', 'VBF2018', 'Top_FXFX2017', 'Top_FXFX2018', 'GluGlu2017', 'GluGlu2018']
     else:
         dataset_tags = ['ZJetsToNuNu2016']
 
