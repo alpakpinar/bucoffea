@@ -355,6 +355,11 @@ def setup_candidates(df, cfg, variations):
     if cfg.OVERLAP.TAU.ELECTRON.CLEAN:
         taus = taus[object_overlap(taus, electrons, dr=cfg.OVERLAP.TAU.ELECTRON.DR)]
 
+    if cfg.PHOTON.BRANCH.IDV5 in df.columns:
+        photon_id = cfg.PHOTON.BRANCH.IDV5
+    else:
+        photon_id = cfg.PHOTON.BRANCH.IDV7
+
     photons = JaggedCandidateArray.candidatesfromcounts(
         df['nPhoton'],
         pt=df['Photon_pt'],
@@ -362,8 +367,8 @@ def setup_candidates(df, cfg, variations):
         abseta=np.abs(df['Photon_eta']),
         phi=df['Photon_phi'],
         mass=0*df['Photon_pt'],
-        looseId=(df[cfg.PHOTON.BRANCH.ID]>=1) & df['Photon_electronVeto'],
-        mediumId=(df[cfg.PHOTON.BRANCH.ID]>=2) & df['Photon_electronVeto'],
+        looseId=(df[photon_id]>=1) & df['Photon_electronVeto'],
+        mediumId=(df[photon_id]>=2) & df['Photon_electronVeto'],
         r9=df['Photon_r9'],
         barrel=df['Photon_isScEtaEB'],
     )
