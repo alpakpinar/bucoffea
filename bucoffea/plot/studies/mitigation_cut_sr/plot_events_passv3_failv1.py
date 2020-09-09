@@ -5,9 +5,13 @@ import sys
 import re
 import warnings
 import argparse
+import numpy as np
+
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
 from matplotlib import pyplot as plt
+import matplotlib.colors as colors
+
 from klepto.archives import dir_archive
 from pprint import pprint
 
@@ -58,14 +62,6 @@ def plot_events(acc, outtag, variable):
     ax.set_title('Events passing EEv3, failing EEv1')
     ax.set_xlabel(XLABELS[variable])
 
-    if variable == 'ak4_eta0':
-        ylim = ax.get_ylim()
-        ax.plot([-3.4, -3.4], ylim, 'r--')
-        ax.plot([-2.8, -2.8], ylim, 'r--')
-        ax.plot([3.4, 3.4], ylim, 'r--')
-        ax.plot([2.8, 2.8], ylim, 'r--')
-        ax.set_ylim(ylim)
-
     # Save figure
     outdir = f'./output/{outtag}'
     if not os.path.exists(outdir):
@@ -82,9 +78,20 @@ def plot_jet_eta_phi(acc, outtag):
     
     h = prepare_histogram(h, acc)
 
+    # Rebinning, use coarser axes for jet eta and phi
+    new_bins = {
+        'jeteta' : hist.Bin('jeteta', r'Leading Jet $\eta$', 25, -5, 5),
+        'jetphi' : hist.Bin('jetphi', r'Leading Jet $\phi$', 25, -np.pi, np.pi),
+    }
+    for axis in ['jeteta', 'jetphi']:
+        h = h.rebin(axis, new_bins[axis])
+
     fig, ax = plt.subplots()
-    hist.plot2d(h, ax=ax, xaxis='jeteta')
-    
+    vals = h.values()[()]
+    patch_opts = {'norm' : colors.LogNorm(vmin=1e-1, vmax=vals.max())}
+    hist.plot2d(h, ax=ax, xaxis='jeteta', patch_opts=patch_opts)
+    ax.set_title(f'Events passing EEv3, failing EEv1')
+
     # Save figure
     outdir = f'./output/{outtag}'
     if not os.path.exists(outdir):
