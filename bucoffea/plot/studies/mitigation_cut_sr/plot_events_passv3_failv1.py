@@ -94,7 +94,7 @@ def plot_jet_eta_phi(acc, outtag):
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
-def plot_events_specific_jets(acc, outtag, variable, spec='low_EmEF'):
+def plot_events_specific_jets(acc, outtag, variable, spec='lowEmEF'):
     '''Plot events which pass the v3 selection but fail the v1 selection.
     Leading jet in these events also has either very low or very high fractions.'''
     acc.load(variable)
@@ -108,10 +108,10 @@ def plot_events_specific_jets(acc, outtag, variable, spec='low_EmEF'):
     h = h.integrate('region', f'sr_vbf_passv3_failv1_{spec}').integrate('dataset', 'MET_2017')
 
     spec_to_title = {
-        'low_EmEF' : r'$NeEmEF < 0.1$',
-        'high_EmEF' : r'$NeEmEF > 0.9$',
-        'low_HEF' : r'$NeHEF < 0.1$',
-        'high_HEF' : r'$NeHEF > 0.9$'
+        'lowEmEF' : r'$NeEmEF < 0.1$',
+        'highEmEF' : r'$NeEmEF > 0.9$',
+        'lowHEF' : r'$NeHEF < 0.1$',
+        'highHEF' : r'$NeHEF > 0.9$'
     }
 
     fig, ax = plt.subplots()
@@ -146,7 +146,7 @@ def main():
         # If requested, plot events where jets have either very low or very high energy fractions
         # (Specified by "spec": e.g. low_EmEF refers to jets with neutral EM energy fraction < 0.1)
         if args.plot_spec:
-            specs = ['low_EmEF', 'high_EmEF', 'low_HEF', 'high_HEF']
+            specs = ['lowEmEF', 'highEmEF', 'lowHEF', 'highHEF']
             for spec in specs:
                 plot_events_specific_jets(acc, outtag, variable, spec=spec)
 
