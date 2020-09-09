@@ -30,20 +30,27 @@ def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
     parser.add_argument('--plot_spec', help='Plot distributions for events with specific jets, with very low/high fractions.', action='store_true')
+    parser.add_argument('--plot_eta_phi', help='Plot 2D distributions for jet eta and phi.', action='store_true')
     args = parser.parse_args()
     return args
 
-def plot_events(acc, outtag, variable):
-    '''Plot events which pass the v3 selection but fail the v1 selection.'''
-    acc.load(variable)
-    h = acc[variable]
-
+def prepare_histogram(h, acc):
+    '''Pre-processing the histogram.'''
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
     h = merge_datasets(h)
 
     # Get the relevant region
     h = h.integrate('region', 'sr_vbf_passv3_failv1').integrate('dataset', 'MET_2017')
+
+    return h
+
+def plot_events(acc, outtag, variable):
+    '''Plot events which pass the v3 selection but fail the v1 selection.'''
+    acc.load(variable)
+    h = acc[variable]
+
+    h = prepare_histogram(h, acc)
 
     fig, ax = plt.subplots()
     hist.plot1d(h, ax=ax)
@@ -65,6 +72,25 @@ def plot_events(acc, outtag, variable):
         os.makedirs(outdir)
     
     outpath = pjoin(outdir, f'{variable}.pdf')
+    fig.savefig(outpath)
+    print(f'File saved: {outpath}')
+
+def plot_jet_eta_phi(acc, outtag):
+    '''Plot 2D histogram of jet eta and phi, for events that pass v3 selection but fail v1.'''
+    acc.load('ak4_eta0_phi0')
+    h = acc['ak4_eta0_phi0']
+    
+    h = prepare_histogram(h, acc)
+
+    fig, ax = plt.subplots()
+    hist.plot2d(h, ax=ax, xaxis='jeteta')
+    
+    # Save figure
+    outdir = f'./output/{outtag}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outpath = pjoin(outdir, f'jet_eta_phi.pdf')
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
@@ -123,6 +149,10 @@ def main():
             specs = ['low_EmEF', 'high_EmEF', 'low_HEF', 'high_HEF']
             for spec in specs:
                 plot_events_specific_jets(acc, outtag, variable, spec=spec)
+
+    # 2D eta/phi histogram
+    if args.plot_eta_phi:
+        plot_jet_eta_phi(acc, outtag)
 
 if __name__ == '__main__':
     main()
