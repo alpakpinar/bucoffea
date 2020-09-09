@@ -213,7 +213,7 @@ default:
       passing: False
       tree: False
       treeregions: "^sr_vbf$"
-      low_high_jet_frac: True
+      low_high_jet_frac: False
       variables:
         - HT
         - HTmiss
