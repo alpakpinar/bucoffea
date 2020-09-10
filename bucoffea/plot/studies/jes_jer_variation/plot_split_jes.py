@@ -8,14 +8,18 @@ import os
 import sys
 import re
 import argparse
+import warnings
+
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
 from klepto.archives import dir_archive
 from coffea import hist
 from matplotlib import pyplot as plt
+
 import matplotlib.ticker
 import mplhep as hep
 import numpy as np
 import uproot
+
 from pprint import pprint
 from itertools import chain
 from tabulate import tabulate
@@ -23,6 +27,8 @@ from collections import OrderedDict
 from scipy.signal import savgol_filter
 
 pjoin = os.path.join
+
+warnings.filterwarnings('ignore')
 
 titles = {
     'GluGlu2017' : r'$ggH(inv) \ 2017$ split JEC uncertainties',
@@ -222,6 +228,12 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
         
     ax.set_title(titles[dataset_tag])
     ax.grid(True)
+
+    xlabels = {
+        'mjj' : r'$M_{jj} \ (GeV)$',
+        'met' : r'$p_T^{miss} \ (GeV)$'
+    }
+    ax.set_xlabel(xlabels[variable_to_use])
 
     # Save figure
     if use_monoj_binning:
@@ -639,6 +651,16 @@ def main():
     # Compare JES total variations as a function of mjj for both years
     for year in [2017, 2018]:
         samples = [f'VBF{year}', f'ZJetsToNuNu{year}', f'EWKZ2Jets_ZToNuNu{year}']
+        # Check if the calculations are done for this sample in this run, if not, skip this
+        skip=False
+        for sample in samples:
+            if not sample in total_variations_all.keys():
+                skip=True
+                break
+        if skip:
+            print(f'MSG% Skipping total variation comparison: {year}')
+            continue
+
         compare_total_variations(total_variations_all, out_tag, year=year, samples=samples)
         # Make a comparison plot for the smoothed variations as well
         compare_total_variations(total_variations_all, out_tag, year=year, samples=samples, plot_smoothed=True)

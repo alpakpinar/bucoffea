@@ -4,18 +4,24 @@ import os
 import sys
 import re
 import argparse
+import warnings
+
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
 from klepto.archives import dir_archive
 from coffea import hist
 from matplotlib import pyplot as plt
+
 import matplotlib.ticker
 import mplhep as hep
 import numpy as np
 import pandas as pd
+
 from data import tag_to_dataset_pairs, dataset_regex, indices_from_tags
 from pprint import pprint
 
 pjoin = os.path.join
+
+warnings.filterwarnings('ignore')
 
 # Plot aesthetics
 colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][:5]
