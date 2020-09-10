@@ -290,6 +290,8 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1', 'veto_hfhf', 'max_neEmEF'] # Currently used in VBF analysis
         regions['sr_vbf_eemitigationv2'] = regions['sr_vbf'] + ['eemitigation_v2']
         regions['sr_vbf_eemitigationv3'] = regions['sr_vbf'] + ['eemitigation_v3']
+        # Same with v3, except slightly tighter eta restriction on the leading jet
+        regions['sr_vbf_eemitigationv4'] = regions['sr_vbf'] + ['eemitigation_v4'] 
         regions['sr_vbf_passv3_failv1'] = regions['sr_vbf'] + ['passv3_failv1']
 
         if cfg.RUN.SAVE.LOW_HIGH_JET_FRAC:
@@ -316,22 +318,6 @@ def vbfhinv_regions(cfg):
                                         'dphijj',
                                         'detajj',
                                         ]
-
-    tmp = {}
-    for region in regions.keys():
-        if not region.startswith("sr_") or 'ee' in region:
-            continue
-        new_region = f"{region}_no_veto_all"
-        tmp[new_region] = copy.deepcopy(regions[region])
-        tmp[new_region].remove("veto_muo")
-        tmp[new_region].remove("veto_tau")
-        tmp[new_region].remove("veto_ele")
-        tmp[new_region].remove("mindphijr")
-        tmp[new_region].remove("recoil")
-        tmp[new_region].append("met_sr")
-        tmp[new_region].append("mindphijm")
-
-    regions.update(tmp)
 
     if cfg and  cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
