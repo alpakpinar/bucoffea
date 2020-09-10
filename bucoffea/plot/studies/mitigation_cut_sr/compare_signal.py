@@ -45,7 +45,7 @@ def compare_signal(acc, outtag, variable='mjj'):
         h = h.rebin(variable, REBIN[variable])
 
     # Get the signal dataset
-    h = h.integrate('dataset', re.compile('VBF_HToInv.*2017'))[re.compile('^sr_vbf((?!(veto_all|leadak4)).)*$')]
+    h = h.integrate('dataset', re.compile('VBF_HToInv.*2017'))[re.compile('^sr_vbf((?!(veto_all|leadak4|passv3)).)*$')]
 
     # Plot comparison
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
