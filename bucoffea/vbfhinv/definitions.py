@@ -30,7 +30,7 @@ def vbfhinv_accumulator(cfg):
     mjj_ax = Bin("mjj", r"$M_{jj}$ (GeV)", 150, 0, 7500)
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 100, 0, 1000)
     jet_pt_ax_coarse = Bin("jetpt", r"$p_{T}$ (GeV)", 5, 0, 500)
-    jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
+    jet_eta_ax = Bin("jeteta", r"$\eta$", 100, -5, 5)
     jet_eta_ax_coarse = Bin("jeteta", r"$\eta$", 10, -5, 5)
     jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
 
