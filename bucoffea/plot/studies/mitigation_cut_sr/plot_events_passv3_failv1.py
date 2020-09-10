@@ -79,10 +79,15 @@ def plot_events(acc, outtag, variable):
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
-def plot_jet_eta_phi(acc, outtag):
-    '''Plot 2D histogram of jet eta and phi, for events that pass v3 selection but fail v1.'''
-    acc.load('ak4_eta0_phi0')
-    h = acc['ak4_eta0_phi0']
+def plot_jet_eta_phi(acc, outtag, jet='leading'):
+    '''Plot 2D histogram of leading or trailing jet eta and phi, for events that pass v3 selection but fail v1.'''
+    if jet == 'leading':
+        variable = 'ak4_eta0_phi0'
+    else:
+        variable = 'ak4_eta1_phi1'
+
+    acc.load(variable)
+    h = acc[variable]
     
     h = prepare_histogram(h, acc)
 
@@ -105,7 +110,7 @@ def plot_jet_eta_phi(acc, outtag):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'jet_eta_phi.pdf')
+    outpath = pjoin(outdir, f'{jet}_jet_eta_phi.pdf')
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
@@ -167,7 +172,8 @@ def main():
 
     # 2D eta/phi histogram
     if args.plot_eta_phi:
-        plot_jet_eta_phi(acc, outtag)
+        for jet in ['leading', 'trailing']:
+            plot_jet_eta_phi(acc, outtag, jet=jet)
 
 if __name__ == '__main__':
     main()
