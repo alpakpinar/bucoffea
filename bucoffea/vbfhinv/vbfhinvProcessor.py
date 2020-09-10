@@ -776,6 +776,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_nconst1',   nconst=diak4.i1.nconst[mask].flatten(), weight=w_diak4)
 
             ezfill('ak4_eta0_phi0', jeteta=diak4.i0.eta[mask].flatten(), jetphi=diak4.i0.phi[mask].flatten(), weight=w_diak4)
+            ezfill('ak4_eta1_phi1', jeteta=diak4.i1.eta[mask].flatten(), jetphi=diak4.i1.phi[mask].flatten(), weight=w_diak4)
 
             if region in ['sr_vbf_leadak4_ee', 'sr_vbf_leadak4_ee_pt']:
                 ezfill('ak4_pt0_over_met', jmet=pt_over_met_leading_jet[mask].flatten(), weight=w_diak4)
