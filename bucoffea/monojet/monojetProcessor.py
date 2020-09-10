@@ -33,6 +33,7 @@ from bucoffea.helpers import (
 from bucoffea.helpers.dataset import (
                                       is_lo_z,
                                       is_lo_znunu,
+                                      is_lo_dy,
                                       is_lo_w,
                                       is_lo_g,
                                       is_nlo_z,
@@ -155,6 +156,22 @@ class monojetProcessor(processor.ProcessorABC):
         df['has_v_jet'] = has_v_jet(dataset)
         df['has_lhe_v_pt'] = df['is_lo_w'] | df['is_lo_z'] | df['is_nlo_z'] | df['is_nlo_w'] | df['is_lo_g']
         df['is_data'] = is_data(dataset)
+        
+        # Further flags to determine which regions to run on
+        df['is_lo_znunu'] = is_lo_znunu(dataset)
+        df['is_lo_zll'] = is_lo_dy(dataset)
+
+        # Determine which regions are going to be processed
+        if df['is_lo_znunu']:
+            region_regex = 'sr_.*j.*'
+        elif df['is_lo_zll']:
+            region_regex = 'cr_2(e|m).*j.*'
+        elif df['is_lo_g']:
+            region_regex = 'cr_g.*j.*'
+        elif df['is_lo_w']:
+            region_regex = 'sr|cr_1(m|e).*j.*'
+        else:
+            region_regex = '.*j.*'
 
         if df['is_data']:
             return self.accumulator.identity()
@@ -422,6 +439,9 @@ class monojetProcessor(processor.ProcessorABC):
         regions = monojet_regions(cfg, self._variations)
 
         for region, cuts in regions.items():
+            if not re.match(region_regex, region):
+                continue
+            
             # Get relevant variation name for each region
             if ('Up' in region) or ('Down' in region):
                 if str(df["year"]) not in region:
@@ -432,9 +452,6 @@ class monojetProcessor(processor.ProcessorABC):
                 var = '_jer'
             else:
                 var = ''
-
-            print(f'Region: {region}')
-            print(f'Variation: {var}')
 
             # Get the correct objects/quantities for each variation
             selection = vmap.get_selection_packer(var)
