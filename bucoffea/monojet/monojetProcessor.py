@@ -137,8 +137,7 @@ class monojetProcessor(processor.ProcessorABC):
                             f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
                             f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
                             f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
-                            '_jesTotalUp', '_jesTotalDown',
-                            '_jerUp', '_jerDown'
+                            '_jesTotalUp', '_jesTotalDown', '_jer'
                             ]
         self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
@@ -259,6 +258,9 @@ class monojetProcessor(processor.ProcessorABC):
         # will copy the common selections from this one
         vmap.set_selection_packer(var='', sel=selection_nom)
 
+        # Temp selection object to be used later for other variations
+        selection_nom_to_copy = copy.deepcopy(selection_nom)
+
         # Process for each JES/JER variation
         for var in self._variations:
             # Get the correct objects/quantities for each variation
@@ -267,7 +269,7 @@ class monojetProcessor(processor.ProcessorABC):
             if var == '':
                 selection = vmap.get_selection_packer(var='')
             else:
-                selection = copy.deepcopy(selection_nom) 
+                selection = copy.deepcopy(selection_nom_to_copy) 
                 vmap.set_selection_packer(var=var, sel=selection)    
 
             bjets = vmap.get_bjets(var)
@@ -280,20 +282,7 @@ class monojetProcessor(processor.ProcessorABC):
             met_phi = getattr(met, f'phi{var}').flatten()
 
             selection.add(f'veto_b{var}', bjets.counts==0)
-
             
-            # Remove the jets in noisy region, in accordance with the v2 recipe
-            if df['year'] == 2017:
-                ak4 = ak4[(ak4.ptraw>50) | (ak4.abseta<2.65) | (ak4.abseta>3.139)]
-                bjets = bjets[(bjets.ptraw>50) | (bjets.abseta<2.65) | (bjets.abseta>3.139)]
-
-            # Remove the jets if they fail the PU ID
-            ak4_puid = getattr(ak4, f'puid{var}')
-            bjets_puid = getattr(bjets, f'puid{var}')
-
-            ak4 = ak4[ak4_puid]
-            bjets = bjets[bjets_puid] 
-
             # Get relevant pts for AK4 and AK8 jets
             ak4_pt = getattr(ak4, f'pt{var}')
             if cfg.RUN.MONOV: 
@@ -439,8 +428,13 @@ class monojetProcessor(processor.ProcessorABC):
                     var = '_' + region.split('_')[-1]
                 else:
                     var = '_' + '_'.join(region.split('_')[-2:])
+            elif '_jer' in region:
+                var = '_jer'
             else:
                 var = ''
+
+            print(f'Region: {region}')
+            print(f'Variation: {var}')
 
             # Get the correct objects/quantities for each variation
             selection = vmap.get_selection_packer(var)
