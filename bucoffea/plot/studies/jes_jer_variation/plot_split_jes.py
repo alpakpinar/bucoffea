@@ -130,13 +130,13 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
     fig, ax = plt.subplots()
 
     # Plot only the largest variations
-    vars_to_plot = ['jesRelativeBal', f'jesRelativeSample_{year}', 'jesAbsolute', f'jesAbsolute_{year}', 'jesFlavorQCD', 'jesTotal']
+    vars_to_plot = ['jer', 'jesRelativeBal', f'jesRelativeSample_{year}', 'jesAbsolute', f'jesAbsolute_{year}', 'jesFlavorQCD', 'jesTotal']
     
     # Setup the color map
     colormap = plt.cm.nipy_spectral
     num_plots = len(vars_to_plot) 
-    colors = []
-    for i in np.linspace(0,0.9,num_plots):
+    colors = [[colormap(0)]]
+    for i in np.linspace(0.1,0.9,num_plots):
         colors.append([colormap(i), colormap(i)])
 
     # Flatten the color list
@@ -163,9 +163,8 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
         # Do not plot JER for now
         if not plot_smooth:
-            if not "jer" in region.name:
-                if var_label_skimmed in vars_to_plot:
-                    hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
+            if var_label_skimmed in vars_to_plot:
+                hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
 
         edges = h_nom.axis(variable_to_use).edges()
         centers = h_nom.axis(variable_to_use).centers()
@@ -231,7 +230,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, year, binnings, plot_total=True
 
     xlabels = {
         'mjj' : r'$M_{jj} \ (GeV)$',
-        'met' : r'$p_T^{miss} \ (GeV)$'
+        'recoil' : r'$p_T^{miss} \ (GeV)$'
     }
     ax.set_xlabel(xlabels[variable_to_use])
 
