@@ -56,6 +56,7 @@ titles_two_nuisances = {
 
 # Binnings for mjj and recoil
 mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
+mjj_binning_singleBin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,7500])
 
 recoil_bins_2016_monoj = hist.Bin('recoil', 'Recoil (GeV)', [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400])
 recoil_bins_2016_monov = hist.Bin('recoil', 'Recoil (GeV)', [250,300,350,400,500,600,750,1000])
@@ -78,10 +79,8 @@ def smooth_histogram(x,y):
     smooth = savgol_filter(y,min(len(x),7),1)
     return smooth
 
-# Bin selection should be one of the following:
-# Coarse, single bin, initial
 def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total=True, 
-            bin_selection='initial', analysis='vbf', root_config={'save': False, 'file': None}, 
+            analysis='vbf', root_config={'save': False, 'file': None}, 
             tabulate_top5=False, plot_smooth=False, save_smooth=True
             ):
     '''Plot all split JEC uncertainties on the same plot.'''
@@ -159,8 +158,9 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
         centers = h_nom.axis(variable_to_use).centers()
         # Var over nominal ratio
         ratio = h_var.values()[()] / h_nom.values()[()]
-        # Smoothed out ratio
-        smooth_hist = smooth_histogram(edges, ratio)
+        if plot_smooth:
+            # Smoothed out ratio
+            smooth_hist = smooth_histogram(edges, ratio)
 
         # Save the ratio, smoothed out ratio, the errors and the centers (for later plotting use) for JES total variations
         if "Total" in region.name:
@@ -171,7 +171,10 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
             err = np.abs(hist.poisson_interval(rsumw, sumw2_var / sumw_nom**2) - rsumw)
 
             # Save the quantities
-            total_variations[var_label] = {'ratio' : ratio, 'smooth' : smooth_hist, 'error': err, 'centers' : centers}
+            total_variations[var_label] = {'ratio' : ratio, 'error': err, 'centers' : centers}
+
+            if plot_smooth:
+                total_variations[var_label]['smooth'] = smooth_hist
 
         if plot_smooth:
             # Plot only the smoothed out distributions
@@ -202,10 +205,10 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
         loc = matplotlib.ticker.MultipleLocator(base=0.02)
         ax.yaxis.set_major_locator(loc)
     elif analysis == 'vbf':
-        if bin_selection == 'single bin':
+        if bin_tag == 'singleBin':
             loc = matplotlib.ticker.MultipleLocator(base=0.02)
             ax.set_ylim(0.87,1.13)
-        elif bin_selection == 'initial':
+        else:
             if 'ZJets' in dataset_tag or 'WJets' in dataset_tag:
                 ax.set_ylim(0.65,1.45)
             else:
@@ -548,14 +551,15 @@ def main():
             'monov' : recoil_bins_2016_monov
         },
         'vbf' : {
-            'default' : mjj_binning_v1
+            'default' : mjj_binning_v1,
+            'singleBin' : mjj_binning_singleBin
         }
     }
 
     binnings = binnings_dict[args.analysis]
     for bin_tag, bins in binnings.items():
-        if args.analysis == 'monojet' and (bin_tag not in args.binnings):
-            print(f'MSG% Monojet analysis, skipping binning: {bin_tag}')
+        if bin_tag not in args.binnings:
+            print(f'MSG% Skipping binning: {bin_tag}')
             continue
 
         # Create an output root file to save the uncertainties
@@ -604,12 +608,12 @@ def main():
             # 3. Plot all the sources and save them into a ROOT file as a shape uncertainty
             _ = plot_split_jecunc(acc, out_tag, dataset_tag, year=year, 
                         analysis=args.analysis, bins=bins, bin_tag=bin_tag,
-                        plot_smooth=True
+                        plot_smooth=(bin_tag != 'singleBin')
                         )
             # Only save to ROOT file the unskimmed shapes
             total_variations_all[dataset_tag] = plot_split_jecunc(acc, out_tag, dataset_tag, year=year, 
                         analysis=args.analysis, bins=bins, bin_tag=bin_tag, root_config=root_config,
-                        plot_smooth=False, save_smooth=True
+                        plot_smooth=False, save_smooth=(bin_tag != 'singleBin')
                         )
         
         # Produce the plots with regrouping, if requested:
