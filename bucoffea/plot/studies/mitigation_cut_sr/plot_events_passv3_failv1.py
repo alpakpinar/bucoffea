@@ -62,6 +62,14 @@ def plot_events(acc, outtag, variable):
     ax.set_title('Events passing EEv3, failing EEv1')
     ax.set_xlabel(XLABELS[variable])
 
+    if variable == 'ak4_eta0':
+        ylim = ax.get_ylim()
+        ax.plot([-3.3, -3.3], ylim, 'r--')
+        ax.plot([-2.9, -2.9], ylim, 'r--')
+        ax.plot([3.3, 3.3], ylim, 'r--')
+        ax.plot([2.9, 2.9], ylim, 'r--')
+        ax.set_ylim(ylim)
+
     # Save figure
     outdir = f'./output/{outtag}'
     if not os.path.exists(outdir):
