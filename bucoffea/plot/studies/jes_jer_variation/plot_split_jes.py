@@ -31,32 +31,29 @@ pjoin = os.path.join
 warnings.filterwarnings('ignore')
 
 titles = {
-    'GluGlu2017' : r'$ggH(inv) \ 2017$ split JEC uncertainties',
-    'GluGlu2018' : r'$ggH(inv) \ 2018$ split JEC uncertainties',
-    'VBF2017' : r'$VBF \ H(inv) \ 2017$ split JEC uncertainties',
-    'VBF2018' : r'$VBF \ H(inv) \ 2018$ split JEC uncertainties',
-    'ZJetsToNuNu2016' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties',
-    'ZJetsToNuNu2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties',
-    'ZJetsToNuNu2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties',
-    'EWKZ2Jets_ZToNuNu2017' : r'EWK $Z(\nu\nu) \ 2017$ split JEC uncertainties',
-    'EWKZ2Jets_ZToNuNu2018' : r'EWK $Z(\nu\nu) \ 2018$ split JEC uncertainties',
-    'Top_FXFX2017' : r'$t\bar{t} + jets \ 2017$ split JEC uncertainties',
-    'Top_FXFX2018' : r'$t\bar{t} + jets \ 2018$ split JEC uncertainties'
+    'ggh_2017' : r'$ggH(inv) \ 2017$ split JEC uncertainties',
+    'ggh_2018' : r'$ggH(inv) \ 2018$ split JEC uncertainties',
+    'vbf_2017' : r'$VBF \ H(inv) \ 2017$ split JEC uncertainties',
+    'vbf_2018' : r'$VBF \ H(inv) \ 2018$ split JEC uncertainties',
+    'qcd_zjets_2016' : r'$Z(\nu\nu) \ 2016$ split JEC uncertainties',
+    'qcd_zjets_2017' : r'$Z(\nu\nu) \ 2017$ split JEC uncertainties',
+    'qcd_zjets_2018' : r'$Z(\nu\nu) \ 2018$ split JEC uncertainties',
+    'ewk_zjets_2017' : r'EWK $Z(\nu\nu) \ 2017$ split JEC uncertainties',
+    'ewk_zjets_2018' : r'EWK $Z(\nu\nu) \ 2018$ split JEC uncertainties'
 }
 
 titles_two_nuisances = {
-    'GluGlu2017' : r'$ggH(inv) \ 2017$ corr vs uncorr JEC uncertainties',
-    'GluGlu2018' : r'$ggH(inv) \ 2018$ corr vs uncorr JEC uncertainties',
-    'VBF2018' : r'$VBF \ H(inv) \ 2018$ corr vs uncorr JEC uncertainties',
-    'VBF2017' : r'$VBF \ H(inv) \ 2017$ corr vs uncorr JEC uncertainties',
-    'ZJetsToNuNu2016' : r'$Z(\nu\nu) \ 2016$ corr vs uncorr JEC uncertainties',
-    'ZJetsToNuNu2017' : r'$Z(\nu\nu) \ 2017$ corr vs uncorr JEC uncertainties',
-    'ZJetsToNuNu2018' : r'$Z(\nu\nu) \ 2018$ corr vs uncorr JEC uncertainties'
+    'ggh_2017' : r'$ggH(inv) \ 2017$ corr vs uncorr JEC uncertainties',
+    'ggh_2018' : r'$ggH(inv) \ 2018$ corr vs uncorr JEC uncertainties',
+    'vbf_2017' : r'$VBF \ H(inv) \ 2017$ corr vs uncorr JEC uncertainties',
+    'vbf_2018' : r'$VBF \ H(inv) \ 2018$ corr vs uncorr JEC uncertainties',
+    'qcd_zjets_2016' : r'$Z(\nu\nu) \ 2016$ corr vs uncorr JEC uncertainties',
+    'qcd_zjets_2017' : r'$Z(\nu\nu) \ 2017$ corr vs uncorr JEC uncertainties',
+    'qcd_zjets_2018' : r'$Z(\nu\nu) \ 2018$ corr vs uncorr JEC uncertainties'
 }
 
 # Binnings for mjj and recoil
 mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
-mjj_binning_singleBin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,7500])
 
 recoil_bins_2016_monoj = hist.Bin('recoil', 'Recoil (GeV)', [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400])
 recoil_bins_2016_monov = hist.Bin('recoil', 'Recoil (GeV)', [250,300,350,400,500,600,750,1000])
@@ -80,7 +77,7 @@ def smooth_histogram(x,y):
     return smooth
 
 def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total=True, 
-            analysis='vbf', root_config={'save': False, 'file': None}, 
+            analysis='vbf', root_config={'save': False, 'shape': None, 'file': None}, 
             tabulate_top5=False, plot_smooth=False, save_smooth=True
             ):
     '''Plot all split JEC uncertainties on the same plot.'''
@@ -97,14 +94,22 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
     h = merge_datasets(h)
 
     # Determine the region to take the data from
-    if re.match('(GluGlu|VBF|ZJets|EWKZ|WJets|Top).*', dataset_tag):
+    if re.match('(ggh|vbf|qcd_zjets|ewk_zjets).*', dataset_tag):
         region_to_use = 'sr'
     else:
         raise NotImplementedError('Not implemented for this region yet.')
     region_suffix = '_j' if analysis == 'monojet' else '_vbf'
 
-    dataset_name = dataset_tag.replace(f'{year}', '')
-    h = h.integrate('dataset', re.compile(f'{dataset_name}.*{year}'))[re.compile(f'{region_to_use}{region_suffix}.*')]
+    tag_to_dataset_regex = {
+        f'ggH_{year}' : f'GluGlu.*{year}',
+        f'vbf_{year}' : f'VBF.*{year}',
+        f'qcd_zjets_{year}' : f'ZJetsToNuNu.*{year}',
+        f'ewk_zjets_{year}' : f'EWKZ.*{year}',
+    }
+
+    dataset_regex = tag_to_dataset_regex[dataset_tag]
+
+    h = h.integrate('dataset', re.compile(dataset_regex))[re.compile(f'{region_to_use}{region_suffix}.*')]
 
     h_nom = h.integrate('region', f'{region_to_use}{region_suffix}')
     
@@ -158,9 +163,8 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
         centers = h_nom.axis(variable_to_use).centers()
         # Var over nominal ratio
         ratio = h_var.values()[()] / h_nom.values()[()]
-        if plot_smooth:
-            # Smoothed out ratio
-            smooth_hist = smooth_histogram(edges, ratio)
+        # Smoothed out ratio
+        smooth_hist = smooth_histogram(edges, ratio)
 
         # Save the ratio, smoothed out ratio, the errors and the centers (for later plotting use) for JES total variations
         if "Total" in region.name:
@@ -181,15 +185,18 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
             if var_label_skimmed in vars_to_plot:
                 ax.plot(centers, smooth_hist, label=var_label, marker='o')
 
-        # As we loop through each uncertainty source, save into ROOT file if this is requested
         if root_config['save']:
+            # Save only specific shapes, determined by root_config dict (for now, only save QCD Z(vv))
+            if root_config['shape'] not in dataset_tag:
+                continue
             rootfile = root_config['file']
             # Guard against inf/nan values
             ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
-            rootfile[f'{dataset_tag}_{var_label}'] = (ratio, edges)
             if save_smooth:
-                # Save the smoothed version as well
-                rootfile[f'{dataset_tag}_{var_label}_smoothed'] = (smooth_hist, edges)
+                # Save only the smoothed version to the ROOT file
+                rootfile[f'{analysis}_{year}_{var_label}'] = (smooth_hist, edges)
+            else:
+                rootfile[f'{analysis}_{year}_{var_label}'] = (ratio, edges)
 
         # Store all uncertainties, later to be tabulated (top 5 only + total)
         if tabulate_top5:
@@ -209,7 +216,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
             loc = matplotlib.ticker.MultipleLocator(base=0.02)
             ax.set_ylim(0.87,1.13)
         else:
-            if 'ZJets' in dataset_tag or 'WJets' in dataset_tag:
+            if 'zjets' in dataset_tag or 'wjets' in dataset_tag:
                 ax.set_ylim(0.65,1.45)
             else:
                 ax.set_ylim(0.75,1.35)
@@ -539,10 +546,10 @@ def main():
 
     # If requested so, only run over Z(nunu) 2016
     if not args.znunu2016:
-        dataset_tags = ['ZJetsToNuNu2017', 'ZJetsToNuNu2018', 'EWKZ2Jets_ZToNuNu2017', 'EWKZ2Jets_ZToNuNu2018', 
-                    'VBF2017', 'VBF2018', 'Top_FXFX2017', 'Top_FXFX2018', 'GluGlu2017', 'GluGlu2018']
+        dataset_tags = ['qcd_zjets_2017', 'qcd_zjets_2018', 'ewk_zjets_2017', 'ewk_zjets_2018', 
+                    'vbf_2017', 'vbf_2018', 'ggh_2017', 'ggh_2018']
     else:
-        dataset_tags = ['ZJetsToNuNu2016']
+        dataset_tags = ['qcd_zjets_2016']
 
     # The binnings to be used for each analysis
     binnings_dict = {
@@ -551,8 +558,7 @@ def main():
             'monov' : recoil_bins_2016_monov
         },
         'vbf' : {
-            'default' : mjj_binning_v1,
-            'singleBin' : mjj_binning_singleBin
+            'default' : mjj_binning_v1
         }
     }
 
@@ -570,18 +576,20 @@ def main():
     
         # Configure root usage for the function 
         if args.save_to_root:
-            outputrootfile = pjoin(outputrootdir, f'{args.analysis}_shape_jes_uncs_{bin_tag}_binning.root')
+            outputrootfile = pjoin(outputrootdir, f'{args.analysis}_shape_jes_uncs_smooth.root')
             rootfile = uproot.recreate(outputrootfile)
             print(f'MSG% ROOT file is created: {rootfile}')
     
             root_config = {
-                'save' : args.save_to_root,
-                'file' : rootfile if args.save_to_root else None
+                'save'  : args.save_to_root,
+                'shape' : 'qcd_zjets',
+                'file'  : rootfile if args.save_to_root else None
             }
         else:
             root_config = {
-                'save' : False,
-                'file' : None
+                'save'  : False,
+                'shape' : None,
+                'file'  : None
             }
 
         # Dictionary to store the JES total variations for all samples
@@ -608,12 +616,12 @@ def main():
             # 3. Plot all the sources and save them into a ROOT file as a shape uncertainty
             _ = plot_split_jecunc(acc, out_tag, dataset_tag, year=year, 
                         analysis=args.analysis, bins=bins, bin_tag=bin_tag,
-                        plot_smooth=(bin_tag != 'singleBin')
+                        plot_smooth=True
                         )
             # Only save to ROOT file the unskimmed shapes
             total_variations_all[dataset_tag] = plot_split_jecunc(acc, out_tag, dataset_tag, year=year, 
                         analysis=args.analysis, bins=bins, bin_tag=bin_tag, root_config=root_config,
-                        plot_smooth=False, save_smooth=(bin_tag != 'singleBin')
+                        plot_smooth=False, save_smooth=True
                         )
         
         # Produce the plots with regrouping, if requested:
@@ -622,7 +630,7 @@ def main():
 
     # Compare JES total variations as a function of mjj for both years
     for year in [2017, 2018]:
-        samples = [f'VBF{year}', f'ZJetsToNuNu{year}', f'EWKZ2Jets_ZToNuNu{year}']
+        samples = [f'vbf_{year}', f'qcd_zjets_{year}', f'ewk_zjets_{year}']
         # Check if the calculations are done for this sample in this run, if not, skip this
         skip=False
         for sample in samples:
