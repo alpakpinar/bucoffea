@@ -124,7 +124,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
     colormap = plt.cm.nipy_spectral
     num_plots = len(vars_to_plot) 
     colors = [[colormap(0)]]
-    for i in np.linspace(0.1,0.9,num_plots):
+    for i in np.linspace(0.1,1,num_plots):
         colors.append([colormap(i), colormap(i)])
 
     # Flatten the color list
@@ -179,7 +179,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
         if plot_smooth:
             # Plot only the smoothed out distributions
             if var_label_skimmed in vars_to_plot:
-                ax.plot(centers, smooth_hist, label=var_label)
+                ax.plot(centers, smooth_hist, label=var_label, marker='o')
 
         # As we loop through each uncertainty source, save into ROOT file if this is requested
         if root_config['save']:
