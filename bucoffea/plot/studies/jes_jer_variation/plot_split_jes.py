@@ -192,11 +192,24 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
             rootfile = root_config['file']
             # Guard against inf/nan values
             ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
-            if save_smooth:
-                # Save only the smoothed version to the ROOT file
-                rootfile[f'{analysis}_{year}_{var_label}'] = (smooth_hist, edges)
+            # For JER variations, save "_jerUp" and "_jerDown" as the same histogram, to be compatible with the fit code
+            if 'jer' in region.name:
+                if save_smooth:
+                    smooth_hist_jerUp = smooth_hist
+                    smooth_hist_jerDown = smooth_hist
+                    rootfile[f'{analysis}_{year}_jerUp'] = (smooth_hist_jerUp, edges)
+                    rootfile[f'{analysis}_{year}_jerDown'] = (smooth_hist_jerDown, edges)
+                else:
+                    ratio_jerUp = ratio
+                    ratio_jerDown = ratio
+                    rootfile[f'{analysis}_{year}_jerUp'] = (ratio_jerUp, edges)
+                    rootfile[f'{analysis}_{year}_jerDown'] = (ratio_jerDown, edges)
             else:
-                rootfile[f'{analysis}_{year}_{var_label}'] = (ratio, edges)
+                if save_smooth:
+                    # Save only the smoothed version to the ROOT file
+                    rootfile[f'{analysis}_{year}_{var_label}'] = (smooth_hist, edges)
+                else:
+                    rootfile[f'{analysis}_{year}_{var_label}'] = (ratio, edges)
 
         # Store all uncertainties, later to be tabulated (top 5 only + total)
         if tabulate_top5:
