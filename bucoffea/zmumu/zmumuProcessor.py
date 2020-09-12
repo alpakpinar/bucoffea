@@ -159,7 +159,14 @@ class zmumuProcessor(processor.ProcessorABC):
         df['is_tight_photon'] = photons.mediumId & photons.barrel
         
         selection = processor.PackedSelection()
-        
+
+        # HEM veto for 2018
+        pass_all = np.ones(df.size)==1
+        if df['year'] == 2018:
+            selection.add('hemveto', df['hemveto'])
+        else:
+            selection.add('hemveto', pass_all)
+
         # Electron and b vetoes for 2m CR
         selection.add('veto_ele', electrons.counts==0)
         selection.add('veto_b', bjets.counts==0)
