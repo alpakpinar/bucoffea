@@ -64,7 +64,7 @@ def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', spec='
     spec_suffix = f'_{spec}' if spec != 'regular' else ''
 
     # Get the relevant regions
-    h = h[re.compile(f'^.*{spec_suffix}$')]
+    h = h[re.compile(f'^.*EmEF{spec_suffix}$')]
 
     hist.plot1d(h, ax=ax, overlay='region')
 

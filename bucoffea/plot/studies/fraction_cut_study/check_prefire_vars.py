@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import numpy as np
+import warnings
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -11,6 +12,8 @@ from klepto.archives import dir_archive
 from pprint import pprint 
 
 pjoin = os.path.join
+
+warnings.filterwarnings('ignore')
 
 def compare_prefire_vars(acc, outtag, variable='ak4_eta0', year=2017):
     '''Compare the efficiency of EM fraction cut in data/MC with prefire variations.'''
@@ -81,7 +84,7 @@ def compare_prefire_vars(acc, outtag, variable='ak4_eta0', year=2017):
     rax.legend(ncol=3)
 
     # Save figure
-    outdir = f'./output/{outtag}'
+    outdir = f'./output/{outtag}/prefire_vars'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     

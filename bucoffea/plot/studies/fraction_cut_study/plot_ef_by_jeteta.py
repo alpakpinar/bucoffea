@@ -84,7 +84,7 @@ def plot_ef_by_jeteta(acc, outtag, year):
         rax.set_ylim(ylim)
 
         # Save figure
-        outdir = f'./output/{outtag}'
+        outdir = f'./output/{outtag}/jet_efs'
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
