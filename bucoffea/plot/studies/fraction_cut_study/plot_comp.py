@@ -34,7 +34,7 @@ def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path to merged coffea files.')
     parser.add_argument('--years', help='Years to plot.', nargs='*', type=int, default=[2017, 2018])
-    parser.add_argument('--specs', help='Special regions: regular, tight, tightBalCut, tightMassCut', nargs='*', default=['regular'])
+    parser.add_argument('--specs', help='Regex to specify one or more of the special regions: regular, tight, tightBalCut, tightMassCut', default='regular')
     parser.add_argument('--plot_data_mc', help='If this is specified, data/MC plots will be plotted.', action='store_true')
     parser.add_argument('--distribution', help='Regex to plot for data/MC comparison plots.', default='.*')
     args = parser.parse_args()
@@ -216,11 +216,20 @@ def main():
     # Variables to plot
     variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'muon_pt0', 'met']
 
+    all_specs = [
+        'regular',
+        'tight',
+        'tightBalCut',
+        'tightMassCut'
+        ]
+
     for year in args.years:
         for variable in variables:
             if not re.match(args.distribution, variable):
                 continue
-            for spec in args.specs:
+            for spec in all_specs:
+                if not re.match(args.specs, spec):
+                    continue
                 # Plot comparison with the normal pt balance cut and the tighter one
                 plot_comparison(acc, outtag, variable=variable, region=region, spec=spec, year=year)
             # Plot data/MC comparison plots before and after the EM fraction cut, if requested
