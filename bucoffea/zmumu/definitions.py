@@ -104,4 +104,20 @@ def zmumu_regions(cfg):
     regions['cr_2m_noEmEF_prefireDown'] = two_mu_cuts
     regions['cr_2m_withEmEF_prefireDown'] = two_mu_cuts + ['ak4_neEmEF']
 
+    # Regions with tighter selections
+    regions['cr_2m_noEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight']
+    regions['cr_2m_noEmEF_tightBalCut'].remove('z_pt_over_jet_pt')
+    regions['cr_2m_withEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight', 'ak4_neEmEF']
+    regions['cr_2m_withEmEF_tightBalCut'].remove('z_pt_over_jet_pt')
+
+    regions['cr_2m_noEmEF_tightMassCut'] = two_mu_cuts + ['dimuon_mass_tight']
+    regions['cr_2m_noEmEF_tightMassCut'].remove('dimuon_mass')
+    regions['cr_2m_withEmEF_tightMassCut'] = two_mu_cuts + ['dimuon_mass_tight', 'ak4_neEmEF']
+    regions['cr_2m_withEmEF_tightMassCut'].remove('dimuon_mass')
+
+    regions['cr_2m_noEmEF_tight'] = copy.deepcopy(regions['cr_2m_noEmEF_tightBalCut']) + ['dimuon_mass_tight']
+    regions['cr_2m_noEmEF_tight'].remove('dimuon_mass')
+    regions['cr_2m_withEmEF_tight'] = copy.deepcopy(regions['cr_2m_withEmEF_tightBalCut']) + ['dimuon_mass_tight']
+    regions['cr_2m_withEmEF_tight'].remove('dimuon_mass')
+    
     return regions

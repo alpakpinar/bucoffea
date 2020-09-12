@@ -181,6 +181,9 @@ class zmumuProcessor(processor.ProcessorABC):
         selection.add('dimuon_mass', ((dimuons.mass > cfg.SELECTION.CONTROL.DOUBLEMU.MASS.MIN) \
                                     & (dimuons.mass < cfg.SELECTION.CONTROL.DOUBLEMU.MASS.MAX)).any())
 
+        selection.add('dimuon_mass_tight', ((dimuons.mass > 75) \
+                                    & (dimuons.mass < 105)).any())
+
         dimuon_charge = dimuons.i0['charge'] + dimuons.i1['charge']
         selection.add('dimuon_charge', (dimuon_charge==0).any())
 
