@@ -124,7 +124,8 @@ def main():
         'regular',
         'tight',
         'tightBalCut',
-        'tightMassCut'
+        'tightMassCut',
+        'very_tight'
     ]
 
     # Plot efficiency comparison plots both with the regular pt balance cut, and the tighter one (<0.1)

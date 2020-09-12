@@ -75,6 +75,7 @@ def add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4):
     
     # Tighter version of the same balance cut
     selection.add('z_pt_over_jet_pt_tight', np.abs(df['z_pt_over_jet_pt']) < 0.1)
+    selection.add('z_pt_over_jet_pt_very_tight', np.abs(df['z_pt_over_jet_pt']) < 0.05)
 
     selection.add('met_pt', met_pt < 50)
 

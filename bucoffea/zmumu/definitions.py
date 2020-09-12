@@ -121,4 +121,9 @@ def zmumu_regions(cfg):
     regions['cr_2m_withEmEF_tight'] = copy.deepcopy(regions['cr_2m_withEmEF_tightBalCut']) + ['dimuon_mass_tight']
     regions['cr_2m_withEmEF_tight'].remove('dimuon_mass')
     
+    regions['cr_2m_noEmEF_very_tight'] = copy.deepcopy(regions['cr_2m_noEmEF_tight']) + ['z_pt_over_jet_pt_very_tight']
+    regions['cr_2m_noEmEF_very_tight'].remove('z_pt_over_jet_pt_tight')
+    regions['cr_2m_withEmEF_very_tight'] = copy.deepcopy(regions['cr_2m_withEmEF_tight']) + ['z_pt_over_jet_pt_very_tight']
+    regions['cr_2m_withEmEF_very_tight'].remove('z_pt_over_jet_pt_tight')
+    
     return regions

@@ -220,7 +220,8 @@ def main():
         'regular',
         'tight',
         'tightBalCut',
-        'tightMassCut'
+        'tightMassCut',
+        'very_tight'
         ]
 
     for year in args.years:
