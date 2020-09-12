@@ -34,7 +34,7 @@ def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path to merged coffea files.')
     parser.add_argument('--years', help='Years to plot.', nargs='*', type=int, default=[2017, 2018])
-    parser.add_argument('--rtypes', help='Region types: Tight, regular and nobal', nargs='*', default=['regular'])
+    parser.add_argument('--specs', help='Special regions: regular, tight, tightBalCut, tightMassCut', nargs='*', default=['regular'])
     parser.add_argument('--plot_data_mc', help='If this is specified, data/MC plots will be plotted.', action='store_true')
     parser.add_argument('--distribution', help='Regex to plot for data/MC comparison plots.', default='.*')
     args = parser.parse_args()
@@ -57,25 +57,14 @@ def preprocess(h, acc, variable):
 
     return h
 
-def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', rtype='regular', year=2017):
+def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', spec='regular', year=2017):
     '''Make the comparison plot for data or MC and save it.'''
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
 
-    suffices = {
-        'tight' : '_tightptcut',
-        'nobal' : '_nobal',
-        'regular' : ''
-    }
-
-    cut_suffix =  suffices[rtype]
+    spec_suffix = f'_{spec}' if spec != 'regular' else ''
 
     # Get the relevant regions
-    if rtype == 'tight':
-        h = h[re.compile(f'^.*{cut_suffix}$')]
-    elif rtype == 'nobal':
-        h = h[re.compile(f'^.*{cut_suffix}$')]
-    else:
-        h = h[re.compile(f'^.*EmEF$')]
+    h = h[re.compile(f'^.*{spec_suffix}$')]
 
     hist.plot1d(h, ax=ax, overlay='region')
 
@@ -96,8 +85,8 @@ def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', rtype=
         'color':'k'
     }
     # Plot the ratio
-    h_num = h.integrate('region', re.compile(f'.*withEmEF{cut_suffix}'))
-    h_den = h.integrate('region', re.compile(f'.*noEmEF{cut_suffix}'))
+    h_num = h.integrate('region', re.compile(f'.*withEmEF{spec_suffix}'))
+    h_den = h.integrate('region', re.compile(f'.*noEmEF{spec_suffix}'))
     hist.plotratio(h_num, h_den, ax=rax, error_opts=data_err_opts, unc='num')
 
     rax.set_xlabel(XLABELS[variable])
@@ -113,12 +102,12 @@ def make_plot(h, outtag, mode='data', region='cr_2m', variable='ak4_pt0', rtype=
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outname = f'{variable}_comp_{region}_{mode}{cut_suffix}_{year}.pdf'
+    outname = f'{variable}_comp_{region}_{mode}{spec_suffix}_{year}.pdf'
     outpath = pjoin(outdir, outname)
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
-def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m', rtype='regular', year=2017):
+def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m', spec='regular', year=2017):
     '''Plot spectrum for the given variable, with and without the EM fraction cut.'''
     acc.load(variable)
     h = acc[variable]
@@ -133,45 +122,22 @@ def plot_comparison(acc, outtag, variable='ak4_pt0', region='cr_2m', rtype='regu
         h_mc = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}'))[re.compile('.*EmEF.*')]
 
     # Make the plots for data and MC
-    make_plot(h_data, outtag, mode='data', variable=variable, region=region, rtype=rtype, year=year)
-    make_plot(h_mc, outtag, mode='mc', variable=variable, region=region, rtype=rtype, year=year)
+    make_plot(h_data, outtag, mode='data', variable=variable, region=region, spec=spec, year=year)
+    make_plot(h_mc, outtag, mode='mc', variable=variable, region=region, spec=spec, year=year)
 
-def plot_ee_comparison(acc, outtag, variable='ak4_eta0', region='cr_2m', year=2017):
-    '''Plot comparison of distributions when the jet fraction cut is applied on all jets vs.
-    it is applied only on jets in endcap.'''
-    acc.load(variable)
-    h = acc[variable]
-    h = preprocess(h, acc, variable)
-
-    # Get data and MC, for GJets or Zmumu events
-    if region == 'cr_g':
-        h_data = h.integrate('dataset', f'EGamma_{year}')[re.compile('.*EmEF.*')]
-        h_mc = h.integrate('dataset', re.compile(f'GJets_DR-0p4.*{year}'))[re.compile('.*EmEF.*')]
-    elif region == 'cr_2m':
-        h_data = h.integrate('dataset', f'SingleMuon_{year}')[re.compile('.*EmEF.*')]
-        h_mc = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}'))[re.compile('.*EmEF.*')]
-
-    
-
-def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', region='cr_2m', rtype='regular', year=2017):
+def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', region='cr_2m', spec='regular', year=2017):
     '''Plot data/MC comparison for the given variable, with or without the EM fraction cut.'''
     acc.load(variable)
     h = acc[variable]
     h = preprocess(h, acc, variable)
 
-    suffices = {
-        'tight' : '_tightptcut',
-        'nobal' : '_nobal',
-        'regular' : ''
-    }
-
-    cut_suffix =  suffices[rtype]
+    spec_suffix = f'_{spec}' if spec != 'regular' else ''
 
     # Get the relevant region
     if mode == 'before_cut':
-        h = h.integrate('region', f'{region}_noEmEF{cut_suffix}')
+        h = h.integrate('region', f'{region}_noEmEF{spec_suffix}')
     elif mode == 'after_cut':
-        h = h.integrate('region', f'{region}_withEmEF{cut_suffix}')
+        h = h.integrate('region', f'{region}_withEmEF{spec_suffix}')
 
     h = h[re.compile(f'.*{year}')]
 
@@ -217,7 +183,7 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', 
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outname = f'data_mc_comp_{variable}_{region}_{mode}{cut_suffix}_{year}.pdf'
+    outname = f'data_mc_comp_{variable}_{region}_{mode}{spec_suffix}_{year}.pdf'
     outpath = pjoin(outdir, outname)
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
@@ -254,13 +220,13 @@ def main():
         for variable in variables:
             if not re.match(args.distribution, variable):
                 continue
-            for rtype in args.rtypes:
+            for spec in args.specs:
                 # Plot comparison with the normal pt balance cut and the tighter one
-                plot_comparison(acc, outtag, variable=variable, region=region, rtype=rtype, year=year)
+                plot_comparison(acc, outtag, variable=variable, region=region, spec=spec, year=year)
             # Plot data/MC comparison plots before and after the EM fraction cut, if requested
             if args.plot_data_mc:
-                plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region, rtype=rtype, year=year)
-                plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region, rtype=rtype, year=year)
+                plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region, spec=spec, year=year)
+                plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region, spec=spec, year=year)
 
 if __name__ == '__main__':
     main()
