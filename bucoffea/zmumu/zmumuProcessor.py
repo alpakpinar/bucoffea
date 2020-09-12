@@ -42,9 +42,6 @@ from bucoffea.helpers.gen import (
                                   setup_dressed_gen_candidates,
                                   fill_gen_v_info
                                  )
-from bucoffea.helpers.weights import (
-                                  get_veto_weights
-                                 )
 
 from bucoffea.zmumu.definitions import zmumu_accumulator, zmumu_regions
 
@@ -218,10 +215,30 @@ class zmumuProcessor(processor.ProcessorABC):
 
         regions = zmumu_regions(cfg)
 
-        veto_weights = get_veto_weights(df, evaluator, electrons, muons, taus)
         for region, cuts in regions.items():
             exclude = [None]
             region_weights = copy.deepcopy(weights)
+
+            if not df['is_data']:
+                # For specific regions, include prefire weight up/down variations, instead of the central value
+                if re.match('^.*EmEF.*Up$', region):
+                    try:
+                        region_weights.add('prefire', df['PrefireWeight_Up'])
+                    except KeyError:
+                        region_weights.add('prefire', np.ones(df.size))
+                    
+                elif re.match('^.*EmEF.*Down$', region):
+                    try:
+                        region_weights.add('prefire', df['PrefireWeight_Down'])
+                    except KeyError:
+                        region_weights.add('prefire', np.ones(df.size))
+                    
+                # Apply regular prefire weights to other regions
+                else:
+                    try:
+                        region_weights.add('prefire', df['PrefireWeight'])
+                    except KeyError:
+                        region_weights.add('prefire', np.ones(df.size))
 
             mask = selection.all(*cuts)
 

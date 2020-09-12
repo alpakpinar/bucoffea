@@ -98,4 +98,10 @@ def zmumu_regions(cfg):
     regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_7_lt_3_0'] = two_mu_cuts + ['jet_eta_gt_2_7_lt_3_0']
     regions['cr_2m_noEmEF_jeteta_gt_3_0'] = two_mu_cuts + ['jet_eta_gt_3_0']
 
+    # Regions with varied prefire weights
+    regions['cr_2m_noEmEF_prefireUp'] = two_mu_cuts
+    regions['cr_2m_withEmEF_prefireUp'] = two_mu_cuts + ['ak4_neEmEF']
+    regions['cr_2m_noEmEF_prefireDown'] = two_mu_cuts
+    regions['cr_2m_withEmEF_prefireDown'] = two_mu_cuts + ['ak4_neEmEF']
+
     return regions
