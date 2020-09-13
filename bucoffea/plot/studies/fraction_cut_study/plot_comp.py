@@ -26,8 +26,9 @@ XLABELS = {
     'ak4_eta0' : r'Jet $\eta$',
     'ak4_nef0' : 'Jet Neutral EM Fraction',
     'met' : r'$p_T^{miss}$ (GeV)',
+    'muon_pt0' : r'Leading $\mu \ p_T \ (GeV)$',
     'z_pt_over_jet_pt' : r'$p_T^Z / p_T^j - 1$',
-    'muon_pt0' : r'Leading $\mu \ p_T \ (GeV)$'
+    'dphi_z_jet' : r'$\Delta\phi(Z,j)$'
 }
 
 def parse_cli():
@@ -214,7 +215,7 @@ def main():
         region = 'cr_2m'
 
     # Variables to plot
-    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'muon_pt0', 'met']
+    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'muon_pt0', 'met', 'dphi_z_jet']
 
     all_specs = [
         'regular',
