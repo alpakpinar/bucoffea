@@ -179,7 +179,7 @@ def plot_data_mc_comparison(acc, outtag, variable='ak4_pt0', mode='before_cut', 
     rax.set_xlim(xlim)
 
     # Save the figure
-    outdir = f'./output/{outtag}'
+    outdir = f'./output/{outtag}/data_mc_comp'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
