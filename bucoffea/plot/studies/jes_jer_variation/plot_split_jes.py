@@ -67,7 +67,7 @@ def parse_cli():
     parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
     parser.add_argument('--tabulate', help='Tabulate unc/variation values.', action='store_true')
     parser.add_argument('--znunu2016', help='Only run over Z(vv) 2016.', action='store_true')
-    parser.add_argument('--binnings', help='The binnings to use for monojet analysis, can be monoj or monov. Default is both.', nargs='*', default=['monoj', 'monov'])
+    parser.add_argument('--binnings', help='The binnings to use for monojet analysis, can be monoj or monov. Default is both.', nargs='*', default=None)
     args = parser.parse_args()
     return args
 
@@ -101,7 +101,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
     region_suffix = '_j' if analysis == 'monojet' else '_vbf'
 
     tag_to_dataset_regex = {
-        f'ggH_{year}' : f'GluGlu.*{year}',
+        f'ggh_{year}' : f'GluGlu.*{year}',
         f'vbf_{year}' : f'VBF.*{year}',
         f'qcd_zjets_{year}' : f'ZJetsToNuNu.*{year}',
         f'ewk_zjets_{year}' : f'EWKZ.*{year}',
@@ -466,21 +466,22 @@ def plot_split_jecunc_regrouped(acc, out_tag, dataset_tag, year, binnings, bin_s
     outpath = pjoin(outdir, filename)
     fig.savefig(outpath)
 
-def compare_total_variations(total_variations_all, out_tag, year, samples=['VBF2017', 'ZJetsToNuNu2017', 'EWKZ2Jets_ZToNuNu2017'], plot_smoothed=False):
+def compare_total_variations(total_variations_all, out_tag, year, samples, plot_smoothed=False):
     '''Make a comparison plot, comparing total variations for several different samples as a function of mjj.'''
     var_legend_labels = {
         'jesTotalUp' : 'JES up',
         'jesTotalDown' : 'JES down'
     }
     sample_legend_labels = {
-        'VBF.*' : r'VBF $H(inv)$',
-        'ZJetsToNuNu.*' : r'QCD $Z(\nu\nu)$',
-        'EWKZ.*' : r'EWK $Z(\nu\nu)$'
+        'vbf.*' : r'VBF $H(inv)$',
+        'qcd_zjets.*' : r'QCD $Z(\nu\nu)$',
+        'ewk_zjets.*' : r'EWK $Z(\nu\nu)$',
+        'ggh.*' : r'$ggH(inv)$'
     }
 
     fig, ax = plt.subplots()
     # Setup the color map
-    colors = ['red', 'blue', 'orange']
+    colors = ['red', 'blue', 'orange', 'green']
 
     for idx, sample in enumerate(samples):
         total_variations = total_variations_all[sample]
@@ -514,7 +515,7 @@ def compare_total_variations(total_variations_all, out_tag, year, samples=['VBF2
         ax.set_title(f'{year}: JES Comparison (Smoothed)')
     else:
         ax.set_title(f'{year}: JES Comparison')
-    ax.legend(prop={'size' : 8})
+    ax.legend(prop={'size' : 8}, ncol=2)
 
     xlim = ax.get_xlim()
     ax.plot(xlim, [1., 1.], color='k')
@@ -576,8 +577,18 @@ def main():
     }
 
     binnings = binnings_dict[args.analysis]
+
+    if args.binnings is not None:
+        binnings_to_use = args.binnings
+    # In case, binnings option is not specified, setup the defaults for monojet and VBF
+    else:
+        if args.analysis == 'monojet':
+            binnings_to_use = ['monoj', 'monov']
+        elif args.analysis == 'vbf':
+            binnings_to_use = ['default']
+
     for bin_tag, bins in binnings.items():
-        if bin_tag not in args.binnings:
+        if bin_tag not in binnings_to_use:
             print(f'MSG% Skipping binning: {bin_tag}')
             continue
 
@@ -623,18 +634,10 @@ def main():
                 year = '2018' # 2018 VBF + ggH signals or Z(nunu)
             else:
                 year = '2016' # 2016 Z(nunu)
-            # Plot split JEC uncertainties in three ways: 
-            # 1. All uncertainty sources plotted on a single bin
-            # 2. Only the largest sources are plotted, with multiple bins
-            # 3. Plot all the sources and save them into a ROOT file as a shape uncertainty
-            _ = plot_split_jecunc(acc, out_tag, dataset_tag, year=year, 
-                        analysis=args.analysis, bins=bins, bin_tag=bin_tag,
-                        plot_smooth=True
-                        )
-            # Only save to ROOT file the unskimmed shapes
+            # Plot and save split JEC uncertainties
             total_variations_all[dataset_tag] = plot_split_jecunc(acc, out_tag, dataset_tag, year=year, 
                         analysis=args.analysis, bins=bins, bin_tag=bin_tag, root_config=root_config,
-                        plot_smooth=False, save_smooth=True
+                        plot_smooth=True, save_smooth=True
                         )
         
         # Produce the plots with regrouping, if requested:
@@ -643,7 +646,7 @@ def main():
 
     # Compare JES total variations as a function of mjj for both years
     for year in [2017, 2018]:
-        samples = [f'vbf_{year}', f'qcd_zjets_{year}', f'ewk_zjets_{year}']
+        samples = [f'vbf_{year}', f'qcd_zjets_{year}', f'ewk_zjets_{year}', f'ggh_{year}']
         # Check if the calculations are done for this sample in this run, if not, skip this
         skip=False
         for sample in samples:
