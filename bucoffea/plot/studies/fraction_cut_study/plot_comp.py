@@ -234,9 +234,9 @@ def main():
                 # Plot comparison with the normal pt balance cut and the tighter one
                 plot_comparison(acc, outtag, variable=variable, region=region, spec=spec, year=year)
             # Plot data/MC comparison plots before and after the EM fraction cut, if requested
-            if args.plot_data_mc:
-                plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region, spec=spec, year=year)
-                plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region, spec=spec, year=year)
+                if args.plot_data_mc:
+                    plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region, spec=spec, year=year)
+                    plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region, spec=spec, year=year)
 
 if __name__ == '__main__':
     main()
