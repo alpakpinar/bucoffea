@@ -197,19 +197,19 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
                 if save_smooth:
                     smooth_hist_jerUp = smooth_hist
                     smooth_hist_jerDown = smooth_hist
-                    rootfile[f'{analysis}_{year}_jerUp'] = (smooth_hist_jerUp, edges)
-                    rootfile[f'{analysis}_{year}_jerDown'] = (smooth_hist_jerDown, edges)
+                    rootfile[f'{bin_tag}_{year}_jerUp'] = (smooth_hist_jerUp, edges)
+                    rootfile[f'{bin_tag}_{year}_jerDown'] = (smooth_hist_jerDown, edges)
                 else:
                     ratio_jerUp = ratio
                     ratio_jerDown = ratio
-                    rootfile[f'{analysis}_{year}_jerUp'] = (ratio_jerUp, edges)
-                    rootfile[f'{analysis}_{year}_jerDown'] = (ratio_jerDown, edges)
+                    rootfile[f'{bin_tag}_{year}_jerUp'] = (ratio_jerUp, edges)
+                    rootfile[f'{bin_tag}_{year}_jerDown'] = (ratio_jerDown, edges)
             else:
                 if save_smooth:
                     # Save only the smoothed version to the ROOT file
-                    rootfile[f'{analysis}_{year}_{var_label}'] = (smooth_hist, edges)
+                    rootfile[f'{bin_tag}_{year}_{var_label}'] = (smooth_hist, edges)
                 else:
-                    rootfile[f'{analysis}_{year}_{var_label}'] = (ratio, edges)
+                    rootfile[f'{bin_tag}_{year}_{var_label}'] = (ratio, edges)
 
         # Store all uncertainties, later to be tabulated (top 5 only + total)
         if tabulate_top5:
@@ -248,7 +248,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
 
     # Save figure
     if analysis == 'monojet':
-        if bin_tag == 'monoj':
+        if bin_tag == 'monojet':
             outdir = f'./output/{out_tag}/splitJEC/{analysis}/monojet_binning'
         elif bin_tag == 'monov':
             outdir = f'./output/{out_tag}/splitJEC/{analysis}/monoV_binning'
@@ -568,11 +568,11 @@ def main():
     # The binnings to be used for each analysis
     binnings_dict = {
         'monojet' : {
-            'monoj' : recoil_bins_2016_monoj,
+            'monojet' : recoil_bins_2016_monoj,
             'monov' : recoil_bins_2016_monov
         },
         'vbf' : {
-            'default' : mjj_binning_v1
+            'vbf' : mjj_binning_v1
         }
     }
 
@@ -583,39 +583,44 @@ def main():
     # In case, binnings option is not specified, setup the defaults for monojet and VBF
     else:
         if args.analysis == 'monojet':
-            binnings_to_use = ['monoj', 'monov']
+            binnings_to_use = ['monojet', 'monov']
         elif args.analysis == 'vbf':
-            binnings_to_use = ['default']
+            binnings_to_use = ['vbf']
+    
+    print(f'Binnings to use: {", ".join(binnings_to_use)}')
+
+    # Create an output root file to save the uncertainties
+    outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root'
+
+    # Configure root usage for the function 
+    if args.save_to_root:
+        if args.analysis == 'monojet':
+            outputrootfile = pjoin(outputrootdir, 'monoj_monov_shape_jes_uncs_smooth.root')
+        elif args.analysis == 'vbf':
+            outputrootfile = pjoin(outputrootdir, 'vbf_shape_jes_uncs_smooth.root')
+        rootfile = uproot.recreate(outputrootfile)
+        print(f'MSG% ROOT file is created: {rootfile}')
+
+        root_config = {
+            'save'  : args.save_to_root,
+            'shape' : 'qcd_zjets',
+            'file'  : rootfile if args.save_to_root else None
+        }
+    else:
+        root_config = {
+            'save'  : False,
+            'shape' : None,
+            'file'  : None
+        }
 
     for bin_tag, bins in binnings.items():
         if bin_tag not in binnings_to_use:
             print(f'MSG% Skipping binning: {bin_tag}')
             continue
 
-        # Create an output root file to save the uncertainties
-        outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root'
-            
         if not os.path.exists(outputrootdir):
             os.makedirs(outputrootdir)
     
-        # Configure root usage for the function 
-        if args.save_to_root:
-            outputrootfile = pjoin(outputrootdir, f'{args.analysis}_shape_jes_uncs_smooth.root')
-            rootfile = uproot.recreate(outputrootfile)
-            print(f'MSG% ROOT file is created: {rootfile}')
-    
-            root_config = {
-                'save'  : args.save_to_root,
-                'shape' : 'qcd_zjets',
-                'file'  : rootfile if args.save_to_root else None
-            }
-        else:
-            root_config = {
-                'save'  : False,
-                'shape' : None,
-                'file'  : None
-            }
-
         # Dictionary to store the JES total variations for all samples
         total_variations_all = {}
     
@@ -626,6 +631,10 @@ def main():
                     print(f'MSG% Skipping: {dataset_tag}')
                     continue
     
+            # For monojet, only run over QCD Z(vv) samples for now
+            if args.analysis == 'monojet' and 'qcd_zjets' not in dataset_tag:
+                continue
+
             print(f'MSG% Working on: {dataset_tag}')
             # Determine the year of the dataset
             if '2017' in dataset_tag:
