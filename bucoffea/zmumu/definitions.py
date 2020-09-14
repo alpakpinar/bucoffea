@@ -63,6 +63,7 @@ def zmumu_accumulator(cfg):
 
     items['dphi_z_jet'] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
     items['z_pt_over_jet_pt'] = Hist("Counts", dataset_ax, region_ax, ptfrac_ax)
+    items['dimuon_mass'] = Hist("Counts", dataset_ax, region_ax, dilepton_mass_ax)
 
     items['sumw'] = processor.defaultdict_accumulator(float)
     items['sumw2'] = processor.defaultdict_accumulator(float)
