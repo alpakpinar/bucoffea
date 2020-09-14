@@ -29,7 +29,8 @@ XLABELS = {
     'met' : r'$p_T^{miss}$ (GeV)',
     'muon_pt0' : r'Leading $\mu \ p_T \ (GeV)$',
     'z_pt_over_jet_pt' : r'$p_T^Z / p_T^j - 1$',
-    'dphi_z_jet' : r'$\Delta\phi(Z,j)$'
+    'dphi_z_jet' : r'$\Delta\phi(Z,j)$',
+    'dimuon_mass' : r'$M_{\mu\mu}$'
 }
 
 def parse_cli():
