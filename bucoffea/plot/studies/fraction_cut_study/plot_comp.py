@@ -216,7 +216,7 @@ def main():
         region = 'cr_2m'
 
     # Variables to plot
-    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'ak4_nhf0', 'muon_pt0', 'met', 'dphi_z_jet']
+    variables = ['ak4_pt0', 'ak4_eta0', 'ak4_nef0', 'ak4_nhf0', 'muon_pt0', 'met', 'dphi_z_jet', 'dimuon_mass']
 
     all_specs = [
         'regular',
@@ -233,9 +233,10 @@ def main():
             for spec in all_specs:
                 if not re.match(args.specs, spec):
                     continue
-                # Plot comparison with the normal pt balance cut and the tighter one
-                plot_comparison(acc, outtag, variable=variable, region=region, spec=spec, year=year)
-            # Plot data/MC comparison plots before and after the EM fraction cut, if requested
+                # Plot comparison with and without the jet energy fraction cut applied
+                if re.match('ak4_.*', variable):
+                    plot_comparison(acc, outtag, variable=variable, region=region, spec=spec, year=year)
+                # Plot data/MC comparison plots before and after the EM fraction cut, if requested
                 if args.plot_data_mc:
                     plot_data_mc_comparison(acc, outtag, variable=variable, mode='before_cut', region=region, spec=spec, year=year)
                     plot_data_mc_comparison(acc, outtag, variable=variable, mode='after_cut', region=region, spec=spec, year=year)
