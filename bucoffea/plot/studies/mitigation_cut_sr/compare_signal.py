@@ -5,6 +5,7 @@ import sys
 import re
 import numpy as np
 import matplotlib.ticker
+import warnings
 from matplotlib import pyplot as plt
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
@@ -16,6 +17,8 @@ pjoin = os.path.join
 REBIN = {
     'mjj' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
 }
+
+warnings.filterwarnings('ignore')
 
 def compute_loss(h_nom, h_mitigated):
     '''Compute the additional loss of signal with the mitigation cut, by calculating the area under the histograms.'''

@@ -5,6 +5,8 @@ import sys
 import re
 import numpy as np
 import matplotlib.ticker
+import warnings
+
 from matplotlib import pyplot as plt
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from coffea import hist
@@ -13,10 +15,14 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+warnings.filterwarnings('ignore')
+
 REBIN = {
     'mjj' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
     'ak4_pt0' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,600,20)) + list(range(600,1000,20)) ),
-    'ak4_pt1' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) ),
+    'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) ),
+    'ak4_eta0' : hist.Bin('jeteta',r'Leading AK4 jet $\eta$', 50, -5, 5),
+    'ak4_eta1' : hist.Bin('jeteta',r'Trailing AK4 jet $\eta$', 50, -5, 5),
 }
 
 XLABELS = {
@@ -40,11 +46,13 @@ def compare_data(acc, outtag, variable='ak4_eta0'):
     if variable in REBIN.keys():
         if 'ak4_pt' in variable:
             h = h.rebin('jetpt', REBIN[variable])
+        elif 'ak4_eta' in variable:
+            h = h.rebin('jeteta', REBIN[variable])
         else:
             h = h.rebin(variable, REBIN[variable])
 
     # Get the MET dataset
-    h = h.integrate('dataset', 'MET_2017')[re.compile('^sr_vbf((?!(veto_all|leadak4)).)*$')]
+    h = h.integrate('dataset', 'MET_2017')[re.compile('^sr_vbf((?!(veto_all|leadak4|fail)).)*$')]
 
     # Plot comparison
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
