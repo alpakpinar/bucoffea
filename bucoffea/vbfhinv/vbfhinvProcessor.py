@@ -339,14 +339,13 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         selection.add('eemitigation_v3', ~eemitigation_v3.any())
 
-        eemitigation_v4 = (diak4.i0.pt > 100) & (diak4.i0.abseta > 2.7) & (diak4.i0.abseta < 3.3) \
-                    & (dphi(diak4.i0.phi, met_phi) > 2.5)
-
-        selection.add('eemitigation_v4', ~eemitigation_v4.any())
-
         # Selection to identify events that pass "v3" selection, but fail the "v1" one
         pass_v3_fail_v1 = (~eemitigation_v3.any()) & (~eemitigation_v1)
         selection.add('passv3_failv1', pass_v3_fail_v1)
+
+        # Leading jet pt cut for additional examination region
+        large_ak4_pt0 = diak4.i0.pt > 600
+        selection.add('large_ak4_pt0', large_ak4_pt0.any())
 
         # Mask if both leading jets are in HF
         two_jets_in_hf = (diak4.i0.abseta>3.0) & (diak4.i1.abseta>3.0)

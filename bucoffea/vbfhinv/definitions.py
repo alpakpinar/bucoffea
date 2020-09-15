@@ -290,9 +290,9 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_eemitigationv1'] = regions['sr_vbf'] + ['eemitigation_v1', 'veto_hfhf', 'max_neEmEF'] # Currently used in VBF analysis
         regions['sr_vbf_eemitigationv2'] = regions['sr_vbf'] + ['eemitigation_v2']
         regions['sr_vbf_eemitigationv3'] = regions['sr_vbf'] + ['eemitigation_v3']
-        # Same with v3, except slightly tighter eta restriction on the leading jet
-        regions['sr_vbf_eemitigationv4'] = regions['sr_vbf'] + ['eemitigation_v4'] 
+        # Region for events passing v3 selection, but failing v1
         regions['sr_vbf_passv3_failv1'] = regions['sr_vbf'] + ['passv3_failv1']
+        regions['sr_vbf_passv3_failv1_largeak4_pt0'] = regions['sr_vbf'] + ['passv3_failv1', 'large_ak4_pt0']
 
         if cfg.RUN.SAVE.LOW_HIGH_JET_FRAC:
             # Save regions that contains events passing v3 selection, failing v1 and have very low or very high jet fractions
