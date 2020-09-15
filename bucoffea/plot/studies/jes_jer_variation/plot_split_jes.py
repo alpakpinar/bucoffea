@@ -53,7 +53,7 @@ titles_two_nuisances = {
 }
 
 # Binnings for mjj and recoil
-mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500, 5000])
+mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.])
 
 recoil_bins_2016_monoj = hist.Bin('recoil', 'Recoil (GeV)', [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400])
 recoil_bins_2016_monov = hist.Bin('recoil', 'Recoil (GeV)', [250,300,350,400,500,600,750,1000])
