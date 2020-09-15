@@ -33,7 +33,7 @@ XLABELS = {
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
-    parser.add_argument('--plot_spec', help='Plot distributions for events with specific jets, with very low/high fractions.', action='store_true')
+    parser.add_argument('--specs', help='Plot distributions for events with specific jets, specify with regex, default is None.', default=None)
     parser.add_argument('--plot_eta_phi', help='Plot 2D distributions for jet eta and phi.', action='store_true')
     args = parser.parse_args()
     return args
@@ -116,13 +116,18 @@ def plot_jet_eta_phi(acc, outtag, jet='leading'):
 
 def plot_events_specific_jets(acc, outtag, variable, spec='lowEmEF'):
     '''Plot events which pass the v3 selection but fail the v1 selection.
-    Leading jet in these events also has either very low or very high fractions.'''
+    In these events, leading jet has a specific additional selection (e.g. high pt, low EF).'''
     acc.load(variable)
     h = acc[variable]
 
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
     h = merge_datasets(h)
+
+    # Rebin jet eta
+    if 'ak4_eta' in variable:
+        new_eta_ax = hist.Bin("jeteta", r"$\eta$", 50, -5, 5)
+        h = h.rebin('jeteta', new_eta_ax)
 
     # Get the relevant region
     h = h.integrate('region', f'sr_vbf_passv3_failv1_{spec}').integrate('dataset', 'MET_2017')
@@ -131,7 +136,8 @@ def plot_events_specific_jets(acc, outtag, variable, spec='lowEmEF'):
         'lowEmEF' : r'$NeEmEF < 0.1$',
         'highEmEF' : r'$NeEmEF > 0.9$',
         'lowHEF' : r'$NeHEF < 0.1$',
-        'highHEF' : r'$NeHEF > 0.9$'
+        'highHEF' : r'$NeHEF > 0.9$',
+        'largeak4_pt0' : r'$p_T > 600$ GeV'
     }
 
     fig, ax = plt.subplots()
@@ -165,9 +171,11 @@ def main():
 
         # If requested, plot events where jets have either very low or very high energy fractions
         # (Specified by "spec": e.g. low_EmEF refers to jets with neutral EM energy fraction < 0.1)
-        if args.plot_spec:
-            specs = ['lowEmEF', 'highEmEF', 'lowHEF', 'highHEF']
+        if args.specs is not None:
+            specs = ['lowEmEF', 'highEmEF', 'lowHEF', 'highHEF', 'largeak4_pt0']
             for spec in specs:
+                if not re.match(args.specs, spec):
+                    continue
                 plot_events_specific_jets(acc, outtag, variable, spec=spec)
 
     # 2D eta/phi histogram
