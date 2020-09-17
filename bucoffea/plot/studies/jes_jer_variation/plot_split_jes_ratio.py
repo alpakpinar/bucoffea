@@ -119,13 +119,6 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     nominal_ratio = h_nominal_num.values()[()] / h_nominal_den.values()[()]
     ratios['nominal'] = nominal_ratio
 
-    data_err_opts = {
-        'linestyle':'-',
-        'marker': '.',
-        'markersize': 10.,
-        'elinewidth': 1,
-    }
-
     fig, ax = plt.subplots()
     centers = h_num.axis(variable_to_use).centers()
     edges = h_num.axis(variable_to_use).edges()
@@ -170,8 +163,15 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         ax.plot(centers, dratio, marker='o', label=var_label)
 
         # Save the uncertainties to an output root file
-        hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
-        outputrootfile[hist_name] = (dratio, edges)
+        if not 'jer' in region.name:
+            hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
+            outputrootfile[hist_name] = (dratio, edges)
+        # Save equivalent JER up/down histograms for the JER variation
+        else:
+            hist_name_jerUp = f'{transfer_factor_tag}_{process}_jerUp'
+            hist_name_jerDown = f'{transfer_factor_tag}_{process}_jerDown'
+            outputrootfile[hist_name_jerUp] = (dratio, edges)
+            outputrootfile[hist_name_jerDown] = (dratio, edges)
 
         # Store the uncs and variations
         uncs[var_label] = np.abs(dratio - 1) * 100
@@ -294,14 +294,13 @@ def main():
     if not os.path.exists(rootdir):
         os.makedirs(rootdir)
 
-    rootfile = pjoin(rootdir, f'{args.analysis}_tf_uncs.root')
+    rootfile = pjoin(rootdir, f'{args.analysis}_jes_jer_tf_uncs.root')
     outputrootfile = uproot.recreate(rootfile)
 
     print(f'MSG% ROOT file created: {rootfile}')
 
     # Loop over each transfer factor
     for transfer_factor_tag in all_ratios:
-        skip=False
         year = 2017 if '17' in transfer_factor_tag else 2018
 
         # Skip over some TFs if requested so
