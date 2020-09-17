@@ -44,8 +44,8 @@ titles = {
     'wlnu_over_wenu18' : r'$W(\ell\nu) \ / \ W(e\nu) \ 2018$',
     'wlnu_over_wmunu17' : r'$W(\ell\nu) \ / \ W(\mu\nu) \ 2017$',
     'wlnu_over_wmunu18' : r'$W(\ell\nu) \ / \ W(\mu\nu) \ 2018$',
-    'gjets_over_znunu17' : r'$\gamma + jets \ / \ Z(\nu\nu) \ 2017$',
-    'gjets_over_znunu18' : r'$\gamma + jets \ / \ Z(\nu\nu) \ 2018$',
+    'znunu_over_gjets17' : r'$Z(\nu\nu) \ / \ \gamma + jets \ 2017$',
+    'znunu_over_gjets18' : r'$Z(\nu\nu) \ / \ \gamma + jets \ 2018$',
     'wlnu_over_gjets17' : r'$W(\ell\nu) \ / \ \gamma + jets \ 2017$',
     'wlnu_over_gjets18' : r'$W(\ell\nu) \ / \ \gamma + jets \ 2018$'
 }
@@ -162,17 +162,18 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         dratio = varied_ratio / nominal_ratio
         ax.plot(centers, dratio, marker='o', label=var_label)
 
-        # Save the uncertainties to an output root file
-        if not 'jer' in region.name:
-            hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
-            outputrootfile[hist_name] = (dratio, edges)
-        # Save equivalent JER up/down histograms for the JER variation
-        else:
-            hist_name_jerUp = f'{transfer_factor_tag}_{process}_jerUp'
-            hist_name_jerDown = f'{transfer_factor_tag}_{process}_jerDown'
-            outputrootfile[hist_name_jerUp] = (dratio, edges)
-            outputrootfile[hist_name_jerDown] = (dratio, edges)
-
+        # Save the uncertainties to an output root file (do not save combined lepton channels)
+        if not 'zll' in transfer_factor_tag:
+            if not 'jer' in region.name:
+                hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
+                outputrootfile[hist_name] = (dratio, edges)
+            # Save equivalent JER up/down histograms for the JER variation
+            else:
+                hist_name_jerUp = f'{transfer_factor_tag}_{process}_jerUp'
+                hist_name_jerDown = f'{transfer_factor_tag}_{process}_jerDown'
+                outputrootfile[hist_name_jerUp] = (dratio, edges)
+                outputrootfile[hist_name_jerDown] = (dratio, edges)
+    
         # Store the uncs and variations
         uncs[var_label] = np.abs(dratio - 1) * 100
         varied[var_label] = varied_ratio
