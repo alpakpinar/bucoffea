@@ -312,6 +312,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
         both_jets_in_hf = (diak4.i0.abseta > 3.0) & (diak4.i1.abseta > 3.0)
         selection.add('veto_hfhf', ~both_jets_in_hf.any())
 
+        # Trailing jet eta mask
+        veto_trail_jet = (diak4.i1.abseta > 2.4) & (diak4.i1.abseta < 2.8)
+        selection.add('trailak4_mask', ~veto_trail_jet.any())
+
         # Divide into three categories for trigger study
         if cfg.RUN.TRIGGER_STUDY:
             two_central_jets = (np.abs(diak4.i0.eta) <= 2.4) & (np.abs(diak4.i1.eta) <= 2.4)
@@ -435,6 +439,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         veto_weights = get_veto_weights(df, evaluator, electrons, muons, taus)
         for region, cuts in regions.items():
+            if 'sr_vbf' not in region or 'no_veto' in region:
+                continue
             exclude = [None]
             region_weights = copy.deepcopy(weights)
 
