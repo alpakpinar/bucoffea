@@ -483,19 +483,32 @@ class vbfhinvProcessor(processor.ProcessorABC):
             mask = selection.all(*cuts)
 
             if cfg.RUN.SAVE.TREE:
-                if region in ['cr_1e_vbf','cr_1m_vbf']:
+                if region in ['sr_vbf']:
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
-                    output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
-                    output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
                     output['tree_float16'][region]["recoil_pt"]   +=  processor.column_accumulator(np.float16(df["recoil_pt"][mask]))
                     output['tree_float16'][region]["recoil_phi"]  +=  processor.column_accumulator(np.float16(df["recoil_phi"][mask]))
                     output['tree_float16'][region]["mjj"]         +=  processor.column_accumulator(np.float16(df["mjj"][mask]))
-                    
+
+                    if extract_year(df['dataset']) == 2017:
+                        met_branch = 'METFixEE2017'
+                    else:
+                        met_branch = 'MET'
+
+                    output['tree_float16'][region]['met_pt_nom']  +=  processor.column_accumulator(np.float16(met_pt[mask]))
+                    output['tree_float16'][region]['met_phi_nom']  +=  processor.column_accumulator(np.float16(met_phi[mask]))
+                    if not df['is_data']:
+                        output['tree_float16'][region]['met_pt_jer']  +=  processor.column_accumulator(np.float16(df[f'{met_branch}_pt_jer'][mask]))
+                        output['tree_float16'][region]['met_phi_jer']  +=  processor.column_accumulator(np.float16(df[f'{met_branch}_phi_jer'][mask]))
+
                     output['tree_float16'][region]["leadak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i0.pt[mask]))
+                    output['tree_float16'][region]["leadak4_pt_jer"]         +=  processor.column_accumulator(np.float16((diak4.i0.pt * diak4.i0.jerfac)[mask]))
+                    output['tree_float16'][region]["leadak4_pt_jerFac"]      +=  processor.column_accumulator(np.float16(diak4.i0.jerfac[mask]))
                     output['tree_float16'][region]["leadak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i0.eta[mask]))
                     output['tree_float16'][region]["leadak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i0.phi[mask]))
 
                     output['tree_float16'][region]["trailak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i1.pt[mask]))
+                    output['tree_float16'][region]["trailak4_pt_jer"]         +=  processor.column_accumulator(np.float16((diak4.i1.pt * diak4.i1.jerfac)[mask]))
+                    output['tree_float16'][region]["trailak4_pt_jerFac"]      +=  processor.column_accumulator(np.float16(diak4.i1.jerfac[mask]))
                     output['tree_float16'][region]["trailak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i1.eta[mask]))
                     output['tree_float16'][region]["trailak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i1.phi[mask]))
 
