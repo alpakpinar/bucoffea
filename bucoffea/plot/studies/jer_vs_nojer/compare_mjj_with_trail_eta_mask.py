@@ -10,6 +10,7 @@ import warnings
 
 from matplotlib import pyplot as plt
 from coffea import hist
+from coffea.hist.plot import poisson_interval
 from bucoffea.plot.util import merge_extensions, merge_datasets, scale_xs_lumi
 from bucoffea.helpers.paths import bucoffea_path
 from klepto.archives import dir_archive
@@ -62,6 +63,12 @@ def compare_mjj_spectrum(acc_withSmear, acc_noSmear, year=2017, trailjet_filter=
     fig, ax = plt.subplots()
     ax.plot(centers, r_ws, marker='o', label='With JER')
     ax.plot(centers, r_ns, marker='o', label='No JER')
+
+    # Calculate and plot the uncertainty on the data/MC ratio without smearing
+    sumw_den, sumw2_den = h_ws_mc.values(sumw2=True)[()]    
+    unity = np.ones_like(sumw_den)
+    r_ws_err = poisson_interval(unity, sumw2_den / sumw_den**2)
+    ax.fill_between(centers, r_ws_err[0], r_ws_err[1], color='gray', alpha=0.5)
 
     ax.legend()
     ax.set_xlabel(r'$M_{jj} \ (GeV)$')
