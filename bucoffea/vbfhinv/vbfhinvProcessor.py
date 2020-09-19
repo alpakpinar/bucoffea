@@ -249,6 +249,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('recoil', df['recoil_pt']>cfg.SELECTION.SIGNAL.RECOIL)
         selection.add('met_sr', met_pt>cfg.SELECTION.SIGNAL.RECOIL)
 
+        # Relaxed recoil cut
+        selection.add('recoil_relaxed', df['recoil_pt']>200)
+
         # AK4 dijet
         diak4 = ak4[:,:2].distincts()
         leadak4_pt_eta = (diak4.i0.pt > cfg.SELECTION.SIGNAL.LEADAK4.PT) & (np.abs(diak4.i0.eta) < cfg.SELECTION.SIGNAL.LEADAK4.ETA)
@@ -286,6 +289,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
         
+        # Relaxed trailing jet pt cut
+        trailak4_pt_eta_relaxed = (diak4.i1.pt > 20) & (np.abs(diak4.i1.eta) < cfg.SELECTION.SIGNAL.TRAILAK4.ETA)
+        selection.add('trailak4_pt_eta_relaxed', trailak4_pt_eta_relaxed.any())
+
         # Cleaning cuts for signal region
         max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
         selection.add('max_neEmEF', (max_neEmEF < 0.7).any())

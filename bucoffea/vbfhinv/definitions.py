@@ -230,7 +230,11 @@ def vbfhinv_regions(cfg):
 
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation', 'max_neEmEF', 'veto_hfhf']
-    regions['sr_vbf_trailJetMask'] = copy.deepcopy(regions['sr_vbf']) + ['trailak4_mask']
+    regions['sr_vbf_relaxed_recoil'] = copy.deepcopy(regions['sr_vbf']) + ['recoil_relaxed']
+    regions['sr_vbf_relaxed_recoil'].remove('recoil')
+
+    regions['sr_vbf_relaxed_trailak4'] = copy.deepcopy(regions['sr_vbf']) + ['trailak4_pt_eta_relaxed']
+    regions['sr_vbf_relaxed_trailak4'].remove('trailak4_pt_eta')
 
     # For sync mode
     if cfg and cfg.RUN.SYNC:
@@ -295,22 +299,6 @@ def vbfhinv_regions(cfg):
                                         'dphijj',
                                         'detajj',
                                         ]
-
-    tmp = {}
-    for region in regions.keys():
-        if not region.startswith("sr_"):
-            continue
-        new_region = f"{region}_no_veto_all"
-        tmp[new_region] = copy.deepcopy(regions[region])
-        tmp[new_region].remove("veto_muo")
-        tmp[new_region].remove("veto_tau")
-        tmp[new_region].remove("veto_ele")
-        tmp[new_region].remove("mindphijr")
-        tmp[new_region].remove("recoil")
-        tmp[new_region].append("met_sr")
-        tmp[new_region].append("mindphijm")
-
-    regions.update(tmp)
 
     if cfg and  cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
