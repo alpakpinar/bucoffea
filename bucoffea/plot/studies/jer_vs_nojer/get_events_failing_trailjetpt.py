@@ -47,7 +47,24 @@ pretty_labels = {
     'mjj' : r'$M_{jj}$'
 }
 
-def get_events_failing_jet_eta(f):
+def get_events_failing_smeared_jet_pt(f):
+    '''Get events which have unsmeared trailing jet pt > 40 GeV, but smeared trailing jet pt < 40 GeV,
+    using the region with relaxed cuts.'''
+    events = f['sr_vbf_relaxed_trailak4'].pandas.df()[cols_for_pandas]
+
+    # Out of all events, get the ones we are interested in
+    total_num_events = len(events)
+    print(f'Total number of events: {total_num_events}')
+    trailak4_pt = events['trailak4_pt']
+    trailak4_pt_jer = events['trailak4_pt_jer']
+    mask = (trailak4_pt_jer < 40) & (trailak4_pt > 40)
+
+    events_masked = events[mask]
+    print(f'Number of events with trailing jet failing the cut: {len(events_masked)}')
+
+    return events_masked
+
+def get_events_failing_unsmeared_jet_pt(f):
     '''Get events which have smeared trailing jet pt > 40 GeV, but non-smeared trailing jet pt < 40 GeV,
     using the region with relaxed cuts.'''
     events = f['sr_vbf_relaxed_trailak4'].pandas.df()[cols_for_pandas]
@@ -75,6 +92,9 @@ def plot_distribution(events, ht_bin, variable='mjj'):
     hep.histplot(h, edges, ax=ax)
     
     ax.set_xlabel(pretty_labels[variable])
+    if variable == 'mjj':
+        ax.set_yscale('log')
+        ax.set_ylim(1e-1, 1e4)
 
     # Save figure
     outdir = './output/19Sep20_trailak4_check'
@@ -100,7 +120,9 @@ def main():
     f = uproot.open(input_tree)
 
     # Get the list of events which have smeared trailing jet pt > 40 GeV, non-smeared trailing jet pt < 40 GeV
-    events_masked = get_events_failing_jet_eta(f)
+    events_masked = get_events_failing_unsmeared_jet_pt(f)
+    # Get the list of events which have smeared trailing jet pt < 40 GeV, non-smeared trailing jet pt > 40 GeV
+    events_masked_v2 = get_events_failing_smeared_jet_pt(f)
 
     # With the masked events, plot several distributions
     variables = ['mjj', 'leadak4_pt', 'leadak4_pt_jer', 'trailak4_pt', 'trailak4_pt_jer', 'leadak4_eta', 'trailak4_eta']
