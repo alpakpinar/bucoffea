@@ -587,7 +587,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_eta',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets)
             ezfill('ak4_phi',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets)
             ezfill('ak4_pt',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets)
-
+            # Smeared jet pt
+            ak4_pt_jer = ak4[mask].pt * ak4[mask].jerfac
+            ezfill('ak4_pt_jer',     jetpt=ak4_pt_jer.flatten(),   weight=w_alljets)
             ezfill('ak4_eta_nopref',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets_nopref)
             ezfill('ak4_phi_nopref',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets_nopref)
             ezfill('ak4_pt_nopref',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets_nopref)
@@ -597,6 +599,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_eta0',      jeteta=diak4.i0.eta[mask].flatten(),    weight=w_diak4)
             ezfill('ak4_phi0',      jetphi=diak4.i0.phi[mask].flatten(),    weight=w_diak4)
             ezfill('ak4_pt0',       jetpt=diak4.i0.pt[mask].flatten(),      weight=w_diak4)
+            ak4_pt0_jer = diak4.i0.pt[mask] * diak4.i0.jerfac[mask]
+            ezfill('ak4_pt0_jer',   jetpt=ak4_pt0_jer.flatten(),      weight=w_diak4)
             ezfill('ak4_ptraw0',    jetpt=diak4.i0.ptraw[mask].flatten(),   weight=w_diak4)
             ezfill('ak4_chf0',      frac=diak4.i0.chf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nhf0',      frac=diak4.i0.nhf[mask].flatten(),      weight=w_diak4)
@@ -606,6 +610,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_eta1',      jeteta=diak4.i1.eta[mask].flatten(),    weight=w_diak4)
             ezfill('ak4_phi1',      jetphi=diak4.i1.phi[mask].flatten(),    weight=w_diak4)
             ezfill('ak4_pt1',       jetpt=diak4.i1.pt[mask].flatten(),      weight=w_diak4)
+            ak4_pt1_jer = diak4.i1.pt[mask] * diak4.i1.jerfac[mask]
+            ezfill('ak4_pt1_jer',   jetpt=ak4_pt1_jer.flatten(),      weight=w_diak4)
             ezfill('ak4_ptraw1',    jetpt=diak4.i1.ptraw[mask].flatten(),   weight=w_diak4)
             ezfill('ak4_chf1',      frac=diak4.i1.chf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nhf1',      frac=diak4.i1.nhf[mask].flatten(),      weight=w_diak4)
@@ -619,8 +625,17 @@ class vbfhinvProcessor(processor.ProcessorABC):
             # MET
             ezfill('dpfcalo_cr',            dpfcalo=df["dPFCaloCR"][mask],       weight=rweight[mask] )
             ezfill('dpfcalo_sr',            dpfcalo=df["dPFCaloSR"][mask],       weight=rweight[mask] )
+
+            if extract_year(df['dataset']) == 2017:
+                met_branch = 'METFixEE2017'
+            else:
+                met_branch = 'MET'
+
             ezfill('met',                met=met_pt[mask],            weight=rweight[mask] )
             ezfill('met_phi',            phi=met_phi[mask],           weight=rweight[mask] )
+            ezfill('met_jer',            met=df[f'{met_branch}_pt_jer'][mask],            weight=rweight[mask] )
+            ezfill('met_phi_jer',        phi=df[f'{met_branch}_phi_jer'][mask],           weight=rweight[mask] )
+
             ezfill('recoil',             recoil=df["recoil_pt"][mask],      weight=rweight[mask] )
             ezfill('recoil_phi',         phi=df["recoil_phi"][mask],        weight=rweight[mask] )
             ezfill('dphijm',             dphi=df["minDPhiJetMet"][mask],    weight=rweight[mask] )

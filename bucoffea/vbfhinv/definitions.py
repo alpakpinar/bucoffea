@@ -81,7 +81,9 @@ def vbfhinv_accumulator(cfg):
     items["lhe_ht"] = Hist("Counts", dataset_ax, ht_ax)
     items["lhe_htinc"] = Hist("Counts", dataset_ax, ht_ax)
     items["met"] = Hist("Counts", dataset_ax, region_ax, met_ax)
+    items["met_jer"] = Hist("Counts", dataset_ax, region_ax, met_ax)
     items["met_phi"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
+    items["met_phi_jer"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
     items["recoil"] = Hist("Counts", dataset_ax, region_ax, recoil_ax)
     items["recoil_phi"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
 
@@ -92,6 +94,7 @@ def vbfhinv_accumulator(cfg):
     items["detajj"] = Hist("Counts", dataset_ax, region_ax, deta_ax)
 
     items["ak4_pt0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
+    items["ak4_pt0_jer"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_ptraw0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
     items["ak4_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
@@ -100,6 +103,7 @@ def vbfhinv_accumulator(cfg):
     items["ak4_nconst0"] = Hist("Counts", dataset_ax, region_ax, nconst_ax)
 
     items["ak4_pt1"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
+    items["ak4_pt1_jer"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_ptraw1"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_eta1"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
     items["ak4_phi1"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
@@ -113,6 +117,7 @@ def vbfhinv_accumulator(cfg):
     items["ak4_pt0_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax,jet_eta_ax_coarse)
 
     items["ak4_pt"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
+    items["ak4_pt_jer"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_eta"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
     items["ak4_phi"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
     items["ak4_pt_nopref"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
