@@ -22,10 +22,10 @@ warnings.filterwarnings('ignore')
 binning = {
     'met' : hist.Bin('met', r'$p_T^{miss} \ (GeV)$', list(range(200,500,50)) + list(range(500,1000,100))),
     'ak4_pt0' : hist.Bin('jetpt', r'Leading jet $p_T$ (GeV)', list(range(80,800,20))),
-    'ak4_pt1' : hist.Bin('jetpt', r'Trailing jet $p_T$ (GeV)', list(range(40,600,20)) ),
+    'ak4_pt1' : hist.Bin('jetpt', r'Trailing jet $p_T$ (GeV)', list(range(0,600,20)) ),
 }
 
-def preprocess(h, acc, relax_cut, year):
+def preprocess(h, acc, relax_cut, variable, year):
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
     h = merge_datasets(h)
@@ -35,7 +35,25 @@ def preprocess(h, acc, relax_cut, year):
         
     h = h.integrate('region', region).integrate('dataset', re.compile(f'ZJetsToNuNu.*{year}'))
 
+    if variable in binning.keys():
+        if variable == 'met':
+            h = h.rebin('met', binning['met'])
+        elif 'ak4_pt' in variable:
+            h = h.rebin('jetpt',  binning[variable])
+
     return h
+
+def plot_cut_boundary(ax, rax, variable):
+    ax_ylim = ax.get_ylim()
+    rax_ylim = rax.get_ylim()
+    if variable == 'met':
+        ax.plot([250,250], ax_ylim, color='red')
+        rax.plot([250,250], rax_ylim, color='red')
+    elif variable == 'ak4_pt1':
+        ax.plot([40,40], ax_ylim, color='red')
+        rax.plot([40,40], rax_ylim, color='red')
+    else:
+        return
 
 def compare_jer_nojer_distribution(acc, outtag, relax_cut=None, variable='met', year=2017):
     '''Compare distribution of a variable with/without smearing.'''
@@ -47,8 +65,8 @@ def compare_jer_nojer_distribution(acc, outtag, relax_cut=None, variable='met', 
     h_ns = acc[variable]
     h_ws = acc[f'{variable}_jer']
     
-    h_ns = preprocess(h_ns, acc, relax_cut=relax_cut, year=year)
-    h_ws = preprocess(h_ws, acc, relax_cut=relax_cut, year=year)
+    h_ns = preprocess(h_ns, acc, relax_cut=relax_cut, variable=variable, year=year)
+    h_ws = preprocess(h_ws, acc, relax_cut=relax_cut, variable=variable, year=year)
 
     # Plot the comparison of the two
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
@@ -57,6 +75,7 @@ def compare_jer_nojer_distribution(acc, outtag, relax_cut=None, variable='met', 
 
     labels = ['No JER', 'With JER']
     ax.legend(labels=labels)
+    ax.set_title(r'QCD $Z(\nu\nu)$ {}'.format(year))
 
     # Plot ratio
     centers = h_ns.axes()[0].centers()
@@ -65,8 +84,10 @@ def compare_jer_nojer_distribution(acc, outtag, relax_cut=None, variable='met', 
     rax.plot(centers, ratio, marker='o', ls='', color='k')
 
     rax.grid(True)
-    rax.set_ylim(0.6,1.4)
+    rax.set_ylim(0.8,1.2)
     rax.set_ylabel('With JER / Without')
+
+    plot_cut_boundary(ax, rax, variable)
 
     # Save figure
     outdir = f'./output/{outtag}'
