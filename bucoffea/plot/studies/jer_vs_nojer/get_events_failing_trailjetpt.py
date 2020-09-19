@@ -30,14 +30,18 @@ cols_for_pandas = [
 binnings = {
     'mjj' : list(range(200,5000,100)),
     'leadak4_pt' : list(range(80,600,20)),
-    'trailak4_pt' : list(range(80,600,20)),
+    'leadak4_pt_jer' : list(range(80,600,20)),
+    'trailak4_pt' : list(range(20,40,10)),
+    'trailak4_pt_jer' : list(range(20,100,5)),
     'leadak4_eta' : np.linspace(-5,5,51),
     'trailak4_eta' : np.linspace(-5,5,51)
 }
 
 pretty_labels = {
     'leadak4_pt' : r'$p_{T,0}$',
+    'leadak4_pt_jer' : r'Smeared $p_{T,0}$',
     'trailak4_pt' : r'$p_{T,1}$',
+    'trailak4_pt_jer' : r'Smeared $p_{T,1}$',
     'leadak4_eta' : r'$\eta_{0}$',
     'trailak4_eta' : r'$\eta_{1}$',
     'mjj' : r'$M_{jj}$'
@@ -46,8 +50,7 @@ pretty_labels = {
 def get_events_failing_jet_eta(f):
     '''Get events which have smeared trailing jet pt > 40 GeV, but non-smeared trailing jet pt < 40 GeV,
     using the region with relaxed cuts.'''
-    events = f['sr_vbf'].pandas.df()[cols_for_pandas]
-    # events = f['sr_vbf_relaxed_trailak4'].pandas.df()[cols_for_pandas]
+    events = f['sr_vbf_relaxed_trailak4'].pandas.df()[cols_for_pandas]
 
     # Out of all events, get the ones we are interested in
     total_num_events = len(events)
@@ -59,7 +62,6 @@ def get_events_failing_jet_eta(f):
     events_masked = events[mask]
     print(f'Number of events with trailing jet failing the cut: {np.count_nonzero(events_masked)}')
 
-    print(events_masked)
     return events_masked
 
 def plot_distribution(events, variable='mjj'):
@@ -92,7 +94,7 @@ def main():
     events_masked = get_events_failing_jet_eta(f)
 
     # With the masked events, plot several distributions
-    variables = ['mjj', 'leadak4_pt', 'trailak4_pt', 'leadak4_eta', 'trailak4_eta']
+    variables = ['mjj', 'leadak4_pt', 'leadak4_pt_jer', 'trailak4_pt', 'trailak4_pt_jer', 'leadak4_eta', 'trailak4_eta']
     for variable in variables:
         plot_distribution(events_masked, variable)
 
