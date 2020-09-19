@@ -60,11 +60,11 @@ def get_events_failing_jet_eta(f):
     mask = (trailak4_pt_jer > 40) & (trailak4_pt < 40)
 
     events_masked = events[mask]
-    print(f'Number of events with trailing jet failing the cut: {np.count_nonzero(events_masked)}')
+    print(f'Number of events with trailing jet failing the cut: {len(events_masked)}')
 
     return events_masked
 
-def plot_distribution(events, variable='mjj'):
+def plot_distribution(events, ht_bin, variable='mjj'):
     '''For the given list of events, plot distribution of given variable.'''
     variable_arr = events[variable]
     # Make a histogram for the variable
@@ -81,13 +81,22 @@ def plot_distribution(events, variable='mjj'):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    outpath = pjoin(outdir, f'{variable}_dist.pdf')
+    outpath = pjoin(outdir, f'{variable}_dist_{ht_bin}.pdf')
     fig.savefig(outpath)
     print(f'MSG% File saved: {outpath}')
     plt.close(fig)
 
 def main():
-    input_tree = './input_trees/19Sep20/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root'
+    ht_bin = sys.argv[1]
+    # Input Z(vv) tree files for different HT bins
+    input_trees = {
+        '100To200' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-100To200-mg_2017.root',
+        '400To600' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root',
+        '600To800' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-600To800-mg_new_pmx_2017.root',
+        '1200To2500' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-1200To2500-mg_new_pmx_2017.root',
+        '2500ToInf' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-2500ToInf-mg_2017.root',
+    }
+    input_tree = input_trees[ht_bin]
     f = uproot.open(input_tree)
 
     # Get the list of events which have smeared trailing jet pt > 40 GeV, non-smeared trailing jet pt < 40 GeV
@@ -96,7 +105,7 @@ def main():
     # With the masked events, plot several distributions
     variables = ['mjj', 'leadak4_pt', 'leadak4_pt_jer', 'trailak4_pt', 'trailak4_pt_jer', 'leadak4_eta', 'trailak4_eta']
     for variable in variables:
-        plot_distribution(events_masked, variable)
+        plot_distribution(events_masked, ht_bin, variable)
 
 if __name__ == '__main__':
     main()
