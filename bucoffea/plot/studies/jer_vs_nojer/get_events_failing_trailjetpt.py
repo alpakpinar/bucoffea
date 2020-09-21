@@ -121,7 +121,9 @@ def main():
         }
     elif proc == 'zmumu':
         # TODO: Put the paths to trees here!
-        input_trees = {}
+        input_trees = {
+            '400To600' : './input_trees/21Sep20_dy/noJER/tree_DYJetsToLL_M-50_HT-400to600-MLM_new_pmx_2017.root'
+        }
     
     input_tree = input_trees[ht_bin]
     f = uproot.open(input_tree)

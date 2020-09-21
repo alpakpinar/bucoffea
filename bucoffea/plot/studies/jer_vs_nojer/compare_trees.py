@@ -40,7 +40,7 @@ pretty_labels = {
     'mjj' : r'$M_{jj}$'
 }
 
-def prepare_merged_df(tree_noSmear, tree_withSmear, proc='znunu'):
+def prepare_merged_df(tree_noSmear, tree_withSmear, proc):
     proc_to_region = {
         'znunu' : 'sr_vbf',
         'zmumu' : 'cr_2m_vbf'
@@ -64,7 +64,7 @@ def plot_eta_distribution(tree_noSmear, tree_withSmear, diff_variable='mjj', dif
     mask = percent_diff > diff_thresh
 
     # Plot variables with high variable diff.
-    outdir = './output/large_diff/dists'
+    outdir = f'./output/large_diff/dists/{proc}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -98,7 +98,7 @@ def compare_events_with_large_diff(tree_noSmear, tree_withSmear, diff_variable='
     mask = percent_diff > diff_thresh
 
     # Plot variables with high variable diff.
-    outdir = './output/large_diff'
+    outdir = f'./output/large_diff/{proc}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -138,12 +138,12 @@ def main():
     if proc == 'znunu':
         tree_noSmear = './input_trees/18Sep20/noJER/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root'
         tree_withSmear = './input_trees/18Sep20/withJER/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root'
-    elif proc == 'zmumu': # TODO: Update!
-        tree_noSmear = None
-        tree_withSmear = None
+    elif proc == 'zmumu': 
+        tree_noSmear = './input_trees/21Sep20_dy/noJER/tree_DYJetsToLL_M-50_HT-400to600-MLM_new_pmx_2017.root'
+        tree_withSmear = './input_trees/21Sep20_dy/withJER/tree_DYJetsToLL_M-50_HT-400to600-MLM_new_pmx_2017.root'
 
-    compare_events_with_large_diff(tree_noSmear, tree_withSmear, proc)
-    plot_eta_distribution(tree_noSmear, tree_withSmear, proc)
+    compare_events_with_large_diff(tree_noSmear, tree_withSmear, proc=proc)
+    plot_eta_distribution(tree_noSmear, tree_withSmear, proc=proc)
 
 if __name__ == '__main__':
     main()
