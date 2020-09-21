@@ -446,8 +446,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         veto_weights = get_veto_weights(df, evaluator, electrons, muons, taus)
         for region, cuts in regions.items():
-            if 'sr_vbf' not in region or 'no_veto' in region:
-                continue
+            if 'ZJetsToNuNu' in dataset:
+                if 'sr_vbf' not in region or 'no_veto' in region:
+                    continue
+            elif 'DYJetsToLL' in dataset:
+                if 'cr_2m_vbf' not in region or 'no_veto' in region:
+                    continue
             exclude = [None]
             region_weights = copy.deepcopy(weights)
 

@@ -265,6 +265,8 @@ def vbfhinv_regions(cfg):
     cr_2m_cuts.remove('veto_muo')
 
     regions['cr_2m_vbf'] = cr_2m_cuts
+    regions['cr_2m_vbf_relaxed_trailak4'] = copy.deepcopy(regions['cr_2m_vbf']) + ['trailak4_pt_eta_relaxed']
+    regions['cr_2m_vbf_relaxed_trailak4'].remove('trailak4_pt_eta')
 
     # Single muon CR
     cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:] + ['dpfcalo_cr']
