@@ -40,9 +40,14 @@ pretty_labels = {
     'mjj' : r'$M_{jj}$'
 }
 
-def prepare_merged_df(tree_noSmear, tree_withSmear):
-    f_noSmear = uproot.open(tree_noSmear)['sr_vbf']
-    f_withSmear = uproot.open(tree_withSmear)['sr_vbf']
+def prepare_merged_df(tree_noSmear, tree_withSmear, proc='znunu'):
+    proc_to_region = {
+        'znunu' : 'sr_vbf',
+        'zmumu' : 'cr_2m_vbf'
+    }
+    region = proc_to_region[proc]
+    f_noSmear = uproot.open(tree_noSmear)[region]
+    f_withSmear = uproot.open(tree_withSmear)[region]
 
     df_noSmear = f_noSmear.pandas.df()[cols_for_pandas]
     df_withSmear = f_withSmear.pandas.df()[cols_for_pandas]
@@ -51,9 +56,9 @@ def prepare_merged_df(tree_noSmear, tree_withSmear):
 
     return df
 
-def plot_eta_distribution(tree_noSmear, tree_withSmear, diff_variable='mjj', diff_thresh=0.1):
+def plot_eta_distribution(tree_noSmear, tree_withSmear, diff_variable='mjj', diff_thresh=0.1, proc='znunu'):
     '''Plot jet eta distributions for events with large differences when the smearing is applied.'''
-    df = prepare_merged_df(tree_noSmear, tree_withSmear)
+    df = prepare_merged_df(tree_noSmear, tree_withSmear, proc)
 
     percent_diff = np.abs(df[f'{diff_variable}_ns'] - df[f'{diff_variable}_ws']) / df[f'{diff_variable}_ns']
     mask = percent_diff > diff_thresh
@@ -85,9 +90,9 @@ def plot_eta_distribution(tree_noSmear, tree_withSmear, diff_variable='mjj', dif
         print(f'MSG% File saved: {outpath}')
         plt.close(fig)
 
-def compare_events_with_large_diff(tree_noSmear, tree_withSmear, diff_variable='mjj', diff_thresh=0.1):
+def compare_events_with_large_diff(tree_noSmear, tree_withSmear, diff_variable='mjj', diff_thresh=0.1, proc='znunu'):
     '''Compare events with large differences when the smearing is applied.'''
-    df = prepare_merged_df(tree_noSmear, tree_withSmear)
+    df = prepare_merged_df(tree_noSmear, tree_withSmear, proc)
 
     percent_diff = np.abs(df[f'{diff_variable}_ns'] - df[f'{diff_variable}_ws']) / df[f'{diff_variable}_ns']
     mask = percent_diff > diff_thresh
@@ -127,12 +132,18 @@ def compare_events_with_large_diff(tree_noSmear, tree_withSmear, diff_variable='
         plt.close(fig)
 
 def main():
+    # Read the process from command line (i.e. zmumu or znunu)
+    proc = sys.argv[1]
     # Tree files with and without smearing applied
-    tree_noSmear = './input_trees/18Sep20/noJER/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root'
-    tree_withSmear = './input_trees/18Sep20/withJER/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root'
+    if proc == 'znunu':
+        tree_noSmear = './input_trees/18Sep20/noJER/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root'
+        tree_withSmear = './input_trees/18Sep20/withJER/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root'
+    elif proc == 'zmumu': # TODO: Update!
+        tree_noSmear = None
+        tree_withSmear = None
 
-    compare_events_with_large_diff(tree_noSmear, tree_withSmear)
-    plot_eta_distribution(tree_noSmear, tree_withSmear)
+    compare_events_with_large_diff(tree_noSmear, tree_withSmear, proc)
+    plot_eta_distribution(tree_noSmear, tree_withSmear, proc)
 
 if __name__ == '__main__':
     main()

@@ -47,10 +47,11 @@ pretty_labels = {
     'mjj' : r'$M_{jj}$'
 }
 
-def get_events_failing_smeared_jet_pt(f):
+def get_events_failing_smeared_jet_pt(f, proc='znunu'):
     '''Get events which have unsmeared trailing jet pt > 40 GeV, but smeared trailing jet pt < 40 GeV,
     using the region with relaxed cuts.'''
-    events = f['sr_vbf_relaxed_trailak4'].pandas.df()[cols_for_pandas]
+    region = 'sr_vbf' if proc == 'znunu' else 'cr_2m_vbf'
+    events = f[f'{region}_relaxed_trailak4'].pandas.df()[cols_for_pandas]
 
     # Out of all events, get the ones we are interested in
     total_num_events = len(events)
@@ -64,10 +65,11 @@ def get_events_failing_smeared_jet_pt(f):
 
     return events_masked
 
-def get_events_failing_unsmeared_jet_pt(f):
+def get_events_failing_unsmeared_jet_pt(f, proc='znunu'):
     '''Get events which have smeared trailing jet pt > 40 GeV, but non-smeared trailing jet pt < 40 GeV,
     using the region with relaxed cuts.'''
-    events = f['sr_vbf_relaxed_trailak4'].pandas.df()[cols_for_pandas]
+    region = 'sr_vbf' if proc == 'znunu' else 'cr_2m_vbf'
+    events = f[f'{region}_relaxed_trailak4'].pandas.df()[cols_for_pandas]
 
     # Out of all events, get the ones we are interested in
     total_num_events = len(events)
@@ -81,7 +83,7 @@ def get_events_failing_unsmeared_jet_pt(f):
 
     return events_masked
 
-def plot_distribution(events, ht_bin, variable='mjj'):
+def plot_distribution(events, ht_bin, variable='mjj', proc='znunu'):
     '''For the given list of events, plot distribution of given variable.'''
     variable_arr = events[variable]
     # Make a histogram for the variable
@@ -97,7 +99,7 @@ def plot_distribution(events, ht_bin, variable='mjj'):
         ax.set_ylim(1e-1, 1e4)
 
     # Save figure
-    outdir = './output/19Sep20_trailak4_check'
+    outdir = f'./output/19Sep20_trailak4_check/{proc}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -107,27 +109,32 @@ def plot_distribution(events, ht_bin, variable='mjj'):
     plt.close(fig)
 
 def main():
-    ht_bin = sys.argv[1]
+    proc, ht_bin = sys.argv[1:]
     # Input Z(vv) tree files for different HT bins
-    input_trees = {
-        '100To200' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-100To200-mg_2017.root',
-        '400To600' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root',
-        '600To800' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-600To800-mg_new_pmx_2017.root',
-        '1200To2500' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-1200To2500-mg_new_pmx_2017.root',
-        '2500ToInf' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-2500ToInf-mg_2017.root',
-    }
+    if proc == 'znunu':
+        input_trees = {
+            '100To200' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-100To200-mg_2017.root',
+            '400To600' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root',
+            '600To800' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-600To800-mg_new_pmx_2017.root',
+            '1200To2500' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-1200To2500-mg_new_pmx_2017.root',
+            '2500ToInf' : './input_trees/19Sep20/tree_ZJetsToNuNu_HT-2500ToInf-mg_2017.root',
+        }
+    elif proc == 'zmumu':
+        # TODO: Put the paths to trees here!
+        input_trees = {}
+    
     input_tree = input_trees[ht_bin]
     f = uproot.open(input_tree)
 
     # Get the list of events which have smeared trailing jet pt > 40 GeV, non-smeared trailing jet pt < 40 GeV
-    events_masked = get_events_failing_unsmeared_jet_pt(f)
+    events_masked = get_events_failing_unsmeared_jet_pt(f, proc)
     # Get the list of events which have smeared trailing jet pt < 40 GeV, non-smeared trailing jet pt > 40 GeV
-    events_masked_v2 = get_events_failing_smeared_jet_pt(f)
+    events_masked_v2 = get_events_failing_smeared_jet_pt(f, proc)
 
     # With the masked events, plot several distributions
     variables = ['mjj', 'leadak4_pt', 'leadak4_pt_jer', 'trailak4_pt', 'trailak4_pt_jer', 'leadak4_eta', 'trailak4_eta']
     for variable in variables:
-        plot_distribution(events_masked, ht_bin, variable)
+        plot_distribution(events_masked, ht_bin, variable, proc)
 
 if __name__ == '__main__':
     main()

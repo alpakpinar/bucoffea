@@ -30,7 +30,7 @@ def preprocess(h, acc):
 
     return h
 
-def compare_mjj_spectrum(acc_withSmear, acc_noSmear, year=2017, trailjet_filter=False):
+def compare_mjj_spectrum(acc_withSmear, acc_noSmear, year=2017, trailjet_filter=False, proc='znunu'):
     '''Compare mjj spectra with and without smearing.'''
     acc_withSmear.load('mjj')
     h_ws = acc_withSmear['mjj']
@@ -40,18 +40,25 @@ def compare_mjj_spectrum(acc_withSmear, acc_noSmear, year=2017, trailjet_filter=
     h_ws = preprocess(h_ws, acc_withSmear)
     h_ns = preprocess(h_ns, acc_noSmear)
 
-    sr_data_regex = re.compile(f'MET.*{year}')
-    sr_mc_regex = re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}')
+    if proc == 'znunu':
+        data_regex = re.compile(f'MET.*{year}')
+        mc_regex = re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}')
+        if trailjet_filter:
+            region = 'sr_vbf_trailJetMask'
+        else:
+            region = 'sr_vbf'
+    elif proc == 'zmumu':
+        data_regex = re.compile(f'MET.*{year}')
+        mc_regex = re.compile(f'(EW.*|Top_FXFX.*|Diboson.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}')
+        if trailjet_filter:
+            region = 'cr_2m_vbf_trailJetMask'
+        else:
+            region = 'cr_2m_vbf'
 
-    if trailjet_filter:
-        region = 'sr_vbf_trailJetMask'
-    else:
-        region = 'sr_vbf'
-
-    h_ws_data = h_ws.integrate('dataset', sr_data_regex).integrate('region', region)
-    h_ns_data = h_ns.integrate('dataset', sr_data_regex).integrate('region', region)
-    h_ws_mc = h_ws.integrate('dataset', sr_mc_regex).integrate('region', region)
-    h_ns_mc = h_ns.integrate('dataset', sr_mc_regex).integrate('region', region)
+    h_ws_data = h_ws.integrate('dataset', data_regex).integrate('region', region)
+    h_ns_data = h_ns.integrate('dataset', data_regex).integrate('region', region)
+    h_ws_mc = h_ws.integrate('dataset', mc_regex).integrate('region', region)
+    h_ns_mc = h_ns.integrate('dataset', mc_regex).integrate('region', region)
 
     centers = h_ws_data.axes()[0].centers()
 
@@ -82,6 +89,13 @@ def compare_mjj_spectrum(acc_withSmear, acc_noSmear, year=2017, trailjet_filter=
         title = r'Without trailing jet veto: $2.4 < |\eta| < 2.8$'
     ax.set_title(title)
 
+    proc_to_pretty_label = {
+        'znunu' : r'QCD $Z(\nu\nu)$',
+        'zmumu' : r'QCD $Z(\mu\mu)$'
+    }
+
+    ax.text(0.9, 0.9, proc_to_pretty_label[proc], fontsize=12, transform=ax.transAxes)
+    
     # Save figure
     outdir = './output/trail_jet_eta_mask'
     if not os.path.exists(outdir):
@@ -96,8 +110,14 @@ def compare_mjj_spectrum(acc_withSmear, acc_noSmear, year=2017, trailjet_filter=
     print(f'MSG% File saved: {outpath}')
 
 def main():
-    inpath_withSmear = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_withJER_nanoAODv7_deepTau')
-    inpath_noSmear = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_nanoAODv7_tree')
+    # Read the process from command line (i.e. zmumu or znunu)
+    proc = sys.argv[1]
+    if proc == 'znunu':
+        inpath_withSmear = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_withJER_nanoAODv7_deepTau')
+        inpath_noSmear = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_nanoAODv7_tree')
+    elif proc == 'zmumu':
+        inpath_withSmear = bucoffea_path('./submission/merged_2020-09-21_vbfhinv_dy_withJER')
+        inpath_noSmear = bucoffea_path('./submission/merged_2020-09-21_vbfhinv_dy_noJER')
 
     acc_withSmear = dir_archive(inpath_withSmear)
     acc_noSmear = dir_archive(inpath_noSmear)
@@ -107,8 +127,8 @@ def main():
     acc_noSmear.load('sumw')
     acc_noSmear.load('sumw2')
 
-    compare_mjj_spectrum(acc_withSmear, acc_noSmear, trailjet_filter=True)
-    compare_mjj_spectrum(acc_withSmear, acc_noSmear, trailjet_filter=False)
+    compare_mjj_spectrum(acc_withSmear, acc_noSmear, trailjet_filter=True, proc=proc)
+    compare_mjj_spectrum(acc_withSmear, acc_noSmear, trailjet_filter=False, proc=proc)
 
 if __name__ == '__main__':
     main()
