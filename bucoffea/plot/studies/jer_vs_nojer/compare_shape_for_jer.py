@@ -29,7 +29,7 @@ def get_label_for_tag(tag):
     mapping = {
         'noSmear' : 'No JER',
         '09Jun20v7' : 'MiniAOD-like JER',
-        '18Sep20' : 'NanoAOD-like JER'
+        '21Sep20v7' : 'NanoAOD-like JER'
     }
     return mapping[tag]
 
@@ -43,24 +43,29 @@ def do_rebinning(h, variable):
 
     return h
 
-def preprocess(h, acc, variable, year):
+def preprocess(h, acc, variable, year, dataset):
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
     h = merge_datasets(h)
 
-    h = h.integrate('region', 'sr_vbf').integrate('dataset', re.compile(f'ZJetsToNuNu.*{year}'))
+    dataset_to_regex = {
+        'zjets' : f'ZJetsToNuNu.*{year}',
+        'vbf' : f'VBF_HToInv.*M125.*{year}',
+    }
+
+    h = h.integrate('region', 'sr_vbf').integrate('dataset', re.compile(dataset_to_regex[dataset]))
 
     if variable in binnings.keys():
         h = do_rebinning(h, variable)
 
     return h
 
-def compare_shapes(acc_dict, variable='mjj', year=2017):
+def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets'):
     h_dict = OrderedDict()
     for tag, acc in acc_dict.items():
         acc.load(variable)
         # Get the pre-processed histograms
-        h_dict[tag] = preprocess(acc[variable], acc, variable, year)
+        h_dict[tag] = preprocess(acc[variable], acc, variable, year, dataset)
 
     # Ready to plot! Plot the comparison of the three distributions
     legend_labels = []
@@ -70,6 +75,13 @@ def compare_shapes(acc_dict, variable='mjj', year=2017):
         legend_labels.append(get_label_for_tag(tag))
 
     ax.legend(labels=legend_labels)
+
+    dataset_to_title = {
+        'zjets' : r'QCD $Z(\nu\nu)$',
+        'vbf' : r'VBF $H(inv)$'
+    }
+
+    ax.set_title(dataset_to_title[dataset])
 
     data_err_opts = {
         'linestyle':'none',
@@ -86,7 +98,7 @@ def compare_shapes(acc_dict, variable='mjj', year=2017):
     rax.set_ylabel('Ratio to no JER')
 
     # Save figure
-    outdir = f'./output/three_jer_comparison'
+    outdir = f'./output/three_jer_comparison/{dataset}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
@@ -100,6 +112,9 @@ def main():
     2. MiniAOD-like JER smearing applied (09Jun20v7 skim)
     3. NanoAOD-like JER smearing applied (18Sep20 skim)
     '''
+    # Read the dataset as a command line argument
+    dataset = sys.argv[1]
+    
     inpath_noSmear = ''
     inpath_09Jun20v7 = ''
     inpath_18Sep20 = ''
@@ -114,7 +129,7 @@ def main():
         acc.load('sumw')
         acc.load('sumw2')
 
-    compare_shapes(acc_dict)
+    compare_shapes(acc_dict, dataset=dataset)
 
 if __name__ == '__main__':
     main()
