@@ -198,7 +198,7 @@ def calculate_vecDPhi(ak4, met_pt, met_phi, tk_met_phi):
     '''Calculate vecDPhi quantitity.'''
     vec_b = calculate_vecB(ak4, met_pt, met_phi)
     dphitkpf = dphi(met_phi, tk_met_phi)
-    vec_dphi = np.hypot(3.33 * vec_b, dphitkpf)
+    vec_dphi = np.hypot(3.3 * vec_b, dphitkpf)
 
     return vec_dphi
 
