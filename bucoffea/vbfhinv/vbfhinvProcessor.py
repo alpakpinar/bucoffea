@@ -272,6 +272,15 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         selection.add('hornveto', (df['dPFTkSR'] < 0.8) | ~(leading_jet_in_horn | trailing_jet_in_horn))
 
+        trailjet_eta = ((diak4.i1.abseta<2.8) & (diak4.i1.abseta>2.4)).any()
+        selection.add('trailjet_eta', trailjet_eta)
+
+        # Find the gen-jets that the trailing jet matches to
+        matched_genjets = genjets[diak4.i1.argmatch(genjets, deltaRCut=0.2)]
+        
+        # Calculate delta_pt / pt
+        deltapt = (matched_genjets.pt - diak4.i1.pt) / diak4.i1.pt
+
         if df['year'] == 2018:
             selection.add("metphihemextveto", ((-1.8 > met_phi)|(met_phi>-0.6)))
             selection.add('no_el_in_hem', electrons[candidates_in_hem(electrons)].counts==0)
@@ -685,6 +694,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
             # Two dimensional
             ezfill('recoil_mjj',         recoil=df["recoil_pt"][mask], mjj=df["mjj"][mask], weight=rweight[mask] )
+
+            ezfill('deltapt', ratio=deltapt[mask].flatten(), weight=rweight[mask])
 
             # Muons
             if '_1m_' in region or '_2m_' in region or 'no_veto' in region:

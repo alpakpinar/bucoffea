@@ -71,6 +71,8 @@ def vbfhinv_accumulator(cfg):
     nvtx_ax = Bin('nvtx','Number of vertices',100,-0.5,99.5)
     rho_ax = Bin('rho','Energy density',100, 0, 100)
     frac_ax = Bin('frac','Fraction', 50, 0, 1)
+    pt_ratio_ax = Bin('ratio', r'$\Delta p_T / p_T$', 50, -1, 1)
+    
     Hist = hist.Hist
     items = {}
     items["genvpt_check"] = Hist("Counts", dataset_ax, type_ax, vpt_ax)
@@ -132,6 +134,8 @@ def vbfhinv_accumulator(cfg):
     items["dpfcalo_sr"] = Hist("Counts", dataset_ax, region_ax, dpfcalo_ax)
     items["dphijm"] = Hist("min(4 leading jets, MET)", dataset_ax, region_ax, dphi_ax)
     items["dphijr"] = Hist("min(4 leading jets, Recoil)", dataset_ax, region_ax, dphi_ax)
+
+    items["deltapt"] = Hist("Counts", dataset_ax, region_ax, pt_ratio_ax)
 
     # Multiplicity histograms
     for cand in ['ak4', 'ak8', 'bjet', 'loose_ele', 'loose_muo', 'tight_ele', 'tight_muo', 'tau', 'photon','hlt_single_muon','muons_hltmatch']:
@@ -240,6 +244,8 @@ def vbfhinv_regions(cfg):
 
     regions['sr_vbf_relaxed_trailak4'] = copy.deepcopy(regions['sr_vbf']) + ['trailak4_pt_eta_relaxed']
     regions['sr_vbf_relaxed_trailak4'].remove('trailak4_pt_eta')
+
+    regions['sr_vbf_trailjeteta'] = copy.deepcopy(regions['sr_vbf']) + ['trailjet_eta']
 
     # For sync mode
     if cfg and cfg.RUN.SYNC:
