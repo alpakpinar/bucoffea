@@ -7,6 +7,7 @@ import warnings
 
 from collections import OrderedDict
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
+from bucoffea.helpers.paths import bucoffea_path
 from coffea import hist
 from klepto.archives import dir_archive
 from matplotlib import pyplot as plt
@@ -90,12 +91,16 @@ def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets'):
     }
 
     # Plot ratio to "no JER" case
-    for tag in ['09Jun20v7', '18Sep20']:
-        hist.plotratio(h_dict[tag], h_dict['noSmear'], ax=rax, unc='num', error_opts=data_err_opts, label=get_label_for_tag(tag))
+    for tag in ['09Jun20v7', '21Sep20v7']:
+        hist.plotratio(h_dict[tag], h_dict['noSmear'], ax=rax, 
+                        unc='num', error_opts=data_err_opts, 
+                        label=get_label_for_tag(tag), clear=False
+                        )
 
     rax.grid(True)
     rax.set_ylim(0.5,1.5)
     rax.set_ylabel('Ratio to no JER')
+    rax.legend()
 
     # Save figure
     outdir = f'./output/three_jer_comparison/{dataset}'
@@ -110,26 +115,28 @@ def main():
     '''Compare Z(vv) distributions for three cases:
     1. No JER smearing applied
     2. MiniAOD-like JER smearing applied (09Jun20v7 skim)
-    3. NanoAOD-like JER smearing applied (18Sep20 skim)
+    3. NanoAOD-like JER smearing applied (21Sep20v7 skim)
     '''
     # Read the dataset as a command line argument
     dataset = sys.argv[1]
     
-    inpath_noSmear = ''
-    inpath_09Jun20v7 = ''
-    inpath_18Sep20 = ''
+    inpath_noSmear = bucoffea_path('./submission/merged_2020-09-17_vbfhinv_noJER_nanoAODv7_deepTau')
+    inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_withJER_nanoAODv7_deepTau')
+    inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-22_vbfhinv_znunu_vbf_2017_21Sep20v7')
 
     acc_dict = {
         'noSmear' : dir_archive(inpath_noSmear),
         '09Jun20v7' : dir_archive(inpath_09Jun20v7),
-        '18Sep20' : dir_archive(inpath_18Sep20)
+        '21Sep20v7' : dir_archive(inpath_21Sep20v7)
     }
 
     for acc in acc_dict.values():
         acc.load('sumw')
         acc.load('sumw2')
 
-    compare_shapes(acc_dict, dataset=dataset)
+    variables = ['mjj', 'ak4_pt0', 'ak4_pt1', 'ak4_eta0']
+    for variable in variables:
+        compare_shapes(acc_dict, dataset=dataset, variable=variable)
 
 if __name__ == '__main__':
     main()
