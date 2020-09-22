@@ -25,15 +25,21 @@ binning = {
     'ak4_pt1' : hist.Bin('jetpt', r'Trailing jet $p_T$ (GeV)', list(range(0,600,20)) ),
 }
 
-def preprocess(h, acc, relax_cut, variable, year):
+
+def preprocess(h, acc, relax_cut, variable, year, dataset):
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
     h = merge_datasets(h)
 
+    dataset_to_regex = {
+        'znunu' : f'ZJetsToNuNu.*{year}',
+        'dy' : f'DYJetsToLL.*{year}'
+    }
     relax_cut_suffix = f'_relaxed_{relax_cut}' if relax_cut is not None else ''
-    region = f'sr_vbf{relax_cut_suffix}'
+    base_region = 'sr_vbf' if dataset == 'znunu' else 'cr_2m_vbf'
+    region = f'{base_region}{relax_cut_suffix}'
         
-    h = h.integrate('region', region).integrate('dataset', re.compile(f'ZJetsToNuNu.*{year}'))
+    h = h.integrate('region', region).integrate('dataset', re.compile(dataset_to_regex[dataset]))
 
     if variable in binning.keys():
         if variable == 'met':
@@ -55,7 +61,7 @@ def plot_cut_boundary(ax, rax, variable):
     else:
         return
 
-def compare_jer_nojer_distribution(acc, outtag, relax_cut=None, variable='met', year=2017):
+def compare_jer_nojer_distribution(acc, outtag, relax_cut=None, variable='met', year=2017, dataset='znunu'):
     '''Compare distribution of a variable with/without smearing.'''
     variables = [variable, f'{variable}_jer']
     for var in variables:
@@ -65,17 +71,22 @@ def compare_jer_nojer_distribution(acc, outtag, relax_cut=None, variable='met', 
     h_ns = acc[variable]
     h_ws = acc[f'{variable}_jer']
     
-    h_ns = preprocess(h_ns, acc, relax_cut=relax_cut, variable=variable, year=year)
-    h_ws = preprocess(h_ws, acc, relax_cut=relax_cut, variable=variable, year=year)
+    h_ns = preprocess(h_ns, acc, relax_cut=relax_cut, variable=variable, year=year, dataset=dataset)
+    h_ws = preprocess(h_ws, acc, relax_cut=relax_cut, variable=variable, year=year, dataset=dataset)
 
     # Plot the comparison of the two
     fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
     hist.plot1d(h_ns, ax=ax)
     hist.plot1d(h_ws, ax=ax, clear=False)
 
+    dataset_to_title = {
+        'znunu' : r'QCD $Z(\nu\nu)$ {}',
+        'dy' : r'QCD $Z(\mu\mu)$ {}'
+    }
+
     labels = ['No JER', 'With JER']
     ax.legend(labels=labels)
-    ax.set_title(r'QCD $Z(\nu\nu)$ {}'.format(year))
+    ax.set_title(dataset_to_title[dataset].format(year))
 
     # Plot ratio
     centers = h_ns.axes()[0].centers()
@@ -111,14 +122,16 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
+    dataset = re.findall('dy|znunu', inpath)[0]
+
     variables = ['met', 'ak4_pt0', 'ak4_pt1']
     for year in [2017, 2018]:
         for variable in variables:
             # Plot the comparison of the variables for three cases:
             # 1. Regular SR, 2. Relaxed met cut (met>200), 3. Relaxed trail jet pt cut (pt>20)
-            compare_jer_nojer_distribution(acc, outtag, variable=variable, year=year)
-            compare_jer_nojer_distribution(acc, outtag, variable=variable, year=year, relax_cut='recoil')
-            compare_jer_nojer_distribution(acc, outtag, variable=variable, year=year, relax_cut='trailak4')
+            compare_jer_nojer_distribution(acc, outtag, variable=variable, dataset=dataset, year=year)
+            compare_jer_nojer_distribution(acc, outtag, variable=variable, dataset=dataset, year=year, relax_cut='recoil')
+            compare_jer_nojer_distribution(acc, outtag, variable=variable, dataset=dataset, year=year, relax_cut='trailak4')
 
 if __name__ == '__main__':
     main()
