@@ -5,7 +5,7 @@ import sys
 import re
 import tabulate
 import numpy as np
-from klepto.archives import dir_archive
+from coffea.util import load
 from pprint import pprint
 
 pjoin = os.path.join
@@ -40,7 +40,6 @@ pretty_names_for_cuts = {
 
 def dump_cutflow(acc, dataset):
     '''Dump the cutflow for the signal region cuts out of the given accumulator, into an output txt file'''
-    acc.load('cutflow_sr_vbf')
     cf = acc['cutflow_sr_vbf'][dataset]
 
     # Tabulate the cutflow
@@ -65,7 +64,7 @@ def dump_cutflow(acc, dataset):
 
 def main():
     inpath = sys.argv[1]
-    acc = dir_archive(inpath)
+    acc = load(inpath)
 
     dataset = 'ZJetsToNuNu_HT-200To400-mg_2017'
 
