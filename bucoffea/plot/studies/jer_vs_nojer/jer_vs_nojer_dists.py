@@ -130,7 +130,6 @@ def main():
             # Plot the comparison of the variables for three cases:
             # 1. Regular SR, 2. Relaxed met cut (met>200), 3. Relaxed trail jet pt cut (pt>20)
             compare_jer_nojer_distribution(acc, outtag, variable=variable, dataset=dataset, year=year)
-            compare_jer_nojer_distribution(acc, outtag, variable=variable, dataset=dataset, year=year, relax_cut='recoil')
             compare_jer_nojer_distribution(acc, outtag, variable=variable, dataset=dataset, year=year, relax_cut='trailak4')
 
 if __name__ == '__main__':

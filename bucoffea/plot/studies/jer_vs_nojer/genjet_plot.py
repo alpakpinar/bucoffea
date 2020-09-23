@@ -11,16 +11,18 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-def plot_delta_pt(acc, outtag, region='sr_vbf_trailjeteta', year=2017):
-    '''Plot difference between gen jet pt and jet pt (matched) for trailing jets.'''
-    acc.load('deltapt')
-    h = acc['deltapt']
-
+def preprocess(h, acc, region, year):
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
     h = merge_datasets(h)
 
     h = h.integrate('region', region).integrate('dataset', f'ZJetsToNuNu_HT_{year}')
+    return h
+
+def plot_variable(acc, outtag, variable, region='sr_vbf_trailjeteta', year=2017):
+    '''Plot distribution related to matched GEN-jets for trailing jets.'''
+    acc.load(variable)
+    h = preprocess(acc[variable], acc, region, year)
 
     fig, ax = plt.subplots()
     hist.plot1d(h, ax=ax)
@@ -38,11 +40,11 @@ def plot_delta_pt(acc, outtag, region='sr_vbf_trailjeteta', year=2017):
     ax.set_title(region_to_title[region])
 
     # Save figure
-    outdir = f'./output/delta_pt/{outtag}'
+    outdir = f'./output/genjet/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'{region}_deltapt.pdf')
+    outpath = pjoin(outdir, f'{region}_{variable}.pdf')
     fig.savefig(outpath)
     print(f'MSG% File saved: {outpath}')
 
@@ -54,8 +56,19 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
+    variables = [
+        'deltapt',
+        'matched_genjet_idx',
+        'matched_genjet_pt'
+    ]
+
     for region in ['sr_vbf', 'sr_vbf_trailjeteta']:
-        plot_delta_pt(acc, outtag, region=region)
+        for variable in variables:
+            try:
+                plot_variable(acc, outtag, variable=variable, region=region)
+            except KeyError:
+                print(f'Variable {variable} not found, skipping')
+                continue
 
 if __name__ == '__main__':
     main()
