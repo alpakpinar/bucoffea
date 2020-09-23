@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import uproot
+import warnings
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from klepto.archives import dir_archive
@@ -11,16 +12,22 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+warnings.filterwarnings('ignore')
+
 # Convert existing coffea files to root histograms and save them
-def convert_to_root_for_sync(acc):
-    outfilename = './inputs/sync/znunu_bu.root'
+def convert_to_root_for_sync(acc, tag):
+    outfilename = f'./inputs/sync/{tag}/Histos_Nominal_ZJETS_2017_BU.root'
     outfile = uproot.recreate(outfilename)
 
-    variables = ['ak4_eta0', 'ak4_eta1', 'mjj', 'recoil', 'ak4_pt0', 'ak4_pt1']
+    variables = ['ak4_eta0', 'ak4_eta1', 'mjj', 'mjj_nowgt', 'recoil', 'ak4_pt0', 'ak4_pt1']
     for var in variables:
         print(f'Variable: {var}')
-        acc.load(var)
-        h = acc[var]
+        try:
+            acc.load(var)
+            h = acc[var]
+        except KeyError:
+            print(f'WARNING: Could not find variable {var}, skipping')
+            continue
 
         h = merge_extensions(h, acc, reweight_pu=False)
         scale_xs_lumi(h)
@@ -81,8 +88,10 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
+    tag = '23Sep20'
+
     # convert_to_root(acc, jer='withJER' in inpath)
-    convert_to_root_for_sync(acc)
+    convert_to_root_for_sync(acc, tag)
 
 if __name__ == '__main__':
     main()
