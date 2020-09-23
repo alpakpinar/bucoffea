@@ -284,7 +284,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         matched_genjets = genjets[matched_genjet_idx]
         
         # Calculate delta_pt / pt
-        deltapt = (matched_genjets.pt - diak4.i1.pt) / diak4.i1.pt
+        deltapt = (diak4.i1.pt - matched_genjets.pt) / diak4.i1.pt
 
         if df['year'] == 2018:
             selection.add("metphihemextveto", ((-1.8 > met_phi)|(met_phi>-0.6)))
