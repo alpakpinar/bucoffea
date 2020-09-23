@@ -72,7 +72,7 @@ def vbfhinv_accumulator(cfg):
     rho_ax = Bin('rho','Energy density',100, 0, 100)
     frac_ax = Bin('frac','Fraction', 50, 0, 1)
     pt_ratio_ax = Bin('ratio', r'$\Delta p_T / p_T$', 50, -1, 1)
-    jet_idx_ax = Bin('idx', 'Matched GEN-jet index', 4, 0, 4)
+    jet_idx_ax = Bin('idx', 'Matched GEN-jet index', 5, -1, 4)
     
     Hist = hist.Hist
     items = {}
