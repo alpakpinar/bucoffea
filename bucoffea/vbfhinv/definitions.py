@@ -27,7 +27,7 @@ def vbfhinv_accumulator(cfg):
     met_ax = Bin("met", r"$p_{T}^{miss}$ (GeV)", 200, 0, 2000)
     recoil_ax = Bin("recoil", r"Recoil (GeV)", 200, 0, 2000)
 
-    mjj_ax = Bin("mjj", r"$M_{jj}$ (GeV)", 150, 0, 7500)
+    mjj_ax = Bin("mjj", r"$M_{jj}$ (GeV)", 380, 200, 4000)
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 100, 0, 1000)
     jet_pt_ax_coarse = Bin("jetpt", r"$p_{T}$ (GeV)", 5, 0, 500)
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
