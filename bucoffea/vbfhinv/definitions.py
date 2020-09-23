@@ -72,6 +72,7 @@ def vbfhinv_accumulator(cfg):
     rho_ax = Bin('rho','Energy density',100, 0, 100)
     frac_ax = Bin('frac','Fraction', 50, 0, 1)
     pt_ratio_ax = Bin('ratio', r'$\Delta p_T / p_T$', 50, -1, 1)
+    jet_idx_ax = Bin('idx', 'Matched GEN-jet index', 4, 0, 4)
     
     Hist = hist.Hist
     items = {}
@@ -136,6 +137,8 @@ def vbfhinv_accumulator(cfg):
     items["dphijr"] = Hist("min(4 leading jets, Recoil)", dataset_ax, region_ax, dphi_ax)
 
     items["deltapt"] = Hist("Counts", dataset_ax, region_ax, pt_ratio_ax)
+    items["matched_genjet_idx"] = Hist("Counts", dataset_ax, region_ax, jet_idx_ax)
+    items["matched_genjet_pt"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
 
     # Multiplicity histograms
     for cand in ['ak4', 'ak8', 'bjet', 'loose_ele', 'loose_muo', 'tight_ele', 'tight_muo', 'tau', 'photon','hlt_single_muon','muons_hltmatch']:

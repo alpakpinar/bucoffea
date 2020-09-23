@@ -280,7 +280,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('trailjet_pt_diff', (trailjet_pt_diff>0.1).any())
 
         # Find the gen-jets that the trailing jet matches to
-        matched_genjets = genjets[diak4.i1.argmatch(genjets, deltaRCut=0.2)]
+        matched_genjet_idx = diak4.i1.argmatch(genjets, deltaRCut=0.2)
+        matched_genjets = genjets[matched_genjet_idx]
         
         # Calculate delta_pt / pt
         deltapt = (matched_genjets.pt - diak4.i1.pt) / diak4.i1.pt
@@ -700,6 +701,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('recoil_mjj',         recoil=df["recoil_pt"][mask], mjj=df["mjj"][mask], weight=rweight[mask] )
 
             ezfill('deltapt', ratio=deltapt[mask].flatten(), weight=rweight[mask])
+            ezfill('matched_genjet_idx', idx=matched_genjet_idx[mask].flatten(), weight=rweight[mask])
+            ezfill('matched_genjet_pt', jetpt=matched_genjets.pt[mask].flatten(), weight=rweight[mask])
 
             # Muons
             if '_1m_' in region or '_2m_' in region or 'no_veto' in region:
