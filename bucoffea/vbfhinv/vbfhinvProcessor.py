@@ -603,6 +603,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('dphijj',             dphi=df["dphijj"][mask],   weight=rweight[mask] )
             ezfill('detajj',             deta=df["detajj"][mask],   weight=rweight[mask] )
             ezfill('mjj',                mjj=df["mjj"][mask],      weight=rweight[mask] )
+            # mjj distribution without any weights applied
+            no_wgt = np.ones_like(rweight)
+            ezfill('mjj_nowgt',            mjj=df["mjj"][mask],      weight=no_wgt[mask] )
 
 
             if gen_v_pt is not None:
