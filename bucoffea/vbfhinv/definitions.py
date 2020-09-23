@@ -245,7 +245,7 @@ def vbfhinv_regions(cfg):
     regions['sr_vbf_relaxed_trailak4'] = copy.deepcopy(regions['sr_vbf']) + ['trailak4_pt_eta_relaxed']
     regions['sr_vbf_relaxed_trailak4'].remove('trailak4_pt_eta')
 
-    regions['sr_vbf_trailjeteta'] = copy.deepcopy(regions['sr_vbf']) + ['trailjet_eta']
+    regions['sr_vbf_trailjeteta'] = copy.deepcopy(regions['sr_vbf']) + ['trailjet_eta', 'trailjet_pt_diff']
 
     # For sync mode
     if cfg and cfg.RUN.SYNC:

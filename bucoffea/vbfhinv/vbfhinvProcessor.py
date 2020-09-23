@@ -275,6 +275,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
         trailjet_eta = ((diak4.i1.abseta<2.8) & (diak4.i1.abseta>2.4)).any()
         selection.add('trailjet_eta', trailjet_eta)
 
+        # Calculate % change in pt of the smearing jet
+        trailjet_pt_diff = np.abs(diak4.i1.pt * (1 - diak4.i1.jerfac)) / diak4.i1.pt
+        selection.add('trailjet_pt_diff', (trailjet_pt_diff>0.1).any())
+
         # Find the gen-jets that the trailing jet matches to
         matched_genjets = genjets[diak4.i1.argmatch(genjets, deltaRCut=0.2)]
         
