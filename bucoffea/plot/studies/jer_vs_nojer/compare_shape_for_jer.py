@@ -98,7 +98,10 @@ def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets'):
                         )
 
     rax.grid(True)
-    rax.set_ylim(0.5,1.5)
+    if variable != 'ak4_eta1':
+        rax.set_ylim(0.5,1.5)
+    else:
+        rax.set_ylim(0,2)
     rax.set_ylabel('Ratio to no JER')
     rax.legend()
 
@@ -134,7 +137,7 @@ def main():
         acc.load('sumw')
         acc.load('sumw2')
 
-    variables = ['mjj', 'ak4_pt0', 'ak4_pt1', 'ak4_eta0']
+    variables = ['mjj', 'ak4_pt0', 'ak4_pt1', 'ak4_eta0', 'ak4_eta1', 'recoil']
     for variable in variables:
         compare_shapes(acc_dict, dataset=dataset, variable=variable)
 
