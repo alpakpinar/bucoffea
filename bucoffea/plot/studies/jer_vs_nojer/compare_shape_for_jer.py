@@ -83,6 +83,9 @@ def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets'):
     }
 
     ax.set_title(dataset_to_title[dataset])
+    if variable in ['mjj', 'recoil']:
+        ax.set_yscale('log')
+        ax.set_ylim(1e-2, 1e6)
 
     data_err_opts = {
         'linestyle':'none',
