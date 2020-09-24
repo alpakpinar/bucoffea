@@ -231,6 +231,9 @@ def vbfhinv_regions(cfg):
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation', 'max_neEmEF', 'veto_hfhf']
 
+    regions['sr_vbf_relaxed_trailjetpt'] = copy.deepcopy(regions['sr_vbf']) + ['trailak4_pt_eta_relaxed']
+    regions['sr_vbf_relaxed_trailjetpt'].remove('trailak4_pt_eta')
+
     # For sync mode
     if cfg and cfg.RUN.SYNC:
         regions['cr_sync'] = [

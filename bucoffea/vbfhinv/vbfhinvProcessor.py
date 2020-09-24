@@ -253,6 +253,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         diak4 = ak4[:,:2].distincts()
         leadak4_pt_eta = (diak4.i0.pt > cfg.SELECTION.SIGNAL.LEADAK4.PT) & (np.abs(diak4.i0.eta) < cfg.SELECTION.SIGNAL.LEADAK4.ETA)
         trailak4_pt_eta = (diak4.i1.pt > cfg.SELECTION.SIGNAL.TRAILAK4.PT) & (np.abs(diak4.i1.eta) < cfg.SELECTION.SIGNAL.TRAILAK4.ETA)
+        trailak4_pt_eta_relaxed = (diak4.i1.pt > 20) & (np.abs(diak4.i1.eta) < cfg.SELECTION.SIGNAL.TRAILAK4.ETA)
+        
         hemisphere = (diak4.i0.eta * diak4.i1.eta < 0).any()
         has_track0 = np.abs(diak4.i0.eta) <= 2.5
         has_track1 = np.abs(diak4.i1.eta) <= 2.5
@@ -279,6 +281,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('two_jets', diak4.counts>0)
         selection.add('leadak4_pt_eta', leadak4_pt_eta.any())
         selection.add('trailak4_pt_eta', trailak4_pt_eta.any())
+        selection.add('trailak4_pt_eta_relaxed', trailak4_pt_eta_relaxed.any())
+        
         selection.add('hemisphere', hemisphere)
         selection.add('leadak4_id',leadak4_id.any())
         selection.add('trailak4_id',trailak4_id.any())
@@ -483,19 +487,30 @@ class vbfhinvProcessor(processor.ProcessorABC):
             mask = selection.all(*cuts)
 
             if cfg.RUN.SAVE.TREE:
-                if region in ['cr_1e_vbf','cr_1m_vbf']:
+                if 'sr_vbf' in region and df['is_lo_znunu']:
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
-                    output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
-                    output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
+                    if gen_v_pt is not None:
+                        output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
+                        output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
                     output['tree_float16'][region]["recoil_pt"]   +=  processor.column_accumulator(np.float16(df["recoil_pt"][mask]))
                     output['tree_float16'][region]["recoil_phi"]  +=  processor.column_accumulator(np.float16(df["recoil_phi"][mask]))
                     output['tree_float16'][region]["mjj"]         +=  processor.column_accumulator(np.float16(df["mjj"][mask]))
+                    output['tree_float16'][region]["met_pt_jer"]         +=  processor.column_accumulator(np.float16(met_pt[mask]))
+                    
+                    if df['year'] == 2017:
+                        met_branch = 'METFixEE2017'
+                    else:
+                        met_branch = 'MET'
+                    
+                    output['tree_float16'][region]["met_pt_nom"]         +=  processor.column_accumulator(np.float16(df[f'{met_branch}_pt_nom'][mask]))
                     
                     output['tree_float16'][region]["leadak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i0.pt[mask]))
+                    output['tree_float16'][region]["leadak4_pt_nom"]     +=  processor.column_accumulator(np.float16((diak4.i0.pt / diak4.i0.jerfac)[mask]))
                     output['tree_float16'][region]["leadak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i0.eta[mask]))
                     output['tree_float16'][region]["leadak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i0.phi[mask]))
 
                     output['tree_float16'][region]["trailak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i1.pt[mask]))
+                    output['tree_float16'][region]["trailak4_pt_nom"]     +=  processor.column_accumulator(np.float16((diak4.i1.pt / diak4.i1.jerfac)[mask]))
                     output['tree_float16'][region]["trailak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i1.eta[mask]))
                     output['tree_float16'][region]["trailak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i1.phi[mask]))
 
