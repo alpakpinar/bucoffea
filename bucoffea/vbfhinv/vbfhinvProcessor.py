@@ -247,6 +247,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dpfcalo_cr',np.abs(df['dPFCaloCR']) < cfg.SELECTION.SIGNAL.DPFCALO)
 
         selection.add('recoil', df['recoil_pt']>cfg.SELECTION.SIGNAL.RECOIL)
+        selection.add('recoil_relaxed', df['recoil_pt']>150)
         selection.add('met_sr', met_pt>cfg.SELECTION.SIGNAL.RECOIL)
 
         # AK4 dijet

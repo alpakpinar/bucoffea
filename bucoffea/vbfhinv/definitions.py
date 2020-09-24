@@ -234,6 +234,9 @@ def vbfhinv_regions(cfg):
     regions['sr_vbf_relaxed_trailjetpt'] = copy.deepcopy(regions['sr_vbf']) + ['trailak4_pt_eta_relaxed']
     regions['sr_vbf_relaxed_trailjetpt'].remove('trailak4_pt_eta')
 
+    regions['sr_vbf_relaxed_recoil'] = copy.deepcopy(regions['sr_vbf']) + ['recoil_relaxed']
+    regions['sr_vbf_relaxed_recoil'].remove('recoil')
+
     # For sync mode
     if cfg and cfg.RUN.SYNC:
         regions['cr_sync'] = [
@@ -297,22 +300,6 @@ def vbfhinv_regions(cfg):
                                         'dphijj',
                                         'detajj',
                                         ]
-
-    tmp = {}
-    for region in regions.keys():
-        if not region.startswith("sr_"):
-            continue
-        new_region = f"{region}_no_veto_all"
-        tmp[new_region] = copy.deepcopy(regions[region])
-        tmp[new_region].remove("veto_muo")
-        tmp[new_region].remove("veto_tau")
-        tmp[new_region].remove("veto_ele")
-        tmp[new_region].remove("mindphijr")
-        tmp[new_region].remove("recoil")
-        tmp[new_region].append("met_sr")
-        tmp[new_region].append("mindphijm")
-
-    regions.update(tmp)
 
     if cfg and  cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
