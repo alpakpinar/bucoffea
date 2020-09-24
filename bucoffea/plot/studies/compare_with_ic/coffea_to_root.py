@@ -14,6 +14,55 @@ pjoin = os.path.join
 
 warnings.filterwarnings('ignore')
 
+def get_region_tag_for_bu(region):
+    region_to_tag = {
+        'SR' : 'sr_vbf',
+        'Wenu' : 'cr_1e_vbf',
+        'Wmunu' : 'cr_1m_vbf',
+        'Zee' : 'cr_2e_vbf',
+        'Zmumu' : 'cr_2m_vbf'
+    }
+    return region_to_tag[region]
+
+def get_processes_and_regex(region, year):
+    '''Get list of processes to look at and the dataset regex for the given region.'''
+    region_to_procs = {
+        'SR' : [
+            {'name' : 'data_obs', 'regex' : f'MET_{year}'},
+            {'name' : 'VBFHtoInv', 'regex' : re.compile(f'VBF_HToInv.*{year}')},
+            {'name' : 'DY', 'regex' : re.compile(f'DYJetsToLL.*{year}')},
+            {'name' : 'EWKW', 'regex' : re.compile(f'EWKW.*{year}')},
+            {'name' : 'EWKZll', 'regex' : re.compile(f'EWKZ2Jets.*ZToLL.*{year}')},
+            {'name' : 'EWKZNUNU', 'regex' : re.compile(f'EWKZ2Jets.*ZToNuNu.*{year}')},
+            {'name' : 'TOP', 'regex' : f'Top_FXFX_{year}'},
+            {'name' : 'VV', 'regex' : f'Diboson_{year}'},
+            {'name' : 'WJETS', 'regex' : re.compile(f'WJetsToLNu.*{year}')},
+            {'name' : 'ZJETS', 'regex' : re.compile(f'ZJetsToNuNu.*{year}')}
+        ],
+        'Wenu' : [
+            {'name' : 'data_obs', 'regex' : f'EGamma_{year}'},
+            {'name' : 'EWKW', 'regex' : re.compile(f'EWKW.*{year}')},
+            {'name' : 'WJETS', 'regex' : re.compile(f'WJetsToLNu.*{year}')}
+        ],
+        'Wmunu' : [
+            {'name' : 'data_obs', 'regex' : f'MET_{year}'},
+            {'name' : 'EWKW', 'regex' : re.compile(f'EWKW.*{year}')},
+            {'name' : 'WJETS', 'regex' : re.compile(f'WJetsToLNu.*{year}')}
+        ],
+        'Zee' : [
+            {'name' : 'data_obs', 'regex' : f'EGamma_{year}'},
+            {'name' : 'EWKZll', 'regex' : re.compile(f'EWKZ2Jets.*ZToLL.*{year}')},
+            {'name' : 'ZJETS', 'regex' : re.compile(f'ZJetsToNuNu.*{year}')}
+        ],
+        'Zmumu' : [
+            {'name' : 'data_obs', 'regex' : f'MET_{year}'},
+            {'name' : 'EWKZll', 'regex' : re.compile(f'EWKZ2Jets.*ZToLL.*{year}')},
+            {'name' : 'ZJETS', 'regex' : re.compile(f'ZJetsToNuNu.*{year}')}
+        ],
+    }
+
+    return region_to_procs[region]
+
 # Convert existing coffea files to root histograms and save them
 def convert_to_root_for_sync(acc, tag):
     outfilename = f'./inputs/sync/{tag}/Histos_Nominal_ZJETS_2017_BU.root'
@@ -38,7 +87,8 @@ def convert_to_root_for_sync(acc, tag):
 
         outfile[var] = th1
 
-def convert_to_root(acc, jer=False):
+def save_prefit_shapes_to_root(acc, region, year=2017, jer=False):
+    '''Take the prefit histograms stored in coffea files on BU side, save them into ROOT files for comparison with IC.'''
     acc.load('mjj')
     h = acc['mjj']
 
@@ -51,36 +101,23 @@ def convert_to_root(acc, jer=False):
     h = h.rebin('mjj', mjj_bins)
 
     # Create output ROOT file
-    if jer:
-        outfilename = f'./inputs/bu_input_withJER.root'
-    else:
-        outfilename = f'./inputs/bu_input_noJER.root'
+    outfilename = f'./inputs/prefit_shapes/BU_VBF_shapes_{region}.root'
     outfile = uproot.recreate(outfilename)
-    for year in [2017, 2018]:
-        h_znunu = h.integrate('dataset', re.compile(f'ZJetsToNuNu.*{year}')).integrate('region', 'sr_vbf')
-        h_wlnu = h.integrate('dataset', re.compile(f'WJetsToLNu.*{year}')).integrate('region', 'sr_vbf')
 
-        h_zmumu = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}')).integrate('region', 'cr_2m_vbf')
-        h_zee = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}')).integrate('region', 'cr_2e_vbf')
-
-        h_wmunu = h.integrate('dataset', re.compile(f'WJetsToLNu.*{year}')).integrate('region', 'cr_1m_vbf')
-        h_wenu = h.integrate('dataset', re.compile(f'WJetsToLNu.*{year}')).integrate('region', 'cr_1e_vbf')
-
-        th1_znunu = hist.export1d(h_znunu)
-        th1_wlnu = hist.export1d(h_wlnu)
-        th1_zmumu = hist.export1d(h_zmumu)
-        th1_zee = hist.export1d(h_zee)
-        th1_wmunu = hist.export1d(h_wmunu)
-        th1_wenu = hist.export1d(h_wenu)
-
-        outfile[f'sr_qcd_znunu_{year}'] = th1_znunu
-        outfile[f'sr_qcd_wlnu_{year}'] = th1_wlnu
-        outfile[f'cr_qcd_zmumu_{year}'] = th1_zmumu
-        outfile[f'cr_qcd_zee_{year}'] = th1_zee
-        outfile[f'cr_qcd_wmunu_{year}'] = th1_wmunu
-        outfile[f'cr_qcd_wenu_{year}'] = th1_wenu
+    histos = {}
+    # Retrieve the histograms for the specified region
+    region_tag = get_region_tag_for_bu(region)
+    process_and_regex_list = get_processes_and_regex(region, year)
     
-        print(f'MSG% TH1F histogram saved in: {outfilename}')
+    for process_and_regex in process_and_regex_list:
+        histname = process_and_regex['name']
+        dataset_regex = process_and_regex['regex']
+        histos[histname] = h.integrate('dataset', dataset_regex).integrate('region', region_tag)
+
+    # Now, save the retrieved histograms into a root file
+    for histname, histo in histos.items():
+        _th1 = hist.export1d(histo)
+        outfile[histname] = _th1
 
 def main():
     inpath = sys.argv[1]
@@ -88,10 +125,13 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    tag = '23Sep20'
+    # Run this only for sync purposes 
+    # tag = '23Sep20'
+    # convert_to_root_for_sync(acc, tag)
 
-    # convert_to_root(acc, jer='withJER' in inpath)
-    convert_to_root_for_sync(acc, tag)
+    regions = ['SR', 'Wenu', 'Wmunu', 'Zee', 'Zmumu']
+    for region in regions:
+        save_prefit_shapes_to_root(acc, region=region)
 
 if __name__ == '__main__':
     main()
