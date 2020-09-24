@@ -10,6 +10,9 @@ from matplotlib import pyplot as plt
 
 pjoin = os.path.join
 
+# Supress division warnings
+np.seterr(divide='ignore', invalid='ignore')
+
 def get_input_trees(region):
     '''Get the relevant input trees from both sides for pre-fit shape comparison.'''
     rootdir = './inputs/prefit_shapes'
@@ -34,6 +37,9 @@ def compare_prefit_shapes(ic_file, bu_file, region, year=2017):
     '''Compare pre-fit shapes as a function of mjj.'''
     processes = get_procs(region)
 
+    f_bu = uproot.open(bu_file)
+    f_ic = uproot.open(ic_file)
+
     print('*'*20)
     print(f'Region: {region}')
     print('*'*20)
@@ -41,8 +47,8 @@ def compare_prefit_shapes(ic_file, bu_file, region, year=2017):
     for process in processes:
         print(f'Process: {process}')
         directory = f'{region}VBF' if region != 'SR' else 'SR'
-        h_ic = ic_file[directory][process]
-        h_bu = bu_file[process]
+        h_ic = f_ic[directory][process]
+        h_bu = f_bu[process]
 
         # Binning must be the same between the two
         assert((h_ic.edges == h_bu.edges).all())
@@ -62,7 +68,7 @@ def compare_prefit_shapes(ic_file, bu_file, region, year=2017):
         ratio = bu_vals / ic_vals
         centers = ( (edges + np.roll(edges,-1))/2 )[:-1]
 
-        rax.plot(centers, ratio, marker='o', ls='')
+        rax.plot(centers, ratio, marker='o', ls='', color='black')
 
         rax.grid(True)
         rax.set_ylim(0.8,1.2)
