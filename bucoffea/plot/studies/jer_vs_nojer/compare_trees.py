@@ -16,7 +16,6 @@ cols_for_pandas = [
     'mjj', 'recoil_pt',
     'recoil_phi',
     'met_pt_nom',
-    'met_phi_nom',
     'leadak4_pt',
     'leadak4_eta',
     'leadak4_phi',
@@ -56,7 +55,7 @@ def prepare_merged_df(tree_noSmear, tree_withSmear, proc):
 
     return df
 
-def plot_eta_distribution(tree_noSmear, tree_withSmear, diff_variable='mjj', diff_thresh=0.1, proc='znunu'):
+def plot_eta_distribution(tree_noSmear, tree_withSmear, outtag, diff_variable='mjj', diff_thresh=0.1, proc='znunu'):
     '''Plot jet eta distributions for events with large differences when the smearing is applied.'''
     df = prepare_merged_df(tree_noSmear, tree_withSmear, proc)
 
@@ -64,7 +63,7 @@ def plot_eta_distribution(tree_noSmear, tree_withSmear, diff_variable='mjj', dif
     mask = percent_diff > diff_thresh
 
     # Plot variables with high variable diff.
-    outdir = f'./output/large_diff/dists/{proc}'
+    outdir = f'./output/large_diff/{outtag}/dists'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -90,7 +89,7 @@ def plot_eta_distribution(tree_noSmear, tree_withSmear, diff_variable='mjj', dif
         print(f'MSG% File saved: {outpath}')
         plt.close(fig)
 
-def compare_events_with_large_diff(tree_noSmear, tree_withSmear, diff_variable='mjj', diff_thresh=0.1, proc='znunu'):
+def compare_events_with_large_diff(tree_noSmear, tree_withSmear, outtag, diff_variable='mjj', diff_thresh=0.1, proc='znunu'):
     '''Compare events with large differences when the smearing is applied.'''
     df = prepare_merged_df(tree_noSmear, tree_withSmear, proc)
 
@@ -98,7 +97,7 @@ def compare_events_with_large_diff(tree_noSmear, tree_withSmear, diff_variable='
     mask = percent_diff > diff_thresh
 
     # Plot variables with high variable diff.
-    outdir = f'./output/large_diff/{proc}'
+    outdir = f'./output/large_diff/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -132,18 +131,28 @@ def compare_events_with_large_diff(tree_noSmear, tree_withSmear, diff_variable='
         plt.close(fig)
 
 def main():
-    # Read the process from command line (i.e. zmumu or znunu)
-    proc = sys.argv[1]
+    # Read the input directory from the command line
+    inpath = sys.argv[1]
     # Tree files with and without smearing applied
-    if proc == 'znunu':
-        tree_noSmear = './input_trees/18Sep20/noJER/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root'
-        tree_withSmear = './input_trees/18Sep20/withJER/tree_ZJetsToNuNu_HT-400To600-mg_new_pmx_2017.root'
-    elif proc == 'zmumu': 
-        tree_noSmear = './input_trees/21Sep20_dy/noJER/tree_DYJetsToLL_M-50_HT-400to600-MLM_new_pmx_2017.root'
-        tree_withSmear = './input_trees/21Sep20_dy/withJER/tree_DYJetsToLL_M-50_HT-400to600-MLM_new_pmx_2017.root'
+    inpath_noSmear = pjoin(inpath, 'noJER')
+    inpath_withSmear = pjoin(inpath, 'withJER')
 
-    compare_events_with_large_diff(tree_noSmear, tree_withSmear, proc=proc)
-    plot_eta_distribution(tree_noSmear, tree_withSmear, proc=proc)
+    outtag = inpath.split('/')[-2]
+
+    tree_noSmear = pjoin(inpath_noSmear, os.listdir(inpath_noSmear)[0])
+    tree_withSmear = pjoin(inpath_withSmear, os.listdir(inpath_withSmear)[0])
+
+    print(f'Tree noSmear: {tree_noSmear}')
+    print(f'Tree withSmear: {tree_withSmear}')
+
+    # Figure out the process 
+    if re.match('.*ZJetsToNuNu.*', tree_noSmear):
+        proc = 'znunu'
+    elif re.match('.*DYJetsToLL.*', tree_noSmear):
+        proc = 'zmumu'
+
+    compare_events_with_large_diff(tree_noSmear, tree_withSmear, outtag, proc=proc)
+    plot_eta_distribution(tree_noSmear, tree_withSmear, outtag, proc=proc)
 
 if __name__ == '__main__':
     main()
