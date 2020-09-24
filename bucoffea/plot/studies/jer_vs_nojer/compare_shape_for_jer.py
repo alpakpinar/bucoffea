@@ -23,7 +23,7 @@ recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  
 binnings = {
     'mjj' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
     'recoil' : hist.Bin('recoil','Recoil (GeV)', recoil_bins_2016),
-    'recoil_relaxed' : hist.Bin('recoil','Recoil (GeV)', list(range(150,250,25)) + recoil_bins_2016),
+    'recoil_relaxed' : hist.Bin('recoil','Recoil (GeV)', list(range(160,250,30)) + recoil_bins_2016),
     'ak4_pt0' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,600,20)) + list(range(600,1000,20)) ),
     'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) )
 }
@@ -65,8 +65,11 @@ def preprocess(h, acc, variable, year, dataset, relaxed_recoil=False):
         'zjets' : f'ZJetsToNuNu.*{year}',
         'vbf' : f'VBF_HToInv.*M125.*{year}',
     }
-
-    h = h.integrate('region', 'sr_vbf').integrate('dataset', re.compile(dataset_to_regex[dataset]))
+    
+    if relaxed_recoil:
+        h = h.integrate('region', 'sr_vbf_relaxed_recoil').integrate('dataset', re.compile(dataset_to_regex[dataset]))
+    else:
+        h = h.integrate('region', 'sr_vbf').integrate('dataset', re.compile(dataset_to_regex[dataset]))
 
     if variable in binnings.keys():
         h = do_rebinning(h, variable, relaxed_recoil)
@@ -95,14 +98,10 @@ def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets', relaxed
     }
 
     ax.set_title(dataset_to_title[dataset])
-    if variable in ['mjj', 'recoil']:
+    # if variable in ['mjj', 'recoil']:
+    if variable == 'mjj':
         ax.set_yscale('log')
         ax.set_ylim(1e-2, 1e6)
-
-    if relaxed_recoil:
-        ylim = ax.get_ylim()
-        ax.plot([250, 250], ylim, color='black')
-        ax.set_ylim(ylim)
 
     data_err_opts = {
         'linestyle':'none',
@@ -124,9 +123,21 @@ def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets', relaxed
         rax.set_ylim(0,2)
     rax.set_ylabel('Ratio to no JER')
     rax.legend()
+    
+    if variable == 'recoil' and relaxed_recoil:
+        ylim = ax.get_ylim()
+        ax.plot([250, 250], ylim, color='black')
+        ax.set_ylim(ylim)
+
+        ylim = rax.get_ylim()
+        rax.plot([250, 250], ylim, color='black')
+        rax.set_ylim(ylim)
 
     # Save figure
-    outdir = f'./output/three_jer_comparison/{dataset}'
+    if relaxed_recoil:
+        outdir = f'./output/three_jer_comparison/{dataset}/relaxed_recoil'
+    else:
+        outdir = f'./output/three_jer_comparison/{dataset}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
@@ -143,9 +154,12 @@ def main():
     # Read the dataset as a command line argument
     args = parse_cli()
     
-    inpath_noSmear = bucoffea_path('./submission/merged_2020-09-17_vbfhinv_noJER_nanoAODv7_deepTau')
-    inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_withJER_nanoAODv7_deepTau')
-    inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-22_vbfhinv_znunu_vbf_2017_21Sep20v7')
+    # inpath_noSmear = bucoffea_path('./submission/merged_2020-09-17_vbfhinv_noJER_nanoAODv7_deepTau')
+    # inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_withJER_nanoAODv7_deepTau')
+    # inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-22_vbfhinv_znunu_vbf_2017_21Sep20v7')
+    inpath_noSmear = bucoffea_path('./submission/merged_2020-09-24_vbfhinv_znunu_09Jun20v7_noJER_relaxed_recoil')
+    inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-24_vbfhinv_znunu_09Jun20v7_relaxed_recoil')
+    inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-24_vbfhinv_znunu_relaxed_recoil')
 
     acc_dict = {
         'noSmear' : dir_archive(inpath_noSmear),
