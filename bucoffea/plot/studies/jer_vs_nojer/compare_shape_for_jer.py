@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import warnings
+import argparse
 
 from collections import OrderedDict
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
@@ -22,9 +23,17 @@ recoil_bins_2016 = [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  
 binnings = {
     'mjj' : hist.Bin('mjj', r'$M_{jj}$ (GeV)', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500]),
     'recoil' : hist.Bin('recoil','Recoil (GeV)', recoil_bins_2016),
+    'recoil_relaxed' : hist.Bin('recoil','Recoil (GeV)', list(range(150,250,25)) + recoil_bins_2016),
     'ak4_pt0' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,600,20)) + list(range(600,1000,20)) ),
     'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) )
 }
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dataset', help='Dataset to be looked at, default is znunu.', default='znunu')
+    parser.add_argument('--relaxed_recoil', help='Look at region with MET > 150 GeV cut.', action='store_true')
+    args = parser.parse_args()
+    return args
 
 def get_label_for_tag(tag):
     mapping = {
@@ -34,17 +43,20 @@ def get_label_for_tag(tag):
     }
     return mapping[tag]
 
-def do_rebinning(h, variable):
+def do_rebinning(h, variable, relaxed_recoil=False):
     if variable == 'mjj':
         h = h.rebin('mjj', binnings['mjj'])
     elif variable == 'recoil':
-        h = h.rebin('recoil', binnings['recoil'])
+        if relaxed_recoil:
+            h = h.rebin('recoil', binnings['recoil_relaxed'])
+        else:
+            h = h.rebin('recoil', binnings['recoil'])
     elif 'ak4_pt' in variable:
         h = h.rebin('jetpt', binnings[variable])
 
     return h
 
-def preprocess(h, acc, variable, year, dataset):
+def preprocess(h, acc, variable, year, dataset, relaxed_recoil=False):
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
     h = merge_datasets(h)
@@ -57,16 +69,16 @@ def preprocess(h, acc, variable, year, dataset):
     h = h.integrate('region', 'sr_vbf').integrate('dataset', re.compile(dataset_to_regex[dataset]))
 
     if variable in binnings.keys():
-        h = do_rebinning(h, variable)
+        h = do_rebinning(h, variable, relaxed_recoil)
 
     return h
 
-def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets'):
+def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets', relaxed_recoil=False):
     h_dict = OrderedDict()
     for tag, acc in acc_dict.items():
         acc.load(variable)
         # Get the pre-processed histograms
-        h_dict[tag] = preprocess(acc[variable], acc, variable, year, dataset)
+        h_dict[tag] = preprocess(acc[variable], acc, variable, year, dataset, relaxed_recoil)
 
     # Ready to plot! Plot the comparison of the three distributions
     legend_labels = []
@@ -86,6 +98,11 @@ def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets'):
     if variable in ['mjj', 'recoil']:
         ax.set_yscale('log')
         ax.set_ylim(1e-2, 1e6)
+
+    if relaxed_recoil:
+        ylim = ax.get_ylim()
+        ax.plot([250, 250], ylim, color='black')
+        ax.set_ylim(ylim)
 
     data_err_opts = {
         'linestyle':'none',
@@ -124,7 +141,7 @@ def main():
     3. NanoAOD-like JER smearing applied (21Sep20v7 skim)
     '''
     # Read the dataset as a command line argument
-    dataset = sys.argv[1]
+    args = parse_cli()
     
     inpath_noSmear = bucoffea_path('./submission/merged_2020-09-17_vbfhinv_noJER_nanoAODv7_deepTau')
     inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_withJER_nanoAODv7_deepTau')
@@ -142,7 +159,7 @@ def main():
 
     variables = ['mjj', 'ak4_pt0', 'ak4_pt1', 'ak4_eta0', 'ak4_eta1', 'recoil']
     for variable in variables:
-        compare_shapes(acc_dict, dataset=dataset, variable=variable)
+        compare_shapes(acc_dict, dataset=args.dataset, variable=variable, relaxed_recoil=args.relaxed_recoil)
 
 if __name__ == '__main__':
     main()
