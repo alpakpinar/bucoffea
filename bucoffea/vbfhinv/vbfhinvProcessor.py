@@ -430,6 +430,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
             selection.add(f'eemitigation{var}', eemitigation)
 
+            # HF-HF veto
+            no_jets_in_hf = ~((diak4.i0.abseta > 3.0) & (diak4.i1.abseta>3.0))
+            selection.add(f'hfhf_veto{var}', no_jets_in_hf.any())
+
             selection.add(f'veto_b{var}', bjets.counts==0)
 
             ak4_pt = getattr(ak4, f'pt{var}')
