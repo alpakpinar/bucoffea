@@ -247,14 +247,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dpfcalo_cr',np.abs(df['dPFCaloCR']) < cfg.SELECTION.SIGNAL.DPFCALO)
 
         selection.add('recoil', df['recoil_pt']>cfg.SELECTION.SIGNAL.RECOIL)
-        selection.add('recoil_relaxed', df['recoil_pt']>150)
         selection.add('met_sr', met_pt>cfg.SELECTION.SIGNAL.RECOIL)
 
         # AK4 dijet
         diak4 = ak4[:,:2].distincts()
         leadak4_pt_eta = (diak4.i0.pt > cfg.SELECTION.SIGNAL.LEADAK4.PT) & (np.abs(diak4.i0.eta) < cfg.SELECTION.SIGNAL.LEADAK4.ETA)
         trailak4_pt_eta = (diak4.i1.pt > cfg.SELECTION.SIGNAL.TRAILAK4.PT) & (np.abs(diak4.i1.eta) < cfg.SELECTION.SIGNAL.TRAILAK4.ETA)
-        trailak4_pt_eta_relaxed = (diak4.i1.pt > 20) & (np.abs(diak4.i1.eta) < cfg.SELECTION.SIGNAL.TRAILAK4.ETA)
         
         hemisphere = (diak4.i0.eta * diak4.i1.eta < 0).any()
         has_track0 = np.abs(diak4.i0.eta) <= 2.5
@@ -282,7 +280,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('two_jets', diak4.counts>0)
         selection.add('leadak4_pt_eta', leadak4_pt_eta.any())
         selection.add('trailak4_pt_eta', trailak4_pt_eta.any())
-        selection.add('trailak4_pt_eta_relaxed', trailak4_pt_eta_relaxed.any())
         
         selection.add('hemisphere', hemisphere)
         selection.add('leadak4_id',leadak4_id.any())
