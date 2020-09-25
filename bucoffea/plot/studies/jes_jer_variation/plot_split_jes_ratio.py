@@ -190,8 +190,12 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         ax.set_xlabel('Recoil (GeV)')
     ax.set_ylabel('JEC uncertainty')
     if bin_selection == 'singleBin':
-        ax.set_ylim(0.97,1.03)
-        ticker_base = 0.01
+        if 'znunu_over_z' in transfer_factor_tag:
+            ax.set_ylim(0.99,1.01)
+            ticker_base = 0.005
+        else:
+            ax.set_ylim(0.96,1.04)
+            ticker_base = 0.01
     else:
         ax.set_ylim(0.9,1.1)
         ticker_base = 0.02
