@@ -39,9 +39,9 @@ ic_regions = {
 ic_processes = {
     'total_background' : 'total_background',
     'ewk_wjets' : 'EWKW',
-    'ewkzll' : 'EWKZll',
+    'ewk_zll' : 'EWKZll',
     'qcd_wjets': 'WJETS',
-    'qcdzll' : 'DY',
+    'qcd_zll' : 'DY',
     'ewk_zjets': 'EWKZNUNU',
     'qcd_zjets' : 'ZJETS',
     'top' : 'TOP',
@@ -54,9 +54,9 @@ ic_processes = {
 titles = {
     'total_background' : 'Total Background {}',
     'ewk_wjets' : r'EWK $W(\ell\nu)$ {}',
-    'ewkzll' : r'EWK $Z(\ell\ell)$ {}',
+    'ewk_zll' : r'EWK $Z(\ell\ell)$ {}',
     'qcd_wjets': r'QCD $W(\ell\nu)$ {}',
-    'qcdzll' : 'DY {}',
+    'qcd_zll' : 'DY {}',
     'ewk_zjets': r'EWK $Z(\nu\nu)$ {}',
     'qcd_zjets' : r'QCD $Z(\nu\nu)$ {}',
     'top' : 'Top {}',
@@ -108,7 +108,10 @@ def compare_prefit_shapes(ic_file, bu_file):
     
             ax.legend()
             ax.set_yscale('log')
-            ax.set_ylim(1e-2, 1e5)
+            if 'dielec' in region or 'dimu' in region:
+                ax.set_ylim(1e-4, 1e3)
+            else:
+                ax.set_ylim(1e-3, 1e4)
             ax.set_title(titles[process].format(year))
 
             # Plot ratio
