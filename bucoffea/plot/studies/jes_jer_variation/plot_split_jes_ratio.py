@@ -129,8 +129,8 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
     # Setup the color map
     colormap = plt.cm.nipy_spectral
     num_plots = len(vars_to_look_at) if skimmed else 12 # 12 JES sub-variations
-    colors = [[colormap(0)]]
-    for i in np.linspace(0.1,0.9,num_plots):
+    colors = []
+    for i in np.linspace(0,0.9,num_plots+1):
         colors.append([colormap(i), colormap(i)])
 
     # Flatten the color list

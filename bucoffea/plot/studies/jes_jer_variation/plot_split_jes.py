@@ -128,8 +128,8 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
     # Setup the color map
     colormap = plt.cm.nipy_spectral
     num_plots = len(vars_to_plot) 
-    colors = [[colormap(0)]]
-    for i in np.linspace(0.1,1,num_plots):
+    colors = []
+    for i in np.linspace(0,1,num_plots+1):
         colors.append([colormap(i), colormap(i)])
 
     # Flatten the color list
