@@ -164,15 +164,8 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
         # Save the uncertainties to an output root file (do not save combined lepton channels)
         if not 'zll' in transfer_factor_tag:
-            if not 'jer' in region.name:
-                hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
-                outputrootfile[hist_name] = (dratio, edges)
-            # Save equivalent JER up/down histograms for the JER variation
-            else:
-                hist_name_jerUp = f'{transfer_factor_tag}_{process}_jerUp'
-                hist_name_jerDown = f'{transfer_factor_tag}_{process}_jerDown'
-                outputrootfile[hist_name_jerUp] = (dratio, edges)
-                outputrootfile[hist_name_jerDown] = (dratio, edges)
+            hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
+            outputrootfile[hist_name] = (dratio, edges)
     
         # Store the uncs and variations
         uncs[var_label] = np.abs(dratio - 1) * 100

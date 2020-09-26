@@ -154,7 +154,7 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
         h_var = h.integrate('region', region)
         var_label = region.name.replace(f'{region_to_use}{region_suffix}_', '')
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
-        # Do not plot JER for now
+
         if not plot_smooth:
             if var_label_skimmed in vars_to_plot:
                 hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)
@@ -192,24 +192,11 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
             rootfile = root_config['file']
             # Guard against inf/nan values
             ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
-            # For JER variations, save "_jerUp" and "_jerDown" as the same histogram, to be compatible with the fit code
-            if 'jer' in region.name:
-                if save_smooth:
-                    smooth_hist_jerUp = smooth_hist
-                    smooth_hist_jerDown = smooth_hist
-                    rootfile[f'{bin_tag}_{year}_jerUp'] = (smooth_hist_jerUp, edges)
-                    rootfile[f'{bin_tag}_{year}_jerDown'] = (smooth_hist_jerDown, edges)
-                else:
-                    ratio_jerUp = ratio
-                    ratio_jerDown = ratio
-                    rootfile[f'{bin_tag}_{year}_jerUp'] = (ratio_jerUp, edges)
-                    rootfile[f'{bin_tag}_{year}_jerDown'] = (ratio_jerDown, edges)
+            if save_smooth:
+                # Save only the smoothed version to the ROOT file
+                rootfile[f'{bin_tag}_{year}_{var_label}'] = (smooth_hist, edges)
             else:
-                if save_smooth:
-                    # Save only the smoothed version to the ROOT file
-                    rootfile[f'{bin_tag}_{year}_{var_label}'] = (smooth_hist, edges)
-                else:
-                    rootfile[f'{bin_tag}_{year}_{var_label}'] = (ratio, edges)
+                rootfile[f'{bin_tag}_{year}_{var_label}'] = (ratio, edges)
 
         # Store all uncertainties, later to be tabulated (top 5 only + total)
         if tabulate_top5:
