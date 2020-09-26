@@ -406,15 +406,11 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
-        # JER varied jet pt is the fully smeared jet pt
-        if var == '_jer':
-            ak4_pt = df[f'Jet_pt{jes_suffix}']
-        # Jet quantities for JES variations
+        # If JER is turned off, calculate the variations of jet pt around unsmeared pt
+        if not cfg.AK4.JER:
+            ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
         else:
-            if not cfg.AK4.JER:
-                ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
-            else:
-                ak4_pt = df[f'Jet_pt{var}']
+            ak4_pt = df[f'Jet_pt{var}']
 
         ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt > 50)
 
@@ -476,14 +472,13 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
-        # JER varied MET pt/phi are the fully smeared MET pt/phi values
-        if var == '_jer':
-            met_pt = df[f'{met_branch}_T1Smear_pt']
-            met_phi = df[f'{met_branch}_T1Smear_phi']
-        # JES variations of MET pt/phi
-        else:
+        # If JER is turned off, calculate the variations of MET pt around the unsmeared (T1) MET
+        if not cfg.MET.JER:
             met_pt = df[f'{met_branch}_T1_pt{var}']
             met_phi = df[f'{met_branch}_T1_phi{var}']
+        else:
+            met_pt = df[f'{met_branch}_T1Smear_pt{var}']
+            met_phi = df[f'{met_branch}_T1Smear_phi{var}']
         # Set the MET values
         argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
         met.add_attributes(**argdict)
