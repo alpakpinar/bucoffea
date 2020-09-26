@@ -66,6 +66,10 @@ titles = {
     'total_signal' : 'Total Signal {}'
 }
 
+def mjj_bins():
+    return [200., 400., 600., 900., 1200., 1500.,
+            2000., 2750., 3500., 5000.]
+
 def compare_prefit_shapes(ic_file, bu_file):
     '''Compare pre-fit shapes as a function of mjj.'''
     f_bu = uproot.open(bu_file)['shapes_prefit']
@@ -89,22 +93,33 @@ def compare_prefit_shapes(ic_file, bu_file):
 
         for process, h_bu in f_bu[region].items():
             process = process.decode('utf-8').replace(';1', '')
-            if not process in ic_processes.keys() or process == 'data':
+            if not process in ic_processes.keys():
                 continue
             print(f'Process: {process}')
             h_ic = f_ic[ic_regions[region] ][ic_processes[process] ]
 
-            # Binning must be the same between the two
-            assert((h_ic.edges == h_bu.edges).all())
-            edges = h_ic.edges
-            
-            ic_vals = h_ic.values
-            bu_vals = h_bu.values
-    
-            # Plot comparison of values
             fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
-            hep.histplot(ic_vals, edges, ax=ax, label='IC')
-            hep.histplot(bu_vals, edges, ax=ax, label='BU')
+
+            # Binning must be the same between the two
+            edges = mjj_bins()
+            if process != 'data':
+                assert((h_ic.edges == edges).all())
+                assert((h_bu.edges == edges).all())
+                
+                ic_vals = h_ic.values
+                bu_vals = h_bu.values
+                
+                # Plot comparison of values
+                hep.histplot(ic_vals, edges, ax=ax, label='IC')
+                hep.histplot(bu_vals, edges, ax=ax, label='BU')
+
+            # "data" is stored as a TGraph, handle it separately
+            else:
+                ic_vals = h_ic.yvalues
+                bu_vals = h_bu.yvalues
+
+                hep.histplot(ic_vals, edges, label='IC', ax=ax)
+                hep.histplot(bu_vals, edges, label='BU', ax=ax)
     
             ax.legend()
             ax.set_yscale('log')
@@ -117,7 +132,7 @@ def compare_prefit_shapes(ic_file, bu_file):
             # Plot ratio
             ratio = bu_vals / ic_vals
             centers = ( (edges + np.roll(edges,-1))/2 )[:-1]
-    
+                
             rax.plot(centers, ratio, marker='o', ls='', color='black')
     
             rax.grid(True)
