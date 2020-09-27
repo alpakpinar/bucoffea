@@ -271,7 +271,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('hornveto', (df['dPFTkSR'] < 0.8) | ~(leading_jet_in_horn | trailing_jet_in_horn))
 
         if df['year'] == 2018:
-            metphihem_mask = ~((met_phi > -1.8) & (met_phi < -0.6) & (df['run'] > 319077))
+            if df['is_data']:
+                metphihem_mask = ~((met_phi > -1.8) & (met_phi < -0.6) & (df['run'] > 319077))
+            else:
+                metphihem_mask = pass_all
             selection.add("metphihemextveto", metphihem_mask)
             selection.add('no_el_in_hem', electrons[candidates_in_hem(electrons)].counts==0)
         else:
