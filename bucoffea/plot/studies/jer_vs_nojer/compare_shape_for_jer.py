@@ -28,6 +28,9 @@ binnings = {
     'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,600,20)) + list(range(600,1000,20)) )
 }
 
+# Aesthetics for plotting
+colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset', help='Dataset to be looked at, default is znunu.', default='znunu')
@@ -110,7 +113,9 @@ def compare_shapes(acc_dict, variable='mjj', year=2017, dataset='zjets', relaxed
     }
 
     # Plot ratio to "no JER" case
-    for tag in ['09Jun20v7', '21Sep20v7']:
+    for idx, tag in enumerate(['09Jun20v7', '21Sep20v7']):
+        # Just a hack to keep the colors consistent
+        data_err_opts['color'] = colors[idx+1]
         hist.plotratio(h_dict[tag], h_dict['noSmear'], ax=rax, 
                         unc='num', error_opts=data_err_opts, 
                         label=get_label_for_tag(tag), clear=False
@@ -154,12 +159,12 @@ def main():
     # Read the dataset as a command line argument
     args = parse_cli()
     
-    # inpath_noSmear = bucoffea_path('./submission/merged_2020-09-17_vbfhinv_noJER_nanoAODv7_deepTau')
-    # inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_withJER_nanoAODv7_deepTau')
-    # inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-22_vbfhinv_znunu_vbf_2017_21Sep20v7')
-    inpath_noSmear = bucoffea_path('./submission/merged_2020-09-24_vbfhinv_znunu_09Jun20v7_noJER_relaxed_recoil')
-    inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-24_vbfhinv_znunu_09Jun20v7_relaxed_recoil')
-    inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-24_vbfhinv_znunu_relaxed_recoil')
+    inpath_noSmear = bucoffea_path('./submission/merged_2020-09-17_vbfhinv_noJER_nanoAODv7_deepTau')
+    inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-18_vbfhinv_withJER_nanoAODv7_deepTau')
+    inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-22_vbfhinv_znunu_vbf_2017_21Sep20v7')
+    # inpath_noSmear = bucoffea_path('./submission/merged_2020-09-24_vbfhinv_znunu_09Jun20v7_noJER_relaxed_recoil')
+    # inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-24_vbfhinv_znunu_09Jun20v7_relaxed_recoil')
+    # inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-24_vbfhinv_znunu_relaxed_recoil')
 
     acc_dict = {
         'noSmear' : dir_archive(inpath_noSmear),
