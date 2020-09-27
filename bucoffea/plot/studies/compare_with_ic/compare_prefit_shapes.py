@@ -13,11 +13,12 @@ pjoin = os.path.join
 # Supress division warnings
 np.seterr(divide='ignore', invalid='ignore')
 
-def get_input_files():
+def get_input_files(tag):
     '''Get the relevant input fit diagnostics files from both sides for pre-fit shape comparison.'''
-    inputdir = './inputs/fit_diagnostics'
-    ic_file = pjoin(inputdir, 'IC_fitDiagnosticsCRonlyFit.root')
-    bu_file = pjoin(inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
+    bu_inputdir = f'./inputs/fit_diagnostics/{tag}'
+    ic_inputdir = f'./inputs/fit_diagnostics'
+    ic_file = pjoin(ic_inputdir, 'IC_fitDiagnosticsCRonlyFit.root')
+    bu_file = pjoin(bu_inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
 
     return ic_file, bu_file
 
@@ -70,7 +71,7 @@ def mjj_bins():
     return [200., 400., 600., 900., 1200., 1500.,
             2000., 2750., 3500., 5000.]
 
-def compare_prefit_shapes(ic_file, bu_file):
+def compare_prefit_shapes(ic_file, bu_file, tag):
     '''Compare pre-fit shapes as a function of mjj.'''
     f_bu = uproot.open(bu_file)['shapes_prefit']
     f_ic = uproot.open(ic_file)['shapes_prefit']
@@ -87,7 +88,7 @@ def compare_prefit_shapes(ic_file, bu_file):
         year = re.findall('2017|2018', region)[0]
 
         # Output directory to save the plots
-        outdir = f'./output/prefit_shape_comparison/{region}'
+        outdir = f'./output/prefit_shape_comparison/{tag}/{region}'
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
@@ -147,9 +148,10 @@ def compare_prefit_shapes(ic_file, bu_file):
             plt.close(fig)
 
 def main():
-    ic_file, bu_file = get_input_files()
+    tag = sys.argv[1]
+    ic_file, bu_file = get_input_files(tag)
 
-    compare_prefit_shapes(ic_file, bu_file)
+    compare_prefit_shapes(ic_file, bu_file, tag)
 
 if __name__ == '__main__':
     main()
