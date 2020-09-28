@@ -96,7 +96,7 @@ def preprocess(h, acc, variable, year, region):
 
     return {'data' : h_data, 'mc' : h_mc}
 
-def compare_data_mc(acc_dict, variable='ak4_eta0', year=2017, region='sr_vbf'):
+def compare_data_mc(acc_dict, outtag, variable='ak4_eta0', year=2017, region='sr_vbf'):
     '''
     For the given region+year, compare data/MC behavior for three different smearing types:
     1. No smearing applied
@@ -127,7 +127,7 @@ def compare_data_mc(acc_dict, variable='ak4_eta0', year=2017, region='sr_vbf'):
 
         # Calculate % difference from 1.0
         data_mc_ratio = h_data.values()[()] / h_mc.values()[()]
-        percent_diff = (data_mc_ratio - 1.0) / 1.0 
+        percent_diff = ((data_mc_ratio - 1.0) / 1.0 ) * 100
         centers = h_data.axes()[0].centers()
         rax.plot(centers, percent_diff, marker='o', ls='', label=get_label_for_tag(tag))
 
@@ -143,13 +143,13 @@ def compare_data_mc(acc_dict, variable='ak4_eta0', year=2017, region='sr_vbf'):
     ax.set_xlim(xlim)
 
     rax.grid(True)
-    rax.set_ylim(-1,1)
+    rax.set_ylim(-100,100)
     rax.set_ylabel(r'% diff from 1.0')
     rax.set_xlabel(pretty_xlabels[variable])
     rax.legend(ncol=3)
 
     # Save figure
-    outdir = f'./output/data_mc_comparisons/{region}'
+    outdir = f'./output/data_mc_comparisons/{outtag}/{region}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
@@ -164,15 +164,17 @@ def main():
     2. MiniAOD-like JER smearing applied (09Jun20v7 skim)
     3. NanoAOD-like JER smearing applied (21Sep20v7 skim)
     '''
-    inpath_noSmear = bucoffea_path('./submission/merged_2020-09-17_vbfhinv_noJER_nanoAODv7_deepTau')
-    inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-17_vbfhinv_withJER_nanoAODv7_deepTau')
-    inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-25_vbfhinv_21Sep20v7')
+    inpath_noSmear = bucoffea_path('./submission/merged_2020-09-28_vbfhinv_09Jun20v7_noJER')
+    inpath_09Jun20v7 = bucoffea_path('./submission/merged_2020-09-28_vbfhinv_09Jun20v7_withJER')
+    inpath_21Sep20v7 = bucoffea_path('./submission/merged_2020-09-28_vbfhinv_21Sep20v7')
 
     acc_dict = {
         'noSmear' : dir_archive(inpath_noSmear),
         '09Jun20v7' : dir_archive(inpath_09Jun20v7),
         '21Sep20v7' : dir_archive(inpath_21Sep20v7)
     }
+
+    outtag = '28Sep20'
 
     for acc in acc_dict.values():
         acc.load('sumw')
@@ -183,7 +185,7 @@ def main():
 
     for region in regions:
         for variable in variables:
-            compare_data_mc(acc_dict, variable=variable, year=2017, region=region)
+            compare_data_mc(acc_dict, outtag, variable=variable, year=2017, region=region)
 
 if __name__ == '__main__':
     main()
