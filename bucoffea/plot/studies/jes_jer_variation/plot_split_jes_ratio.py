@@ -50,6 +50,17 @@ titles = {
     'wlnu_over_gjets18' : r'$W(\ell\nu) \ / \ \gamma + jets \ 2018$'
 }
 
+ylims = {
+    'znunu_over_wlnu.*' : (0.98, 1.02),
+    'znunu_over_zmumu.*' : (0.99, 1.01),
+    'znunu_over_zee.*' : (0.99, 1.01),
+    'znunu_over_zll.*' : (0.99, 1.01),
+    'wlnu_over_wenu.*' : (0.98, 1.02),
+    'wlnu_over_wmunu.*' : (0.98, 1.02),
+    'znunu_over_gjets.*' : (0.97, 1.03),
+    'nomatch' : (0.97, 1.03)
+}
+
 # Define all possible binnings for all variables in this dictionary
 mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(200,800,300)) + list(range(800,2000,400)) + [2000, 2750, 3500])
 mjj_binning_single_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,3500])
@@ -183,20 +194,23 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         ax.set_xlabel('Recoil (GeV)')
     ax.set_ylabel('JEC uncertainty')
     if bin_selection == 'singleBin':
-        if 'znunu_over_z' in transfer_factor_tag:
-            ax.set_ylim(0.99,1.01)
-            ticker_base = 0.005
-        else:
-            ax.set_ylim(0.96,1.04)
-            ticker_base = 0.01
+        match = False
+        for regex, _ylim in ylims.items():
+            if re.match(regex, transfer_factor_tag):
+                ylim = _ylim
+                match = True
+                break
+        # Use the default y-limits if transfer factor is not listed
+        if not match:
+            ylim = ylims['nomatch'] 
+
+        ax.set_ylim(ylim)
+
     else:
         ax.set_ylim(0.9,1.1)
-        ticker_base = 0.02
+
     ax.set_title(titles[transfer_factor_tag])
     ax.legend(ncol=2, prop={'size': 4.5})
-
-    loc = matplotlib.ticker.MultipleLocator(base=ticker_base)
-    ax.yaxis.set_major_locator(loc)
 
     # Save figure
     outdir = f'./output/{out_tag}/splitJEC/{analysis}/transfer_factors'
