@@ -296,8 +296,24 @@ def vbfhinv_regions(cfg):
                                         'dphijj',
                                         'detajj',
                                         ]
+    
+    tmp = {}
+    for region in regions.keys():
+        if not region.startswith("sr_"):
+            continue
+        new_region = f"{region}_no_veto_all"
+        tmp[new_region] = copy.deepcopy(regions[region])
+        tmp[new_region].remove("veto_muo")
+        tmp[new_region].remove("veto_tau")
+        tmp[new_region].remove("veto_ele")
+        tmp[new_region].remove("mindphijr")
+        tmp[new_region].remove("recoil")
+        tmp[new_region].append("met_sr")
+        tmp[new_region].append("mindphijm")
 
-    if cfg and  cfg.RUN.TRIGGER_STUDY:
+    regions.update(tmp)
+    
+    if cfg and cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
         # num = numerator, den = denominator
         # Single Mu region: Remove mjj cut, add SingleMu trigger, toggle MET trigger
