@@ -472,6 +472,16 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         ]
                     region_weights.add("veto",veto_weights.partial_weight(include=["nominal"]))
 
+                # HEM-veto weights for signal region MC
+                if re.match('^sr_vbf.*', region) and df['year'] == 2018:
+                    # Events that lie in the HEM-veto region
+                    events_to_weight_mask = (met_phi > -1.8) & (met_phi < -0.6)
+                    # Weight is the "good lumi fraction" for 2018
+                    weight = 21.1/59.7
+                    hem_weight = np.where(events_to_weight_mask, weight, 1.0)
+
+                    region_weights.add("hem_weight", hem_weight)
+
 
             # This is the default weight for this region
             rweight = region_weights.partial_weight(exclude=exclude)
