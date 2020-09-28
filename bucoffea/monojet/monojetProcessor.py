@@ -127,7 +127,8 @@ class monojetProcessor(processor.ProcessorABC):
             cfg.ENV_FOR_DYNACONF = f"default"
         cfg.reload()
         # All the split JES uncertainties, "" represents the nominal case with no variation
-        self._variations = ['', '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
+        self._variations = ['', '_jerUp', '_jerDown',
+                            '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
                             '_jesRelativeBalUp', '_jesRelativeBalDown',
                             '_jesHFUp', '_jesHFDown',
                             '_jesBBEC1Up', '_jesBBEC1Down',
@@ -138,7 +139,7 @@ class monojetProcessor(processor.ProcessorABC):
                             f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
                             f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
                             f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
-                            '_jesTotalUp', '_jesTotalDown', '_jer'
+                            '_jesTotalUp', '_jesTotalDown'
                             ]
         self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
@@ -448,8 +449,6 @@ class monojetProcessor(processor.ProcessorABC):
                     var = '_' + region.split('_')[-1]
                 else:
                     var = '_' + '_'.join(region.split('_')[-2:])
-            elif '_jer' in region:
-                var = '_jer'
             else:
                 var = ''
 
