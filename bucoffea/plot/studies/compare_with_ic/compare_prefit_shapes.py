@@ -140,8 +140,8 @@ def compare_prefit_shapes(ic_file, bu_file, tag):
             rax.set_ylim(0.8,1.2)
             rax.set_ylabel('BU / IC')
             rax.set_xlabel(r'$M_{jj} \ (GeV)$')
-    
-            outpath = pjoin(outdir, f'{process}_{year}_comp.pdf')
+
+            outpath = pjoin(outdir, f'{region}_{process}_{year}.pdf')
             fig.savefig(outpath)
             print(f'MSG% File saved: {outpath}')
     
