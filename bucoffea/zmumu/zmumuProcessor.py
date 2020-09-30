@@ -86,6 +86,12 @@ def add_trigger_selection(df, selection):
     single_mu_trig = 'HLT_IsoMu27'
     selection.add('single_mu_trig', df[single_mu_trig])
 
+    # The cleaning filters for data and MC
+    if df['is_data']:
+        selection.add('filt_met', mask_and(df, cfg.FILTERS.DATA))
+    else:
+        selection.add('filt_met', mask_and(df, cfg.FILTERS.MC))
+
     return selection
 
 class zmumuProcessor(processor.ProcessorABC):

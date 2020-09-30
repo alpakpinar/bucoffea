@@ -88,7 +88,8 @@ def zmumu_regions(cfg):
         'met_pt', 
         'z_pt_over_jet_pt',
         'veto_b',
-        'hemveto'
+        'hemveto',
+        'filt_met'
         ]
 
     regions = {}
