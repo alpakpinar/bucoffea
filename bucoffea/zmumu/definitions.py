@@ -53,6 +53,9 @@ def zmumu_accumulator(cfg):
     items["ak4_nhf0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nef0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
 
+    # 2D pt-eta histogram for the leading jet
+    items["ak4_pt0_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax, jet_eta_ax)
+
     # Dimuon system
     items["muon_pt0"] = Hist("Counts", dataset_ax, region_ax, pt_ax)
     items["muon_eta0"] = Hist("Counts", dataset_ax, region_ax, eta_ax)
@@ -101,12 +104,6 @@ def zmumu_regions(cfg):
     regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_3_lt_2_7'] = two_mu_cuts + ['jet_eta_gt_2_3_lt_2_7']
     regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_7_lt_3_0'] = two_mu_cuts + ['jet_eta_gt_2_7_lt_3_0']
     regions['cr_2m_noEmEF_jeteta_gt_3_0'] = two_mu_cuts + ['jet_eta_gt_3_0']
-
-    # Regions with varied prefire weights
-    regions['cr_2m_noEmEF_prefireUp'] = two_mu_cuts
-    regions['cr_2m_withEmEF_prefireUp'] = two_mu_cuts + ['ak4_neEmEF']
-    regions['cr_2m_noEmEF_prefireDown'] = two_mu_cuts
-    regions['cr_2m_withEmEF_prefireDown'] = two_mu_cuts + ['ak4_neEmEF']
 
     # Regions with tighter selections
     regions['cr_2m_noEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight']

@@ -278,6 +278,8 @@ class zmumuProcessor(processor.ProcessorABC):
             ezfill('ak4_nhf0',    frac=leadak4.nhf[mask].flatten(),     weight=w_leadak4)
             ezfill('ak4_nef0',    frac=leadak4.nef[mask].flatten(),     weight=w_leadak4)
 
+            ezfill('ak4_pt0_eta0',    jetpt=leadak4.pt[mask].flatten(),   jeteta=leadak4.eta[mask].flatten(),  weight=w_leadak4)
+
             ezfill('dphi_z_jet',  dphi=df['dphi_z_jet'][mask], weight=rweight[mask])
             ezfill('dimuon_mass', dilepton_mass=dimuons.mass[mask].flatten(), weight=rweight[mask])
 
