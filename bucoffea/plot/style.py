@@ -104,7 +104,7 @@ def plot_settings():
                 'xlim' : (0,1),
                 'ylim' : (1e1,1e8)
             },
-            'dpfcalo' : {
+            'dpfcalo_sr' : {
                 'xlim' : (-0.75,0.75),
                 'ylim' : (1e1,1e7)
             },
@@ -240,7 +240,7 @@ def plot_settings():
                 'xlim' : (0,1),
                 'ylim' : (1e0,1e6)
             },
-            'dpfcalo' : {
+            'dpfcalo_cr' : {
                 'xlim' : (-0.75,0.75),
                 'ylim' : (1e1,1e7)
             },
@@ -383,7 +383,7 @@ def plot_settings():
                 'xlim' : (0,2),
                 'ylim' : (1e1,1e5)
             },
-            'dpfcalo' : {
+            'dpfcalo_cr' : {
                 'xlim' : (-0.75,0.75),
                 'ylim' : (1e0,1e7)
             },
@@ -469,7 +469,7 @@ def plot_settings():
                 'xlim' : (0,1),
                 'ylim' : (1e1,1e5)
             },
-            'dpfcalo' : {
+            'dpfcalo_cr' : {
                 'xlim' : (-0.75,0.75),
                 'ylim' : (1e0,1e9)
             },
@@ -574,7 +574,7 @@ def plot_settings():
                 'xlim' : (0,2),
                 'ylim' : (1e0,1e5)
             },
-            'dpfcalo' : {
+            'dpfcalo_cr' : {
                 'xlim' : (-0.75,0.75),
                 'ylim' : (1e0,1e8)
             },
@@ -656,7 +656,7 @@ def plot_settings():
                 'xlim' : (0,1),
                 'ylim' : (1e0,1e5)
             },
-            'dpfcalo' : {
+            'dpfcalo_cr' : {
                 'xlim' : (-0.75,0.75),
                 'ylim' : (1e0,1e7)
             },
