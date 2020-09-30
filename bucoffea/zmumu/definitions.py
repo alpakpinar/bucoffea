@@ -25,6 +25,7 @@ def zmumu_accumulator(cfg):
 
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 100, 0, 1000)
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
+    jet_eta_ax_coarse = Bin("jeteta", r"$\eta$", 20, -5, 5)
     jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
     pt_ax = Bin("pt", r"$p_{T}$ (GeV)", 100, 0, 1000)
     eta_ax = Bin("eta", r"$\eta$", 50, -5, 5)
@@ -54,7 +55,7 @@ def zmumu_accumulator(cfg):
     items["ak4_nef0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
 
     # 2D pt-eta histogram for the leading jet
-    items["ak4_pt0_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax, jet_eta_ax)
+    items["ak4_pt0_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax, jet_eta_ax_coarse)
 
     # Dimuon system
     items["muon_pt0"] = Hist("Counts", dataset_ax, region_ax, pt_ax)
