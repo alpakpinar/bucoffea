@@ -112,7 +112,7 @@ def compare_eff(acc, outtag, region='cr_2m', spec='regular', year=2017):
     fig.savefig(outpath)
     print(f'MSG% File saved: {outpath}')
 
-def get_2d_sf(acc, outtag, region='cr_2m', year=2017):
+def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
     '''Get 2D scale factor as a function of jet pt and eta, for the efficiency of the neutral EM fraction cut.'''
     variable = 'ak4_pt0_eta0'
     acc.load(variable)
@@ -175,11 +175,7 @@ def get_2d_sf(acc, outtag, region='cr_2m', year=2017):
     plt.close(fig)
 
     # Save the scale factors into ROOT file
-    rootpath = pjoin(outdir, 'eff_sf.root')
-    f = uproot.recreate(rootpath)
-
-    f['jet_eff_scale_fac'] = (sf, xedges, yedges)
-    print(f'MSG% SF saved to ROOT file: {rootpath}')
+    rootfile[f'sf_{year}'] = (sf, xedges, yedges)
 
 def main():
     args = parse_cli()
@@ -214,6 +210,12 @@ def main():
         'very_tight'
     ]
 
+    outdir = f'./output/{outtag}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    rootpath = pjoin(outdir, 'jet_em_frac_eff_sf.root')
+    rootfile = uproot.recreate(rootpath)
+
     # Plot efficiency comparison plots both with the regular pt balance cut, and the tighter one (<0.1)
     for year in args.years:
         for spec in all_specs:
@@ -222,7 +224,7 @@ def main():
             compare_eff(acc, outtag, region=region, spec=spec, year=year)
 
         # Calculate 2D scale factor and save to a root file
-        get_2d_sf(acc, outtag, region=region, year=year)
+        get_2d_sf(acc, outtag, rootfile, region=region, year=year)
 
 if __name__ == '__main__':
     main()
