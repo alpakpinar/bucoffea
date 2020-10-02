@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import uproot
+import argparse
 import mplhep as hep
 import numpy as np
 from matplotlib import pyplot as plt
@@ -12,6 +13,13 @@ pjoin = os.path.join
 
 # Supress division warnings
 np.seterr(divide='ignore', invalid='ignore')
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('tag', help='The tag showing the version of the input files.')
+    parser.add_argument('--fit', help='Specify sb for SR+CR fit (default), specify b for CR-only fit.', default='sb')
+    args = parser.parse_args()
+    return args
 
 def get_input_files(tag):
     '''Get the relevant input fit diagnostics files from both sides for pre-fit shape comparison.'''
@@ -155,10 +163,11 @@ def compare_postfit_shapes(ic_file, bu_file, tag, fit='sb'):
             plt.close(fig)
 
 def main():
-    tag = sys.argv[1]
+    args = parse_cli()
+    tag = args.tag
     ic_file, bu_file = get_input_files(tag)
 
-    compare_postfit_shapes(ic_file, bu_file, tag)
+    compare_postfit_shapes(ic_file, bu_file, tag, fit=args.fit)
 
 if __name__ == '__main__':
     main()
