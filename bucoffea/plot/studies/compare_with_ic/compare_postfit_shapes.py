@@ -3,8 +3,8 @@
 import os
 import sys
 import re
-import uproot
 import argparse
+import uproot
 import mplhep as hep
 import numpy as np
 from matplotlib import pyplot as plt
@@ -16,17 +16,27 @@ np.seterr(divide='ignore', invalid='ignore')
 
 def parse_cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument('tag', help='The tag showing the version of the input files.')
-    parser.add_argument('--fit', help='Specify sb for SR+CR fit (default), specify b for CR-only fit.', default='sb')
+    parser.add_argument('tag', help='The tag for the input files.')
+    parser.add_argument('--years', help='The year to look at, the default is both 2017 and 2018.', type=int, nargs='*', default=[2017, 2018])
+    parser.add_argument('--fit', help='cr_only (for CR-only fit) or sr_cr_fit (SR+CR fit, default)', default='sr_cr_fit')
     args = parser.parse_args()
     return args
 
-def get_input_files(tag):
+def get_input_files(tag, year=None, fit='cr_only'):
     '''Get the relevant input fit diagnostics files from both sides for pre-fit shape comparison.'''
-    bu_inputdir = f'./inputs/fit_diagnostics/{tag}'
-    ic_inputdir = f'./inputs/fit_diagnostics'
-    ic_file = pjoin(ic_inputdir, 'IC_fitDiagnosticsCRonlyFit.root')
-    bu_file = pjoin(bu_inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
+    if year is None and tag == '05Oct20':
+        raise RuntimeError('For 05Oct20 samples, please specify a year!')
+
+    if tag != '05Oct20':
+        bu_inputdir = f'./inputs/fit_diagnostics/{tag}'
+        ic_inputdir = f'./inputs/fit_diagnostics'
+        ic_file = pjoin(ic_inputdir, 'IC_fitDiagnosticsCRonlyFit.root')
+        bu_file = pjoin(bu_inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
+
+    else:
+        inputdir = f'./inputs/fit_diagnostics/{tag}/{fit}'
+        ic_file = pjoin(inputdir, f'IC_fitDiagnosticsMTR_{year}_CRonlyFit.root')
+        bu_file = pjoin(inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
 
     return ic_file, bu_file
 
@@ -79,14 +89,12 @@ def mjj_bins():
     return [200., 400., 600., 900., 1200., 1500.,
             2000., 2750., 3500., 5000.]
 
-def compare_postfit_shapes(ic_file, bu_file, tag, fit='sb'):
+def compare_postfit_shapes(ic_file, bu_file, tag, year, fit='sr_cr_fit'):
     '''Compare post-fit shapes as a function of mjj.'''
-    # Signal + background fit
-    if fit == 'sb':
+    if fit == 'sr_cr_fit':
         f_bu = uproot.open(bu_file)['shapes_fit_s']
         f_ic = uproot.open(ic_file)['shapes_fit_s']
-    # CR only fit
-    elif fit == 'b':
+    else:
         f_bu = uproot.open(bu_file)['shapes_fit_b']
         f_ic = uproot.open(ic_file)['shapes_fit_b']
 
@@ -95,15 +103,17 @@ def compare_postfit_shapes(ic_file, bu_file, tag, fit='sb'):
         if 'photon' in region:
             continue
 
+        region_year = int(re.findall('2017|2018', region)[0])
+        # If this year is not specified, skip this region
+        if region_year != year:
+            continue
+
         print('*'*20)
         print(f'Region: {region}')
         print('*'*20)
 
-        year = re.findall('2017|2018', region)[0]
-
         # Output directory to save the plots
-        fit_tag = 'sr_cr_fit' if fit == 'sb' else 'cr_fit'
-        outdir = f'./output/postfit_shape_comparison/{tag}/{fit_tag}/{region}'
+        outdir = f'./output/postfit_shape_comparison/{tag}/{fit}/{region}'
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
@@ -145,6 +155,15 @@ def compare_postfit_shapes(ic_file, bu_file, tag, fit='sb'):
                 ax.set_ylim(1e-3, 1e4)
             ax.set_title(titles[process].format(year))
 
+            fit_text = 'SR+CR Fit' if fit == 'sr_cr_fit' else 'CR-only Fit'
+            ax.text(
+                1., 1., fit_text,
+                horizontalalignment='right',
+                verticalalignment='bottom',
+                fontsize=12,
+                transform=ax.transAxes
+            )
+
             # Plot ratio
             ratio = bu_vals / ic_vals
             centers = ( (edges + np.roll(edges,-1))/2 )[:-1]
@@ -164,10 +183,10 @@ def compare_postfit_shapes(ic_file, bu_file, tag, fit='sb'):
 
 def main():
     args = parse_cli()
-    tag = args.tag
-    ic_file, bu_file = get_input_files(tag)
-
-    compare_postfit_shapes(ic_file, bu_file, tag, fit=args.fit)
+    years = args.years
+    for year in years:
+        ic_file, bu_file = get_input_files(args.tag, year, args.fit)
+        compare_postfit_shapes(ic_file, bu_file, args.tag, year, args.fit)
 
 if __name__ == '__main__':
     main()

@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import argparse
 import uproot
 import mplhep as hep
 import numpy as np
@@ -13,12 +14,29 @@ pjoin = os.path.join
 # Supress division warnings
 np.seterr(divide='ignore', invalid='ignore')
 
-def get_input_files(tag):
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('tag', help='The tag for the input files.')
+    parser.add_argument('--years', help='The year to look at, the default is both 2017 and 2018.', type=int, nargs='*', default=[2017, 2018])
+    parser.add_argument('--fit', help='cr_only (for CR-only fit) or sr_cr_fit (SR+CR fit, default)', default='sr_cr_fit')
+    args = parser.parse_args()
+    return args
+
+def get_input_files(tag, year=None, fit='cr_only'):
     '''Get the relevant input fit diagnostics files from both sides for pre-fit shape comparison.'''
-    bu_inputdir = f'./inputs/fit_diagnostics/{tag}'
-    ic_inputdir = f'./inputs/fit_diagnostics'
-    ic_file = pjoin(ic_inputdir, 'IC_fitDiagnosticsCRonlyFit.root')
-    bu_file = pjoin(bu_inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
+    if year is None and tag == '05Oct20':
+        raise RuntimeError('For 05Oct20 samples, please specify a year!')
+
+    if tag != '05Oct20':
+        bu_inputdir = f'./inputs/fit_diagnostics/{tag}'
+        ic_inputdir = f'./inputs/fit_diagnostics'
+        ic_file = pjoin(ic_inputdir, 'IC_fitDiagnosticsCRonlyFit.root')
+        bu_file = pjoin(bu_inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
+
+    else:
+        inputdir = f'./inputs/fit_diagnostics/{tag}/{fit}'
+        ic_file = pjoin(inputdir, f'IC_fitDiagnosticsMTR_{year}_CRonlyFit.root')
+        bu_file = pjoin(inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
 
     return ic_file, bu_file
 
@@ -71,7 +89,7 @@ def mjj_bins():
     return [200., 400., 600., 900., 1200., 1500.,
             2000., 2750., 3500., 5000.]
 
-def compare_prefit_shapes(ic_file, bu_file, tag):
+def compare_prefit_shapes(ic_file, bu_file, tag, year):
     '''Compare pre-fit shapes as a function of mjj.'''
     f_bu = uproot.open(bu_file)['shapes_prefit']
     f_ic = uproot.open(ic_file)['shapes_prefit']
@@ -81,11 +99,14 @@ def compare_prefit_shapes(ic_file, bu_file, tag):
         if 'photon' in region:
             continue
 
+        region_year = int(re.findall('2017|2018', region)[0])
+        # If this year is not specified, skip this region
+        if region_year != year:
+            continue
+
         print('*'*20)
         print(f'Region: {region}')
         print('*'*20)
-
-        year = re.findall('2017|2018', region)[0]
 
         # Output directory to save the plots
         outdir = f'./output/prefit_shape_comparison/{tag}/{region}'
@@ -148,10 +169,11 @@ def compare_prefit_shapes(ic_file, bu_file, tag):
             plt.close(fig)
 
 def main():
-    tag = sys.argv[1]
-    ic_file, bu_file = get_input_files(tag)
-
-    compare_prefit_shapes(ic_file, bu_file, tag)
+    args = parse_cli()
+    years = args.years
+    for year in years:
+        ic_file, bu_file = get_input_files(args.tag, year, args.fit)
+        compare_prefit_shapes(ic_file, bu_file, args.tag, year)
 
 if __name__ == '__main__':
     main()
