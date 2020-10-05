@@ -22,21 +22,12 @@ def parse_cli():
     args = parser.parse_args()
     return args
 
-def get_input_files(tag, year=None, fit='cr_only'):
+def get_input_files(tag, year, fit='sr_cr_fit'):
     '''Get the relevant input fit diagnostics files from both sides for pre-fit shape comparison.'''
-    if year is None and tag == '05Oct20':
-        raise RuntimeError('For 05Oct20 samples, please specify a year!')
-
-    if tag != '05Oct20':
-        bu_inputdir = f'./inputs/fit_diagnostics/{tag}'
-        ic_inputdir = f'./inputs/fit_diagnostics'
-        ic_file = pjoin(ic_inputdir, 'IC_fitDiagnosticsCRonlyFit.root')
-        bu_file = pjoin(bu_inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
-
-    else:
-        inputdir = f'./inputs/fit_diagnostics/{tag}/{fit}'
-        ic_file = pjoin(inputdir, f'IC_fitDiagnosticsMTR_{year}_CRonlyFit.root')
-        bu_file = pjoin(inputdir, 'BU_fitDiagnosticsCRonlyFit.root')
+    # Directory where the input root files are located
+    inputdir = f'./inputs/fit_diagnostics/{tag}/{fit}'
+    ic_file = pjoin(inputdir, f'IC_fitDiagnosticsMTR_{year}.root')
+    bu_file = pjoin(inputdir, f'BU_fitDiagnosticsMTR_{year}.root')
 
     return ic_file, bu_file
 
