@@ -140,10 +140,13 @@ def compare_postfit_shapes(ic_file, bu_file, tag, year, fit='sr_cr_fit'):
     
             ax.legend()
             ax.set_yscale('log')
-            if 'dielec' in region or 'dimu' in region:
-                ax.set_ylim(1e-4, 1e3)
+            if process not in ['diboson', 'top']:
+                if 'dielec' in region or 'dimu' in region:
+                    ax.set_ylim(1e-4, 1e3)
+                else:
+                    ax.set_ylim(1e-3, 1e4)
             else:
-                ax.set_ylim(1e-3, 1e4)
+                ax.set_ylim(1e-6, 1e3)
             ax.set_title(titles[process].format(year))
 
             fit_text = 'SR+CR Fit' if fit == 'sr_cr_fit' else 'CR-only Fit'
