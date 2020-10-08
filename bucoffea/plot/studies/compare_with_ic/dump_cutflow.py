@@ -38,7 +38,7 @@ pretty_names_for_cuts = {
     'veto_hfhf' : 'HF-HF veto'
 }
 
-def dump_cutflow(acc, dataset):
+def dump_cutflow(acc, outtag, dataset):
     '''Dump the cutflow for the signal region cuts out of the given accumulator, into an output txt file'''
     cf = acc['cutflow_sr_vbf'][dataset]
 
@@ -50,7 +50,7 @@ def dump_cutflow(acc, dataset):
     text = tabulate.tabulate(table, headers=["Cut", "Passing events"], floatfmt=".1f")
 
     # Save the table into an output file
-    outdir = './output/cutflow'
+    outdir = f'./output/cutflow/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     outpath = pjoin(outdir, 'bu_cutflow.txt')
@@ -66,9 +66,16 @@ def main():
     inpath = sys.argv[1]
     acc = load(inpath)
 
-    dataset = 'ZJetsToNuNu_HT-200To400-mg_2017'
+    outtag = inpath.split('/')[-2]
 
-    dump_cutflow(acc, dataset)
+    # Figure out the dataset from the filename
+    filename = inpath.split('/')[-1]
+    dataset = filename.replace('tree_', '').replace('.root', '')
+
+    print(f'File being used: {filename}')
+    print(f'Dataset: {dataset}')
+
+    dump_cutflow(acc, outtag, dataset)
 
 if __name__ == '__main__':
     main()
