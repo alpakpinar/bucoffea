@@ -43,6 +43,10 @@ def vbf_selection(vphi, dijet, genjets):
                   'dphijj',
                   dphi(dijet.i0.phi,dijet.i1.phi).min() < 1.5
                   )
+    selection.add(
+                  'hf_hf_veto',
+                  ~((dijet.i0.abseta.max() > 3.0) & (dijet.i1.abseta.max() > 3.0))
+                  )
 
     return selection
 
