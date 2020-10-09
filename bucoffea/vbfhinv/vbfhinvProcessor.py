@@ -505,6 +505,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 save_trees = (region == 'sr_vbf_no_veto_all' and df['is_lo_w']) or (region == 'cr_2m_vbf' and df['is_lo_z'])
                 if save_trees:
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
+                    output['tree_int64'][region]["run"]       +=  processor.column_accumulator(df["run"][mask])
+                    output['tree_int64'][region]["lumi"]       +=  processor.column_accumulator(df["luminosityBlock"][mask])
                     if gen_v_pt is not None:
                         output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
                         output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
