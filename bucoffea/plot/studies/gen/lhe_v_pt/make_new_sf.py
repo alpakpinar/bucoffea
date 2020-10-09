@@ -107,8 +107,8 @@ def sf_1d(acc, tag, regex, outputrootfile):
             outputrootfile[f'{tag}_{pt_type}_{selection}'] = (sf_y,sf_x)
 
 
-def sf_2d(acc, tag, regex, pt_type, outputrootfile):
-    outdir = './output/2d/'
+def sf_2d(acc, tag, outtag, regex, pt_type, outputrootfile):
+    outdir = f'./output/2d/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -233,18 +233,19 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
+    outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
     outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
-    sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile)
-    sf_1d(acc, tag='dy', regex='DYN?JetsToLL.*',outputrootfile=outputrootfile)
+    # sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile)
+    # sf_1d(acc, tag='dy', regex='DYN?JetsToLL.*',outputrootfile=outputrootfile)
     # # outputrootfile = uproot.recreate(f'test.root')
-    sf_2d(acc, tag='wjet', regex='WN?JetsToLNu.*',pt_type='combined',outputrootfile=outputrootfile)
-    sf_2d(acc, tag='dy', regex='DYN?JetsToLL.*',pt_type='combined',outputrootfile=outputrootfile)
+    sf_2d(acc, tag='wjet', outtag=outtag, regex='WN?JetsToLNu.*',pt_type='combined',outputrootfile=outputrootfile)
+    sf_2d(acc, tag='dy', outtag=outtag, regex='DYN?JetsToLL.*',pt_type='combined',outputrootfile=outputrootfile)
 
-    sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
+    # sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
     # outputrootfile = uproot.recreate('test.root')
 
-    sf_2d(acc, tag='gjets',regex='G\d?Jet.*',pt_type='stat1',outputrootfile=outputrootfile)
+    sf_2d(acc, tag='gjets', outtag=outtag, regex='G\d?Jet.*',pt_type='stat1',outputrootfile=outputrootfile)
 
 
 if __name__ == "__main__":
