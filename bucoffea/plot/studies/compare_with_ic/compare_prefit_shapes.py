@@ -20,7 +20,7 @@ def parse_cli():
     parser.add_argument('tag', help='The tag for the input files.')
     parser.add_argument('--years', help='The year to look at, the default is both 2017 and 2018.', type=int, nargs='*', default=[2017, 2018])
     parser.add_argument('--fit', help='cr_only (for CR-only fit) or sr_cr_fit (SR+CR fit, default)', default='sr_cr_fit')
-    parser.add_argument('--run', help='List of modules/functions to run, default is running both "shapes", "ratios".', nargs='*', default=['shapes', 'ratios'])
+    parser.add_argument('--compare', help='List of modules/functions to run, default is running both "shapes", "ratios".', nargs='*', default=['shapes', 'ratios'])
     args = parser.parse_args()
     return args
 
@@ -276,13 +276,26 @@ def compare_prefit_shapes(ic_file, bu_file, tag, year):
             # Plot ratio
             ratio = bu_vals / ic_vals
             centers = ( (edges + np.roll(edges,-1))/2 )[:-1]
-                
-            rax.plot(centers, ratio, marker='o', ls='', color='black')
+            if process == 'data':
+                rax.plot(centers, ratio, marker='o', ls='', color='black')
+            else:
+                err_on_ratio = (h_bu.variances / bu_vals) / ic_vals
+                rax.errorbar(centers, ratio, yerr=err_on_ratio, marker='o', ls='', color='black')
     
             rax.grid(True)
-            rax.set_ylim(0.8,1.2)
+            if process in ['top', 'diboson']:
+                rax.set_ylim(0.8,1.2)
+            else:
+                rax.set_ylim(0.94,1.06)
+                loc = matplotlib.ticker.MultipleLocator(base=0.02)
+                rax.yaxis.set_major_locator(loc)
+
             rax.set_ylabel('BU / IC')
             rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+
+            xlim = rax.get_xlim()
+            rax.plot(xlim, [1., 1.], color='red')
+            rax.set_xlim(xlim)
 
             outpath = pjoin(outdir, f'{region}_{process}_{year}.pdf')
             fig.savefig(outpath)
@@ -295,9 +308,9 @@ def main():
     years = args.years
     for year in years:
         ic_file, bu_file = get_input_files(args.tag, year, args.fit)
-        if 'shapes' in args.run:
+        if 'shapes' in args.compare:
             compare_prefit_shapes(ic_file, bu_file, args.tag, year)
-        if 'ratios' in args.run:
+        if 'ratios' in args.compare:
             compare_ratios(ic_file, bu_file, args.tag, year)
 
 if __name__ == '__main__':
