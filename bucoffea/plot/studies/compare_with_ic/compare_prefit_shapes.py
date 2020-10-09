@@ -7,6 +7,7 @@ import argparse
 import uproot
 import mplhep as hep
 import numpy as np
+import matplotlib.ticker
 from matplotlib import pyplot as plt
 
 pjoin = os.path.join
@@ -19,6 +20,7 @@ def parse_cli():
     parser.add_argument('tag', help='The tag for the input files.')
     parser.add_argument('--years', help='The year to look at, the default is both 2017 and 2018.', type=int, nargs='*', default=[2017, 2018])
     parser.add_argument('--fit', help='cr_only (for CR-only fit) or sr_cr_fit (SR+CR fit, default)', default='sr_cr_fit')
+    parser.add_argument('--run', help='List of modules/functions to run, default is running both "shapes", "ratios".', nargs='*', default=['shapes', 'ratios'])
     args = parser.parse_args()
     return args
 
@@ -80,6 +82,132 @@ def mjj_bins():
     return [200., 400., 600., 900., 1200., 1500.,
             2000., 2750., 3500., 5000.]
 
+def get_title_for_ratio(ratio_tag):
+    year = int(ratio_tag.split('_')[-1])
+    proc = ratio_tag.split('_')[0]
+
+    mapping = {
+        f'{proc}_wlnu_over_znunu_{year}' : r'{PROC} $W(\ell\nu) \ / \ Z(\nu\nu)$ {YEAR}'.format(PROC=proc.upper(), YEAR=year),
+        f'{proc}_zmumu_over_znunu_{year}' : r'{PROC} $Z(\mu\mu) \ / \ Z(\nu\nu)$ {YEAR}'.format(PROC=proc.upper(), YEAR=year),
+        f'{proc}_zee_over_znunu_{year}' : r'{PROC} $Z(ee) \ / \ Z(\nu\nu)$ {YEAR}'.format(PROC=proc.upper(), YEAR=year),
+        f'{proc}_wmunu_over_wlnu_{year}' : r'{PROC} $W(\mu\nu) \ / \ W(\ell\nu)$ {YEAR}'.format(PROC=proc.upper(), YEAR=year),
+        f'{proc}_wenu_over_wlnu_{year}' : r'{PROC} $W(e\nu) \ / \ W(\ell\nu)$ {YEAR}'.format(PROC=proc.upper(), YEAR=year),
+    }
+
+    return mapping[ratio_tag]
+
+def get_histograms_for_ratios(f_ic, f_bu, ratio_tag):
+    '''For each type of ratio, extract the regions and processes for numerator and denominator.'''
+    year = int(ratio_tag.split('_')[-1])
+    proc = ratio_tag.split('_')[0]
+    ratios = {
+        f'{proc}_wlnu_over_znunu_{year}' : {
+            'region_num' : f'vbf_{year}_signal', 
+            'region_den' : f'vbf_{year}_signal', 
+            'histogram_num' : f'{proc}_wjets', 
+            'histogram_den' : f'{proc}_zjets'
+        },
+        f'{proc}_zmumu_over_znunu_{year}' : {
+            'region_num' : f'vbf_{year}_dimuon', 
+            'region_den' : f'vbf_{year}_signal', 
+            'histogram_num' : f'{proc}_zll', 
+            'histogram_den' : f'{proc}_zjets'
+        },
+        f'{proc}_zee_over_znunu_{year}' : {
+            'region_num' : f'vbf_{year}_dielec', 
+            'region_den' : f'vbf_{year}_signal', 
+            'histogram_num' : f'{proc}_zll', 
+            'histogram_den' : f'{proc}_zjets'
+        },
+        f'{proc}_wmunu_over_wlnu_{year}' : {
+            'region_num' : f'vbf_{year}_singlemu', 
+            'region_den' : f'vbf_{year}_signal', 
+            'histogram_num' : f'{proc}_wjets', 
+            'histogram_den' : f'{proc}_wjets'
+        },
+        f'{proc}_wenu_over_wlnu_{year}' : {
+            'region_num' : f'vbf_{year}_singleel', 
+            'region_den' : f'vbf_{year}_signal', 
+            'histogram_num' : f'{proc}_wjets', 
+            'histogram_den' : f'{proc}_wjets'
+        },
+    }
+
+    hist_info = ratios[ratio_tag]
+
+    # First, histograms from BU files
+    bu_hist_num = f_bu[ hist_info['region_num'] ][ hist_info['histogram_num'] ]
+    bu_hist_den = f_bu[ hist_info['region_den'] ][ hist_info['histogram_den'] ]
+
+    # Second, IC files
+    ic_hist_num = f_ic[ ic_regions[hist_info['region_num']] ][ ic_processes[hist_info['histogram_num']] ]
+    ic_hist_den = f_ic[ ic_regions[hist_info['region_den']] ][ ic_processes[hist_info['histogram_den']] ]
+
+    return bu_hist_num, bu_hist_den, ic_hist_num, ic_hist_den
+
+def compare_ratios(ic_file, bu_file, tag, year):
+    '''Compare several ratios between pre-fit templates, as a function of mjj.'''
+    f_bu = uproot.open(bu_file)['shapes_prefit']
+    f_ic = uproot.open(ic_file)['shapes_prefit']
+
+    # Output directory for the plots to be saved
+    outdir = f'./output/prefit_shape_comparison/{tag}/ratios'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+
+    for proc in ['qcd', 'ewk']:
+        ratio_tags = [
+            f'{proc}_wlnu_over_znunu_{year}',
+            f'{proc}_zmumu_over_znunu_{year}',
+            f'{proc}_zee_over_znunu_{year}',
+            f'{proc}_wmunu_over_wlnu_{year}',
+            f'{proc}_wenu_over_wlnu_{year}'
+        ]    
+
+        for ratio_tag in ratio_tags:
+            # Read the relevant histograms
+            bu_hist_num, bu_hist_den, ic_hist_num, ic_hist_den = get_histograms_for_ratios(f_ic, f_bu, ratio_tag)
+
+            # Sanity check!
+            assert ( (bu_hist_num.edges == ic_hist_num.edges).all() )
+            edges = bu_hist_num.edges
+
+            # Calculate ratios for both sides
+            ratio_bu = bu_hist_num.values / bu_hist_den.values
+            ratio_ic = ic_hist_num.values / ic_hist_den.values
+
+            # Plot comparison
+            fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
+            hep.histplot(ratio_ic, edges, ax=ax,  label='IC')
+            hep.histplot(ratio_bu, edges, ax=ax,  label='BU')
+
+            ax.legend()
+            ax.set_title( get_title_for_ratio(ratio_tag) )
+
+            dratio = ratio_bu / ratio_ic
+            centers = ( (edges + np.roll(edges,-1))/2 )[:-1]
+
+            rax.plot(centers, dratio, marker='o', ls='', color='black')
+
+            rax.grid(True)
+            rax.set_ylim(0.94,1.06)
+            rax.set_ylabel('BU / IC')
+            rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+
+            loc = matplotlib.ticker.MultipleLocator(base=0.02)
+            rax.yaxis.set_major_locator(loc)
+
+            xlim = rax.get_xlim()
+            rax.plot(xlim, [1., 1.], color='red')
+            rax.set_xlim(xlim)
+
+            outpath = pjoin(outdir, f'{ratio_tag}.pdf')
+            fig.savefig(outpath)
+            print(f'MSG% File saved: {outpath}')
+    
+            plt.close(fig)
+    
 def compare_prefit_shapes(ic_file, bu_file, tag, year):
     '''Compare pre-fit shapes as a function of mjj.'''
     f_bu = uproot.open(bu_file)['shapes_prefit']
@@ -167,7 +295,10 @@ def main():
     years = args.years
     for year in years:
         ic_file, bu_file = get_input_files(args.tag, year, args.fit)
-        compare_prefit_shapes(ic_file, bu_file, args.tag, year)
+        if 'shapes' in args.run:
+            compare_prefit_shapes(ic_file, bu_file, args.tag, year)
+        if 'ratios' in args.run:
+            compare_ratios(ic_file, bu_file, args.tag, year)
 
 if __name__ == '__main__':
     main()
