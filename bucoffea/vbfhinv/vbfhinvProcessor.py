@@ -502,7 +502,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             mask = selection.all(*cuts)
 
             if cfg.RUN.SAVE.TREE:
-                if 'sr_vbf' in region and df['is_lo_znunu']:
+                save_trees = (region == 'sr_vbf_no_veto_all' and df['is_lo_w']) or (region == 'cr_2m_vbf' and df['is_lo_z'])
+                if save_trees:
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
                     if gen_v_pt is not None:
                         output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
@@ -520,12 +521,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     output['tree_float16'][region]["met_pt_nom"]         +=  processor.column_accumulator(np.float16(df[f'{met_branch}_pt_nom'][mask]))
                     
                     output['tree_float16'][region]["leadak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i0.pt[mask]))
-                    output['tree_float16'][region]["leadak4_pt_nom"]     +=  processor.column_accumulator(np.float16((diak4.i0.pt / diak4.i0.jerfac)[mask]))
                     output['tree_float16'][region]["leadak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i0.eta[mask]))
                     output['tree_float16'][region]["leadak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i0.phi[mask]))
 
                     output['tree_float16'][region]["trailak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i1.pt[mask]))
-                    output['tree_float16'][region]["trailak4_pt_nom"]     +=  processor.column_accumulator(np.float16((diak4.i1.pt / diak4.i1.jerfac)[mask]))
                     output['tree_float16'][region]["trailak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i1.eta[mask]))
                     output['tree_float16'][region]["trailak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i1.phi[mask]))
 
