@@ -165,7 +165,10 @@ def compare_postfit_shapes(ic_file, bu_file, tag, year, fit='sr_cr_fit'):
             rax.plot(centers, ratio, marker='o', ls='', color='black')
     
             rax.grid(True)
-            rax.set_ylim(0.8,1.2)
+            if 'signal' in process:
+                rax.set_ylim(0.6,1.4)
+            else:
+                rax.set_ylim(0.8,1.2)
             rax.set_ylabel('BU / IC')
             rax.set_xlabel(r'$M_{jj} \ (GeV)$')
 
