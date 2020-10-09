@@ -750,32 +750,36 @@ def theory_weights_monojet(weights, df, evaluator, gen_v_pt):
 
 def theory_weights_vbf(weights, df, evaluator, gen_v_pt, mjj):
     if df['is_lo_w']:
-        theory_weights = evaluator["qcd_nlo_w_2017_2d"](mjj, gen_v_pt) * evaluator["ewk_nlo_w"](gen_v_pt)
-    elif df['is_lo_w_ewk']:
-        theory_weights = evaluator["qcd_nlo_w_ewk"](gen_v_pt, mjj)
-    elif df['is_lo_z']:
-        w_ewk = evaluator["ewk_nlo_z"](gen_v_pt)
-        if df['is_lo_znunu']:
-            w_qcd = evaluator["qcd_nlo_znn_2017_2d"](gen_v_pt, mjj)
-        else:
-            w_qcd = evaluator["qcd_nlo_z_2017_2d"](mjj, gen_v_pt)
-        theory_weights = w_ewk * w_qcd
-    elif df['is_lo_z_ewk']:
-        theory_weights = evaluator["qcd_nlo_z_ewk"](gen_v_pt, mjj)
-    elif df['is_nlo_w']:
-        theory_weights = evaluator["ewk_nlo_w"](gen_v_pt)
-    elif df['is_nlo_z']:
-        theory_weights = evaluator["ewk_nlo_z"](gen_v_pt)
-    elif df['is_lo_g']:
-        theory_weights = evaluator["qcd_nlo_g_2017_2d"](mjj, gen_v_pt) * evaluator["ewk_nlo_g"](gen_v_pt)
+        theory_weights_qcd = evaluator["qcd_nlo_w_2017_2d"](mjj, gen_v_pt)
+        theory_weights_ewk = evaluator["ewk_nlo_w"](gen_v_pt)
+        weights.add('theory_qcd', theory_weights_qcd)
+        weights.add('theory_ewk', theory_weights_ewk)
     else:
-        theory_weights = np.ones(df.size)
-
-    # Guard against invalid input pt
-    invalid = (gen_v_pt <=0) | np.isinf(gen_v_pt) | np.isnan(gen_v_pt)
-    theory_weights[invalid] = 1
-
-    weights.add('theory', theory_weights)
+        if df['is_lo_w_ewk']:
+            theory_weights = evaluator["qcd_nlo_w_ewk"](gen_v_pt, mjj)
+        elif df['is_lo_z']:
+            w_ewk = evaluator["ewk_nlo_z"](gen_v_pt)
+            if df['is_lo_znunu']:
+                w_qcd = evaluator["qcd_nlo_znn_2017_2d"](gen_v_pt, mjj)
+            else:
+                w_qcd = evaluator["qcd_nlo_z_2017_2d"](mjj, gen_v_pt)
+            theory_weights = w_ewk * w_qcd
+        elif df['is_lo_z_ewk']:
+            theory_weights = evaluator["qcd_nlo_z_ewk"](gen_v_pt, mjj)
+        elif df['is_nlo_w']:
+            theory_weights = evaluator["ewk_nlo_w"](gen_v_pt)
+        elif df['is_nlo_z']:
+            theory_weights = evaluator["ewk_nlo_z"](gen_v_pt)
+        elif df['is_lo_g']:
+            theory_weights = evaluator["qcd_nlo_g_2017_2d"](mjj, gen_v_pt) * evaluator["ewk_nlo_g"](gen_v_pt)
+        else:
+            theory_weights = np.ones(df.size)
+    
+        # Guard against invalid input pt
+        invalid = (gen_v_pt <=0) | np.isinf(gen_v_pt) | np.isnan(gen_v_pt)
+        theory_weights[invalid] = 1
+    
+        weights.add('theory', theory_weights)
 
     return weights
 
