@@ -15,6 +15,31 @@ rebin = {
     'vpt' : hist.Bin('vpt', r'$p_T(V) \ (GeV)$', list(range(0,2000,200))),
 }
 
+def plot_vpt(acc, year):
+    var = 'gen_vpt'
+    acc.load(var)
+    h = acc[var]
+
+    h = merge_extensions(h, acc, reweight_pu=False)
+    scale_xs_lumi(h)
+    h = merge_datasets(h)
+
+    # Rebinning
+    h = h.rebin('vpt', rebin['vpt'])
+
+    h = h.integrate('region', 'sr_vbf_no_veto_all').integrate('dataset', re.compile(f'WJetsToLNu.*{year}'))
+
+    fig, ax = plt.subplots()
+    hist.plot1d(h, ax=ax)
+
+    outdir = './output'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outpath = pjoin(outdir, f'gen_vpt_{year}.pdf')
+    fig.savefig(outpath)
+    print(f'File saved: {outpath}')
+
 def plot_vpt_mjj(acc, year):
     var = 'gen_vpt_mjj'
     acc.load(var)
@@ -48,6 +73,7 @@ def main():
     acc.load('sumw2')
 
     for year in [2017, 2018]:
+        plot_vpt(acc, year)
         plot_vpt_mjj(acc, year)
 
 if  __name__ == '__main__':
