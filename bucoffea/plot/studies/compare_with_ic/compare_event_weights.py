@@ -16,8 +16,8 @@ def get_input_files(year):
     return bu_file, ic_file
 
 def get_merged_df(bu_file, ic_file, year):
-    columns_bu = ['run', 'lumi', 'event', 'weight_theory_qcd', 'weight_theory_ewk', 'weight_trigger_met', 'weight_pileup', 'mjj']
-    columns_ic = ['run', 'luminosityBlock', 'event', 'fnlo_SF_QCD_corr_QCD_proc_MTR', 'fnlo_SF_EWK_corr', f'trigger_weight_METMHT{year}', 'puWeight', 'diCleanJet_M']
+    columns_bu = ['run', 'lumi', 'event', 'weight_theory_qcd', 'weight_theory_ewk', 'weight_trigger_met', 'weight_pileup', 'mjj', 'gen_v_pt']
+    columns_ic = ['run', 'luminosityBlock', 'event', 'fnlo_SF_QCD_corr_QCD_proc_MTR', 'fnlo_SF_EWK_corr', f'trigger_weight_METMHT{year}', 'puWeight', 'diCleanJet_M', 'Gen_boson_pt']
     df_bu = uproot.open(bu_file)['sr_vbf_no_veto_all'].pandas.df()[columns_bu]
     df_ic = uproot.open(ic_file)['Events'].pandas.df()[columns_ic]
 
@@ -28,7 +28,8 @@ def get_merged_df(bu_file, ic_file, year):
             f'trigger_weight_METMHT{year}' : 'weight_trigger_met',
             'puWeight' : 'weight_pileup',
             'diCleanJet_M' : 'mjj',
-            'luminosityBlock' : 'lumi'
+            'luminosityBlock' : 'lumi',
+            'Gen_boson_pt' : 'gen_v_pt'
             },
         inplace=True
     )
@@ -37,23 +38,35 @@ def get_merged_df(bu_file, ic_file, year):
     
     return merged_df
 
-def check_mjj(merged_df, year):
+def check_mjj_vpt(merged_df, year):
     bu_mjj = merged_df['mjj_bu']
+    bu_vpt = merged_df['gen_v_pt_bu']
     ic_mjj = merged_df['mjj_ic']
+    ic_vpt = merged_df['gen_v_pt_ic']
 
-    diff = (bu_mjj - ic_mjj) / bu_mjj
-    fig, ax = plt.subplots()
-    ax.hist(diff, bins=np.linspace(-0.1,0.1,20))
-    # ax.hist(diff, bins=np.linspace(-0.1,0.1,20))
+    mjj_bins = np.arange(2500,5250,250)
+    vpt_bins = np.arange(200,2200,200)
 
-    ax.set_xlabel(r'% difference in $M_{jj}$')
+    fig, ax = plt.subplots(1,2,figsize=(12,8))
+    plt.subplots_adjust(hspace=0.3)
+    _, _, _, im0 = ax[0].hist2d(bu_mjj, ic_mjj, bins=mjj_bins)
+    _, _, _, im1 = ax[1].hist2d(bu_vpt, ic_vpt, bins=vpt_bins)
+
+    fig.colorbar(im0, ax=ax[0])
+    fig.colorbar(im1, ax=ax[1])
+
+    ax[0].set_xlabel(r'$M_{jj}$ BU (GeV)')
+    ax[0].set_ylabel(r'$M_{jj}$ IC (GeV)')
+
+    ax[1].set_xlabel(r'$p_T (V)$ BU (GeV)')
+    ax[1].set_ylabel(r'$p_T (V)$ IC (GeV)')
 
     # Save figure
     outdir = f'./output/compare_weights'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    outpath = pjoin(outdir, f'mjj_check_{year}.pdf')
+    outpath = pjoin(outdir, f'mjj_vpt_check_{year}.pdf')
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
@@ -115,7 +128,7 @@ def main():
         bu_file, ic_file = get_input_files(year)
         merged_df = get_merged_df(bu_file, ic_file, year)
         # Test the merged df
-        check_mjj(merged_df, year)
+        check_mjj_vpt(merged_df, year)
         compare_weights(merged_df, year)
 
 if __name__ == '__main__':
