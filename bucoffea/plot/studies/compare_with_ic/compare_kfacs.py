@@ -9,25 +9,36 @@ import sys
 import re
 import uproot
 import numpy as np
-from bucoffea.helpers.paths import bucoffea_path
 from matplotlib import pyplot as plt
 
 pjoin = os.path.join
 
-def plot_ratio_of_kfacs(bu_kfac_file, ic_kfac_file):
-    h_bu = uproot.open(bu_kfac_file)['kfactors_shape']['kfactor_vbf']
+bu_procs = {
+    'zjet' : 'dy',
+    'wjet' : 'wjet'
+}
+
+titles = {
+    'zjet' : 'DY',
+    'wjet' : 'QCD W'
+}
+
+def plot_ratio_of_kfacs(bu_kfac_file, ic_kfac_file, proc):
+    h_bu = uproot.open(bu_kfac_file)[f'2d_{bu_procs[proc]}_vbf']
     h_ic = uproot.open(ic_kfac_file)['kfactors_shape']['kfactor_vbf']
 
-    yedges, xedges = h_bu.edges
-    kfacs_bu = h_bu.values 
-    kfacs_ic = h_ic.values 
+    # Get the values with p_T(V) > 200 GeV and mjj > 200 GeV for comparison
+    xedges = h_bu.edges[0][1:]
+    yedges = h_bu.edges[1][6:]
+    kfacs_bu = h_bu.values[1:, 6:] 
+    kfacs_ic = h_ic.values.T[1:, 6:]  # Take the transpose to be consistent with BU   
 
     # Calculate the ratio of k-factors
     r = kfacs_bu / kfacs_ic
 
     # Plot the ratio
     fig, ax = plt.subplots()
-    pc = ax.pcolormesh(xedges, yedges, r)
+    pc = ax.pcolormesh(xedges, yedges, r.T)
     fig.colorbar(pc, ax=ax, label='BU / IC')
 
     xcenters = ( (xedges + np.roll(xedges,-1))/2 )[:-1]
@@ -35,21 +46,17 @@ def plot_ratio_of_kfacs(bu_kfac_file, ic_kfac_file):
 
     for ix in range(len(xcenters)):
         for iy in range(len(ycenters)):
-            if ix < 2:
-                ratio_print = f'{r[iy, ix]:.2f}'
-            else:
-                ratio_print = f'{r[iy, ix]:.3f}'
             ax.text(
                 xcenters[ix],
                 ycenters[iy],
-                ratio_print,
+                f'{r[ix, iy]:.3f}',
                 ha='center',
                 va='center',
                 fontsize=6,
                 color='black'
             )
 
-    ax.set_title(r'QCD $Z(\nu\nu)$ NLO k-factors')
+    ax.set_title(f'{titles[proc]} NLO k-factors')
     ax.set_xlabel(r'$M_{jj} \ (GeV)$')
     ax.set_ylabel(r'$p_T (V) \ (GeV)$')
 
@@ -58,16 +65,19 @@ def plot_ratio_of_kfacs(bu_kfac_file, ic_kfac_file):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'znunu_kfac_comparison.pdf')
+    outpath = pjoin(outdir, f'{proc}_kfac_comparison.pdf')
     fig.savefig(outpath)
     print(f'MSG% File saved: {outpath}')
 
 def main():
     # The paths to root files containing k-factors
-    bu_kfac_file = bucoffea_path('./data/sf/theory/2Dkfactor_VBF_znn.root')
-    ic_kfac_file = bucoffea_path('./data/sf/theory/ic/2Dkfactor_VBF_znn.root')
+    proc = sys.argv[1]
+    inpath_bu = './inputs/kfactor_comp'
+    inpath_ic = './inputs/kfactor_comp/ic'
+    bu_kfac_file = pjoin(inpath_bu, '2017_gen_v_pt_qcd_sf.root')
+    ic_kfac_file = pjoin(inpath_ic, f'2Dkfactor_VBF_{proc}.root')
 
-    plot_ratio_of_kfacs(bu_kfac_file, ic_kfac_file)
+    plot_ratio_of_kfacs(bu_kfac_file, ic_kfac_file, proc)
 
 if __name__ == '__main__':
     main()
