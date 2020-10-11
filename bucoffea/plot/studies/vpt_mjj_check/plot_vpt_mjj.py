@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import matplotlib.colors as colors
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from matplotlib import pyplot as plt
@@ -11,8 +12,8 @@ from klepto.archives import dir_archive
 pjoin = os.path.join
 
 rebin = {
-    'mjj' : hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(0,5000,500))),
-    'vpt' : hist.Bin('vpt', r'$p_T(V) \ (GeV)$', list(range(0,2000,200))),
+    'mjj' : hist.Bin('mjj', r'$M_{jj} \ (GeV)$', list(range(0,5500,500))),
+    'vpt' : hist.Bin('vpt', r'$p_T(V) \ (GeV)$', list(range(0,2200,200))),
 }
 
 def plot_vpt(acc, year):
@@ -31,6 +32,11 @@ def plot_vpt(acc, year):
 
     fig, ax = plt.subplots()
     hist.plot1d(h, ax=ax)
+
+    ax.get_legend().remove()
+
+    ax.set_yscale('log')
+    ax.set_ylim(1e-3, 1e6)
 
     outdir = './output'
     if not os.path.exists(outdir):
@@ -56,7 +62,7 @@ def plot_vpt_mjj(acc, year):
     h = h.integrate('region', 'sr_vbf_no_veto_all').integrate('dataset', re.compile(f'WJetsToLNu.*{year}'))
 
     fig, ax = plt.subplots()
-    hist.plot2d(h, ax=ax, xaxis='mjj')
+    hist.plot2d(h, ax=ax, xaxis='mjj', patch_opts={'norm' : colors.LogNorm(vmin=1e-3, vmax=1e5)})
 
     outdir = './output'
     if not os.path.exists(outdir):
