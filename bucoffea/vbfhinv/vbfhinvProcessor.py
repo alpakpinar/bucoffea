@@ -444,6 +444,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         veto_weights = get_veto_weights(df, evaluator, electrons, muons, taus)
         for region, cuts in regions.items():
+            if 'sr_vbf_no_veto' not in region:
+                continue
             exclude = [None]
             region_weights = copy.deepcopy(weights)
 
@@ -637,6 +639,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             if gen_v_pt is not None:
                 ezfill('gen_vpt', vpt=gen_v_pt[mask], weight=df['Generator_weight'][mask])
                 ezfill('gen_mjj', mjj=df['mjj_gen'][mask], weight=df['Generator_weight'][mask])
+                ezfill('gen_vpt_mjj', vpt=gen_v_pt[mask], mjj=df['mjj_gen'][mask], weight=df['Generator_weight'][mask])
 
 
             # Photon CR data-driven QCD estimate

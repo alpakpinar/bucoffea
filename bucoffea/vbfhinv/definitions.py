@@ -76,6 +76,7 @@ def vbfhinv_accumulator(cfg):
     items["genvpt_check"] = Hist("Counts", dataset_ax, type_ax, vpt_ax)
 
     items["gen_vpt"] = Hist("Counts", dataset_ax, vpt_ax, region_ax)
+    items["gen_vpt_mjj"] = Hist("Counts", dataset_ax, vpt_ax, mjj_ax, region_ax)
     items["gen_mjj"] = Hist("Counts", dataset_ax, mjj_ax, region_ax)
     items["lhe_njets"] = Hist("Counts", dataset_ax, multiplicity_ax)
     items["lhe_ht"] = Hist("Counts", dataset_ax, ht_ax)
