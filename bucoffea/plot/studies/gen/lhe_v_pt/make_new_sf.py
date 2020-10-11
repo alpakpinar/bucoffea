@@ -122,8 +122,8 @@ def sf_2d(acc, tag, outtag, regex, pt_type, outputrootfile):
 
 
     if tag in ['dy', 'wjet']:
-        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200])
-        mjj_ax = hist.Bin('mjj','M(jj) (GeV)',list(range(0,2500,500)))
+        vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 760, 880])
+        mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000,1500])
         clims = 0.5,1.5
     elif tag in ['gjets']:
         vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640])
@@ -163,6 +163,9 @@ def sf_2d(acc, tag, outtag, regex, pt_type, outputrootfile):
 
         xaxis = lo.axes()[0]
         yaxis = lo.axes()[1]
+
+        # Guard against inf/nan values
+        sf[np.isnan(sf) | np.isinf(sf)] = 1.0
 
         im = ax.pcolormesh(xaxis.edges(overflow='over'), yaxis.edges(overflow='over'), sf.T)
 
