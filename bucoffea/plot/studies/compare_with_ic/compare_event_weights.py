@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 
 pjoin = os.path.join
 
-def get_input_files(year):
-    inputdir  = './inputs/for_weights'
+def get_input_files(year, tag):
+    inputdir = f'./inputs/for_weights/{tag}'
     bu_file = pjoin(inputdir, f'tree_wjets_bu_{year}.root')
     ic_file = pjoin(inputdir, f'tree_wjets_ic_{year}.root')
 
@@ -38,7 +38,7 @@ def get_merged_df(bu_file, ic_file, year):
     
     return merged_df
 
-def check_mjj_vpt(merged_df, year):
+def check_mjj_vpt(merged_df, year, tag):
     bu_mjj = merged_df['mjj_bu']
     bu_vpt = merged_df['gen_v_pt_bu']
     ic_mjj = merged_df['mjj_ic']
@@ -62,7 +62,7 @@ def check_mjj_vpt(merged_df, year):
     ax[1].set_ylabel(r'$p_T (V)$ IC (GeV)')
 
     # Save figure
-    outdir = f'./output/compare_weights'
+    outdir = f'./output/compare_weights/{tag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -70,7 +70,7 @@ def check_mjj_vpt(merged_df, year):
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
-def compare_weights(merged_df, year):
+def compare_weights(merged_df, year, tag):
     # QCD weights
     bu_qcd_w = merged_df['weight_theory_qcd_bu']
     ic_qcd_w = merged_df['weight_theory_qcd_ic']
@@ -115,7 +115,7 @@ def compare_weights(merged_df, year):
     )
 
     # Save figure
-    outdir = f'./output/compare_weights'
+    outdir = f'./output/compare_weights/{tag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -124,12 +124,14 @@ def compare_weights(merged_df, year):
     print(f'File saved: {outpath}')
 
 def main():
+    # Read in the version from command line
+    tag = sys.argv[1]
     for year in [2017, 2018]:
-        bu_file, ic_file = get_input_files(year)
+        bu_file, ic_file = get_input_files(year,tag)
         merged_df = get_merged_df(bu_file, ic_file, year)
         # Test the merged df
-        check_mjj_vpt(merged_df, year)
-        compare_weights(merged_df, year)
+        check_mjj_vpt(merged_df, year, tag)
+        compare_weights(merged_df, year, tag)
 
 if __name__ == '__main__':
     main()
