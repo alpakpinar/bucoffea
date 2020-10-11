@@ -16,8 +16,8 @@ def get_input_files(year, tag):
     return bu_file, ic_file
 
 def get_merged_df(bu_file, ic_file, year):
-    columns_bu = ['run', 'lumi', 'event', 'weight_theory_qcd', 'weight_theory_ewk', 'weight_trigger_met', 'weight_pileup', 'mjj', 'gen_v_pt']
-    columns_ic = ['run', 'luminosityBlock', 'event', 'fnlo_SF_QCD_corr_QCD_proc_MTR', 'fnlo_SF_EWK_corr', f'trigger_weight_METMHT{year}', 'puWeight', 'diCleanJet_M', 'Gen_boson_pt']
+    columns_bu = ['run', 'lumi', 'event', 'weight_theory_qcd', 'weight_theory_ewk', 'weight_trigger_met', 'weight_pileup', 'mjj', 'gen_v_pt', 'weight_veto_tau']
+    columns_ic = ['run', 'luminosityBlock', 'event', 'fnlo_SF_QCD_corr_QCD_proc_MTR', 'fnlo_SF_EWK_corr', f'trigger_weight_METMHT{year}', 'puWeight', 'diCleanJet_M', 'Gen_boson_pt', 'VLooseTauFix_eventVetoW']
     df_bu = uproot.open(bu_file)['sr_vbf_no_veto_all'].pandas.df()[columns_bu]
     df_ic = uproot.open(ic_file)['Events'].pandas.df()[columns_ic]
 
@@ -29,7 +29,8 @@ def get_merged_df(bu_file, ic_file, year):
             'puWeight' : 'weight_pileup',
             'diCleanJet_M' : 'mjj',
             'luminosityBlock' : 'lumi',
-            'Gen_boson_pt' : 'gen_v_pt'
+            'Gen_boson_pt' : 'gen_v_pt',
+            'VLooseTauFix_eventVetoW' : 'weight_veto_tau'
             },
         inplace=True
     )
@@ -86,10 +87,10 @@ def compare_weights(merged_df, year, tag):
     ic_mettrig_w = merged_df['weight_trigger_met_ic']
     trig_diff = (bu_mettrig_w - ic_mettrig_w) / bu_mettrig_w
     
-    # Pileup weights
-    bu_pileup_w = merged_df['weight_pileup_bu']
-    ic_pileup_w = merged_df['weight_pileup_ic']
-    pu_diff = (bu_pileup_w - ic_pileup_w) / bu_pileup_w
+    # Tau veto weights
+    bu_tau_veto_w = merged_df['weight_veto_tau_bu']
+    ic_tau_veto_w = merged_df['weight_veto_tau_ic']
+    pu_diff = (bu_tau_veto_w - ic_tau_veto_w) / bu_tau_veto_w
 
     bins = np.linspace(-0.2,0.2)
 
@@ -107,7 +108,7 @@ def compare_weights(merged_df, year, tag):
     ax[1,0].set_xlabel('(BU-IC)/BU')
 
     ax[1,1].hist(pu_diff, bins=bins)
-    ax[1,1].set_title('PU weight')
+    ax[1,1].set_title('Tau veto weight')
     ax[1,1].set_xlabel('(BU-IC)/BU')
 
     plt.subplots_adjust(
