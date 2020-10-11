@@ -487,7 +487,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
 
             # This is the default weight for this region
-            rweight = region_weights.partial_weight(exclude=['veto_tau']) # Do not double count tau weight here
+            rweight = region_weights.partial_weight(exclude=exclude) # Do not double count tau weight here
 
             # Blinding
             if(self._blind and df['is_data'] and region.startswith('sr')):
@@ -514,7 +514,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     output['tree_float16'][region]["mjj"]         +=  processor.column_accumulator(np.float16(df["mjj"][mask]))
                     output['tree_float16'][region]["met_pt_jer"]         +=  processor.column_accumulator(np.float16(met_pt[mask]))
                     if re.match('.*no_veto.*', region):
-                        output['tree_float16'][region]['weight_veto_tau'] += processor.column_accumulator(np.float16(region_weights.partial_weight(include=['veto_tau'])[mask]))
+                        # Save tau veto weights
+                        veto_tau_weights = (1 - evaluator['tau_id'](taus.pt)).prod()
+                        output['tree_float16'][region]['weight_veto_tau'] += processor.column_accumulator(np.float16(veto_tau_weights[mask]) )
     
                     if df['year'] == 2017:
                         met_branch = 'METFixEE2017'
