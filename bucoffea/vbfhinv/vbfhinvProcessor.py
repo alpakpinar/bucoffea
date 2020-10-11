@@ -487,7 +487,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
 
             # This is the default weight for this region
-            rweight = region_weights.partial_weight(exclude=exclude)
+            rweight = region_weights.partial_weight(exclude=['veto_tau']) # Do not double count tau weight here
 
             # Blinding
             if(self._blind and df['is_data'] and region.startswith('sr')):
@@ -502,8 +502,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             mask = selection.all(*cuts)
 
             if cfg.RUN.SAVE.TREE:
-                save_trees = (region == 'sr_vbf_no_veto_all' and df['is_lo_w']) or (region == 'cr_2m_vbf' and df['is_lo_z'])
-                if save_trees:
+                if region != 'inclusive':
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
                     output['tree_int64'][region]["run"]       +=  processor.column_accumulator(df["run"][mask])
                     output['tree_int64'][region]["lumi"]       +=  processor.column_accumulator(df["luminosityBlock"][mask])
@@ -514,7 +513,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     output['tree_float16'][region]["recoil_phi"]  +=  processor.column_accumulator(np.float16(df["recoil_phi"][mask]))
                     output['tree_float16'][region]["mjj"]         +=  processor.column_accumulator(np.float16(df["mjj"][mask]))
                     output['tree_float16'][region]["met_pt_jer"]         +=  processor.column_accumulator(np.float16(met_pt[mask]))
-                    
+                    if re.match('.*no_veto.*', region):
+                        output['tree_float16'][region]['weight_veto_tau'] += processor.column_accumulator(np.float16(region_weights.partial_weight(include=['veto_tau'])[mask]))
+    
                     if df['year'] == 2017:
                         met_branch = 'METFixEE2017'
                     else:
@@ -522,14 +523,14 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     
                     output['tree_float16'][region]["met_pt_nom"]         +=  processor.column_accumulator(np.float16(df[f'{met_branch}_pt_nom'][mask]))
                     
-                    output['tree_float16'][region]["leadak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i0.pt[mask]))
-                    output['tree_float16'][region]["leadak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i0.eta[mask]))
-                    output['tree_float16'][region]["leadak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i0.phi[mask]))
-
-                    output['tree_float16'][region]["trailak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i1.pt[mask]))
-                    output['tree_float16'][region]["trailak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i1.eta[mask]))
-                    output['tree_float16'][region]["trailak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i1.phi[mask]))
-
+                    output['tree_float16'][region]["leadak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i0.pt[mask].flatten()))
+                    output['tree_float16'][region]["leadak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i0.eta[mask].flatten()))
+                    output['tree_float16'][region]["leadak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i0.phi[mask].flatten()))
+    
+                    output['tree_float16'][region]["trailak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i1.pt[mask].flatten()))
+                    output['tree_float16'][region]["trailak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i1.eta[mask].flatten()))
+                    output['tree_float16'][region]["trailak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i1.phi[mask].flatten()))
+    
                     output['tree_float16'][region]["minDPhiJetRecoil"]  +=  processor.column_accumulator(np.float16(df["minDPhiJetRecoil"][mask]))
                     if '_1e_' in region:
                         output['tree_float16'][region]["leadlep_pt"]   +=  processor.column_accumulator(np.float16(electrons.pt.max()[mask]))

@@ -93,6 +93,9 @@ def get_veto_weights(df, evaluator, electrons, muons, taus, do_variations=False)
         total[np.abs(total)>5] = 1
         veto_weights.add(variation, total)
 
+        veto_weight_tau[np.abs(veto_weight_tau)>5] = 1
+        veto_weights.add('veto_tau', veto_weight_tau)
+
     return veto_weights
 
 
