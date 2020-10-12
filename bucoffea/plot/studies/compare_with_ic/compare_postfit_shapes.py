@@ -8,6 +8,7 @@ import uproot
 import mplhep as hep
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.ticker
 
 pjoin = os.path.join
 
@@ -167,10 +168,19 @@ def compare_postfit_shapes(ic_file, bu_file, tag, year, fit='sr_cr_fit'):
             rax.grid(True)
             if 'signal' in process:
                 rax.set_ylim(0.6,1.4)
-            else:
+            elif process in ['top', 'diboson']:
                 rax.set_ylim(0.8,1.2)
+            else:
+                rax.set_ylim(0.94,1.06)
+                loc = matplotlib.ticker.MultipleLocator(base=0.02)
+                rax.yaxis.set_major_locator(loc)
+
             rax.set_ylabel('BU / IC')
             rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+
+            xlim = rax.get_xlim()
+            rax.plot(xlim, [1., 1.], color='red')
+            rax.set_xlim(xlim)
 
             outpath = pjoin(outdir, f'{region}_{process}_{year}.pdf')
             fig.savefig(outpath)
