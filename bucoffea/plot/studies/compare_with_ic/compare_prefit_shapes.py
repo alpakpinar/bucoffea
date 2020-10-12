@@ -276,11 +276,7 @@ def compare_prefit_shapes(ic_file, bu_file, tag, year):
             # Plot ratio
             ratio = bu_vals / ic_vals
             centers = ( (edges + np.roll(edges,-1))/2 )[:-1]
-            if process == 'data':
-                rax.plot(centers, ratio, marker='o', ls='', color='black')
-            else:
-                err_on_ratio = (h_bu.variances / bu_vals) / ic_vals
-                rax.errorbar(centers, ratio, yerr=err_on_ratio, marker='o', ls='', color='black')
+            rax.plot(centers, ratio, marker='o', ls='', color='black')
     
             rax.grid(True)
             if process in ['top', 'diboson']:
