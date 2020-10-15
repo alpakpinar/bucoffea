@@ -63,8 +63,6 @@ def get_merged_df(bu_file, ic_file, year, proc):
 
     merged_df = pd.merge(df_bu, df_ic, on=['run', 'lumi', 'event'], suffixes=['_bu', '_ic'])
 
-    print(merged_df[['run', 'lumi', 'event', 'weight_theory_ewk_bu', 'weight_theory_ewk_ic']])
-
     return merged_df
 
 def check_mjj_vpt(merged_df, year, tag):
@@ -123,7 +121,8 @@ def compare_weights_ewk(merged_df, year, tag):
 
     for tag, diff in diffs.items():
         fig, ax = plt.subplots()
-        ax.hist(diff)
+        bins = np.linspace(-0.1,0.1)
+        ax.hist(diff, bins=bins)
         ax.set_title(tag_to_title[tag])
         ax.set_xlabel('(BU-IC)/BU')
 
@@ -153,7 +152,10 @@ def compare_weights_qcd(merged_df, year, tag):
     ic_tau_veto_w = merged_df['weight_veto_tau_ic']
     tau_diff = (bu_tau_veto_w - ic_tau_veto_w) / bu_tau_veto_w
 
-    bins = np.linspace(-0.2,0.2)
+    # Guard against inf/nan values
+    tau_diff = np.where(bu_tau_veto_w==0, 0., tau_diff)
+
+    bins = np.linspace(-0.1,0.1)
 
     fig, ax = plt.subplots(2,2,figsize=(12,8))
     ax[0,0].hist(qcd_diff, bins=bins)
