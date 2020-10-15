@@ -2,21 +2,39 @@
 import uproot
 import os
 import sys
+import argparse
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 
 pjoin = os.path.join
 
-def get_input_files(year, tag):
+tag_to_title = {
+    'qcd' : 'QCD NLO',
+    'ewk' : 'EWK NLO',
+    'tau' : 'Tau SF',
+    'trig' : 'MET Trigger SF'
+}
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('tag', help='The tag for the file versions.')
+    parser.add_argument('proc', help='QCD or EWK W, specify as "qcd" or "ewk"')
+    args = parser.parse_args()
+    return args
+
+def get_input_files(year, tag, proc):
     inputdir = f'./inputs/for_weights/{tag}'
-    bu_file = pjoin(inputdir, f'tree_wjets_bu_{year}.root')
-    ic_file = pjoin(inputdir, f'tree_wjets_ic_{year}.root')
+    bu_file = pjoin(inputdir, f'tree_{proc}_wjets_bu_{year}.root')
+    ic_file = pjoin(inputdir, f'tree_{proc}_wjets_ic_{year}.root')
 
     return bu_file, ic_file
 
-def get_merged_df(bu_file, ic_file, year):
-    columns_bu = ['run', 'lumi', 'event', 'weight_theory_qcd', 'weight_theory_ewk', 'weight_trigger_met', 'weight_pileup', 'mjj', 'gen_v_pt', 'weight_veto_tau']
+def get_merged_df(bu_file, ic_file, year, proc):
+    if proc == 'qcd':
+        columns_bu = ['run', 'lumi', 'event', 'weight_theory_qcd', 'weight_theory_ewk', 'weight_trigger_met', 'weight_pileup', 'mjj', 'gen_v_pt', 'weight_veto_tau']
+    else:
+        columns_bu = ['run', 'lumi', 'event', 'weight_theory', 'weight_trigger_met', 'weight_pileup', 'mjj', 'gen_v_pt', 'weight_veto_tau']
     columns_ic = ['run', 'luminosityBlock', 'event', 'fnlo_SF_QCD_corr_QCD_proc_MTR', 'fnlo_SF_EWK_corr', f'trigger_weight_METMHT{year}', 'puWeight', 'diCleanJet_M', 'Gen_boson_pt', 'VLooseTauFix_eventVetoW']
     df_bu = uproot.open(bu_file)['sr_vbf_no_veto_all'].pandas.df()[columns_bu]
     df_ic = uproot.open(ic_file)['Events'].pandas.df()[columns_ic]
@@ -35,8 +53,18 @@ def get_merged_df(bu_file, ic_file, year):
         inplace=True
     )
 
+    if proc == 'ewk':
+        df_bu.rename(
+            columns={
+                'weight_theory' : 'weight_theory_ewk'
+            },
+            inplace=True
+        )
+
     merged_df = pd.merge(df_bu, df_ic, on=['run', 'lumi', 'event'], suffixes=['_bu', '_ic'])
-    
+
+    print(merged_df[['run', 'lumi', 'event', 'weight_theory_ewk_bu', 'weight_theory_ewk_ic']])
+
     return merged_df
 
 def check_mjj_vpt(merged_df, year, tag):
@@ -45,7 +73,7 @@ def check_mjj_vpt(merged_df, year, tag):
     ic_mjj = merged_df['mjj_ic']
     ic_vpt = merged_df['gen_v_pt_ic']
 
-    mjj_bins = np.arange(2500,5250,250)
+    mjj_bins = np.arange(250,5250,250)
     vpt_bins = np.arange(200,2200,200)
 
     fig, ax = plt.subplots(1,2,figsize=(12,8))
@@ -71,7 +99,40 @@ def check_mjj_vpt(merged_df, year, tag):
     fig.savefig(outpath)
     print(f'File saved: {outpath}')
 
-def compare_weights(merged_df, year, tag):
+def compare_weights_ewk(merged_df, year, tag):
+    diffs = {}
+    # EWK weights
+    bu_ewk_w = merged_df['weight_theory_ewk_bu']
+    ic_ewk_w = merged_df['weight_theory_ewk_ic']
+    diffs['ewk'] = (bu_ewk_w - ic_ewk_w) / bu_ewk_w
+
+    # MET trigger weights
+    bu_mettrig_w = merged_df['weight_trigger_met_bu']
+    ic_mettrig_w = merged_df['weight_trigger_met_ic']
+    diffs['trig'] = (bu_mettrig_w - ic_mettrig_w) / bu_mettrig_w
+
+    # Tau veto weights
+    bu_tau_veto_w = merged_df['weight_veto_tau_bu']
+    ic_tau_veto_w = merged_df['weight_veto_tau_ic']
+    diffs['tau'] = (bu_tau_veto_w - ic_tau_veto_w) / bu_tau_veto_w
+
+    # Save figure
+    outdir = f'./output/compare_weights/{tag}/ewk'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    for tag, diff in diffs.items():
+        fig, ax = plt.subplots()
+        ax.hist(diff)
+        ax.set_title(tag_to_title[tag])
+        ax.set_xlabel('(BU-IC)/BU')
+
+        outpath = pjoin(outdir, f'weight_comp_{year}_{tag}.pdf')
+        fig.savefig(outpath)
+        print(f'File saved: {outpath}')
+
+
+def compare_weights_qcd(merged_df, year, tag):
     # QCD weights
     bu_qcd_w = merged_df['weight_theory_qcd_bu']
     ic_qcd_w = merged_df['weight_theory_qcd_ic']
@@ -90,7 +151,7 @@ def compare_weights(merged_df, year, tag):
     # Tau veto weights
     bu_tau_veto_w = merged_df['weight_veto_tau_bu']
     ic_tau_veto_w = merged_df['weight_veto_tau_ic']
-    pu_diff = (bu_tau_veto_w - ic_tau_veto_w) / bu_tau_veto_w
+    tau_diff = (bu_tau_veto_w - ic_tau_veto_w) / bu_tau_veto_w
 
     bins = np.linspace(-0.2,0.2)
 
@@ -107,7 +168,7 @@ def compare_weights(merged_df, year, tag):
     ax[1,0].set_title('MET trig weight')
     ax[1,0].set_xlabel('(BU-IC)/BU')
 
-    ax[1,1].hist(pu_diff, bins=bins)
+    ax[1,1].hist(tau_diff, bins=bins)
     ax[1,1].set_title('Tau veto weight')
     ax[1,1].set_xlabel('(BU-IC)/BU')
 
@@ -116,7 +177,7 @@ def compare_weights(merged_df, year, tag):
     )
 
     # Save figure
-    outdir = f'./output/compare_weights/{tag}'
+    outdir = f'./output/compare_weights/{tag}/qcd'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -126,13 +187,18 @@ def compare_weights(merged_df, year, tag):
 
 def main():
     # Read in the version from command line
-    tag = sys.argv[1]
+    args = parse_cli()
+    tag = args.tag
+    proc = args.proc
     for year in [2017, 2018]:
-        bu_file, ic_file = get_input_files(year,tag)
-        merged_df = get_merged_df(bu_file, ic_file, year)
+        bu_file, ic_file = get_input_files(year,tag,proc)
+        merged_df = get_merged_df(bu_file, ic_file, year, proc)
         # Test the merged df
         check_mjj_vpt(merged_df, year, tag)
-        compare_weights(merged_df, year, tag)
+        if proc == 'qcd':
+            compare_weights_qcd(merged_df, year, tag)
+        elif proc == 'ewk':
+            compare_weights_ewk(merged_df, year, tag)
 
 if __name__ == '__main__':
     main()

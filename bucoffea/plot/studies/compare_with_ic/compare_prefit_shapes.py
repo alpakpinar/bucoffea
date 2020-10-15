@@ -279,7 +279,7 @@ def compare_prefit_shapes(ic_file, bu_file, tag, year):
             rax.plot(centers, ratio, marker='o', ls='', color='black')
     
             rax.grid(True)
-            if process in ['top', 'diboson']:
+            if process in ['top', 'diboson', 'qcd']:
                 rax.set_ylim(0.8,1.2)
             else:
                 rax.set_ylim(0.94,1.06)
