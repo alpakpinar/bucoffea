@@ -519,6 +519,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     if re.match('.*no_veto.*', region):
                         # Save tau veto weights
                         veto_tau_weights = (1 - evaluator['tau_id'](taus.pt)).prod()
+                        tau_match_ok = (taus.counts == 0) | ((taus.genpartflav==5).all() )
+                        veto_tau_weights = np.where(tau_match_ok, veto_tau_weights, 0.)
                         output['tree_float16'][region]['weight_veto_tau'] += processor.column_accumulator(np.float16(veto_tau_weights[mask]) )
     
                     if df['year'] == 2017:
