@@ -77,6 +77,7 @@ def monojet_accumulator(cfg, variations):
     Hist = hist.Hist
     items = {}
     items["genvpt_check"] = Hist("Counts", dataset_ax, type_ax, vpt_ax)
+    items["vpt"] = Hist("Counts", dataset_ax, region_ax, vpt_ax)
     items["lhe_ht"] = Hist("Counts", dataset_ax, ht_ax)
     items["met"] = Hist("Counts", dataset_ax, region_ax, met_ax)
     items["met_phi"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
@@ -574,21 +575,18 @@ def monojet_regions(cfg, variations):
         regions[f'sr_v{var}'] = ['trig_met'] + common_cuts + v_cuts
         regions[f'sr_j{var}'] = ['trig_met'] + common_cuts + j_cuts
     
-        regions[f'cr_nofilt_j{var}'] = copy.deepcopy(regions[f'sr_j{var}'])
-        regions[f'cr_nofilt_j{var}'].remove('filt_met')
-
         # Dimuon CR
         cr_2m_cuts = ['trig_met','two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'dimuon_charge'] + common_cuts
         cr_2m_cuts.remove('veto_muo')
     
-        regions[f'cr_2m_j{var}'] = cr_2m_cuts + j_cuts
-        regions[f'cr_2m_v{var}'] = cr_2m_cuts + v_cuts
+        # regions[f'cr_2m_j{var}'] = cr_2m_cuts + j_cuts
+        # regions[f'cr_2m_v{var}'] = cr_2m_cuts + v_cuts
 
         # Single muon CR
-        cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu', f'mt_mu{var}'] + common_cuts
-        cr_1m_cuts.remove('veto_muo')
-        regions[f'cr_1m_j{var}'] = cr_1m_cuts + j_cuts
-        regions[f'cr_1m_v{var}'] = cr_1m_cuts + v_cuts
+        # cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu', f'mt_mu{var}'] + common_cuts
+        # cr_1m_cuts.remove('veto_muo')
+        # regions[f'cr_1m_j{var}'] = cr_1m_cuts + j_cuts
+        # regions[f'cr_1m_v{var}'] = cr_1m_cuts + v_cuts
 
         # Dielectron CR
         cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'dielectron_charge'] + common_cuts
@@ -596,48 +594,63 @@ def monojet_regions(cfg, variations):
         regions[f'cr_2e_j{var}'] = cr_2e_cuts + j_cuts
         regions[f'cr_2e_v{var}'] = cr_2e_cuts + v_cuts
 
+
+        # Dielectron CR with no recoil cut 
+        regions[f'cr_2e_j_norecoil{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
+        regions[f'cr_2e_j_norecoil{var}'].remove(f'recoil{var}')
+
+        regions[f'cr_2e_j_norecoil_nojpt{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
+        regions[f'cr_2e_j_norecoil_nojpt{var}'].remove(f'recoil{var}')
+        regions[f'cr_2e_j_norecoil_nojpt{var}'].remove(f'leadak4_pt_eta{var}')
+        regions[f'cr_2e_j_norecoil_nojpt{var}'].remove(f'leadak4_id{var}')
+
+        regions[f'cr_2e_j_norecoil_jptv2{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
+        regions[f'cr_2e_j_norecoil_jptv2{var}'].remove(f'recoil{var}')
+        regions[f'cr_2e_j_norecoil_jptv2{var}'].remove(f'leadak4_pt_eta{var}')
+        regions[f'cr_2e_j_norecoil_jptv2{var}'].append(f'leadak4_pt_eta_v2{var}')
+
         # Single electron CR
         cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', f'met_el{var}',f'mt_el{var}'] + common_cuts
         cr_1e_cuts.remove('veto_ele')
-        regions[f'cr_1e_j{var}'] =  cr_1e_cuts + j_cuts
-        regions[f'cr_1e_v{var}'] =  cr_1e_cuts + v_cuts
+        # regions[f'cr_1e_j{var}'] =  cr_1e_cuts + j_cuts
+        # regions[f'cr_1e_v{var}'] =  cr_1e_cuts + v_cuts
 
         # Photon CR
         cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts
         cr_g_cuts.remove('veto_photon')
     
-        regions[f'cr_g_j{var}'] = cr_g_cuts + j_cuts
-        regions[f'cr_g_v{var}'] = cr_g_cuts + v_cuts
+        # regions[f'cr_g_j{var}'] = cr_g_cuts + j_cuts
+        # regions[f'cr_g_v{var}'] = cr_g_cuts + v_cuts
 
         # a tt-bar populated region by removing b veto
-        regions[f'cr_nobveto_v{var}'] = copy.deepcopy(regions[f'sr_v{var}'])
-        regions[f'cr_nobveto_v{var}'].remove(f'veto_b{var}')
+        # regions[f'cr_nobveto_v{var}'] = copy.deepcopy(regions[f'sr_v{var}'])
+        # regions[f'cr_nobveto_v{var}'].remove(f'veto_b{var}')
 
     ###############################
     # NOTE: No updates starting from this line
     ###############################
 
     # additional regions to test out deep ak8 WvsQCD tagger
-    for region in ['sr_v','cr_2m_v','cr_1m_v','cr_2e_v','cr_1e_v','cr_g_v','cr_nobveto_v']:
-        for wp in ['inclusive', 'loose', 'tight','loosemd','tightmd']:
-            # the new region name will be, for example, cr_2m_loose_v
-            newRegionName=region.replace('_v','_'+wp+'_v')
-            regions[newRegionName] = copy.deepcopy(regions[region])
-            regions[newRegionName].remove('leadak8_tau21')
-            if wp == 'inclusive':
-                regions[newRegionName].remove('leadak8_mass')
+    # for region in ['sr_v','cr_2m_v','cr_1m_v','cr_2e_v','cr_1e_v','cr_g_v','cr_nobveto_v']:
+        # for wp in ['inclusive', 'loose', 'tight','loosemd','tightmd']:
+            # # the new region name will be, for example, cr_2m_loose_v
+            # newRegionName=region.replace('_v','_'+wp+'_v')
+            # regions[newRegionName] = copy.deepcopy(regions[region])
+            # regions[newRegionName].remove('leadak8_tau21')
+            # if wp == 'inclusive':
+                # regions[newRegionName].remove('leadak8_mass')
 
-                # add regions: cr_2m_hasmass_inclusive_v, cr_1m_hasmass_inclusive_v, cr_2e_hasmass_inclusive_v, cr_1e_hasmass_inclusive_v
-                # these are regions with mass cut but has no tagger cut
-                hasMassRegionName = region.replace('_v', '_hasmass_'+ wp + '_v')
-                regions[hasMassRegionName] = regions[newRegionName] + ['leadak8_mass']
+                # # add regions: cr_2m_hasmass_inclusive_v, cr_1m_hasmass_inclusive_v, cr_2e_hasmass_inclusive_v, cr_1e_hasmass_inclusive_v
+                # # these are regions with mass cut but has no tagger cut
+                # hasMassRegionName = region.replace('_v', '_hasmass_'+ wp + '_v')
+                # regions[hasMassRegionName] = regions[newRegionName] + ['leadak8_mass']
 
-            else:
-                regions[newRegionName].append('leadak8_wvsqcd_'+wp)
-            # save a copy of the v-tagged regions but not applying mistag SFs, for the sake of measuring mistag SF later
-            if wp in ['loose','tight','loosemd','tightmd']:
-                noMistagRegionName = region.replace('_v', '_nomistag_'+ wp + '_v')
-                regions[noMistagRegionName]=copy.deepcopy(regions[newRegionName])
+            # else:
+                # regions[newRegionName].append('leadak8_wvsqcd_'+wp)
+            # # save a copy of the v-tagged regions but not applying mistag SFs, for the sake of measuring mistag SF later
+            # if wp in ['loose','tight','loosemd','tightmd']:
+                # noMistagRegionName = region.replace('_v', '_nomistag_'+ wp + '_v')
+                # regions[noMistagRegionName]=copy.deepcopy(regions[newRegionName])
 
 
     if cfg.RUN.TRIGGER_STUDY:

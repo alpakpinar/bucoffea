@@ -27,7 +27,8 @@ from bucoffea.helpers import (
                               dphi,
                               mask_and,
                               mask_or,
-                              evaluator_from_config
+                              evaluator_from_config,
+                              calculate_v_pt_from_dilepton
                              )
 
 from bucoffea.helpers.dataset import (
@@ -128,18 +129,8 @@ class monojetProcessor(processor.ProcessorABC):
         cfg.reload()
         # All the split JES uncertainties, "" represents the nominal case with no variation
         self._variations = ['', '_jerUp', '_jerDown',
-                            '_jesFlavorQCDUp', '_jesFlavorQCDDown', 
-                            '_jesRelativeBalUp', '_jesRelativeBalDown',
-                            '_jesHFUp', '_jesHFDown',
-                            '_jesBBEC1Up', '_jesBBEC1Down',
-                            '_jesEC2Up', '_jesEC2Down',
-                            '_jesAbsoluteUp', '_jesAbsoluteDown',
-                            f'_jesBBEC1_{self._year}Up', f'_jesBBEC1_{self._year}Down',
-                            f'_jesEC2_{self._year}Up', f'_jesEC2_{self._year}Down',
-                            f'_jesAbsolute_{self._year}Up', f'_jesAbsolute_{self._year}Down',
-                            f'_jesHF_{self._year}Up', f'_jesHF_{self._year}Down',
-                            f'_jesRelativeSample_{self._year}Up', f'_jesRelativeSample_{self._year}Down',
-                            '_jesTotalUp', '_jesTotalDown'
+                            '_jesTotalUp', '_jesTotalDown',
+                            # '_unclustEnUp', '_unclustEnDown'
                             ]
         self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
@@ -158,22 +149,6 @@ class monojetProcessor(processor.ProcessorABC):
         df['has_lhe_v_pt'] = df['is_lo_w'] | df['is_lo_z'] | df['is_nlo_z'] | df['is_nlo_w'] | df['is_lo_g']
         df['is_data'] = is_data(dataset)
         
-        # Further flags to determine which regions to run on
-        df['is_lo_znunu'] = is_lo_znunu(dataset)
-        df['is_lo_zll'] = is_lo_dy(dataset)
-
-        # Determine which regions are going to be processed
-        if df['is_lo_znunu']:
-            region_regex = 'sr_.*j.*'
-        elif df['is_lo_zll']:
-            region_regex = 'cr_2(e|m).*j.*'
-        elif df['is_lo_g']:
-            region_regex = 'cr_g.*j.*'
-        elif df['is_lo_w']:
-            region_regex = 'sr|cr_1(m|e).*j.*'
-        else:
-            region_regex = '.*j.*'
-
         if df['is_data']:
             return self.accumulator.identity()
 
@@ -341,6 +316,12 @@ class monojetProcessor(processor.ProcessorABC):
                                                         & (ak4.chf[leadak4_index] >cfg.SELECTION.SIGNAL.leadak4.CHF) \
                                                         & (ak4.nhf[leadak4_index]<cfg.SELECTION.SIGNAL.leadak4.NHF)).any())
 
+            # Looser version of leading jet pt cut
+            leadak4_pt_eta_v2 = (ak4_pt.max() > 50) \
+                            & (ak4.abseta[leadak4_index] < cfg.SELECTION.SIGNAL.leadak4.ETA).any()
+
+            selection.add(f'leadak4_pt_eta_v2{var}', leadak4_pt_eta_v2)
+
             # AK8 Jet
             if cfg.RUN.MONOV:
                 leadak8_index = ak8_pt.argmax()
@@ -440,9 +421,6 @@ class monojetProcessor(processor.ProcessorABC):
         regions = monojet_regions(cfg, self._variations)
 
         for region, cuts in regions.items():
-            if not re.match(region_regex, region):
-                continue
-            
             # Get relevant variation name for each region
             if ('Up' in region) or ('Down' in region):
                 if str(df["year"]) not in region:
@@ -635,6 +613,10 @@ class monojetProcessor(processor.ProcessorABC):
             ezfill('ak4_phi0',   jetphi=ak4[leadak4_index].phi[mask].flatten(),    weight=w_leadak4)
             ezfill('ak4_pt0',    jetpt=ak4_pt0[mask].flatten(),      weight=w_leadak4)
             ezfill('ak4_ptraw0',    jetpt=ak4[leadak4_index].ptraw[mask].flatten(),      weight=w_leadak4)
+
+            if 'cr_2e' in region:
+                zpt = calculate_v_pt_from_dilepton(dielectrons)
+                ezfill('vpt', vpt=zpt[mask].flatten(), weight=region_weights.weight()[mask]) 
 
             # AK8 jets
             if cfg.RUN.MONOV:

@@ -203,3 +203,8 @@ def calculate_vecDPhi(ak4, met_pt, met_phi, tk_met_phi):
     vec_dphi = np.hypot(3.33 * vec_b, dphitkpf)
 
     return vec_dphi
+
+def calculate_v_pt_from_dilepton(dilepton):
+    '''Calculate Z pt from dilepton system.'''
+    vp4 = dilepton.i0.p4 + dilepton.i1.p4
+    return vp4.pt
