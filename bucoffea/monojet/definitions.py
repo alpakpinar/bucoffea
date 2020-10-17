@@ -407,11 +407,16 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
-        # If JER is turned off, calculate the variations of jet pt around unsmeared pt
-        if not cfg.AK4.JER:
-            ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
-        else:
-            ak4_pt = df[f'Jet_pt{var}']
+        # For unclustered energy variations for MET, get the nominal value of jets
+        if 'unclustEn' in var:
+            ak4_pt = df[f'Jet_pt{jes_suffix}'] if (df['is_data'] or cfg.AK4.JER) else df[f'Jet_pt{jes_suffix}']/df['Jet_corr_JER']
+        # For other variations, read off the pt values from the input tree, as calculated by tools
+        else:  
+            # If JER is turned off, calculate the variations of jet pt around unsmeared pt
+            if not cfg.AK4.JER:
+                ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
+            else:
+                ak4_pt = df[f'Jet_pt{var}']
 
         ak4_puid = (df['Jet_puId']&2 > 0) | (ak4_pt > 50)
 
@@ -473,13 +478,19 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
+        # Annoying difference for unclustered energy variations:
+        # These are named slightly differently + not calculated separately for T1 & T1Smear
+        if 'unclustEn' in var:
+            met_pt = df[f'{met_branch}_pt{var}']
+            met_phi = df[f'{met_branch}_phi{var}']
         # If JER is turned off, calculate the variations of MET pt around the unsmeared (T1) MET
-        if not cfg.MET.JER:
-            met_pt = df[f'{met_branch}_T1_pt{var}']
-            met_phi = df[f'{met_branch}_T1_phi{var}']
         else:
-            met_pt = df[f'{met_branch}_T1Smear_pt{var}']
-            met_phi = df[f'{met_branch}_T1Smear_phi{var}']
+            if not cfg.MET.JER:
+                met_pt = df[f'{met_branch}_T1_pt{var}']
+                met_phi = df[f'{met_branch}_T1_phi{var}']
+            else:
+                met_pt = df[f'{met_branch}_T1Smear_pt{var}']
+                met_phi = df[f'{met_branch}_T1Smear_phi{var}']
         # Set the MET values
         argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
         met.add_attributes(**argdict)

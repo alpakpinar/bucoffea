@@ -128,9 +128,8 @@ class monojetProcessor(processor.ProcessorABC):
             cfg.ENV_FOR_DYNACONF = f"default"
         cfg.reload()
         # All the split JES uncertainties, "" represents the nominal case with no variation
-        self._variations = ['', '_jerUp', '_jerDown',
-                            '_jesTotalUp', '_jesTotalDown',
-                            # '_unclustEnUp', '_unclustEnDown'
+        self._variations = ['', '_jesTotalUp', '_jesTotalDown',
+                            '_unclustEnUp', '_unclustEnDown'
                             ]
         self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
