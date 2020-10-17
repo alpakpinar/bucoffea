@@ -123,7 +123,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
 
     if tag in ['dy', 'wjet']:
         vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640, 760, 880,1200])
-        mjj_ax = hist.Bin('mjj','M(jj) (GeV)',list(range(0,2500,500)))
+        mjj_ax = hist.Bin('mjj','M(jj) (GeV)',[0,200,500,1000,1500,2000])
         clims = 0.5,1.5
     elif tag in ['gjets']:
         vpt_ax = hist.Bin('vpt','V $p_{T}$ (GeV)',[0, 40, 80, 120, 160, 200, 240, 280, 320, 400, 520, 640])
@@ -156,6 +156,7 @@ def sf_2d(acc, tag, regex, pt_type, outputrootfile):
             np.sqrt(sumw2_nlo) / sumw_lo,
             sumw_nlo * np.sqrt(sumw2_lo) / (sumw_lo**2)
         )
+        sf[np.isinf(sf) | np.isnan(sf)] = 1.
         data = (sf, dsf)
         pkl_filename = f'{tag}_kfac.pkl'
         with open(pkl_filename, 'wb') as f:
@@ -235,13 +236,13 @@ def main():
 
 
     outputrootfile = uproot.recreate(f'2017_gen_v_pt_qcd_sf.root')
-    sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile)
-    sf_1d(acc, tag='dy', regex='DYN?JetsToLL.*',outputrootfile=outputrootfile)
+    # sf_1d(acc, tag='wjet', regex='WN?JetsToLNu.*',outputrootfile=outputrootfile)
+    # sf_1d(acc, tag='dy', regex='DYN?JetsToLL.*',outputrootfile=outputrootfile)
     # # outputrootfile = uproot.recreate(f'test.root')
     sf_2d(acc, tag='wjet', regex='WN?JetsToLNu.*',pt_type='combined',outputrootfile=outputrootfile)
     sf_2d(acc, tag='dy', regex='DYN?JetsToLL.*',pt_type='combined',outputrootfile=outputrootfile)
 
-    sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
+    # sf_1d(acc, tag='gjets', regex='G\d?Jet.*',outputrootfile=outputrootfile)
     # outputrootfile = uproot.recreate('test.root')
 
     sf_2d(acc, tag='gjets',regex='G\d?Jet.*',pt_type='stat1',outputrootfile=outputrootfile)
