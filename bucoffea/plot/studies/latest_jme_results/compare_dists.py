@@ -60,7 +60,12 @@ def compare_dists(acc, outtag, variable='met', variation='jesTotal', year=2017, 
 
     ax.set_title(region_to_title[region].format(year))
     ax.set_yscale('log')
-    ax.set_ylim(1e-1,1e6)
+    if region == 'norecoil':
+        ax.set_ylim(1e-1,1e6)
+    elif region == 'norecoil_jptv2':
+        ax.set_ylim(1e-1,1e7)
+    elif region == 'norecoil_nojpt':
+        ax.set_ylim(1e-1,1e8)
     ax.set_xlabel('')
 
     # Plot ratios to nominal in ratio pad
@@ -78,11 +83,13 @@ def compare_dists(acc, outtag, variable='met', variation='jesTotal', year=2017, 
 
     rax.grid(True)
     if variable == 'met':
-        rax.set_ylim(0.8,1.2)
+        rax.set_ylim(0.7,1.3)
+        loc = matplotlib.ticker.MultipleLocator(base=0.1)
     elif variable == 'vpt':
         rax.set_ylim(0.9,1.1)
         loc = matplotlib.ticker.MultipleLocator(base=0.05)
-        rax.yaxis.set_major_locator(loc)
+    
+    rax.yaxis.set_major_locator(loc)
     
     rax.set_ylabel('Ratio to Nominal')
 
