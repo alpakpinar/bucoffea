@@ -165,9 +165,14 @@ def evaluator_from_config(cfg):
     ext = extractor()
 
     for sfname, definition in cfg.SF.items():
+        if not 'file' in definition:
+            continue
         fpath = bucoffea_path(definition['file'])
-        ext.add_weight_sets([f"{sfname} {definition['histogram']} {fpath}"])
-        ext.add_weight_sets([f"{sfname}_error {definition['histogram']}_error {fpath}"])
+        if fpath.endswith('.root'):
+            ext.add_weight_sets([f"{sfname} {definition['histogram']} {fpath}"])
+            ext.add_weight_sets([f"{sfname}_error {definition['histogram']}_error {fpath}"])
+        else:
+            continue
 
     ext.finalize()
 

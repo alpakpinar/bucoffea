@@ -373,11 +373,6 @@ class monojetProcessor(processor.ProcessorABC):
                 weights.add('prefire', np.ones(df.size))
 
             weights = candidate_weights(weights, df, evaluator, muons, electrons, photons, cfg)
-
-            # B jet veto weights
-            bsf_variations = btag_weights(bjets,cfg)
-            weights.add("bveto", (1-bsf_variations["central"]).prod())
-
             weights = pileup_weights(weights, df, evaluator, cfg)
             if not (gen_v_pt is None):
                 weights = theory_weights_monojet(weights, df, evaluator, gen_v_pt)

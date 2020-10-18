@@ -874,7 +874,7 @@ def candidate_weights(weights, df, evaluator, muons, electrons, photons, cfg):
 
     # Photon ID and electron veto
     if cfg.SF.PHOTON.USETNP:
-        weights.add("photon_id_tight", evaluator['photon_id_tight'](np.abs(photons[df['is_tight_photon']].eta)).prod())
+        weights.add("photon_id_tight", evaluator['photon_id_tight_tnp'](np.abs(photons[df['is_tight_photon']].eta)).prod())
     else:
         weights.add("photon_id_tight", evaluator['photon_id_tight'](photons[df['is_tight_photon']].eta, photons[df['is_tight_photon']].pt).prod())
 
