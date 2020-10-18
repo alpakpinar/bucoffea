@@ -98,8 +98,12 @@ def compare_dists(acc, outtag, variable='met', variation='jesTotal', year=2017, 
 
     rax.grid(True)
     if variable == 'met':
-        rax.set_ylim(0.7,1.3)
-        loc = matplotlib.ticker.MultipleLocator(base=0.1)
+        if variation != 'jer':
+            rax.set_ylim(0.7,1.3)
+            loc = matplotlib.ticker.MultipleLocator(base=0.1)
+        else:
+            rax.set_ylim(0.4,1.6)
+            loc = matplotlib.ticker.MultipleLocator(base=0.2)
     elif variable == 'ak4_pt0':
         if variation == 'jesTotal':
             rax.set_ylim(0.7,1.3)
@@ -140,8 +144,11 @@ def main():
             for variable in ['vpt', 'met', 'ak4_pt0']:
                 if variable not in args.variables:
                     continue 
-                for variation in ['jesTotal', 'unclustEn']:
-                    compare_dists(acc, outtag, variable=variable, variation=variation, year=year, region=region)
+                for variation in ['jesTotal', 'unclustEn', 'jer']:
+                    try:
+                        compare_dists(acc, outtag, variable=variable, variation=variation, year=year, region=region)
+                    except KeyError:
+                        continue
 
 if __name__ == '__main__':
     main()
