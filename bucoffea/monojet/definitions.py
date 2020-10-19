@@ -563,7 +563,6 @@ def monojet_regions(cfg, variations):
             'veto_muo',
             'veto_photon',
             'veto_tau',
-            f'veto_b{var}',
             f'mindphijr{var}',
             f'dpfcalo{var}',
             f'recoil{var}'
