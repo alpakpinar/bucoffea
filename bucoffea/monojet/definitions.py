@@ -599,7 +599,7 @@ def monojet_regions(cfg, variations):
         # regions[f'cr_1m_v{var}'] = cr_1m_cuts + v_cuts
 
         # Dielectron CR
-        cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'dielectron_charge', f'dphi_z_jet{var}'] + common_cuts
+        cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'dielectron_charge'] + common_cuts
         cr_2e_cuts.remove('veto_ele')
         regions[f'cr_2e_j{var}'] = cr_2e_cuts + j_cuts
         regions[f'cr_2e_v{var}'] = cr_2e_cuts + v_cuts
@@ -608,6 +608,7 @@ def monojet_regions(cfg, variations):
         # Dielectron CR with no recoil cut 
         regions[f'cr_2e_j_norecoil{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
         regions[f'cr_2e_j_norecoil{var}'].remove(f'recoil{var}')
+        regions[f'cr_2e_j_norecoil{var}'].append(f'dphi_z_jet{var}')
 
         regions[f'cr_2e_j_norecoil_nojpt{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
         regions[f'cr_2e_j_norecoil_nojpt{var}'].remove(f'recoil{var}')
@@ -618,6 +619,7 @@ def monojet_regions(cfg, variations):
         regions[f'cr_2e_j_norecoil_jptv2{var}'].remove(f'recoil{var}')
         regions[f'cr_2e_j_norecoil_jptv2{var}'].remove(f'leadak4_pt_eta{var}')
         regions[f'cr_2e_j_norecoil_jptv2{var}'].append(f'leadak4_pt_eta_v2{var}')
+        regions[f'cr_2e_j_norecoil_jptv2{var}'].append(f'dphi_z_jet{var}')
 
         # Single electron CR
         cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', f'met_el{var}',f'mt_el{var}'] + common_cuts
