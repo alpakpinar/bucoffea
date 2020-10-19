@@ -599,7 +599,7 @@ def monojet_regions(cfg, variations):
         # regions[f'cr_1m_v{var}'] = cr_1m_cuts + v_cuts
 
         # Dielectron CR
-        cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'dielectron_charge'] + common_cuts
+        cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'dielectron_charge', f'dphi_z_jet{var}'] + common_cuts
         cr_2e_cuts.remove('veto_ele')
         regions[f'cr_2e_j{var}'] = cr_2e_cuts + j_cuts
         regions[f'cr_2e_v{var}'] = cr_2e_cuts + v_cuts

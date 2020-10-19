@@ -28,7 +28,7 @@ from bucoffea.helpers import (
                               mask_and,
                               mask_or,
                               evaluator_from_config,
-                              calculate_v_pt_from_dilepton
+                              calculate_v_pt_phi_from_dilepton
                              )
 
 from bucoffea.helpers.dataset import (
@@ -320,6 +320,12 @@ class monojetProcessor(processor.ProcessorABC):
                             & (ak4.abseta[leadak4_index] < cfg.SELECTION.SIGNAL.leadak4.ETA).any()
 
             selection.add(f'leadak4_pt_eta_v2{var}', leadak4_pt_eta_v2)
+
+            # From dielectrons, calculate Z pt and phi 
+            zpt, zphi = calculate_v_pt_phi_from_dilepton(dielectrons)
+            dphi_z_jet = dphi(zphi.min(), ak4[leadak4_index].phi.min())
+
+            selection.add(f'dphi_z_jet{var}', dphi_z_jet > 2.7)
 
             # AK8 Jet
             if cfg.RUN.MONOV:
@@ -614,7 +620,6 @@ class monojetProcessor(processor.ProcessorABC):
             ezfill('ak4_ptraw0',    jetpt=ak4[leadak4_index].ptraw[mask].flatten(),      weight=w_leadak4)
 
             if 'cr_2e' in region:
-                zpt = calculate_v_pt_from_dilepton(dielectrons)
                 ezfill('vpt', vpt=zpt[mask].flatten(), weight=region_weights.weight()[mask]) 
 
             # AK8 jets
