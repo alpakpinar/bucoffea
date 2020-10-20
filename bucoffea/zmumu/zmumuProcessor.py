@@ -257,6 +257,9 @@ class zmumuProcessor(processor.ProcessorABC):
                     except KeyError:
                         region_weights.add('prefire', np.ones(df.size))
 
+                if re.match('^.*_no_prefire$', region):
+                    exclude = ['prefire']
+
             mask = selection.all(*cuts)
 
             def ezfill(name, **kwargs):

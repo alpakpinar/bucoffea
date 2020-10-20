@@ -100,6 +100,16 @@ def zmumu_regions(cfg):
     regions['cr_2m_noEmEF'] = two_mu_cuts
     regions['cr_2m_withEmEF'] = two_mu_cuts + ['ak4_neEmEF']
 
+    # Regions with prefire weights varied
+    regions['cr_2m_noEmEF_prefireUp'] = two_mu_cuts
+    regions['cr_2m_withEmEF_prefireUp'] = two_mu_cuts + ['ak4_neEmEF']
+    regions['cr_2m_noEmEF_prefireDown'] = two_mu_cuts
+    regions['cr_2m_withEmEF_prefireDown'] = two_mu_cuts + ['ak4_neEmEF']
+
+    # Regions with no prefire weight applied
+    regions['cr_2m_noEmEF_no_prefire'] = two_mu_cuts
+    regions['cr_2m_withEmEF_no_prefire'] = two_mu_cuts + ['ak4_neEmEF']
+
     # Regions categorized by jet eta
     regions['cr_2m_noEmEF_jeteta_lt_2_3'] = two_mu_cuts + ['jet_eta_lt_2_3']
     regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_3_lt_2_7'] = two_mu_cuts + ['jet_eta_gt_2_3_lt_2_7']
