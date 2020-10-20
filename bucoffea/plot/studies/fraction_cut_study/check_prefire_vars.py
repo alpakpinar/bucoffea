@@ -75,9 +75,11 @@ def compare_with_no_prefire(acc, outtag, variable='ak4_eta0', year=2017):
 
     # Plot ratios to efficiencies in data
     centers = h_dataNoCut.axes()[0].centers()
-    for key in eff_mc.keys():
+    labels = ['Pref Applied','Pref Not Applied']
+    colors = ['C1', 'C2']
+    for idx, key in enumerate(eff_mc.keys()):
         r = eff_data / eff_mc[key]
-        rax.plot(centers, r, label=key.split(' ')[-1], ls='', marker='o')
+        rax.plot(centers, r, label=labels[idx], ls='', marker='o', color=colors[idx])
     
     rax.grid(True)
     rax.set_ylim(0.8,1.2)
@@ -147,9 +149,10 @@ def compare_prefire_vars(acc, outtag, variable='ak4_eta0', year=2017):
 
     # Plot ratios to efficiencies in data
     centers = h_dataNoCut.axes()[0].centers()
-    for key in eff_mc.keys():
+    colors = ['C1','C2','C3']
+    for idx, key in enumerate(eff_mc.keys()):
         r = eff_data / eff_mc[key]
-        rax.plot(centers, r, label=key.split(' ')[-1], ls='', marker='o')
+        rax.plot(centers, r, label=key.split(' ')[-1], ls='', marker='o', color=colors[idx])
     
     rax.grid(True)
     rax.set_ylim(0.8,1.2)
