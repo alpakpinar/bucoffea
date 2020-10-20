@@ -318,7 +318,7 @@ def vbfhinv_regions(cfg):
         # num = numerator, den = denominator
         # Single Mu region: Remove mjj cut, add SingleMu trigger, toggle MET trigger
         tr_1m_num_cuts = copy.deepcopy(cr_1m_cuts)
-        tr_1m_num_cuts.remove('mjj')
+        tr_1m_num_cuts.remove('recoil')
         tr_1m_num_cuts.append('trig_mu')
         tr_1m_num_cuts.append('mu_pt_trig_safe')
 
@@ -339,7 +339,7 @@ def vbfhinv_regions(cfg):
 
         # Double Mu region: Remove mjj cut, toggle MET trigger
         tr_2m_num_cuts = copy.deepcopy(cr_2m_cuts)
-        tr_2m_num_cuts.remove('mjj')
+        tr_2m_num_cuts.remove('recoil')
         tr_2m_num_cuts.append('trig_mu')
         tr_2m_num_cuts.append('mu_pt_trig_safe')
 
