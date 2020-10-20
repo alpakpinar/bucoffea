@@ -71,7 +71,7 @@ def content_table(hnum, hden, axis_name):
         table.append(line)
     return tabulate(table, headers=['Recoil', 'Numerator', 'Denominator',"Efficiency", "Eff-sigma","Eff+sigma"])
 
-def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMuon', year=2018, tag="test", distribution="recoil",axis_name=None, noscale=False, jeteta_config=None, output_format='pdf'):
+def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMuon', year=2018, tag="test", outtag=None, distribution="recoil",axis_name=None, noscale=False, jeteta_config=None, output_format='pdf'):
     # Select and prepare histogram
     h = copy.deepcopy(acc[distribution])
     h = merge_extensions(h, acc,reweight_pu=('nopu' in distribution), noscale=noscale)
@@ -86,7 +86,7 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
     elif distribution == 'mjj':
         newbin = hist.Bin(axis_name,r'$M_{jj}$ (GeV)',np.array(list(range(200,600,200)) + list(range(600,1500,300)) + [1500,2000,2750,3500]))
     else:
-        newbin = hist.Bin(axis_name,f"{axis_name} (GeV)",np.array(list(range(0,500,25)) + list(range(500,1100,100))))
+        newbin = hist.Bin(axis_name,f"{axis_name} (GeV)",np.array(list(range(0,500,20)) + list(range(500,1100,100))))
     h = h.rebin(h.axis(axis_name), newbin)
     ds = f'{dataset}_{year}'
 
@@ -101,7 +101,8 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
 
     # Recoil plot
     try:
-        fig, ax,_ = hist.plot1d(hnum, binwnorm=True)
+        fig, ax = plt.subplots()
+        hist.plot1d(hnum, ax=ax, binwnorm=True)
     except KeyError:
         pprint(h.axis('region').identifiers())
         print(f'ERROR: {region_tag}, {dataset}, {year}')
@@ -109,7 +110,7 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
     hist.plot1d(hden, ax=ax, clear=False, binwnorm=True)
     plt.yscale('log')
     plt.gca().set_ylim(0.1,1e6)
-    outdir = f"./output/{tag}"
+    outdir = f"./output/{tag}/{outtag}"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -121,7 +122,8 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
     plt.close(fig)
 
     # Efficiency plot
-    fig, ax,_ = hist.plotratio(hnum, hden,
+    fig, ax = plt.subplots()
+    hist.plotratio(hnum, hden, ax=ax,
                 guide_opts={},
                 unc='clopper-pearson',
                 error_opts=markers('data')
@@ -327,11 +329,11 @@ def sf_comparison_plot(tag):
         fig.clear()
         plt.close(fig)
 
-def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_format='pdf'):
+def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', output_format='pdf'):
     regions = ['1m', '2m']
     opts = markers('data')
     emarker = opts.pop('emarker', '')
-    outdir = f"./output/{tag}"
+    outdir = f"./output/{tag}/{outtag}"
     jeteta_configs = ['two_central_jets', 'one_jet_forward_one_jet_central', 'inclusive_nohfhf']
 
     for year in [2017,2018]:
@@ -411,7 +413,7 @@ def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_for
             fig.clear()
             plt.close(fig)
 
-def data_mc_comparison_plot(tag, ymin=0, ymax=1.1, distribution='recoil', jeteta_config=None, output_format='pdf'):
+def data_mc_comparison_plot(tag, outtag, ymin=0, ymax=1.1, distribution='recoil', jeteta_config=None, output_format='pdf'):
     if 'gamma' in tag:
         regions = ['g_HLT_PFHT1050','g_HLT_PFHT590','g_HLT_PFHT680','g_HLT_PFHT780','g_HLT_PFHT890']
     elif 'recoil' in tag:
@@ -422,7 +424,7 @@ def data_mc_comparison_plot(tag, ymin=0, ymax=1.1, distribution='recoil', jeteta
     # opts['markersize'] = 5
     # opts['fillstyle'] = 'none'
     emarker = opts.pop('emarker', '')
-    outdir = f"./output/{tag}"
+    outdir = f"./output/{tag}/{outtag}"
     outpath = pjoin(outdir,f'trig_sf.root')
     try:
         outfile = uproot.recreate(outpath)
@@ -565,6 +567,8 @@ def met_trigger_eff(distribution, regions=['1m']):
         elif distribution == 'recoil':
             tag = '120pfht_mu_recoil'
             indir = bucoffea_path('submission/merged_2020-10-20_vbfhinv_03Sep20v7_trigger_study')
+            # Output tag to name output directory accordingly
+            outtag = 'merged_2020-10-20_vbfhinv_03Sep20v7_trigger_study'
 
         acc = dir_archive(
                           indir,
@@ -590,6 +594,7 @@ def met_trigger_eff(distribution, regions=['1m']):
                                     dataset=dataset,
                                     year=year,
                                     tag=tag,
+                                    outtag=outtag,
                                     jeteta_config=jeteta_config,
                                     output_format='pdf')        
                 # Double muon CR
@@ -602,13 +607,14 @@ def met_trigger_eff(distribution, regions=['1m']):
                                     dataset=dataset,
                                     year=year,
                                     tag=tag,
+                                    outtag=outtag,
                                     jeteta_config=jeteta_config,
                                     output_format='pdf')        
 
         for jeteta_config in ['two_central_jets', 'inclusive_nohfhf', 'one_jet_forward_one_jet_central']:
-            data_mc_comparison_plot(tag, distribution=distribution, jeteta_config=jeteta_config, output_format='pdf')
+            data_mc_comparison_plot(tag, outtag=outtag, distribution=distribution, jeteta_config=jeteta_config, output_format='pdf')
 
-        plot_scalefactors(tag, distribution=distribution)
+        plot_scalefactors(tag, outtag, distribution=distribution)
 
 def met_triggers_ht():
         tag = '120pfht_hltmu'
