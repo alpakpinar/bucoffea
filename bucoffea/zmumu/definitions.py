@@ -111,30 +111,32 @@ def zmumu_regions(cfg):
     regions['cr_2m_withEmEF_no_prefire'] = two_mu_cuts + ['ak4_neEmEF']
 
     # Regions categorized by jet eta
-    regions['cr_2m_noEmEF_jeteta_lt_2_3'] = two_mu_cuts + ['jet_eta_lt_2_3']
-    regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_3_lt_2_7'] = two_mu_cuts + ['jet_eta_gt_2_3_lt_2_7']
-    regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_7_lt_3_0'] = two_mu_cuts + ['jet_eta_gt_2_7_lt_3_0']
-    regions['cr_2m_noEmEF_jeteta_gt_3_0'] = two_mu_cuts + ['jet_eta_gt_3_0']
+    if cfg.RUN.EFF_STUDY.SPLIT_JET_ETA:
+        regions['cr_2m_noEmEF_jeteta_lt_2_3'] = two_mu_cuts + ['jet_eta_lt_2_3']
+        regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_3_lt_2_7'] = two_mu_cuts + ['jet_eta_gt_2_3_lt_2_7']
+        regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_7_lt_3_0'] = two_mu_cuts + ['jet_eta_gt_2_7_lt_3_0']
+        regions['cr_2m_noEmEF_jeteta_gt_3_0'] = two_mu_cuts + ['jet_eta_gt_3_0']
 
     # Regions with tighter selections
-    regions['cr_2m_noEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight']
-    regions['cr_2m_noEmEF_tightBalCut'].remove('z_pt_over_jet_pt')
-    regions['cr_2m_withEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight', 'ak4_neEmEF']
-    regions['cr_2m_withEmEF_tightBalCut'].remove('z_pt_over_jet_pt')
-
-    regions['cr_2m_noEmEF_tightMassCut'] = two_mu_cuts + ['dimuon_mass_tight']
-    regions['cr_2m_noEmEF_tightMassCut'].remove('dimuon_mass')
-    regions['cr_2m_withEmEF_tightMassCut'] = two_mu_cuts + ['dimuon_mass_tight', 'ak4_neEmEF']
-    regions['cr_2m_withEmEF_tightMassCut'].remove('dimuon_mass')
-
-    regions['cr_2m_noEmEF_tight'] = copy.deepcopy(regions['cr_2m_noEmEF_tightBalCut']) + ['dimuon_mass_tight']
-    regions['cr_2m_noEmEF_tight'].remove('dimuon_mass')
-    regions['cr_2m_withEmEF_tight'] = copy.deepcopy(regions['cr_2m_withEmEF_tightBalCut']) + ['dimuon_mass_tight']
-    regions['cr_2m_withEmEF_tight'].remove('dimuon_mass')
+    if cfg.RUN.EFF_STUDY.TIGHTCUTS:
+        regions['cr_2m_noEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight']
+        regions['cr_2m_noEmEF_tightBalCut'].remove('z_pt_over_jet_pt')
+        regions['cr_2m_withEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight', 'ak4_neEmEF']
+        regions['cr_2m_withEmEF_tightBalCut'].remove('z_pt_over_jet_pt')
     
-    regions['cr_2m_noEmEF_very_tight'] = copy.deepcopy(regions['cr_2m_noEmEF_tight']) + ['z_pt_over_jet_pt_very_tight']
-    regions['cr_2m_noEmEF_very_tight'].remove('z_pt_over_jet_pt_tight')
-    regions['cr_2m_withEmEF_very_tight'] = copy.deepcopy(regions['cr_2m_withEmEF_tight']) + ['z_pt_over_jet_pt_very_tight']
-    regions['cr_2m_withEmEF_very_tight'].remove('z_pt_over_jet_pt_tight')
+        regions['cr_2m_noEmEF_tightMassCut'] = two_mu_cuts + ['dimuon_mass_tight']
+        regions['cr_2m_noEmEF_tightMassCut'].remove('dimuon_mass')
+        regions['cr_2m_withEmEF_tightMassCut'] = two_mu_cuts + ['dimuon_mass_tight', 'ak4_neEmEF']
+        regions['cr_2m_withEmEF_tightMassCut'].remove('dimuon_mass')
+    
+        regions['cr_2m_noEmEF_tight'] = copy.deepcopy(regions['cr_2m_noEmEF_tightBalCut']) + ['dimuon_mass_tight']
+        regions['cr_2m_noEmEF_tight'].remove('dimuon_mass')
+        regions['cr_2m_withEmEF_tight'] = copy.deepcopy(regions['cr_2m_withEmEF_tightBalCut']) + ['dimuon_mass_tight']
+        regions['cr_2m_withEmEF_tight'].remove('dimuon_mass')
+        
+        regions['cr_2m_noEmEF_very_tight'] = copy.deepcopy(regions['cr_2m_noEmEF_tight']) + ['z_pt_over_jet_pt_very_tight']
+        regions['cr_2m_noEmEF_very_tight'].remove('z_pt_over_jet_pt_tight')
+        regions['cr_2m_withEmEF_very_tight'] = copy.deepcopy(regions['cr_2m_withEmEF_tight']) + ['z_pt_over_jet_pt_very_tight']
+        regions['cr_2m_withEmEF_very_tight'].remove('z_pt_over_jet_pt_tight')
     
     return regions

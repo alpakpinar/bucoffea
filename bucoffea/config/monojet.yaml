@@ -194,6 +194,9 @@ default:
     monov: False
     monovmistag: False
     monoj: True
+    eff_study:
+      tightcuts: False
+      split_jet_eta: False
   triggers:
     ht:
       gammaeff:
