@@ -330,7 +330,7 @@ def sf_comparison_plot(tag):
         plt.close(fig)
 
 def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', output_format='pdf'):
-    regions = ['1m', '2m']
+    regions = ['1m']
     opts = markers('data')
     emarker = opts.pop('emarker', '')
     outdir = f"./output/{tag}/{outtag}"
