@@ -18,6 +18,7 @@ from tabulate import tabulate
 from bucoffea.plot.style import markers, matplotlib_rc
 from bucoffea.plot.util import (acc_from_dir, fig_ratio, lumi, merge_datasets,
                                 merge_extensions, scale_xs_lumi)
+from bucoffea.helpers.paths import bucoffea_path
 
 from klepto.archives import dir_archive
 
@@ -331,7 +332,7 @@ def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_for
     opts = markers('data')
     emarker = opts.pop('emarker', '')
     outdir = f"./output/{tag}"
-    jeteta_configs = ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central']
+    jeteta_configs = ['two_central_jets', 'one_jet_forward_one_jet_central', 'inclusive_nohfhf']
 
     for year in [2017,2018]:
         for region in regions:
@@ -374,15 +375,15 @@ def plot_scalefactors(tag, ymin=0.9, ymax=1.1, distribution='recoil', output_for
 
                 ysferr_new = {}
                 ysferr_new['two_central_jets'] = [ ysferr['two_central_jets'][0][recoil_cut], ysferr['two_central_jets'][1][recoil_cut] ] 
-                ysferr_new['two_forward_jets'] = [ ysferr['two_forward_jets'][0][recoil_cut], ysferr['two_forward_jets'][1][recoil_cut] ]
                 ysferr_new['one_jet_forward_one_jet_central'] = [ ysferr['one_jet_forward_one_jet_central'][0][recoil_cut], ysferr['one_jet_forward_one_jet_central'][1][recoil_cut] ]
+                ysferr_new['inclusive_nohfhf'] = [ ysferr['inclusive_nohfhf'][0][recoil_cut], ysferr['inclusive_nohfhf'][1][recoil_cut] ]
 
             opts['color'] = 'k'
             ax.errorbar(xsf, ysf['two_central_jets'][recoil_cut], yerr=ysferr_new['two_central_jets'],label=f'Two central jets', **opts)
             opts['color'] = 'g'
-            ax.errorbar(xsf, ysf['two_forward_jets'][recoil_cut], yerr=ysferr_new['two_forward_jets'],label=f'Two forward jets', **opts)
-            opts['color'] = 'r'
             ax.errorbar(xsf, ysf['one_jet_forward_one_jet_central'][recoil_cut], yerr=ysferr_new['one_jet_forward_one_jet_central'],label=f'Mixed', **opts)
+            opts['color'] = 'r'
+            ax.errorbar(xsf, ysf['inclusive_nohfhf'][recoil_cut], yerr=ysferr_new['inclusive_nohfhf'],label=f'Inclusive (no HF-HF)', **opts)
      
             ax.legend()
             ax.set_ylabel('Data / MC SF') 
@@ -414,7 +415,7 @@ def data_mc_comparison_plot(tag, ymin=0, ymax=1.1, distribution='recoil', jeteta
     if 'gamma' in tag:
         regions = ['g_HLT_PFHT1050','g_HLT_PFHT590','g_HLT_PFHT680','g_HLT_PFHT780','g_HLT_PFHT890']
     elif 'recoil' in tag:
-        regions = ['1m', '2m']
+        regions = ['1m']
     else:
         regions = ['1m', '2m', '1e', '2m_hlt']
     opts = markers('data')
@@ -558,12 +559,12 @@ def met_triggers():
         region_comparison_plot(tag)
         sf_comparison_plot(tag)
 
-def met_trigger_eff(distribution):
+def met_trigger_eff(distribution, regions=['1m']):
         if distribution == 'mjj':
             tag = '120pfht_mu_mjj'
         elif distribution == 'recoil':
             tag = '120pfht_mu_recoil'
-            indir = '/afs/cern.ch/user/a/aakpinar/bucoffea/bucoffea/submission/2019-11-13_vbf_trigger_recoil'
+            indir = bucoffea_path('submission/merged_2020-10-20_vbfhinv_03Sep20v7_trigger_study')
 
         acc = dir_archive(
                           indir,
@@ -578,31 +579,33 @@ def met_trigger_eff(distribution):
         acc.load('sumw2')      
 
         for year in [2017, 2018]:
-            for jeteta_config in ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central']:
+            for jeteta_config in ['two_central_jets', 'inclusive_nohfhf', 'one_jet_forward_one_jet_central']:
                 # Single muon CR
                 region_tag='1m'
-                for dataset in ['WJetsToLNu_HT_MLM', 'SingleMuon']:
-                    plot_recoil(acc, region_tag=region_tag,
-                                distribution=distribution,
-                                axis_name=distribution,
-                                dataset=dataset,
-                                year=year,
-                                tag=tag,
-                                jeteta_config=jeteta_config,
-                                output_format='pdf')        
+                if region_tag in regions:
+                    for dataset in ['WJetsToLNu_HT_MLM', 'SingleMuon']:
+                        plot_recoil(acc, region_tag=region_tag,
+                                    distribution=distribution,
+                                    axis_name=distribution,
+                                    dataset=dataset,
+                                    year=year,
+                                    tag=tag,
+                                    jeteta_config=jeteta_config,
+                                    output_format='pdf')        
                 # Double muon CR
                 region_tag='2m'
-                for dataset in ['VDYJetsToLL_M-50_HT_MLM', 'SingleMuon']:
-                    plot_recoil(acc, region_tag=region_tag,
-                                distribution=distribution,
-                                axis_name=distribution,
-                                dataset=dataset,
-                                year=year,
-                                tag=tag,
-                                jeteta_config=jeteta_config,
-                                output_format='pdf')        
+                if region_tag in regions:
+                    for dataset in ['VDYJetsToLL_M-50_HT_MLM', 'SingleMuon']:
+                        plot_recoil(acc, region_tag=region_tag,
+                                    distribution=distribution,
+                                    axis_name=distribution,
+                                    dataset=dataset,
+                                    year=year,
+                                    tag=tag,
+                                    jeteta_config=jeteta_config,
+                                    output_format='pdf')        
 
-        for jeteta_config in ['two_central_jets', 'two_forward_jets', 'one_jet_forward_one_jet_central']:
+        for jeteta_config in ['two_central_jets', 'inclusive_nohfhf', 'one_jet_forward_one_jet_central']:
             data_mc_comparison_plot(tag, distribution=distribution, jeteta_config=jeteta_config, output_format='pdf')
 
         plot_scalefactors(tag, distribution=distribution)
