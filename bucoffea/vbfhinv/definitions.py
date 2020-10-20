@@ -313,7 +313,7 @@ def vbfhinv_regions(cfg):
 
     regions.update(tmp)
 
-    if cfg and  cfg.RUN.TRIGGER_STUDY:
+    if cfg and cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
         # num = numerator, den = denominator
         # Single Mu region: Remove mjj cut, add SingleMu trigger, toggle MET trigger
@@ -322,16 +322,20 @@ def vbfhinv_regions(cfg):
         tr_1m_num_cuts.append('trig_mu')
         tr_1m_num_cuts.append('mu_pt_trig_safe')
 
+        # Single mu region for three cases:
+        # 1. Two central jets with |eta| < 2.5
+        # 2. One central jet with |eta| < 2.5 + one forward jet with |eta| > 2.5
+        # 3. Combination of 1 and 2 (everything except no HF-HF)
         regions['tr_1m_num_two_central_jets'] = tr_1m_num_cuts + ['two_central_jets']
-        regions['tr_1m_num_two_forward_jets'] = tr_1m_num_cuts + ['two_forward_jets']
         regions['tr_1m_num_one_jet_forward_one_jet_central'] = tr_1m_num_cuts + ['one_jet_forward_one_jet_central']
+        regions['tr_1m_num_inclusive_nohfhf'] = tr_1m_num_cuts + ['inclusive_nohfhf']
 
         tr_1m_den_cuts = copy.deepcopy(tr_1m_num_cuts)
         tr_1m_den_cuts.remove('trig_met')
 
         regions['tr_1m_den_two_central_jets'] = tr_1m_den_cuts + ['two_central_jets']
-        regions['tr_1m_den_two_forward_jets'] = tr_1m_den_cuts + ['two_forward_jets']
         regions['tr_1m_den_one_jet_forward_one_jet_central'] = tr_1m_den_cuts + ['one_jet_forward_one_jet_central']
+        regions['tr_1m_den_inclusive_nohfhf'] = tr_1m_den_cuts + ['inclusive_nohfhf']
 
         # Double Mu region: Remove mjj cut, toggle MET trigger
         tr_2m_num_cuts = copy.deepcopy(cr_2m_cuts)
@@ -340,15 +344,15 @@ def vbfhinv_regions(cfg):
         tr_2m_num_cuts.append('mu_pt_trig_safe')
 
         regions['tr_2m_num_two_central_jets'] = tr_2m_num_cuts + ['two_central_jets']
-        regions['tr_2m_num_two_forward_jets'] = tr_2m_num_cuts + ['two_forward_jets']
         regions['tr_2m_num_one_jet_forward_one_jet_central'] = tr_2m_num_cuts + ['one_jet_forward_one_jet_central']
+        regions['tr_2m_num_inclusive_nohfhf'] = tr_2m_num_cuts + ['inclusive_nohfhf']
 
         tr_2m_den_cuts = copy.deepcopy(tr_2m_num_cuts)
         tr_2m_den_cuts.remove('trig_met')
 
         regions['tr_2m_den_two_central_jets'] = tr_2m_den_cuts + ['two_central_jets']
-        regions['tr_2m_den_two_forward_jets'] = tr_2m_den_cuts + ['two_forward_jets']
         regions['tr_2m_den_one_jet_forward_one_jet_central'] = tr_2m_den_cuts + ['one_jet_forward_one_jet_central']
+        regions['tr_2m_den_inclusive_nohfhf'] = tr_2m_den_cuts + ['inclusive_nohfhf']
 
         # Single Electron region: Remove mjj cut, toggle MET trigger
         tr_1e_num_cuts = copy.deepcopy(cr_1e_cuts)
