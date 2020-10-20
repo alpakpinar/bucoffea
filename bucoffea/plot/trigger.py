@@ -350,12 +350,12 @@ def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', ou
             for jeteta_config in jeteta_configs:
                 print(f'{year}, {region}, {jeteta_config}')
                 if region == '1m': 
-                    fnum = f'output/{tag}/table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt'
-                    fden = f'output/{tag}/table_{region}_recoil_WJetsToLNu_HT_MLM_{year}_{jeteta_config}.txt'
+                    fnum = f'output/{tag}/{outtag}/table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt'
+                    fden = f'output/{tag}/{outtag}/table_{region}_recoil_WJetsToLNu_HT_MLM_{year}_{jeteta_config}.txt'
                     xlabel = f"{distribution} (GeV)"
                 elif region == '2m':
-                    fnum = f'output/{tag}/table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt'
-                    fden = f'output/{tag}/table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}_{jeteta_config}.txt'
+                    fnum = f'output/{tag}/{outtag}/table_{region}_recoil_SingleMuon_{year}_{jeteta_config}.txt'
+                    fden = f'output/{tag}/{outtag}/table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}_{jeteta_config}.txt'
                     xlabel = f"{distribution} (GeV)"
                 if not os.path.exists(fnum):
                     print(f"File not found {fnum}")
@@ -439,12 +439,12 @@ def data_mc_comparison_plot(tag, outtag, ymin=0, ymax=1.1, distribution='recoil'
                 fden = f'output/{tag}/table_{region}_met_WJetsToLNu_HT_MLM_{year}.txt'
                 xlabel = "$p_{T}^{miss}$ (GeV)"
             elif '1m' in region:
-                fnum = f'output/{tag}/table_{region}_recoil_SingleMuon_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
-                fden = f'output/{tag}/table_{region}_recoil_WJetsToLNu_HT_MLM_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
+                fnum = f'output/{tag}/{outtag}/table_{region}_recoil_SingleMuon_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
+                fden = f'output/{tag}/{outtag}/table_{region}_recoil_WJetsToLNu_HT_MLM_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
                 xlabel = "Recoil (GeV)"
             elif '2m' in region:
-                fnum = f'output/{tag}/table_{region}_recoil_SingleMuon_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
-                fden = f'output/{tag}/table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
+                fnum = f'output/{tag}/{outtag}/table_{region}_recoil_SingleMuon_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
+                fden = f'output/{tag}/{outtag}/table_{region}_recoil_VDYJetsToLL_M-50_HT_MLM_{year}{"_"+jeteta_config if jeteta_config else ""}.txt'
                 xlabel = "Recoil (GeV)"
             elif 'g_' in region:
                 fnum = f'output/{tag}/table_{region}_photon_pt0_JetHT_{year}.txt'
