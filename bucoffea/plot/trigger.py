@@ -226,7 +226,7 @@ def plot_smoothed_efficiency(hnum, hden, tag, outtag, dataset, jeteta_config, re
     smooth_eff = get_smoothed_version(centers, eff)
 
     # Plot the smoothed efficiency
-    fig, ax = plt.subplots()
+    fig, ax, rax = fig_ratio()
     ax.plot(centers, smooth_eff, marker='o', label='Smoothed')
     ax.plot(centers, eff, marker='o', ls='', label='Original')
     ax.legend()
@@ -245,6 +245,21 @@ def plot_smoothed_efficiency(hnum, hden, tag, outtag, dataset, jeteta_config, re
                 verticalalignment='bottom',
                 transform=ax.transAxes
                 )
+
+    # Plot the ratio of smoothed / original efficiency
+    r = smooth_eff / eff
+    rax.plot(centers, r, marker='o', ls='', color='k')
+    rax.set_ylim(0.9,1.1)
+    rax.set_ylabel('Smooth / Original')
+    rax.grid(True)
+
+    rax.yaxis.set_major_locator(MultipleLocator(0.05))
+    rax.yaxis.set_minor_locator(MultipleLocator(0.01))
+
+    if distribution == 'recoil':
+        ylim = rax.get_ylim()
+        rax.plot([250, 250], ylim, color='red')
+        rax.set_ylim(ylim)
 
     outdir = f"./output/{tag}/{outtag}/smoothed"
     if not os.path.exists(outdir):
