@@ -547,11 +547,11 @@ def plot_scalefactors(tag, outtag, ymin=0.9, ymax=1.1, distribution='recoil', ou
                     print(f"File not found {fden}")
                     continue
                 
-                xnum, xedgnum, ynum[f'{jeteta_config}'], yerrnum[f'{jeteta_config}'] = get_xy(fnum)
-                xden, xedgden, yden[f'{jeteta_config}'], yerrden[f'{jeteta_config}'] = get_xy(fden)
+                xnum, xedgnum, ynum[jeteta_config], yerrnum[jeteta_config] = get_xy(fnum)
+                xden, xedgden, yden[jeteta_config], yerrden[jeteta_config] = get_xy(fden)
                 xsf = xnum
-                ysf[f'{jeteta_config}'] = ynum[f'{jeteta_config}'] / yden[f'{jeteta_config}']
-                ysferr[f'{jeteta_config}'] = ratio_unc(ynum[f'{jeteta_config}'], yden[f'{jeteta_config}'], yerrnum[f'{jeteta_config}'], yerrden[f'{jeteta_config}'])
+                ysf[jeteta_config] = ynum[jeteta_config] / yden[jeteta_config]
+                ysferr[jeteta_config] = ratio_unc(ynum[jeteta_config], yden[jeteta_config], yerrnum[jeteta_config], yerrden[jeteta_config])
 
             # Only consider the values above 250 GeV
             if distribution == 'recoil':
