@@ -193,14 +193,27 @@ def get_smoothed_version(x,y):
     smooth = savgol_filter(y,min(len(x),7),1)
     return smooth
 
-def prepare_table_for_smooth_eff(centers, smooth_eff):
+def prepare_table_for_smooth_eff(centers, smooth_vals):
     '''To an output txt file, write the smoothed out efficiencies in tabular form.'''
     table = []
-    for x, seff in zip(centers, smooth_eff):
-        line = [x, seff]
+    for x, sval in zip(centers, smooth_vals):
+        line = [x, sval]
         table.append(line)
-    
+
     return tabulate(table, headers=['Recoil', 'Smoothed Efficiency'])
+
+def preapre_table_for_smooth_scalefacs(all_centers, all_smooth_sf):
+    '''To an output txt file, write the smoothed out scale factors for all jet-eta configs in tabular form.'''
+    centers = next( iter(all_centers.values()) )
+
+    dict_for_table = {}
+    dict_for_table['Recoil'] = centers
+
+    for key, val in all_smooth_sf.items():
+        tag = key.replace('_', ' ').capitalize() + ': Smoothed SF'
+        dict_for_table[tag] = val
+
+    return tabulate(dict_for_table, headers='keys')
 
 def plot_smoothed_efficiency(hnum, hden, tag, outtag, dataset, jeteta_config, region_tag='1m', distribution='recoil', year=2017):
     '''Given the histograms for numerator and denominator, plot the smoothed efficiency.'''
@@ -283,6 +296,9 @@ def plot_smooth_scale_facs(tag, outtag, distribution='recoil'):
         for region in regions:
             fig, ax = plt.subplots()
 
+            xsf = {}
+            ysf = {}
+
             for jeteta_config in jeteta_configs:
                 if region == '1m':
                     fnum = f'output/{tag}/{outtag}/smoothed/table_{region}_SingleMuon_recoil_{year}_{jeteta_config}_smoothed_eff.txt'
@@ -297,19 +313,19 @@ def plot_smooth_scale_facs(tag, outtag, distribution='recoil'):
                 xnum, ynum = get_xy_smooth(fnum)
                 xden, yden = get_xy_smooth(fden)
 
-                xsf = xnum
+                _xsf = xnum
                 # The data/MC scale factor (smoothed out)
-                ysf = ynum / yden
+                _ysf = ynum / yden
                 # Only consider the values above 250 GeV for recoil
                 if distribution == 'recoil':
                     # FIXME: Binning to be fixed here!
-                    recoilmask = xsf > 240
-                    xsf = xsf[recoilmask]
-                    ysf = ysf[recoilmask]
+                    recoilmask = _xsf > 240
+                    xsf[jeteta_config] = _xsf[recoilmask]
+                    ysf[jeteta_config] = _ysf[recoilmask]
 
                 # Finally, plot the smoothed scale factor
-                ax.plot(xsf, ysf, label=pretty_legend_label[jeteta_config], marker='o')
-            
+                ax.plot(xsf[jeteta_config], ysf[jeteta_config], label=pretty_legend_label[jeteta_config], marker='o')
+
             ax.legend()
             ax.set_ylabel('Smoothed Data/MC SF')
             ax.set_xlabel(f'{distribution.capitalize()} (GeV)') 
@@ -317,6 +333,14 @@ def plot_smooth_scale_facs(tag, outtag, distribution='recoil'):
 
             fig.savefig(pjoin(outdir, f'smoothed_scale_factors_{region}_{year}.pdf'))
             plt.close(fig)
+
+            # Store the smoothed scale factors in an output txt file
+            table = preapre_table_for_smooth_scalefacs(xsf, ysf)
+            txtfilename = f'table_smoothed_scale_factors_{region}_{year}.txt'
+            txtfilepath = pjoin(outdir, txtfilename)
+
+            with open(txtfilepath, 'w+') as f:
+                f.write(table)
 
 colors = {
             '1m' : 'darkslategrey',
