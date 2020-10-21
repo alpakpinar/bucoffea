@@ -72,14 +72,13 @@ def content_table(hnum, hden, axis_name):
         table.append(line)
     return tabulate(table, headers=['Recoil', 'Numerator', 'Denominator',"Efficiency", "Eff-sigma","Eff+sigma"])
 
-def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMuon', year=2018, tag="test", outtag=None, distribution="recoil",axis_name=None, noscale=False, jeteta_config=None, output_format='pdf'):
-    # Select and prepare histogram
-    h = copy.deepcopy(acc[distribution])
+def preprocess(h, acc, distribution, region_tag='1m', dataset='SingleMuon', noscale=False, axis_name=None, jeteta_config=None, year=2017):
+    '''Helper function to pre-process histograms and make them near-plotting ready.'''
     h = merge_extensions(h, acc,reweight_pu=('nopu' in distribution), noscale=noscale)
     if not noscale:
         scale_xs_lumi(h)
     h = merge_datasets(h)
-
+    
     # Rebinning
     axis_name = distribution if not axis_name else axis_name
     if 'photon' in distribution:
@@ -99,6 +98,22 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
     else:
         hnum = h.integrate(h.axis('region'),f'tr_{region_tag}_num')
         hden = h.integrate(h.axis('region'),f'tr_{region_tag}_den')
+
+    return hnum, hden
+
+def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMuon', year=2018, tag="test", outtag=None, distribution="recoil",axis_name=None, noscale=False, jeteta_config=None, output_format='pdf'):
+    # Select and prepare histogram
+    h = copy.deepcopy(acc[distribution])
+
+    # Get the pre-processed histograms for numerator and denominator
+    hnum, hden = preprocess(h, acc,
+                        distribution=distribution,
+                        region_tag=region_tag,
+                        dataset=dataset,
+                        noscale=noscale,
+                        axis_name=axis_name,
+                        jeteta_config=jeteta_config,
+                        year=year)
 
     # Recoil plot
     try:
@@ -178,6 +193,15 @@ def get_smoothed_version(x,y):
     smooth = savgol_filter(y,min(len(x),7),1)
     return smooth
 
+def prepare_table_for_smooth_eff(centers, smooth_eff):
+    '''To an output txt file, write the smoothed out efficiencies in tabular form.'''
+    table = []
+    for x, seff in zip(centers, smooth_eff):
+        line = [x, seff]
+        table.append(line)
+    
+    return tabulate(table, headers=['Recoil', 'Smoothed Efficiency'])
+
 def plot_smoothed_efficiency(hnum, hden, tag, outtag, dataset, jeteta_config, region_tag='1m', distribution='recoil', year=2017):
     '''Given the histograms for numerator and denominator, plot the smoothed efficiency.'''
     num_vals = hnum.values()[()]
@@ -217,6 +241,13 @@ def plot_smoothed_efficiency(hnum, hden, tag, outtag, dataset, jeteta_config, re
     fig.savefig(outpath)
     plt.close(fig)
 
+    # Save the smoothed efficiencies in a table
+    table = prepare_table_for_smooth_eff(centers, smooth_eff)
+    txtfilename = f'table_{region_tag}_{dataset}_{distribution}_{year}_{jeteta_config}_smoothed_eff.txt'
+    txtfilepath = pjoin(outdir, txtfilename)
+    with open(txtfilepath, 'w+') as f:
+        f.write(table)
+
 def get_xy(file):
     data=np.loadtxt(file,skiprows=2)
     x = np.array(data[:,0])
@@ -225,6 +256,67 @@ def get_xy(file):
     yerr = np.array(data[:,6:8])
     return x.T, xedges.T, y.T, np.abs(yerr.T-y.T)
 
+def get_xy_smooth(file):
+    '''Get centers + smoothed efficiencies from input txt file.'''
+    data=np.loadtxt(file,skiprows=2)
+    x = np.array(data[:,0])
+    y = np.array(data[:,1])
+    return x.T, y.T
+
+def plot_smooth_scale_facs(tag, outtag, distribution='recoil'):
+    '''Plot smoothed scale factors.'''
+    regions = ['1m']
+    opts = markers('data')
+    emarker = opts.pop('emarker', '')
+    outdir = f"./output/{tag}/{outtag}/smoothed"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    jeteta_configs = ['two_central_jets', 'one_jet_forward_one_jet_central', 'inclusive_nohfhf']
+
+    pretty_legend_label = {
+        'two_central_jets' : 'Two Central Jets',
+        'one_jet_forward_one_jet_central' : 'Mixed',
+        'inclusive_nohfhf' : 'Inclusive (No HF-HF)'
+    }
+
+    for year in [2017,2018]:
+        for region in regions:
+            fig, ax = plt.subplots()
+
+            for jeteta_config in jeteta_configs:
+                if region == '1m':
+                    fnum = f'output/{tag}/{outtag}/smoothed/table_{region}_SingleMuon_recoil_{year}_{jeteta_config}_smoothed_eff.txt'
+                    fden = f'output/{tag}/{outtag}/smoothed/table_{region}_WJetsToLNu_HT_MLM_recoil_{year}_{jeteta_config}_smoothed_eff.txt'
+                if not os.path.exists(fnum):
+                    print(f"File not found {fnum}")
+                    continue
+                if not os.path.exists(fden):
+                    print(f"File not found {fden}")
+                    continue
+
+                xnum, ynum = get_xy_smooth(fnum)
+                xden, yden = get_xy_smooth(fden)
+
+                xsf = xnum
+                # The data/MC scale factor (smoothed out)
+                ysf = ynum / yden
+                # Only consider the values above 250 GeV for recoil
+                if distribution == 'recoil':
+                    # FIXME: Binning to be fixed here!
+                    recoilmask = xsf > 240
+                    xsf = xsf[recoilmask]
+                    ysf = ysf[recoilmask]
+
+                # Finally, plot the smoothed scale factor
+                ax.plot(xsf, ysf, label=pretty_legend_label[jeteta_config], marker='o')
+            
+            ax.legend()
+            ax.set_ylabel('Smoothed Data/MC SF')
+            ax.set_xlabel(f'{distribution.capitalize()} (GeV)') 
+            ax.grid(True)
+
+            fig.savefig(pjoin(outdir, f'smoothed_scale_factors_{region}_{year}.pdf'))
+            plt.close(fig)
 
 colors = {
             '1m' : 'darkslategrey',
@@ -669,6 +761,9 @@ def met_trigger_eff(distribution, regions=['1m']):
 
         plot_scalefactors(tag, outtag, distribution=distribution)
 
+        # Smoothed out data/MC scale factors
+        plot_smooth_scale_facs(tag, outtag, distribution=distribution)
+
 def met_triggers_ht():
         tag = '120pfht_hltmu'
         indir = f"/home/albert/repos/bucoffea/bucoffea/plot/input/16Jul19_incomplete_v7"
@@ -834,7 +929,7 @@ def photon_triggers():
                                 )
 
                     # plot_recoil(acc,region,dataset=dataset,year=year, tag=tag, distribution='recoil',axis_name='recoil')
-    data_mc_comparison_plot(tag)
+    data_mc_comparison_plot(tag, outtag)
 
 def photon_sf_plot(tag):
 
