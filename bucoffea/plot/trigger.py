@@ -86,7 +86,7 @@ def preprocess(h, acc, distribution, region_tag='1m', dataset='SingleMuon', nosc
     elif distribution == 'mjj':
         newbin = hist.Bin(axis_name,r'$M_{jj}$ (GeV)',np.array(list(range(200,600,200)) + list(range(600,1500,300)) + [1500,2000,2750,3500]))
     else:
-        newbin = hist.Bin(axis_name,f"{axis_name} (GeV)",np.array(list(range(0,500,20)) + list(range(500,1100,100))))
+        newbin = hist.Bin(axis_name,f"{axis_name} (GeV)",np.array(list(range(0,400,20)) + list(range(400,1100,100))))
     h = h.rebin(h.axis(axis_name), newbin)
     ds = f'{dataset}_{year}'
 
@@ -275,6 +275,20 @@ def get_xy_smooth(file):
     x = np.array(data[:,0])
     y = np.array(data[:,1])
     return x.T, y.T
+
+def read_smooth_scale_facs(file):
+    '''From an input txt file, get smoothed scale factors for different jet eta configs.'''
+    data=np.loadtxt(file,skiprows=2)
+    recoil = data[:,0]
+    jeteta_configs = ['two_central_jets', 'one_jet_forward_one_jet_central', 'inclusive_nohfhf']
+
+    sf = {}
+
+    # Read in the scale factors for three jet eta cases
+    for idx, jeteta_config in enumerate(jeteta_configs, start=1):
+        sf[jeteta_config] = data[:,idx] 
+
+    return recoil, sf
 
 def plot_smooth_scale_facs(tag, outtag, distribution='recoil'):
     '''Plot smoothed scale factors.'''
@@ -701,6 +715,77 @@ def data_mc_comparison_plot(tag, outtag, ymin=0, ymax=1.1, distribution='recoil'
             ysf[np.isnan(ysf) | np.isinf(np.abs(ysf))] = 1
             outfile[f'{tag}_{region}_{year}'] = (ysf, vals)
 
+def compare_scale_factors(tag, outtag, distribution='recoil'):
+    '''Compare the current scale factors being used against the smoothed scale factors.'''
+    outdir = f"./output/{tag}/{outtag}/smoothed"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    jeteta_configs = ['two_central_jets', 'one_jet_forward_one_jet_central', 'inclusive_nohfhf']
+
+    pretty_legend_label = {
+        'two_central_jets' : 'Two Central Jets',
+        'one_jet_forward_one_jet_central' : 'Mixed',
+        'inclusive_nohfhf' : 'Inclusive (No HF-HF)'
+    }
+
+    # Read in the old and new scale factors for comparison
+    orig_sf_file = bucoffea_path('data/sf/trigger/met_trigger_sf.root')
+    f_orig = uproot.open(orig_sf_file)
+
+    for year in [2017, 2018]:
+        fig, (ax, rax) = plt.subplots(2, 1, figsize=(7,7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
+
+        old_sf = f_orig[f'120pfht_hltmu_1m_{year}'].values
+        old_sf_edges = f_orig[f'120pfht_hltmu_1m_{year}'].edges
+        
+        old_sf_centers = ((old_sf_edges + np.roll(old_sf_edges, -1)) / 2)[:-1]
+
+        new_sf_file = pjoin(outdir, f'table_smoothed_scale_factors_1m_{year}.txt')
+        centers, new_sf = read_smooth_scale_facs(new_sf_file)
+
+        # Take values where recoil > 250 GeV
+        if distribution == 'recoil':
+            recoilmask = old_sf_centers > 240
+            old_sf = old_sf[recoilmask]
+            old_sf_centers = old_sf_centers[recoilmask]
+
+        # Store the ratios to the current SF in a dict
+        ratios = {}
+
+        # Plot all of them
+        for jeteta_config, smooth_sf in new_sf.items():
+            ax.plot(centers, smooth_sf, label=pretty_legend_label[jeteta_config], marker='o')
+            ratios[jeteta_config] = smooth_sf / old_sf
+
+        ax.plot(old_sf_centers, old_sf, label='Current', marker='o', ls='', color='k')
+
+        ax.legend()
+        ax.set_ylabel('Smoothed Data/MC SF')
+        ax.grid(True)
+    
+        plt.text(0., 1., year,
+                fontsize=16,
+                horizontalalignment='left',
+                verticalalignment='bottom',
+                transform=ax.transAxes
+                )
+
+        # Plot ratios here
+        for jeteta_config, r in ratios.items():
+            rax.plot(centers, r, label=pretty_legend_label[jeteta_config], marker='o', ls='')
+
+        rax.set_ylim(0.9,1.1)
+        rax.grid(True)
+        rax.set_ylabel('Ratio to current SF')
+        rax.set_xlabel(f'{distribution.capitalize()} (GeV)') 
+
+        rax.yaxis.set_major_locator(MultipleLocator(0.05))
+        rax.yaxis.set_minor_locator(MultipleLocator(0.01))
+
+        # Save figure
+        outpath = pjoin(outdir, f'scale_fac_comparison_{distribution}_{year}.pdf')
+        fig.savefig(outpath)
+        plt.close(fig)
 
 def met_triggers():
         tag = '120pfht_hltmu'
@@ -787,6 +872,9 @@ def met_trigger_eff(distribution, regions=['1m']):
 
         # Smoothed out data/MC scale factors
         plot_smooth_scale_facs(tag, outtag, distribution=distribution)
+
+        # Compare the smooth scale factors with the current ones being used in analysis
+        compare_scale_factors(tag, outtag, distribution=distribution)
 
 def photon_triggers_merged():
     tag = 'gamma'
