@@ -764,43 +764,6 @@ def met_trigger_eff(distribution, regions=['1m']):
         # Smoothed out data/MC scale factors
         plot_smooth_scale_facs(tag, outtag, distribution=distribution)
 
-def met_triggers_ht():
-        tag = '120pfht_hltmu'
-        indir = f"/home/albert/repos/bucoffea/bucoffea/plot/input/16Jul19_incomplete_v7"
-        acc = acc_from_dir(indir)
-
-        # for noscale in [False]:
-        #     distribution = 'recoil_noweight'  if noscale else 'recoil'
-        #     for year in [2017, 2018]:
-        #         region = '1m'
-        #         for dataset in ["WJetsToLNu_HT_MLM", "SingleMuon"]:
-        #             if dataset=='SingleMuon' and noscale:
-        #                 continue
-        #             plot_recoil(acc,region,distribution=distribution,axis_name='recoil',dataset=dataset,year=year, tag=tag, noscale=noscale)
-        #         region = '2m'
-        #         for dataset in ["DYJetsToLL_M-50_HT_MLM", "SingleMuon"]:
-        #             if dataset=='SingleMuon' and noscale:
-        #                 continue
-        #             plot_recoil(acc,region,distribution=distribution,axis_name='recoil',dataset=dataset,year=year, tag=tag, noscale=noscale)
-        #         # region = '1m_hlt'
-        #         # for dataset in ["WJetsToLNu_HT_MLM", "SingleMuon"]:
-        #         #     plot_recoil(acc,region,dataset=dataset,year=year, tag=tag)
-        #         region = '2m_hlt'
-        #         for dataset in ["DYJetsToLL_M-50_HT_MLM", "SingleMuon"]:
-        #             if dataset=='SingleMuon' and noscale:
-        #                 continue
-        #             plot_recoil(acc,region,distribution=distribution,axis_name='recoil',dataset=dataset,year=year, tag=tag, noscale=noscale)
-        #         region = '1e'
-        #         for dataset in ["WJetsToLNu_HT_MLM", "EGamma"]:
-        #             plot_recoil(acc,region,dataset=dataset,year=year, tag=tag, distribution='met')
-        #         # region = '2e'
-        #         # for dataset in ["DYJetsToLL_M-50_HT_MLM", "EGamma"]:
-        #         #     plot_recoil(acc,region,dataset=dataset,year=year, tag=tag, distribution='met')
-
-        # region_comparison_plot(tag)
-        # sf_comparison_plot(tag)
-        data_mc_comparison_plot(tag)
-
 def photon_triggers_merged():
     tag = 'gamma'
     indir = f"/home/albert/repos/bucoffea/bucoffea/plot/input/eff/{tag}/sel"
@@ -992,7 +955,6 @@ def photon_sf_plot(tag):
 
 def main():
     # indir = "/home/albert/repos/bucoffea/bucoffea/plot/input/eff/test"
-    #met_triggers_ht()
     met_trigger_eff('recoil')
     # photon_triggers()
     # photon_sf_plot('gamma')
