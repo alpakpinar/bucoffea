@@ -14,6 +14,7 @@ from coffea.hist.plot import clopper_pearson_interval
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator
 from tabulate import tabulate
+from scipy.signal import savgol_filter
 
 from bucoffea.plot.style import markers, matplotlib_rc
 from bucoffea.plot.util import (acc_from_dir, fig_ratio, lumi, merge_datasets,
@@ -162,6 +163,58 @@ def plot_recoil(acc,xmax=1e3,ymin=0,ymax=1.1, region_tag="1m", dataset='SingleMu
 
     plt.plot([0,xmax],[0.95,0.95],'r-')
     fig.savefig(pjoin(outdir, f'eff_{outname}.pdf'))
+    plt.close(fig)
+
+    # Plot smoothed efficiencies for data and MC
+    plot_smoothed_efficiency(hnum, hden, tag, outtag, 
+                dataset=dataset, 
+                jeteta_config=jeteta_config, 
+                region_tag=region_tag, 
+                distribution=distribution, 
+                year=year)
+
+def get_smoothed_version(x,y):
+    '''Given the input (x,y), return the smoothed function.'''
+    smooth = savgol_filter(y,min(len(x),7),1)
+    return smooth
+
+def plot_smoothed_efficiency(hnum, hden, tag, outtag, dataset, jeteta_config, region_tag='1m', distribution='recoil', year=2017):
+    '''Given the histograms for numerator and denominator, plot the smoothed efficiency.'''
+    num_vals = hnum.values()[()]
+    den_vals = hden.values()[()]
+
+    centers = hnum.axes()[0].centers()
+
+    eff = num_vals / den_vals
+    smooth_eff = get_smoothed_version(centers, eff)
+
+    # Plot the smoothed efficiency
+    fig, ax = plt.subplots()
+    ax.plot(centers, smooth_eff, marker='o', label='Smoothed')
+    ax.plot(centers, eff, marker='o', ls='', label='Original')
+    ax.legend()
+    ax.set_xlabel('Recoil (GeV)')
+    ax.set_ylabel('Efficiency')
+    
+    plt.text(0., 1., f'{region_tag}, {year}',
+                fontsize=16,
+                horizontalalignment='left',
+                verticalalignment='bottom',
+                transform=ax.transAxes
+                )
+    plt.text(1., 0., f'{trgname(year, tag)}',
+                fontsize=10,
+                horizontalalignment='right',
+                verticalalignment='bottom',
+                transform=ax.transAxes
+                )
+
+    outdir = f"./output/{tag}/{outtag}/smoothed"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    outpath = pjoin(outdir, f'{region_tag}_{dataset}_{distribution}_{year}_{jeteta_config}_smoothed_eff.pdf')
+    fig.savefig(outpath)
     plt.close(fig)
 
 def get_xy(file):
