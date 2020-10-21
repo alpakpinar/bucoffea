@@ -30,6 +30,15 @@ pjoin = os.path.join
 # Ignore warnings
 warnings.filterwarnings('ignore')
 
+def pretty_tag_for_jetconfig(tag):
+    pretty_tags = {
+        'two_central_jets' : 'Two Central Jets',
+        'one_jet_forward_one_jet_central' : 'Mixed',
+        'inclusive_nohfhf' : 'Inclusive (no HF-HF)',
+    }
+
+    return pretty_tags[tag]
+
 def lumi_by_region(region, year):
     if 'HLT' not in region:
         return lumi(year)
@@ -228,10 +237,22 @@ def plot_smoothed_efficiency(hnum, hden, tag, outtag, dataset, jeteta_config, re
     # Plot the smoothed efficiency
     fig, ax, rax = fig_ratio()
     ax.plot(centers, smooth_eff, marker='o', label='Smoothed')
-    ax.plot(centers, eff, marker='o', ls='', label='Original')
+    
+    error_opts = markers('data')
+    error_opts['color'] = 'C1'
+    error_opts['markersize'] = 12.
+    # Plot the original efficiency with the errors
+    hist.plotratio(hnum, hden, ax=ax,
+                guide_opts={},
+                unc='clopper-pearson',
+                error_opts=error_opts,
+                label='Original',
+                clear=False
+                )
+
     ax.legend()
-    ax.set_xlabel('Recoil (GeV)')
     ax.set_ylabel('Efficiency')
+    ax.set_xlabel('')
     
     plt.text(0., 1., f'{region_tag}, {year}',
                 fontsize=16,
@@ -246,12 +267,20 @@ def plot_smoothed_efficiency(hnum, hden, tag, outtag, dataset, jeteta_config, re
                 transform=ax.transAxes
                 )
 
+    plt.text(1., 1., f'{pretty_tag_for_jetconfig(jeteta_config)}',
+                fontsize=16,
+                horizontalalignment='right',
+                verticalalignment='bottom',
+                transform=ax.transAxes
+                )
+
     # Plot the ratio of smoothed / original efficiency
     r = smooth_eff / eff
     rax.plot(centers, r, marker='o', ls='', color='k')
     rax.set_ylim(0.9,1.1)
     rax.set_ylabel('Smooth / Original')
     rax.grid(True)
+    rax.set_xlabel(f'{distribution.capitalize()} (GeV)') 
 
     rax.yaxis.set_major_locator(MultipleLocator(0.05))
     rax.yaxis.set_minor_locator(MultipleLocator(0.01))
