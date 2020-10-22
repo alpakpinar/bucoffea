@@ -19,7 +19,7 @@ pjoin = os.path.join
 warnings.filterwarnings('ignore')
 
 REBIN = {
-    'met' : hist.Bin('met', r'MET (GeV)', 20, 0, 500),
+    'met' : hist.Bin('met', r'MET (GeV)', 60, 0, 300),
     'vpt' : hist.Bin('vpt', r'$p_T(Z) \ (GeV)$', 25, 0, 1000)
 }
 
