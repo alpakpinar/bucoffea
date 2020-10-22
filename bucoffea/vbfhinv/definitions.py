@@ -128,6 +128,9 @@ def vbfhinv_accumulator(cfg):
     items["dphijm"] = Hist("min(4 leading jets, MET)", dataset_ax, region_ax, dphi_ax)
     items["dphijr"] = Hist("min(4 leading jets, Recoil)", dataset_ax, region_ax, dphi_ax)
 
+    # 2D histogram to be used for QCD estimation
+    items["mjj_vs_dphi_qcd"] = Hist("Counts", dataset_ax, region_ax, mjj_ax, dphi_ax)
+
     # Multiplicity histograms
     for cand in ['ak4', 'ak8', 'bjet', 'loose_ele', 'loose_muo', 'tight_ele', 'tight_muo', 'tau', 'photon','hlt_single_muon','muons_hltmatch']:
         items[f"{cand}_mult"] = Hist(cand, dataset_ax, region_ax, multiplicity_ax)
@@ -313,7 +316,12 @@ def vbfhinv_regions(cfg):
 
     regions.update(tmp)
 
-    if cfg and  cfg.RUN.TRIGGER_STUDY:
+    # Signal like region with dphi(j,r) cut removed, to be used for data-driven QCD estimation
+    if cfg and cfg.RUN.QCD_ESTIMATION:
+        regions['sr_vbf_qcd'] = copy.deepcopy(regions['sr_vbf'])
+        regions['sr_vbf_qcd'].remove('mindphijr')
+        
+    if cfg and cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
         # num = numerator, den = denominator
         # Single Mu region: Remove mjj cut, add SingleMu trigger, toggle MET trigger

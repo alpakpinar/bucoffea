@@ -620,6 +620,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('dphijm',             dphi=df["minDPhiJetMet"][mask],    weight=rweight[mask] )
             ezfill('dphijr',             dphi=df["minDPhiJetRecoil"][mask], weight=rweight[mask] )
 
+            ezfill('mjj_vs_dphi_qcd',    mjj=df['mjj'][mask],    dphi=df['minDPhiJetMet'][mask],     weight=rweight[mask])
+
             ezfill('dphijj',             dphi=df["dphijj"][mask],   weight=rweight[mask] )
             ezfill('detajj',             deta=df["detajj"][mask],   weight=rweight[mask] )
             ezfill('mjj',                mjj=df["mjj"][mask],      weight=rweight[mask] )
