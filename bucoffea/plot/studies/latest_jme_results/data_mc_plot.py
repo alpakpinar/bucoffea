@@ -6,6 +6,7 @@ import re
 import numpy as np
 import matplotlib.ticker
 import warnings
+import argparse
 
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -30,7 +31,8 @@ colors = {
 
 xlabels = {
     'vpt' : r'$p_T(Z) \ (GeV)$',
-    'met' : r'MET (GeV)'
+    'met' : r'MET (GeV)',
+    'ak4_pt0' : r'Leading jet $p_T$ (GeV)'
 }
 
 region_labels = {
@@ -38,6 +40,15 @@ region_labels = {
     'norecoil_jptv2' : r'Leading Jet $p_T > 50$',
     'norecoil_nojpt' : r'Jet Inclusive'
 }
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='The path containing merged coffea files.')
+    parser.add_argument('--distributions', help='The distributions to plot.', nargs='*', default=['met', 'vpt', 'ak4_pt0'])
+    parser.add_argument('--smeared', help='Flag showing that the input has smearing applied.', action='store_true')
+    args = parser.parse_args()
+    
+    return args
 
 def labels_for_variations(variation):
     mapping = {
@@ -176,7 +187,9 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
     print(f'File saved: {outpath}')
 
 def main():
-    inpath = sys.argv[1]
+    args = parse_cli()
+    inpath = args.inpath
+
     acc = dir_archive(inpath)
     acc.load('sumw')
     acc.load('sumw2')
@@ -191,11 +204,13 @@ def main():
 
     for year in [2017, 2018]:
         for region in regions:
-            for distribution in ['met', 'vpt']:
+            for distribution in ['met', 'vpt', 'ak4_pt0']:
+                if distribution not in args.distributions:
+                    continue
                 data_mc_comparison_plot(acc, outtag,
                         distribution=distribution,
                         year=year,
-                        smear=False,
+                        smear=args.smeared,
                         region=region
                         )
 
