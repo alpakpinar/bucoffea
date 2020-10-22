@@ -206,7 +206,7 @@ def main():
     for year in [2017, 2018]:
         for region in regions:
             for distribution in ['met', 'vpt', 'ak4_pt0', 'ak4_eta0']:
-                if not re.match(distribution, args.distribution):
+                if not re.match(args.distribution, distribution):
                     continue
                 data_mc_comparison_plot(acc, outtag,
                         distribution=distribution,
