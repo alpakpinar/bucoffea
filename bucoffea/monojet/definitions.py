@@ -469,8 +469,8 @@ def setup_candidates(df, cfg, variations):
 
     met = JaggedCandidateArray.candidatesfromcounts(
         np.ones(df.size),
-        pt=df[f'{met_branch}_T1Smear_pt'] if cfg.MET.JER else df[f'{met_branch}_T1_pt'],
-        phi=df[f'{met_branch}_T1Smear_phi'] if cfg.MET.JER else df[f'{met_branch}_T1_phi'],
+        pt=df[f'{met_branch}_T1Smear_pt'] if (not df['is_data'] and cfg.MET.JER) else df[f'{met_branch}_T1_pt'],
+        phi=df[f'{met_branch}_T1Smear_phi'] if (not df['is_data'] and cfg.MET.JER) else df[f'{met_branch}_T1_phi'],
         eta=np.zeros(df.size), # dummy
         mass=np.zeros(df.size) # dummy
     )
