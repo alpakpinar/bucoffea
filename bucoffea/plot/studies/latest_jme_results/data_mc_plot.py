@@ -13,6 +13,16 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+REBIN = {
+    'met' : hist.Bin('met', r'MET (GeV)', 20, 0, 500)
+}
+
+colors = {
+    '.*DY.*' : '#ffffcc',
+    '.*Diboson.*' : '#4292c6',
+    'Top.*' : '#6a51a3',
+}
+
 def labels_for_variations(variation):
     mapping = {
         'jer' : 'JER',
@@ -51,7 +61,10 @@ def data_mc_comparison_plot(acc, distribution='met', year=2017, smear=False, reg
     scale_xs_lumi(h)
     h = merge_datasets(h)
 
-    # TODO: Rebinning?
+    h.axis('dataset').sorting = 'integral'
+
+    if distribution in REBIN.keys():
+        h = h.rebin(distribution, REBIN[distribution])
 
     # Start plotting 
     fig, ax, rax = fig_ratio()
@@ -69,14 +82,28 @@ def data_mc_comparison_plot(acc, distribution='met', year=2017, smear=False, reg
     hist.plot1d(h_data, ax=ax, overlay='dataset', error_opts=data_err_opts)
 
     # Next, get MC (the nominal one)
-    # TODO: Check the regex here!
-    h_mc_nom = h.integrate('region', f'cr_2e_j_{region}')[ re.compile(f'(?!(EGamma)).*{year}') ]
-    hist.plot1d(h_mc_nom, ax=ax, overlay='dataset', clear=False)
+    h_mc_nom = h.integrate('region', f'cr_2e_j_{region}')[ re.compile(f'(Top_FXFX|DYJetsToLL|Diboson).*{year}') ]
+    hist.plot1d(h_mc_nom, ax=ax, overlay='dataset', stack=True, clear=False)
 
     ax.set_xlabel('')
+    ax.set_yscale('log')
+    ax.set_ylim(1e-3,1e6)
 
-    # To test the above regex
-    pprint(h_mc_nom.values())
+    # Apply correct colors to BG histograms
+    handles, labels = ax.get_legend_handles_labels()
+    for handle, label in zip(handles, labels):
+        col = None
+        for k, v in colors.items():
+            if re.match(k, label):
+                col = v
+                break
+        if col:
+            handle.set_color(col)
+            handle.set_linestyle('-')
+            handle.set_edgecolor('k')
+
+    # Update legend
+    ax.legend(ncol=1)
 
     # Plot the ratio of nominal data/MC values
     hist.plotratio(h_data.integrate('dataset'), h_mc_nom.integrate('dataset'),
@@ -90,7 +117,7 @@ def data_mc_comparison_plot(acc, distribution='met', year=2017, smear=False, reg
     rax.grid(True)
     rax.set_ylim(0,2)
     rax.set_ylabel('Data / MC')
-    rax.set_xlabel(f'{distribution.capitalize()} (GeV)')
+    rax.set_xlabel(f'{distribution.upper()} (GeV)')
 
     loc1 = matplotlib.ticker.MultipleLocator(base=0.5)
     loc2 = matplotlib.ticker.MultipleLocator(base=0.1)
@@ -112,7 +139,9 @@ def data_mc_comparison_plot(acc, distribution='met', year=2017, smear=False, reg
         opts = {'step': 'post', 'linewidth': 0, 'label' : labels_for_variations(variation) }
 
         # TODO: To be tested
-        rax.fill_between(edges, frac_change_up, frac_change_down, **opts)
+        # rax.fill_between(edges, frac_change_up, frac_change_down, **opts)
+
+    fig.savefig('test.pdf')
 
 def main():
     inpath = sys.argv[1]
@@ -122,7 +151,7 @@ def main():
 
     data_mc_comparison_plot(acc,
             distribution='met',
-            year=2017,
+            year=2018,
             smear=False,
             region='norecoil'
             )
