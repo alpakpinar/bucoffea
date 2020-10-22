@@ -5,6 +5,8 @@ import sys
 import re
 import numpy as np
 import matplotlib.ticker
+import warnings
+
 from coffea import hist
 from matplotlib import pyplot as plt
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
@@ -13,8 +15,11 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+warnings.filterwarnings('ignore')
+
 REBIN = {
-    'met' : hist.Bin('met', r'MET (GeV)', 20, 0, 500)
+    'met' : hist.Bin('met', r'MET (GeV)', 20, 0, 500),
+    'vpt' : hist.Bin('vpt', r'$p_T(Z) \ (GeV)$', 25, 0, 1000)
 }
 
 colors = {
@@ -25,8 +30,9 @@ colors = {
 
 xlabels = {
     'vpt' : r'$p_T(Z) \ (GeV)$',
-    'met' : r'MET (GeV)',
+    'met' : r'MET (GeV)'
 }
+
 def labels_for_variations(variation):
     mapping = {
         'jer' : 'JER',
@@ -92,7 +98,7 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
     ax.set_xlabel('')
     ax.set_yscale('log')
     if region != 'norecoil_nojpt':
-        ax.set_ylim(1e-3,1e6)
+        ax.set_ylim(1e-2,1e6)
     else:
         ax.set_ylim(1e-1,1e8)
 
