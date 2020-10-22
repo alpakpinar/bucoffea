@@ -176,13 +176,13 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
 
     # Save figure
     if smear:
-        outdir = f'./output/{outtag}/data_mc/smeared'
+        outdir = f'./output/{outtag}/data_mc/smeared/{region}'
     else:
-        outdir = f'./output/{outtag}/data_mc/not_smeared'
+        outdir = f'./output/{outtag}/data_mc/not_smeared/{region}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'data_mc_comp_{distribution}_{region}_{year}.pdf')
+    outpath = pjoin(outdir, f'data_mc_comp_{distribution}_{year}.pdf')
     fig.savefig(outpath)
     plt.close(fig)
     print(f'File saved: {outpath}')
