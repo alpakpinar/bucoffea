@@ -23,6 +23,10 @@ colors = {
     'Top.*' : '#6a51a3',
 }
 
+xlabels = {
+    'vpt' : r'$p_T(Z) \ (GeV)$',
+    'met' : r'MET (GeV)',
+}
 def labels_for_variations(variation):
     mapping = {
         'jer' : 'JER',
@@ -87,7 +91,10 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
 
     ax.set_xlabel('')
     ax.set_yscale('log')
-    ax.set_ylim(1e-3,1e6)
+    if region != 'norecoil_nojpt':
+        ax.set_ylim(1e-3,1e6)
+    else:
+        ax.set_ylim(1e-1,1e8)
 
     # Apply correct colors to BG histograms
     handles, labels = ax.get_legend_handles_labels()
@@ -117,7 +124,7 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
     rax.grid(True)
     rax.set_ylim(0,2)
     rax.set_ylabel('Data / MC')
-    rax.set_xlabel(f'{distribution.upper()} (GeV)')
+    rax.set_xlabel(xlabels[distribution])
 
     loc1 = matplotlib.ticker.MultipleLocator(base=0.5)
     loc2 = matplotlib.ticker.MultipleLocator(base=0.1)
