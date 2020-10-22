@@ -609,16 +609,20 @@ def monojet_regions(cfg, variations):
         regions[f'cr_2e_j_norecoil{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
         regions[f'cr_2e_j_norecoil{var}'].remove(f'recoil{var}')
         regions[f'cr_2e_j_norecoil{var}'].append(f'dphi_z_jet{var}')
+        regions[f'cr_2e_j_norecoil{var}'].append(f'dpt_z_jet{var}')
 
         regions[f'cr_2e_j_norecoil_nojpt{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
         regions[f'cr_2e_j_norecoil_nojpt{var}'].remove(f'recoil{var}')
         regions[f'cr_2e_j_norecoil_nojpt{var}'].remove(f'leadak4_pt_eta{var}')
+        regions[f'cr_2e_j_norecoil_nojpt{var}'].append(f'dphi_z_jet{var}')
+        regions[f'cr_2e_j_norecoil_nojpt{var}'].append(f'dpt_z_jet{var}')
 
         regions[f'cr_2e_j_norecoil_jptv2{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
         regions[f'cr_2e_j_norecoil_jptv2{var}'].remove(f'recoil{var}')
         regions[f'cr_2e_j_norecoil_jptv2{var}'].remove(f'leadak4_pt_eta{var}')
         regions[f'cr_2e_j_norecoil_jptv2{var}'].append(f'leadak4_pt_eta_v2{var}')
         regions[f'cr_2e_j_norecoil_jptv2{var}'].append(f'dphi_z_jet{var}')
+        regions[f'cr_2e_j_norecoil_jptv2{var}'].append(f'dpt_z_jet{var}')
 
         # Single electron CR
         cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', f'met_el{var}',f'mt_el{var}'] + common_cuts

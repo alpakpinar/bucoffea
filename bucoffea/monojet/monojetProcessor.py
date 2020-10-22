@@ -329,7 +329,10 @@ class monojetProcessor(processor.ProcessorABC):
             zpt, zphi = calculate_v_pt_phi_from_dilepton(dielectrons)
             dphi_z_jet = dphi(zphi.min(), ak4[leadak4_index].phi.min())
 
+            dpt_z_jet = (zpt.min() - ak4[leadak4_index].pt.min()) / zpt.min()
+
             selection.add(f'dphi_z_jet{var}', dphi_z_jet > 2.7)
+            selection.add(f'dpt_z_jet{var}', np.abs(dpt_z_jet) < 0.1)
 
             # AK8 Jet
             if cfg.RUN.MONOV:
