@@ -40,7 +40,7 @@ def vbfhinv_accumulator(cfg):
     btag_ax = Bin("btag", r"B tag discriminator", 20, 0, 1)
     multiplicity_ax = Bin("multiplicity", r"multiplicity", 10, -0.5, 9.5)
     nconst_ax = Bin("nconst", r"Number of constituents", 25, -0.5, 99.5)
-    dphi_ax = Bin("dphi", r"$\Delta\phi$", 50, 0, 3.5)
+    dphi_ax = Bin("dphi", r"$\Delta\phi$", 70, 0, 3.5)
     deta_ax = Bin("deta", r"$\Delta\eta$", 50, 0, 10)
     dr_ax = Bin("dr", r"$\Delta R$", 50, 0, 2)
 
