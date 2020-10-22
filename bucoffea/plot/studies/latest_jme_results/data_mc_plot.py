@@ -32,7 +32,8 @@ colors = {
 xlabels = {
     'vpt' : r'$p_T(Z) \ (GeV)$',
     'met' : r'MET (GeV)',
-    'ak4_pt0' : r'Leading jet $p_T$ (GeV)'
+    'ak4_pt0' : r'Leading jet $p_T$ (GeV)',
+    'ak4_eta0' : r'Leading jet $\eta$'
 }
 
 region_labels = {
@@ -44,7 +45,7 @@ region_labels = {
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='The path containing merged coffea files.')
-    parser.add_argument('--distributions', help='The distributions to plot.', nargs='*', default=['met', 'vpt', 'ak4_pt0'])
+    parser.add_argument('--distribution', help='Regex matching the distributions to be plotted.', default='.*')
     parser.add_argument('--smeared', help='Flag showing that the input has smearing applied.', action='store_true')
     args = parser.parse_args()
     
@@ -204,8 +205,8 @@ def main():
 
     for year in [2017, 2018]:
         for region in regions:
-            for distribution in ['met', 'vpt', 'ak4_pt0']:
-                if distribution not in args.distributions:
+            for distribution in ['met', 'vpt', 'ak4_pt0', 'ak4_eta0']:
+                if not re.match(distribution, args.distribution):
                     continue
                 data_mc_comparison_plot(acc, outtag,
                         distribution=distribution,
