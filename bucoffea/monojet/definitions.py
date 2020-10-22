@@ -613,7 +613,6 @@ def monojet_regions(cfg, variations):
         regions[f'cr_2e_j_norecoil_nojpt{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
         regions[f'cr_2e_j_norecoil_nojpt{var}'].remove(f'recoil{var}')
         regions[f'cr_2e_j_norecoil_nojpt{var}'].remove(f'leadak4_pt_eta{var}')
-        regions[f'cr_2e_j_norecoil_nojpt{var}'].remove(f'leadak4_id{var}')
 
         regions[f'cr_2e_j_norecoil_jptv2{var}'] = copy.deepcopy(regions[f'cr_2e_j{var}'])
         regions[f'cr_2e_j_norecoil_jptv2{var}'].remove(f'recoil{var}')
