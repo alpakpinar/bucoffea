@@ -33,6 +33,12 @@ xlabels = {
     'met' : r'MET (GeV)'
 }
 
+region_labels = {
+    'norecoil' : r'Leading Jet $p_T > 100$',
+    'norecoil_jptv2' : r'Leading Jet $p_T > 50$',
+    'norecoil_nojpt' : r'Jet Inclusive'
+}
+
 def labels_for_variations(variation):
     mapping = {
         'jer' : 'JER',
@@ -117,6 +123,8 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
 
     # Update legend
     ax.legend(ncol=1)
+
+    ax.set_title(region_labels[region])
 
     # Plot the ratio of nominal data/MC values
     hist.plotratio(h_data.integrate('dataset'), h_mc_nom.integrate('dataset'),
