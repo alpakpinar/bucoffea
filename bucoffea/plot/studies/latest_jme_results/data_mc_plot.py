@@ -46,7 +46,7 @@ def get_varied_ratios(h_data, h_mc, variation, region):
 
     return data_over_mc_up, data_over_mc_down
 
-def data_mc_comparison_plot(acc, distribution='met', year=2017, smear=False, region='norecoil'):
+def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=False, region='norecoil'):
     '''For the given distribution and year, construct data/MC comparison plot with all the JME variations'''
     # The list of variations, depending on we use smearing or not
     if smear:
@@ -141,7 +141,18 @@ def data_mc_comparison_plot(acc, distribution='met', year=2017, smear=False, reg
         # TODO: To be tested
         # rax.fill_between(edges, frac_change_up, frac_change_down, **opts)
 
-    fig.savefig('test.pdf')
+    # Save figure
+    if smear:
+        outdir = f'./output/{outtag}/data_mc/smeared'
+    else:
+        outdir = f'./output/{outtag}/data_mc/not_smeared'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outpath = pjoin(outdir, f'data_mc_comp_{distribution}_{region}_{year}.pdf')
+    fig.savefig(outpath)
+    plt.close(fig)
+    print(f'File saved: {outpath}')
 
 def main():
     inpath = sys.argv[1]
@@ -149,12 +160,23 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    data_mc_comparison_plot(acc,
-            distribution='met',
-            year=2018,
-            smear=False,
-            region='norecoil'
-            )
+    outtag = re.findall('merged_.*', inpath)[0].replace('/','')
+
+    regions = [
+        'norecoil',
+        'norecoil_nojpt',
+        'norecoil_jptv2'
+    ]
+
+    for year in [2017, 2018]:
+        for region in regions:
+            for distribution in ['met', 'vpt']:
+                data_mc_comparison_plot(acc, outtag,
+                        distribution=distribution,
+                        year=year,
+                        smear=False,
+                        region=region
+                        )
 
 if __name__ == '__main__':
     main()
