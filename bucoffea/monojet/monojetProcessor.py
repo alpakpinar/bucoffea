@@ -124,14 +124,21 @@ class monojetProcessor(processor.ProcessorABC):
             self._year = extract_year(dataset)
             df["year"] = self._year
             cfg.ENV_FOR_DYNACONF = f"era{self._year}"
+
+            df['is_data'] = is_data(dataset)
+            # All the split JES uncertainties, "" represents the nominal case with no variation (only for MC!)
+            if not df['is_data']:
+                self._variations = ['', '_jesTotalUp', '_jesTotalDown',
+                                    '_unclustEnUp', '_unclustEnDown'
+                                    ]
+            # For data, only run the nominal case
+            else:
+                self._variations = ['']
         else:
             cfg.ENV_FOR_DYNACONF = f"default"
+            self._variations = ['']
+            
         cfg.reload()
-        # All the split JES uncertainties, "" represents the nominal case with no variation
-        self._variations = ['', '_jerUp', '_jerDown',
-                            '_jesTotalUp', '_jesTotalDown',
-                            '_unclustEnUp', '_unclustEnDown'
-                            ]
         self._accumulator = monojet_accumulator(cfg, variations=self._variations)
 
     def process(self, df):
@@ -147,11 +154,7 @@ class monojetProcessor(processor.ProcessorABC):
         df['is_nlo_w'] = is_nlo_w(dataset)
         df['has_v_jet'] = has_v_jet(dataset)
         df['has_lhe_v_pt'] = df['is_lo_w'] | df['is_lo_z'] | df['is_nlo_z'] | df['is_nlo_w'] | df['is_lo_g']
-        df['is_data'] = is_data(dataset)
         
-        if df['is_data']:
-            return self.accumulator.identity()
-
         gen_v_pt = None
         if not df['is_data']:
             gen = setup_gen_candidates(df)
