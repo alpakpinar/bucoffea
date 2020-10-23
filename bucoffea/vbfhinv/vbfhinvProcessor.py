@@ -251,6 +251,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('recoil', df['recoil_pt']>cfg.SELECTION.SIGNAL.RECOIL)
         selection.add('met_sr', met_pt>cfg.SELECTION.SIGNAL.RECOIL)
 
+        # Add slightly looser recoil cuts for QCD study
+        if cfg.RUN.QCD_ESTIMATION:
+            selection.add('recoil_230', df['recoil_pt']>230)
+            selection.add('recoil_200', df['recoil_pt']>200)
+
         # AK4 dijet
         diak4 = ak4[:,:2].distincts()
         leadak4_pt_eta = (diak4.i0.pt > cfg.SELECTION.SIGNAL.LEADAK4.PT) & (np.abs(diak4.i0.eta) < cfg.SELECTION.SIGNAL.LEADAK4.ETA)

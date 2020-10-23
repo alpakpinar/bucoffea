@@ -321,6 +321,12 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_qcd'] = copy.deepcopy(regions['sr_vbf'])
         regions['sr_vbf_qcd'].remove('mindphijr')
         
+        # Regions with looser recoil cuts
+        for cuttag in ['200', '230']:
+            regions[f'sr_vbf_qcd_recoil_{cuttag}'] = copy.deepcopy(regions['sr_vbf_qcd'])
+            regions[f'sr_vbf_qcd_recoil_{cuttag}'].remove('recoil')
+            regions[f'sr_vbf_qcd_recoil_{cuttag}'].append(f'recoil_{cuttag}')
+
     if cfg and cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
         # num = numerator, den = denominator
