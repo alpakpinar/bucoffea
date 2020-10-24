@@ -232,7 +232,10 @@ default:
         - 79123963
         - 51393664
     trigger_study: False
-    qcd_estimation: True
+    trigger_study_qcd: True
+    qcd_estimation: 
+      run_study: True
+      looser_regions: False
   triggers:
     ht:
       gammaeff:
