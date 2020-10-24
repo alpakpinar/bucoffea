@@ -39,7 +39,7 @@ def compare_turnons(acc, outtag, low_recoil=200):
     h = merge_datasets(h)
 
     # Rebinning
-    newbin = hist.Bin('recoil',"Recoil (GeV)",np.array(list(range(0,500,25)) + list(range(500,1100,100))))
+    newbin = hist.Bin('recoil',"Recoil (GeV)",np.array(list(range(0,500,20)) + list(range(500,1100,100))))
     h = h.rebin('recoil', newbin)
 
     # Output dir to save figures
@@ -56,13 +56,14 @@ def compare_turnons(acc, outtag, low_recoil=200):
         hden_sr = _h.integrate('region', 'tr_sr_den')
 
         # Num and denom for QCD CR
-        hnum_cr = _h.integrate('region', 'tr_qcd_cr_num')
-        hden_cr = _h.integrate('region', 'tr_qcd_cr_den')
+        hnum_cr = _h.integrate('region', 'tr_cr_qcd_num')
+        hden_cr = _h.integrate('region', 'tr_cr_qcd_den')
 
         # Plot the efficiencies for the two cases
         fig, ax, rax = fig_ratio()
 
-        error_opts = markers('data').pop('color')
+        error_opts = markers('data')
+        error_opts['color'] = 'C0'
 
         hist.plotratio(hnum_sr, hden_sr,
                 ax=ax,
@@ -71,6 +72,8 @@ def compare_turnons(acc, outtag, low_recoil=200):
                 error_opts=error_opts,
                 label='Signal Region'
                 )
+
+        error_opts['color'] = 'C1'
 
         hist.plotratio(hnum_cr, hden_cr,
                 ax=ax,
@@ -81,8 +84,14 @@ def compare_turnons(acc, outtag, low_recoil=200):
                 clear=False
                 )
 
+        xlim = ax.get_xlim()
+        ax.set_xlim(200,xlim[-1])
+        ax.set_xlabel('')
         ax.set_ylabel('Efficiency')
         ax.legend(title='Region')
+
+        ax.set_title(f'MET Dataset: {year}')
+        ax.set_ylim(0.8,1.1)
 
         # Plot the ratio of efficiencies
         eff_num = hnum_sr.values()[()] / hden_sr.values()[()]
@@ -93,8 +102,14 @@ def compare_turnons(acc, outtag, low_recoil=200):
         rax.plot(centers, r, marker='o', ls='', color='k')
 
         rax.grid(True)
-        rax.set_ylim(0.8,1.2)
+        rax.set_ylim(0.9,1.1)
         rax.set_ylabel('Eff in SR / Eff in CR')
+        rax.set_xlabel('Recoil (GeV)')
+
+        loc1 = MultipleLocator(0.05)
+        loc2 = MultipleLocator(0.01)
+        rax.yaxis.set_major_locator(loc1)
+        rax.yaxis.set_minor_locator(loc2)
 
         # Save figure
         outpath = pjoin(outdir, f'eff_comp_{year}.pdf')
