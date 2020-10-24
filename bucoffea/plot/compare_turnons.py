@@ -93,6 +93,10 @@ def compare_turnons(acc, outtag, low_recoil=200):
         ax.set_title(f'MET Dataset: {year}')
         ax.set_ylim(0.8,1.1)
 
+        ylim = ax.get_ylim()
+        ax.plot([250., 250.], ylim, color='k')
+        ax.set_ylim(ylim)
+
         # Plot the ratio of efficiencies
         eff_num = hnum_sr.values()[()] / hden_sr.values()[()]
         eff_den = hnum_cr.values()[()] / hden_cr.values()[()]
@@ -110,6 +114,10 @@ def compare_turnons(acc, outtag, low_recoil=200):
         loc2 = MultipleLocator(0.01)
         rax.yaxis.set_major_locator(loc1)
         rax.yaxis.set_minor_locator(loc2)
+
+        ylim = rax.get_ylim()
+        rax.plot([250., 250.], ylim, color='red')
+        rax.set_ylim(ylim)
 
         # Save figure
         outpath = pjoin(outdir, f'eff_comp_{year}.pdf')
