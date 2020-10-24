@@ -255,7 +255,7 @@ def vbfhinv_regions(cfg):
         ]
 
     # Don't run other CRs if only running for QCD estimation purposes
-    if cfg and not cfg.RUN.QCD_ESTIMATION:
+    if cfg and not cfg.RUN.QCD_ESTIMATION.RUN_STUDY:
         # Dimuon CR
         cr_2m_cuts = ['trig_met','two_muons', 'at_least_one_tight_mu', 'dimuon_mass', 'veto_ele', 'dimuon_charge'] + common_cuts[1:] + ['dpfcalo_cr']
     
@@ -319,15 +319,42 @@ def vbfhinv_regions(cfg):
     regions.update(tmp)
 
     # Signal like region with dphi(j,r) cut removed, to be used for data-driven QCD estimation
-    if cfg and cfg.RUN.QCD_ESTIMATION:
+    if cfg and cfg.RUN.QCD_ESTIMATION.RUN_STUDY:
         regions['sr_vbf_qcd'] = copy.deepcopy(regions['sr_vbf'])
         regions['sr_vbf_qcd'].remove('mindphijr')
         
         # Regions with looser recoil cuts
-        for cuttag in ['200', '230']:
-            regions[f'sr_vbf_qcd_recoil_{cuttag}'] = copy.deepcopy(regions['sr_vbf_qcd'])
-            regions[f'sr_vbf_qcd_recoil_{cuttag}'].remove('recoil')
-            regions[f'sr_vbf_qcd_recoil_{cuttag}'].append(f'recoil_{cuttag}')
+        if cfg.RUN.QCD_ESTIMATION.LOOSER_REGIONS:
+            for cuttag in ['200', '230']:
+                regions[f'sr_vbf_qcd_recoil_{cuttag}'] = copy.deepcopy(regions['sr_vbf_qcd'])
+                regions[f'sr_vbf_qcd_recoil_{cuttag}'].remove('recoil')
+                regions[f'sr_vbf_qcd_recoil_{cuttag}'].append(f'recoil_{cuttag}')
+
+    if cfg and cfg.RUN.TRIGGER_STUDY_QCD:
+        # Trigger study for QCD: Check the turn-on for around 200 < recoil < 250 GeV 
+        # Compare between SR and QCD populated CR
+        tr_sr_num_cuts = copy.deepcopy(regions['sr_vbf'])
+        tr_sr_num_cuts.remove('recoil')
+
+        regions['tr_sr_num'] = tr_sr_num_cuts
+
+        tr_sr_den_cuts = copy.deepcopy(tr_sr_num_cuts)
+        tr_sr_den_cuts.remove('trig_met')
+
+        regions['tr_sr_den'] = tr_sr_den_cuts
+        
+        # QCD populated CR
+        tr_cr_qcd_num_cuts = copy.deepcopy(tr_sr_num_cuts)
+        tr_cr_qcd_num_cuts.remove('mindphijr')
+        tr_cr_qcd_num_cuts.append('maxdphijr')
+
+        regions['tr_cr_qcd_num'] = tr_cr_qcd_num_cuts
+
+        tr_cr_qcd_den_cuts = copy.deepcopy(tr_sr_den_cuts)
+        tr_cr_qcd_den_cuts.remove('mindphijr')
+        tr_cr_qcd_den_cuts.append('maxdphijr')
+
+        regions['tr_cr_qcd_den'] = tr_cr_qcd_den_cuts
 
     if cfg and cfg.RUN.TRIGGER_STUDY:
         # Trigger studies

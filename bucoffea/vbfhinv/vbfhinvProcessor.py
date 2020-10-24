@@ -243,6 +243,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('at_least_one_tau', taus.counts>0)
         selection.add('veto_b', bjets.counts==0)
         selection.add('mindphijr',df['minDPhiJetRecoil'] > cfg.SELECTION.SIGNAL.MINDPHIJR)
+        selection.add('maxdphijr',df['minDPhiJetRecoil'] <= cfg.SELECTION.SIGNAL.MINDPHIJR)
         selection.add('mindphijm',df['minDPhiJetMet'] > cfg.SELECTION.SIGNAL.MINDPHIJR)
 
         selection.add('dpfcalo_sr',np.abs(df['dPFCaloSR']) < cfg.SELECTION.SIGNAL.DPFCALO)
@@ -252,7 +253,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('met_sr', met_pt>cfg.SELECTION.SIGNAL.RECOIL)
 
         # Add slightly looser recoil cuts for QCD study
-        if cfg.RUN.QCD_ESTIMATION:
+        if cfg.RUN.QCD_ESTIMATION.LOOSER_REGIONS:
             selection.add('recoil_230', df['recoil_pt']>230)
             selection.add('recoil_200', df['recoil_pt']>200)
 
