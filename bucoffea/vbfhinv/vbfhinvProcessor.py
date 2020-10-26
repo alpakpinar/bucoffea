@@ -276,6 +276,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
         leading_jet_in_horn = ((diak4.i0.abseta<3.2) & (diak4.i0.abseta>2.8)).any()
         trailing_jet_in_horn = ((diak4.i1.abseta<3.2) & (diak4.i1.abseta>2.8)).any()
 
+        if cfg.RUN.QCD_ESTIMATION.CATEGORIZE_BY_DETAJJ:
+            selection.add('small_detajj', df['detajj'] < 5.0)
+            selection.add('large_detajj', df['detajj'] >= 5.0)
+
         selection.add('hornveto', (df['dPFTkSR'] < 0.8) | ~(leading_jet_in_horn | trailing_jet_in_horn))
 
         if df['year'] == 2018:

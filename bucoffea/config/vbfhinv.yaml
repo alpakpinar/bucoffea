@@ -236,6 +236,7 @@ default:
     qcd_estimation: 
       run_study: True
       looser_regions: True
+      categorize_by_detajj: True
   triggers:
     ht:
       gammaeff:
