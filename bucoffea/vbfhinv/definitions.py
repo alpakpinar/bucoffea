@@ -325,7 +325,7 @@ def vbfhinv_regions(cfg):
         
         # Regions with looser recoil cuts
         if cfg.RUN.QCD_ESTIMATION.LOOSER_REGIONS:
-            for cuttag in ['200', '230']:
+            for cuttag in ['100', '150', '200']:
                 regions[f'sr_vbf_qcd_recoil_{cuttag}'] = copy.deepcopy(regions['sr_vbf_qcd'])
                 regions[f'sr_vbf_qcd_recoil_{cuttag}'].remove('recoil')
                 regions[f'sr_vbf_qcd_recoil_{cuttag}'].append(f'recoil_{cuttag}')

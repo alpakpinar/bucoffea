@@ -254,7 +254,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         # Add slightly looser recoil cuts for QCD study
         if cfg.RUN.QCD_ESTIMATION.LOOSER_REGIONS:
-            selection.add('recoil_230', df['recoil_pt']>230)
+            selection.add('recoil_100', df['recoil_pt']>100)
+            selection.add('recoil_150', df['recoil_pt']>150)
             selection.add('recoil_200', df['recoil_pt']>200)
 
         # AK4 dijet
