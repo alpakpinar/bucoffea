@@ -1048,7 +1048,7 @@ def photon_triggers():
                                 )
 
                     # plot_recoil(acc,region,dataset=dataset,year=year, tag=tag, distribution='recoil',axis_name='recoil')
-    data_mc_comparison_plot(tag, outtag)
+    data_mc_comparison_plot(tag, outtag=None)
 
 def photon_sf_plot(tag):
 
