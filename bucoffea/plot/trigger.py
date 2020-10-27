@@ -759,12 +759,17 @@ def data_mc_comparison_plot(tag, outtag, ymin=0, ymax=1.1, distribution='recoil'
             ysf[np.isnan(ysf) | np.isinf(np.abs(ysf))] = 1
             outfile[f'{tag}_{region}_{year}'] = (ysf, vals)
 
-def compare_scale_factors(tag, outtag, distribution='recoil'):
-    '''Compare the current scale factors being used against the smoothed scale factors.'''
-    outdir = f"./output/{tag}/{outtag}/smoothed"
+def compare_scale_factors(tag, outtag, distribution='recoil', smoothed=False):
+    '''
+    Compare the current scale factors being used against the smoothed scale factors.
+    If smoothed=True, compare the current ones with the smoothed scale factors. 
+    '''
+    if smoothed:
+        outdir = f"./output/{tag}/{outtag}/smoothed"
+    else:
+        outdir = f"./output/{tag}/{outtag}"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
-    jeteta_configs = ['two_central_jets', 'one_jet_forward_one_jet_central', 'inclusive_nohfhf']
 
     pretty_legend_label = {
         'two_central_jets' : 'Two Central Jets',
@@ -784,9 +789,6 @@ def compare_scale_factors(tag, outtag, distribution='recoil'):
         
         old_sf_centers = ((old_sf_edges + np.roll(old_sf_edges, -1)) / 2)[:-1]
 
-        new_sf_file = pjoin(outdir, f'table_smoothed_scale_factors_1m_{year}.txt')
-        centers, new_sf = read_smooth_scale_facs(new_sf_file)
-
         # Take values where recoil > 250 GeV
         if distribution == 'recoil':
             recoilmask = old_sf_centers > 240
@@ -796,15 +798,45 @@ def compare_scale_factors(tag, outtag, distribution='recoil'):
         # Store the ratios to the current SF in a dict
         ratios = {}
 
-        # Plot all of them
-        for jeteta_config, smooth_sf in new_sf.items():
-            ax.plot(centers, smooth_sf, label=pretty_legend_label[jeteta_config], marker='o')
-            ratios[jeteta_config] = smooth_sf / old_sf
+        # Read in the smoothed scale factors and plot them, if requested
+        if smoothed:
+            new_sf_file = pjoin(outdir, f'table_smoothed_scale_factors_1m_{year}.txt')
+            centers, new_sf = read_smooth_scale_facs(new_sf_file)
+        
+            # Plot all of them
+            for jeteta_config, smooth_sf in new_sf.items():
+                ax.plot(centers, smooth_sf, label=pretty_legend_label[jeteta_config], marker='o', ls='')
+                ratios[jeteta_config] = smooth_sf / old_sf
 
+        # Other case: Calculate the non-smoothed scale factors
+        else:
+            jeteta_configs = ['two_central_jets', 'one_jet_forward_one_jet_central', 'inclusive_nohfhf']
+            for jeteta_config in jeteta_configs:
+                fnum = f'output/{tag}/{outtag}/table_1m_recoil_SingleMuon_{year}_{jeteta_config}.txt'
+                fden = f'output/{tag}/{outtag}/table_1m_recoil_WJetsToLNu_HT_MLM_{year}_{jeteta_config}.txt'
+
+                xnum, xedgnum, ynum, _ = get_xy(fnum)
+                xden, xedgden, yden, _ = get_xy(fden)
+                xsf = xnum
+                ysf = ynum / yden
+
+                # Only consider the values above 250 GeV
+                if distribution == 'recoil':
+                    recoil_cut = xedgnum[0]>=240
+                    xsf = xsf[recoil_cut]
+                    ysf = ysf[recoil_cut]
+    
+                ax.plot(xsf, ysf, label=pretty_legend_label[jeteta_config], marker='o', ls='')
+                ratios[jeteta_config] = ysf / old_sf
+
+        # Plot the old (current) scale factors for comparison
         ax.plot(old_sf_centers, old_sf, label='Current', marker='o', ls='', color='k')
 
         ax.legend()
-        ax.set_ylabel('Smoothed Data/MC SF')
+        if smoothed:
+            ax.set_ylabel('Smoothed Data/MC SF')
+        else:
+            ax.set_ylabel('Data/MC SF')
         ax.grid(True)
     
         plt.text(0., 1., year,
@@ -816,7 +848,7 @@ def compare_scale_factors(tag, outtag, distribution='recoil'):
 
         # Plot ratios here
         for jeteta_config, r in ratios.items():
-            rax.plot(centers, r, label=pretty_legend_label[jeteta_config], marker='o', ls='')
+            rax.plot(old_sf_centers, r, label=pretty_legend_label[jeteta_config], marker='o', ls='')
 
         rax.set_ylim(0.9,1.1)
         rax.grid(True)
