@@ -326,16 +326,24 @@ def vbfhinv_regions(cfg):
         # Regions with looser recoil cuts
         if cfg.RUN.QCD_ESTIMATION.LOOSER_REGIONS:
             for cuttag in ['100', '150', '200']:
-                regions[f'sr_vbf_qcd_recoil_{cuttag}'] = copy.deepcopy(regions['sr_vbf_qcd'])
-                regions[f'sr_vbf_qcd_recoil_{cuttag}'].remove('recoil')
-                regions[f'sr_vbf_qcd_recoil_{cuttag}'].append(f'recoil_{cuttag}')
+                # Two regions: One with low detajj (detajj < 5.0) & one with high detajj (detajj > 5.0)
+                if cfg.RUN.QCD_ESTIMATION.CATEGORIZE_BY_DETAJJ:
+                    # Region with detajj < 5.0
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'] = copy.deepcopy(regions['sr_vbf_qcd'])
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'].remove('recoil')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'].append(f'recoil_{cuttag}')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'].append('small_detajj')
+                    # Region with detajj > 5.0
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'] = copy.deepcopy(regions['sr_vbf_qcd'])
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'].remove('recoil')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'].append(f'recoil_{cuttag}')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'].append('large_detajj')
 
-        # Two regions: One with low detajj (detajj < 5.0) & one with high detajj (detajj > 5.0)
-        if cfg.RUN.QCD_ESTIMATION.CATEGORIZE_BY_DETAJJ:
-            regions['sr_vbf_qcd_small_detajj'] = copy.deepcopy(regions['sr_vbf_qcd'])
-            regions['sr_vbf_qcd_small_detajj'].append('small_detajj')
-            regions['sr_vbf_qcd_large_detajj'] = copy.deepcopy(regions['sr_vbf_qcd'])
-            regions['sr_vbf_qcd_large_detajj'].append('large_detajj')
+                # Detajj inclusive loose regions
+                else:
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}'] = copy.deepcopy(regions['sr_vbf_qcd'])
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}'].remove('recoil')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}'].append(f'recoil_{cuttag}')
 
     if cfg and cfg.RUN.TRIGGER_STUDY_QCD:
         # Trigger study for QCD: Check the turn-on for around 200 < recoil < 250 GeV 
