@@ -43,42 +43,6 @@ def do_fit(xsf, ysf, ysferr):
 
     return sigmoid(xsf, *popt)
 
-def fit_scale_factors(input_dir, jeteta_config, year):
-    '''For the given configuration, calculate and fit the data/MC scale factor.'''
-    # Figure out the input txt files
-    fnum = pjoin(input_dir, f'table_1m_recoil_SingleMuon_{year}_{jeteta_config}.txt')
-    fden = pjoin(input_dir, f'table_1m_recoil_WJetsToLNu_HT_MLM_{year}_{jeteta_config}.txt')
-
-    # Check the file paths
-    check_files(fnum, fden)
-
-    xnum, xedgnum, ynum, yerrnum = get_xy(fnum)
-    xden, xedgden, yden, yerrden = get_xy(fden)
-
-
-    # Calculate SF + error on the SF
-    xsf = xnum
-    ysf = ynum / yden
-    ysferr = ratio_unc(ynum, yden, yerrnum, yerrden)
-
-    # Only get the values for recoil > 250 GeV
-    mask = xsf >= 250
-    xsf = xsf[mask]
-    ysf = ysf[mask]
-    ysferr = ysferr[:,mask]
-
-    fig, ax, rax = fig_ratio()
-    ax.errorbar(xsf, ysf, yerr=ysferr, marker='o', ls='')
-
-    ax.set_xlabel('Recoil (GeV)')
-    ax.set_ylabel('Data/MC SF')
-
-    # Get fitted function
-    f = do_fit(xsf, ysf, ysferr)
-    ax.plot(xsf, f)
-
-    fig.savefig('test.pdf')
-
 def fit_efficiencies(fdata, fmc, jeteta_config, year, outputrootfile, outdir):
     '''Fit the efficiency with a sigmoid function.'''
     x_data, x_edg_data, y_data, yerr_data = get_xy(fdata)
