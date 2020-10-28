@@ -71,6 +71,31 @@ def labels_for_variations(variation):
 
     return mapping[variation]
 
+def compute_integral(h):
+    '''
+    Compute the integral of the given histogram.
+    NOTE: Give this guy 1D histograms only!
+    '''
+    bin_edges = h.axes()[0].edges()
+    bin_widths = np.diff(bin_edges)
+
+    vals = h.values()[()]
+    integral = np.sum(vals * bin_widths)
+    
+    return integral
+
+def get_data_mc_sf_from_integral(h_data, h_mc):
+    '''
+    Calculate the integral of data and MC distributions.
+    Make a data/MC SF out of the ratio between the two integrals.
+    '''
+    integral_data = compute_integral(h_data)
+    integral_mc = compute_integral(h_mc)
+
+    # Calculate the data/MC ratio
+    sf = integral_data / integral_mc
+    return sf
+
 def get_combined_variations(h_data, h_mc, variations, region):
     '''
     Given data and MC histograms, get the varied data/MC ratio for the specified variation.
@@ -113,7 +138,7 @@ def get_combined_variations(h_data, h_mc, variations, region):
 
     return total_up_v, total_down_v
 
-def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=False, region='norecoil'):
+def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=False, region='norecoil', ratio_with_sf=False):
     '''For the given distribution and year, construct data/MC comparison plot with all the JME variations'''
     # The list of variations, depending on we use smearing or not
     if smear:
@@ -213,9 +238,6 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
         h_mc_var = h.integrate('dataset', re.compile(f'(?!(EGamma)).*{year}'))
         combined_var_up, combined_var_down = get_combined_variations(h_data, h_mc_var, variations, region)
 
-        # opts = {'step': 'post', 'linewidth': 0, 'label' : labels_for_variations(variation) }
-        # opts = {'step': 'post', 'linewidth': 0}
-
         up_var = np.r_[combined_var_up[:], combined_var_up[-1]]
         down_var = np.r_[combined_var_down[:], combined_var_down[-1]]
 
@@ -228,7 +250,30 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
                 )
 
     rax.legend(prop={'size':10.})
-    
+
+    # Get data/MC SF by integrating over the distributions, plot the ratio scaled by SF
+    if ratio_with_sf:
+        sf = get_data_mc_sf_from_integral(
+            h_data.integrate('dataset'), 
+            h_mc_nom.integrate('dataset')
+            )
+        
+        print(f'Data/MC scale factor: {sf}')
+
+        data_err_opts.pop('color')
+
+        h_mc = h_mc_nom.integrate('dataset')
+        h_mc.scale(sf)
+
+        hist.plotratio(h_data.integrate('dataset'), h_mc,
+                ax=rax,
+                denom_fill_opts={},
+                guide_opts={},
+                unc='num',
+                error_opts=data_err_opts,
+                clear=False
+                )
+
     # Save figure
     if smear:
         outdir = f'./output/{outtag}/data_mc/smeared/{region}'
@@ -267,7 +312,8 @@ def main():
                         distribution=distribution,
                         year=year,
                         smear=args.smeared,
-                        region=region
+                        region=region,
+                        ratio_with_sf=True
                         )
 
 if __name__ == '__main__':
