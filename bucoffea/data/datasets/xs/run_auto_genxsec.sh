@@ -66,8 +66,6 @@ run_from_list() {
     done < ${LIST}
 }
 
-run_from_list ../datasets_2017.txt
-run_from_list ../datasets_2018.txt
-run_from_list ../datasets_2016.txt
+run_from_list ../datasets_inclusive_dy.txt
 
 
