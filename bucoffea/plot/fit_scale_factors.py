@@ -8,6 +8,7 @@ import uproot
 
 from scipy.optimize import curve_fit
 from matplotlib import pyplot as plt
+from bucoffea.helpers.paths import bucoffea_path
 from bucoffea.plot.trigger import get_xy, ratio_unc
 from bucoffea.plot.util import fig_ratio
 from bucoffea.plot.style import matplotlib_rc
@@ -111,6 +112,85 @@ def fit_efficiencies(fdata, fmc, jeteta_config, year, outputrootfile, outdir):
 
     outputrootfile[f'sf_{jeteta_config}_{year}'] = (sf_fit, x_edges)
 
+def compare_with_current_sf(new_rootfile, outdir):
+    '''Plot the newly calculated SF and compare with the original one.'''
+    # Get the current scale factors for comparison
+    orig_sf_file = bucoffea_path('data/sf/trigger/met_trigger_sf.root')
+    f_orig = uproot.open(orig_sf_file)
+
+    # Get the newly calculated SFs
+    f_new = uproot.open(new_rootfile)
+
+    for year in [2017, 2018]:
+        fig, ax, rax = fig_ratio()
+
+        old_sf = f_orig[f'120pfht_hltmu_1m_{year}'].values
+        old_sf_edges = f_orig[f'120pfht_hltmu_1m_{year}'].edges
+
+        old_sf_centers = ((old_sf_edges + np.roll(old_sf_edges, -1)) / 2)[:-1]
+
+        # Take values where recoil > 250 GeV
+        recoilmask =  old_sf_centers > 240
+        old_sf = old_sf[recoilmask]
+        old_sf_centers = old_sf_centers[recoilmask]
+
+        ax.plot(old_sf_centers, old_sf, marker='o', ls='', label='Current SF', color='k')
+
+        ratios = {}
+
+        opts = {
+            'markersize' : 12.,
+            'linestyle' : 'none',
+            'marker' : '.'
+        }
+
+        jeteta_configs = ['two_central_jets', 'one_jet_forward_one_jet_central', 'inclusive_nohfhf']
+        for idx, jeteta_config in enumerate(jeteta_configs):
+            new_sf = f_new[f'sf_{jeteta_config}_{year}'].values
+            new_sf_edges = f_new[f'sf_{jeteta_config}_{year}'].edges
+
+            new_sf_centers = ((new_sf_edges + np.roll(new_sf_edges, -1)) / 2)[:-1]
+
+            new_sf = new_sf[recoilmask]
+            new_sf_centers = new_sf_centers[recoilmask]
+
+            ax.plot(new_sf_centers, new_sf, label=get_pretty_legend_label(jeteta_config), color=f'C{idx}', lw=2)
+
+            # Ratio with the current SF
+            r = new_sf / old_sf
+
+            rax.plot(new_sf_centers, r, color=f'C{idx}', **opts)
+
+        ax.legend()
+        ax.set_ylabel('Data / MC SF')
+
+        loc1 = MultipleLocator(0.01)
+        loc2 = MultipleLocator(0.005)
+        ax.yaxis.set_major_locator(loc1)
+        ax.yaxis.set_minor_locator(loc2)
+
+        rax.grid(True)
+        rax.set_ylim(0.95,1.05)
+        rax.set_xlabel('Recoil (GeV)')
+        rax.set_ylabel('Ratio to current SF')
+            
+        loc3 = MultipleLocator(0.01)
+        rax.yaxis.set_minor_locator(loc3)
+
+        plt.text(0., 1., year,
+            fontsize=16,
+            horizontalalignment='left',
+            verticalalignment='bottom',
+            transform=ax.transAxes
+            )
+
+
+        # Save figure
+        outpath = pjoin(outdir, f'sf_comparison_{year}.pdf')
+        fig.savefig(outpath)
+        plt.close(fig)
+        print(f'File saved: {outpath}')
+
 def main():
     # Input directory to read txt files from
     input_dir = './output/120pfht_mu_recoil/merged_2020-10-20_vbfhinv_03Sep20v7_trigger_study'
@@ -144,6 +224,8 @@ def main():
                 year=year, 
                 outdir=outdir,
                 outputrootfile=outputrootfile)
+
+    compare_with_current_sf(outputrootpath, outdir)
 
 if __name__ == '__main__':
     main()
