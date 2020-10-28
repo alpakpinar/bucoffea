@@ -154,7 +154,7 @@ def compare_with_current_sf(new_rootfile, outdir):
             new_sf = new_sf[recoilmask]
             new_sf_centers = new_sf_centers[recoilmask]
 
-            ax.plot(new_sf_centers, new_sf, label=get_pretty_legend_label(jeteta_config), color=f'C{idx}', lw=2)
+            ax.plot(new_sf_centers, new_sf, label=get_pretty_legend_label(jeteta_config), color=f'C{idx}', lw=2, marker='o')
 
             # Ratio with the current SF
             r = new_sf / old_sf
