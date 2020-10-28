@@ -19,7 +19,7 @@ pjoin = os.path.join
 warnings.filterwarnings('ignore')
 
 REBIN = {
-    'met' : hist.Bin('met', r'MET (GeV)', 60, 0, 300),
+    'met' : hist.Bin('met', r'MET (GeV)', 40, 0, 200),
     'vpt' : hist.Bin('vpt', r'$p_T(Z) \ (GeV)$', 25, 0, 1000)
 }
 
@@ -42,6 +42,14 @@ region_labels = {
     'norecoil_nojpt' : r'Jet Inclusive'
 }
 
+def get_variation_label(variations):
+    '''Get legend label for the combined variations.'''
+    if len(variations) == 1:
+        label = variations[0] 
+    else:
+        label = ' + '.join(variations)
+    return label
+
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='The path containing merged coffea files.')
@@ -60,25 +68,53 @@ def labels_for_variations(variation):
 
     return mapping[variation]
 
-def get_varied_ratios(h_data, h_mc, variation, region):
-    '''Given data and MC histograms, get the varied data/MC ratio for the specified variation.'''
+def get_combined_variations(h_data, h_mc, variations, region):
+    '''
+    Given data and MC histograms, get the varied data/MC ratio for the specified variation.
+    Combine the given variations (in quadrature) to get the combined unc.
+    '''
     data_vals = h_data.integrate('dataset').values()[()]
 
+    # First, get the nominal data/MC value
+    mc_nom = h_mc.integrate('region', f'cr_2e_j_{region}').values()[()]
+
+    data_over_mc_nom = data_vals / mc_nom
+
+    # Store the up and down variations in dicts
+    data_over_mc_up = {}
+    data_over_mc_down = {}
+
+
     # Up and down variations for MC
-    mc_up = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Up').values()[()]
-    mc_down = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Down').values()[()]
+    for variation in variations:
+        mc_up = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Up').values()[()]
+        mc_down = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Down').values()[()]
+    
+        # Up and down data / MC ratios
+        data_over_mc_up[variation] = data_vals / mc_up
+        data_over_mc_down[variation] = data_vals / mc_down
 
-    # Up and down data / MC ratios
-    data_over_mc_up = data_vals / mc_up
-    data_over_mc_down = data_vals / mc_down
+    # Now, combine the variations
+    total_up_v = 0
+    total_down_v = 0
+    for variation in variations:
+        up_v = data_over_mc_up[variation]
+        down_v = data_over_mc_down[variation]
 
-    return data_over_mc_up, data_over_mc_down
+        # Percent variation w.r.t. nominal ratio
+        percent_up_v = up_v / data_over_mc_nom - 1
+        percent_down_v = down_v / data_over_mc_nom - 1
+
+        total_up_v += np.sqrt(percent_up_v**2)
+        total_down_v += np.sqrt(percent_down_v**2)
+
+    return total_up_v, total_down_v
 
 def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=False, region='norecoil'):
     '''For the given distribution and year, construct data/MC comparison plot with all the JME variations'''
     # The list of variations, depending on we use smearing or not
     if smear:
-        variations = ['jer', 'jesTotal']
+        variations = ['jesTotal', 'jer']
     else:
         variations = ['jesTotal', 'unclustEn']
 
@@ -160,20 +196,32 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
     # Now, for each variation, get the varied ratios and plot them in the ratio pad
     data_mc_nom = h_data.integrate('dataset').values()[()] / h_mc_nom.integrate('dataset').values()[()]
     edges = h_data.integrate('dataset').axes()[0].edges()
+    centers = h_data.integrate('dataset').axes()[0].centers()
 
-    for variation in variations:
+    # Plot several combination of variations
+    # 1. JES total up/down only
+    # 2. 1 combined with JER up/down (for T1Smear) or unclust energy up/down (for T1)
+    variations_to_plot = [
+        variations[:1],
+        variations
+    ]
+
+    for variations in variations_to_plot:
         h_mc_var = h.integrate('dataset', re.compile(f'(?!(EGamma)).*{year}'))
-        data_mc_up, data_mc_down = get_varied_ratios(h_data, h_mc_var, variation, region)
+        combined_var_up, combined_var_down = get_combined_variations(h_data, h_mc_var, variations, region)
 
-        # Fractional change in data/MC compared to nominal
-        frac_change_up = data_mc_up / data_mc_nom
-        frac_change_down = data_mc_down / data_mc_nom
+        # opts = {'step': 'post', 'linewidth': 0, 'label' : labels_for_variations(variation) }
+        # opts = {'step': 'post', 'linewidth': 0}
 
-        opts = {'step': 'post', 'linewidth': 0, 'label' : labels_for_variations(variation) }
+        rax.fill_between(centers, 
+                1+combined_var_up, 
+                1-combined_var_down,
+                label=get_variation_label(variations),
+                alpha=0.5
+                )
 
-        # TODO: To be tested
-        # rax.fill_between(edges, frac_change_up, frac_change_down, **opts)
-
+    rax.legend(prop={'size':10.})
+    
     # Save figure
     if smear:
         outdir = f'./output/{outtag}/data_mc/smeared/{region}'
