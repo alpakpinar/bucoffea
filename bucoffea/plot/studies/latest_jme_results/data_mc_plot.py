@@ -11,10 +11,13 @@ import argparse
 from coffea import hist
 from matplotlib import pyplot as plt
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
+from bucoffea.plot.style import matplotlib_rc
 from klepto.archives import dir_archive
 from pprint import pprint
 
 pjoin = os.path.join
+
+matplotlib_rc()
 
 warnings.filterwarnings('ignore')
 
@@ -170,7 +173,7 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
             handle.set_edgecolor('k')
 
     # Update legend
-    ax.legend(ncol=1)
+    ax.legend(ncol=1, prop={'size':12.})
 
     ax.set_title(region_labels[region])
 
@@ -213,9 +216,13 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
         # opts = {'step': 'post', 'linewidth': 0, 'label' : labels_for_variations(variation) }
         # opts = {'step': 'post', 'linewidth': 0}
 
-        rax.fill_between(centers, 
-                1+combined_var_up, 
-                1-combined_var_down,
+        up_var = np.r_[combined_var_up[:], combined_var_up[-1]]
+        down_var = np.r_[combined_var_down[:], combined_var_down[-1]]
+
+        rax.fill_between(edges, 
+                1+up_var, 
+                1-down_var,
+                where='post',
                 label=get_variation_label(variations),
                 alpha=0.5
                 )
