@@ -13,6 +13,7 @@ from bucoffea.plot.trigger import get_xy, ratio_unc
 from bucoffea.plot.util import fig_ratio
 from bucoffea.plot.style import matplotlib_rc
 from matplotlib.ticker import MultipleLocator
+from numpy import linalg
 
 pjoin = os.path.join
 
@@ -32,17 +33,28 @@ def check_files(fnum, fden):
     if not os.path.exists(fden):
         raise RuntimeError(f"File not found {fden}")
 
+def sigmoid(x,a,b):
+    return 1 / (1 + np.exp(-a * (x-b)) )
+
 def do_fit(xsf, ysf, ysferr):
     '''Fit a sigmoid function to scale factor data.'''
-    def sigmoid(x,a,b):
-        return 1 / (1 + np.exp(-a * (x-b)) )
 
-    popt, _ = curve_fit(
+    popt, pcov = curve_fit(
         sigmoid,
         xsf, ysf
     )
 
-    return sigmoid(xsf, *popt)
+    # Diagonalize the covariance matrix + calculate fit variations
+    fit_params = {
+        'fit' : popt
+    }
+    pcov_w, pcov_v = linalg.eig(pcov)
+    for idx in range(len(pcov_w)):
+        variation = np.sign(pcov_w[idx]) * np.sqrt(np.abs(pcov_w[idx])) * pcov_v[:,idx]
+        fit_params[f'fit_{idx}_up'] = popt + variation
+        fit_params[f'fit_{idx}_dn'] = popt - variation
+
+    return fit_params
 
 def fit_efficiencies(fdata, fmc, jeteta_config, year, outputrootfile, outdir):
     '''Fit the efficiency with a sigmoid function.'''
@@ -55,10 +67,12 @@ def fit_efficiencies(fdata, fmc, jeteta_config, year, outputrootfile, outdir):
     ax.errorbar(x_mc, y_mc, yerr=yerr_mc, marker='o', ls='', label='MC')
 
     # Get the sigmoid fit for data and MC
-    f_data = do_fit(x_data, y_data, yerr_data)
+    fit_params_data = do_fit(x_data, y_data, yerr_data)
+    f_data = sigmoid(x_data, *fit_params_data['fit'])
     ax.plot(x_data, f_data, lw=2, label='Data fit')
 
-    f_mc = do_fit(x_mc, y_mc, yerr_mc)
+    fit_params_mc = do_fit(x_mc, y_mc, yerr_mc)
+    f_mc = sigmoid(x_mc, *fit_params_mc['fit'])
     ax.plot(x_mc, f_mc, lw=2, label='MC fit', ls='--')
 
     ax.set_ylabel('Trigger Efficiency')
