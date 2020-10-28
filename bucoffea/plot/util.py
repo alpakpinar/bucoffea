@@ -199,6 +199,9 @@ def merge_datasets(histogram):
         'DYNJetsToLL_M-50_LHEZpT-FXFX_2017' : [x for x in all_datasets if re.match('DY(\d+)JetsToLL_M-50_LHEZpT_(\d+)-.*-FXFX_2017',x)],
         'DYNJetsToLL_M-50_LHEZpT-FXFX_2018' : [x for x in all_datasets if re.match('DY(\d+)JetsToLL_M-50_LHEZpT_(\d+)-.*-FXFX_2018',x)],
 
+        'DYJetsToLL_amcatnloFXFX_2017' : [x for x in all_datasets if re.match('DYJetsToLL_\dJ.*FXFX.*2017',x)],
+        'DYJetsToLL_amcatnloFXFX_2018' : [x for x in all_datasets if re.match('DYJetsToLL_\dJ.*FXFX.*2018',x)],
+
         'DYNJetsToLL_M-50-MLM_2017' : [x for x in all_datasets if re.match('DY(\d+)JetsToLL_M-50-MLM_2017',x)],
         'DYNJetsToLL_M-50-MLM_2018' : [x for x in all_datasets if re.match('DY(\d+)JetsToLL_M-50-MLM_2018',x)],
 
