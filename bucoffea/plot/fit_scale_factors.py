@@ -79,9 +79,9 @@ def fit_scale_factors(input_dir, jeteta_config, year):
 
     fig.savefig('test.pdf')
 
-def fit_efficiencies(fdata, fmc, jeteta_config, year, sample='data', outtag=None):
+def fit_efficiencies(fdata, fmc, jeteta_config, year, outputrootfile, outdir):
     '''Fit the efficiency with a sigmoid function.'''
-    x_data, _, y_data, yerr_data = get_xy(fdata)
+    x_data, x_edg_data, y_data, yerr_data = get_xy(fdata)
     x_mc, _, y_mc, yerr_mc = get_xy(fmc)
 
     fig, ax, rax = fig_ratio()
@@ -138,14 +138,14 @@ def fit_efficiencies(fdata, fmc, jeteta_config, year, sample='data', outtag=None
         transform=ax.transAxes
         )
 
-    # Save figure
-    outdir = f'./output/120pfht_mu_recoil/{outtag}/sigmoid_fit'
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
     outpath = pjoin(outdir, f'eff_fit_{jeteta_config}_{year}.pdf')
     fig.savefig(outpath)
     plt.close(fig)
     print(f'File saved: {outpath}')
+
+    x_edges = np.array(list(x_edg_data[0]) + [x_edg_data[1][-1]])
+
+    outputrootfile[f'sf_{jeteta_config}_{year}'] = (sf_fit, x_edges)
 
 def main():
     # Input directory to read txt files from
@@ -157,7 +157,15 @@ def main():
         'one_jet_forward_one_jet_central',
         'inclusive_nohfhf'
     ]
-    
+
+    # Save the SFs to an output ROOT file
+    outdir = f'./output/120pfht_mu_recoil/{outtag}/sigmoid_fit'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    outputrootpath = pjoin(outdir, 'fitted_sf.root')
+    outputrootfile = uproot.recreate(outputrootpath)
+
     for year in [2017,2018]:
         for jeteta_config in jeteta_configs:
             # Figure out the input txt files
@@ -170,7 +178,8 @@ def main():
             fit_efficiencies(f_data, f_mc, 
                 jeteta_config=jeteta_config, 
                 year=year, 
-                outtag=outtag)
+                outdir=outdir,
+                outputrootfile=outputrootfile)
 
 if __name__ == '__main__':
     main()
