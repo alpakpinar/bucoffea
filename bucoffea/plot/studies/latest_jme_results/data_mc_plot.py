@@ -274,6 +274,13 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
                 clear=False
                 )
 
+        plt.text(1., 1., f'Data/MC SF: {sf:.3f}',
+                fontsize=14,
+                horizontalalignment='right',
+                verticalalignment='bottom',
+                transform=ax.transAxes
+               )
+
     # Save figure
     if smear:
         outdir = f'./output/{outtag}/data_mc/smeared/{region}'
