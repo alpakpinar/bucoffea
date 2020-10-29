@@ -629,6 +629,7 @@ def monojet_regions(cfg, variations):
         regions[f'cr_2e_j_norecoil_nojpt_nohemveto{var}'].remove(f'recoil{var}')
         regions[f'cr_2e_j_norecoil_nojpt_nohemveto{var}'].remove(f'leadak4_pt_eta{var}')
         regions[f'cr_2e_j_norecoil_nojpt_nohemveto{var}'].append(f'dphi_z_jet{var}')
+        regions[f'cr_2e_j_norecoil_nojpt_nohemveto{var}'].append(f'dpt_z_jet{var}')
         regions[f'cr_2e_j_norecoil_nojpt_nohemveto{var}'].remove('hemveto')
 
         # Single electron CR
