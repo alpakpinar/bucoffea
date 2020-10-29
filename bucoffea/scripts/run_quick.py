@@ -19,8 +19,8 @@ def main():
 
 
     fileset = {
-        "DYJetsToLL_M-50_HT-100to200-MLM_ext1_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aakpinar/nanopost/15Oct20_noskim/DYJetsToLL_M-50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8/DYJetsToLL_M-50_HT-100to200-MLM_ext1_2017/201016_021925/0000/tree_1.root"
+        "DYJetsToLL_0J-amcatnloFXFX_2017" : [
+            "root://cmsxrootd.fnal.gov//store/user/aakpinar/nanopost/15Oct20_noskim/DYJetsToLL_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_0J-amcatnloFXFX_2017/201023_160853/0000/tree_1.root"
         ]
     }
 
