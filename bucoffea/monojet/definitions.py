@@ -537,12 +537,13 @@ def setup_candidates(df, cfg, variations):
             _bjets = _bjets[(_bjets.ptraw>50) | (_bjets.abseta<2.65) | (_bjets.abseta>3.139)]
 
         # Filter w.r.t PU ID
-        ak4_puid = getattr(_ak4, f'puid{var}')
-        _ak4 = _ak4[ak4_puid] 
-
-        bjets_puid = getattr(_bjets, f'puid{var}')
-        _bjets = _bjets[bjets_puid] 
-
+        if cfg.AK4.PUID:
+            ak4_puid = getattr(_ak4, f'puid{var}')
+            _ak4 = _ak4[ak4_puid] 
+    
+            bjets_puid = getattr(_bjets, f'puid{var}')
+            _bjets = _bjets[bjets_puid] 
+    
         vmap.fill_mapping(  ak4=_ak4,
                             ak8=ak8,
                             bjets=_bjets,
