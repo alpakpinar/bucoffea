@@ -233,7 +233,6 @@ class monojetProcessor(processor.ProcessorABC):
         leadelectron_index=electrons.pt.argmax()
 
         selection_nom.add('one_electron', electrons.counts==1)
-        selection_nom.add('two_electrons', electrons.counts==2)
         selection_nom.add('at_least_one_tight_el', df['is_tight_electron'].any())
 
         selection_nom.add('dielectron_mass', ((dielectrons.mass > cfg.SELECTION.CONTROL.DOUBLEEL.MASS.MIN)  \
