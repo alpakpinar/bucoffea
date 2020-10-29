@@ -45,6 +45,24 @@ region_labels = {
     'norecoil_nojpt' : r'Jet Inclusive'
 }
 
+def get_x_label(distribution, smeared=False):
+    '''For the given distribution, get the x-label.'''
+    xlabels = {
+        'vpt' : r'$p_T(Z) \ (GeV)$',
+        'ak4_pt0' : r'Leading jet $p_T$ (GeV)',
+        'ak4_eta0' : r'Leading jet $\eta$'
+    }
+
+    if distribution != 'met':
+        return xlabels[distribution]
+    else:
+        if smeared:
+            return 'T1Smear MET (GeV)'
+        else:
+            return 'T1 MET (GeV)'
+
+    raise RuntimeError(f'Could not find a label for distribution: {distribution}')
+
 def get_variation_label(variations):
     '''Get legend label for the combined variations.'''
     if len(variations) == 1:
@@ -213,7 +231,6 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
     rax.grid(True)
     rax.set_ylim(0,2)
     rax.set_ylabel('Data / MC')
-    rax.set_xlabel(xlabels[distribution])
 
     loc1 = matplotlib.ticker.MultipleLocator(base=0.5)
     loc2 = matplotlib.ticker.MultipleLocator(base=0.1)
@@ -278,6 +295,8 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
                 verticalalignment='bottom',
                 transform=ax.transAxes
                )
+
+    rax.set_xlabel(get_x_label(distribution, smeared=smear))
 
     # Save figure
     if smear:
