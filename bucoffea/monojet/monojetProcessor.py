@@ -28,7 +28,8 @@ from bucoffea.helpers import (
                               mask_and,
                               mask_or,
                               evaluator_from_config,
-                              candidates_in_hem
+                              candidates_in_hem,
+                              calculate_v_pt_phi_from_dilepton
                              )
 from bucoffea.helpers.weights import (
                               get_veto_weights,
@@ -332,6 +333,14 @@ class monojetProcessor(processor.ProcessorABC):
         selection.add('dielectron_charge', (dielectron_charge==0).any())
         selection.add('two_electrons', electrons.counts==2)
 
+        zpt, zphi = calculate_v_pt_phi_from_dilepton(dielectrons)
+        
+        dphi_z_jet = dphi(zphi.min(), ak4[leadak4_index].phi.min())
+        dpt_z_jet = (zpt.min() - ak4[leadak4_index].pt.min()) / zpt.min()
+
+        selection.add('dphi_z_jet', dphi_z_jet > 2.7)
+        selection.add('dpt_z_jet', np.abs(dpt_z_jet) < 0.1)
+
         # Single Ele CR
         selection.add('met_el', met_pt > cfg.SELECTION.CONTROL.SINGLEEL.MET)
         selection.add('mt_el', df['MT_el'] < cfg.SELECTION.CONTROL.SINGLEEL.MT)
@@ -450,6 +459,11 @@ class monojetProcessor(processor.ProcessorABC):
             veto_weights = get_veto_weights(df, cfg, evaluator, electrons, muons, taus, do_variations=True)
 
         for region, cuts in regions.items():
+
+            # For the purposes of this branch only,
+            # just run for inclusive Z(ee)
+            if region != 'cr_2e_j_inc':
+                continue
 
             if re.match('sr_.*', region):
                 recoil_pt = met_pt

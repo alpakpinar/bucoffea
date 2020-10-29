@@ -542,6 +542,8 @@ def monojet_regions(cfg):
     regions['cr_2e_j_inc'] = copy.deepcopy(regions['cr_2e_j'])
     regions['cr_2e_j_inc'].remove('recoil')
     regions['cr_2e_j_inc'].remove('leadak4_pt_eta')
+    regions['cr_2e_j_inc'].append('dphi_z_jet')
+    regions['cr_2e_j_inc'].append('dpt_z_jet')
 
     # Single electron CR
     cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', 'met_el','mt_el'] + common_cuts
