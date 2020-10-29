@@ -248,7 +248,7 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
                 alpha=0.5
                 )
 
-    rax.legend(prop={'size':10.})
+    rax.legend(prop={'size':10.}, ncol=2)
 
     # Get data/MC SF by integrating over the distributions, plot the ratio scaled by SF
     if ratio_with_sf:
@@ -266,7 +266,6 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
 
         hist.plotratio(h_data.integrate('dataset'), h_mc,
                 ax=rax,
-                denom_fill_opts={},
                 guide_opts={},
                 unc='num',
                 error_opts=data_err_opts,
