@@ -205,7 +205,6 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
     # Plot the ratio of nominal data/MC values
     hist.plotratio(h_data.integrate('dataset'), h_mc_nom.integrate('dataset'),
             ax=rax,
-            denom_fill_opts={},
             guide_opts={},
             unc='num',
             error_opts=data_err_opts
@@ -238,13 +237,13 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
         h_mc_var = h.integrate('dataset', re.compile(f'(?!(EGamma)).*{year}'))
         combined_var_up, combined_var_down = get_combined_variations(h_data, h_mc_var, variations, region)
 
-        up_var = np.r_[combined_var_up[:], combined_var_up[-1]]
-        down_var = np.r_[combined_var_down[:], combined_var_down[-1]]
+        up_var = np.r_[combined_var_up, combined_var_up[-1]]
+        down_var = np.r_[combined_var_down, combined_var_down[-1]]
 
         rax.fill_between(edges, 
                 1+up_var, 
                 1-down_var,
-                where='post',
+                step='post',
                 label=get_variation_label(variations),
                 alpha=0.5
                 )
