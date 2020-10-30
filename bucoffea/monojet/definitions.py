@@ -271,18 +271,18 @@ def setup_candidates(df, cfg):
     if df['is_data'] and extract_year(df['dataset']) != 2018:
         # 2016, 2017 data
         jes_suffix = ''
-        jes_suffix_met = ''
+        jes_suffix_met = 'T1'
     elif df['is_data']:
         # 2018 data
         jes_suffix = '_nom'
-        jes_suffix_met = '_nom'
+        jes_suffix_met = 'T1'
     else:
         # MC, all years
         jes_suffix = '_nom'
         if cfg.MET.JER:
-            jes_suffix_met = '_jer'
+            jes_suffix_met = 'T1Smear'
         else:
-            jes_suffix_met = '_nom'
+            jes_suffix_met = 'T1'
 
     muons = JaggedCandidateArray.candidatesfromcounts(
         df['nMuon'],
@@ -478,8 +478,8 @@ def setup_candidates(df, cfg):
     else:
         met_branch = 'MET'
 
-    met_pt = df[f'{met_branch}_pt{jes_suffix_met}']
-    met_phi = df[f'{met_branch}_phi{jes_suffix_met}']
+    met_pt = df[f'{met_branch}_{jes_suffix_met}_pt']
+    met_phi = df[f'{met_branch}_{jes_suffix_met}_phi']
 
     return met_pt, met_phi, ak4, bjets, ak8, muons, electrons, taus, photons
 
