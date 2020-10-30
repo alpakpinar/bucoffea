@@ -49,7 +49,7 @@ def monojet_accumulator(cfg):
     wppass_ax = Bin("wppass", "WP Pass",2,-0.5,1.5)
     vpt_ax = Bin("vpt",r"$p_{T}^{V}$ (GeV)", 50, 0, 2000)
 
-    met_ax = Bin("met", r"$p_{T}^{miss}$ (GeV)", 40, 0, 2000)
+    met_ax = Bin("met", r"$p_{T}^{miss}$ (GeV)", 100, 0, 500)
     recoil_ax = Bin("recoil", r"Recoil (GeV)", 200, 0, 2000)
 
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 50, 0, 1000)
