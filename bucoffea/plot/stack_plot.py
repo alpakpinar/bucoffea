@@ -122,7 +122,7 @@ class Style():
                     'recoil_notheory' : hist.Bin('recoil','Recoil (GeV)', recoil_bins_2016),
                     'recoil_recosfrecoil' : hist.Bin('recoil','Recoil (GeV)', recoil_bins_2016),
                     'recoil_nodibosonnnlo' : hist.Bin('recoil','Recoil (GeV)', recoil_bins_2016),
-                    # 'met' : hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,500,50)) + list(range(500,1000,100)) + list(range(1000,2000,250))),
+                    'met' : hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',60,0,300),
                     'calomet' : hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,500,50)) + list(range(500,1000,100)) + list(range(1000,2000,250))),
                     'puppimet' : hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,500,50)) + list(range(500,1000,100)) + list(range(1000,2000,250))),
                     'tkmet' : hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,500,50)) + list(range(500,1000,100)) + list(range(1000,2000,250))),
