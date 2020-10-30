@@ -56,6 +56,7 @@ def plot(args):
                 'cr_2m_j' : f'MET_{year}',
                 'cr_1e_j' : f'EGamma_{year}',
                 'cr_2e_j' : f'EGamma_{year}',
+                'cr_2e_j_inc' : f'EGamma_{year}',
                 'cr_g_j' : f'EGamma_{year}',
             }
 
@@ -67,6 +68,7 @@ def plot(args):
                 'cr_1e_j' : re.compile(f'(Top_FXFX.*|Diboson.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*|GJets_DR.*HT.*).*{year}'),
                 'cr_2m_j' : re.compile(f'(Top_FXFX.*|Diboson.*|QCD_HT.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
                 'cr_2e_j' : re.compile(f'(Top_FXFX.*|Diboson.*|QCD_HT.*|DYJetsToLL_M-50_HT_MLM)_{year}'),
+                'cr_2e_j_inc' : re.compile(f'(Top_FXFX.*|Diboson.*|DYJetsToLL.*)_{year}'),
                 'cr_g_j' : re.compile(f'(GJets_DR.*HT.*|QCD_data.*|WJetsToLNu.*HT.*).*{year}'),
             }
 
@@ -78,6 +80,9 @@ def plot(args):
             # Data / MC plots are made here
             # Loop over all regions
             for region in mc_lo.keys():
+                # Just for the purposes of this branch, plot inclusive Z(ee)
+                if region != 'cr_2e_j_inc':
+                    continue
                 if not re.match(args.region, region):
                         continue
                 # Make separate output direcotry for each region

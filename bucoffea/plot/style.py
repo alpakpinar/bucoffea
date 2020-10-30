@@ -924,6 +924,11 @@ def plot_settings():
                 'ylim' : (1e2,1e5)
             }
         },
+        'cr_2e_j_inc' :  {
+            'met' : {
+                'ylim' : (1e-3,1e5)
+            },
+        },
         'cr_1m_j' : {
             'ak4_pt0_over_recoil' : {
                 'ylim' : (1e1,1e7)
