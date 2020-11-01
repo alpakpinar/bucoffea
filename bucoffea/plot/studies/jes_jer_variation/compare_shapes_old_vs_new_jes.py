@@ -61,7 +61,7 @@ def integrate_over_dataset(h, year, dataset_tag):
 
     return h
 
-def make_comparison_plot(acc_dict, dataset_tag, year, variation='jesRelativeBal'):
+def make_comparison_plots(acc_dict, dataset_tag, year, variation='jesRelativeBal'):
     '''For the given variation, make a comparison plot for the shapes of the variation as a function of mjj.'''
     histos = {}
     for v, acc in acc_dict.items():
@@ -84,11 +84,8 @@ def make_comparison_plot(acc_dict, dataset_tag, year, variation='jesRelativeBal'
         for region in h.identifiers('region'):
             if variation not in region.name:
                 continue
-            print(f'Region: {region.name}')
-            print(f'Variation: {variation}')
             # Compute and store the up/down variations for this specific variation
             var_direction = re.findall('Up|Down', region.name)[0]
-            print(f'Variation direction: {var_direction}')
             var_sumw[v][var_direction], var_sumw2[v][var_direction] = h.integrate('region', region).values(sumw2=True)[()]
 
     # Compute the varied / nominal ratios and plot them
@@ -163,11 +160,28 @@ def main():
         acc.load('sumw')
         acc.load('sumw2')
     
-    make_comparison_plot(acc_dict, 
-            dataset_tag='qcd_zjets_2017',
-            year=2017,
-            variation='jesRelativeSample'
-            )
+    for year in [2017, 2018]:
+        # List of all split JES variations (also check "Total" for testing)
+        variations = [  'jesFlavorQCD', 
+                        'jesRelativeBal',
+                        'jesHF',
+                        'jesBBEC1',
+                        'jesEC2',
+                        'jesAbsolute',
+                        f'jesBBEC1_{year}',
+                        f'jesEC2_{year}',
+                        f'jesAbsolute_{year}',
+                        f'jesHF_{year}',
+                        f'jesRelativeSample_{year}',
+                        'jesTotal'
+                        ]
+        
+        for variation in variations:
+            make_comparison_plots(acc_dict, 
+                    dataset_tag=f'qcd_zjets_{year}',
+                    year=year,
+                    variation=variation
+                    )
             
 if __name__ == '__main__':
     main()
