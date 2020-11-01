@@ -89,10 +89,12 @@ def make_comparison_plot(acc_dict, dataset_tag, year, variation='jesRelativeBal'
         ratios_up[v]   = sumw_up / sumw_nom
         ratios_down[v] = sumw_down / sumw_nom
 
-        hep.histplot(ratios_up[v], edges, ax=ax, label=f'Up_{v}')
-        hep.histplot(ratios_down[v], edges, ax=ax, label=f'Down_{v}')
+        hep.histplot(ratios_up[v], edges, ax=ax, label=f'Up {v}', histtype='errorbar')
+        hep.histplot(ratios_down[v], edges, ax=ax, label=f'Down {v}', histtype='errorbar')
 
     ax.set_ylabel('Variation / Nominal')
+    ax.set_ylim(0.6,1.4)
+    ax.grid(True)
     ax.legend()
 
     # Plot ratio of variations between the two versions
@@ -105,8 +107,8 @@ def make_comparison_plot(acc_dict, dataset_tag, year, variation='jesRelativeBal'
     rax.set_ylabel('v2 / v1')
     rax.set_xlabel(r'$M_{jj} \ (GeV)$')
     rax.grid(True)
-    rax.set_ylim(0.8,1.2)
-    rax.legend()
+    rax.set_ylim(0.6,1.4)
+    rax.legend(ncol=2)
 
     # Save figure
     outdir = './output/jes_comparison_v1_v2'
