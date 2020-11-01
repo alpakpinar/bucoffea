@@ -20,8 +20,7 @@ np.seterr(divide='ignore', invalid='ignore')
 data_err_opts = {
     'linestyle':'none',
     'marker': '.',
-    'markersize': 10.,
-    'elinewidth': 1,
+    'markersize': 10.
 }
 
 def preprocess(h,acc):
@@ -46,8 +45,6 @@ def integrate_over_dataset(h, year, dataset_tag):
     }
 
     dataset_to_integrate = tag_to_dataset_regex[dataset_tag]
-    # Test
-    pprint( h[re.compile(dataset_to_integrate)].values() )
 
     h = h.integrate('dataset', re.compile(dataset_to_integrate) )
 
@@ -72,13 +69,12 @@ def make_comparison_plot(acc_dict, dataset_tag, year, variation='jesRelativeBal'
     for v, h in histos.items():
         # Nominal yields: Just the regular SR
         nom_yields[v] = h.integrate('region', 'sr_vbf').values()[()]
+        var_yields[v] = {}
         for region in h.identifiers('region'):
-            if variation not in region:
+            if variation not in region.name:
                 continue
             # Compute and store the up/down variations for this specific variation
-            var_yields[v] = {}
-            var_direction = re.findall('Up|Down', region)[0]
-            print(var_direction)
+            var_direction = re.findall('Up|Down', region.name)[0]
             var_yields[v][var_direction] = h.integrate('region', region).values()[()]
 
     # Compute the varied / nominal ratios and plot them
@@ -137,7 +133,7 @@ def main():
         acc.load('sumw2')
     
     make_comparison_plot(acc_dict, 
-            dataset_tag='qcd_zjets',
+            dataset_tag='qcd_zjets_2017',
             year=2017,
             variation='jesRelativeBal'
             )
