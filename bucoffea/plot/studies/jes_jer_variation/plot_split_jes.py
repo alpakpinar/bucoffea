@@ -578,6 +578,8 @@ def main():
 
     # Create an output root file to save the uncertainties
     outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root'
+    if not os.path.exists(outputrootdir):
+        os.makedirs(outputrootdir)
 
     # Configure root usage for the function 
     if args.save_to_root:
