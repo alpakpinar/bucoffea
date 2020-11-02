@@ -115,7 +115,7 @@ def get_data_mc_sf_from_integral(h_data, h_mc):
     sf = integral_data / integral_mc
     return sf
 
-def get_combined_variations(h_data, h_mc, variations, region):
+def get_combined_variations(h_data, h_mc, variations, region, smear=False):
     '''
     Given data and MC histograms, get the varied data/MC ratio for the specified variation.
     Combine the given variations (in quadrature) to get the combined unc.
@@ -133,12 +133,20 @@ def get_combined_variations(h_data, h_mc, variations, region):
 
     # Up and down variations for MC
     for variation in variations:
-        mc_up = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Up').values()[()]
-        mc_down = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Down').values()[()]
+        # Handle JER variations for T1 MET --> Symmetrize
+        if not smear and variation == 'jer':
+            mc_up = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Up').values()[()]
+            
+            # Symmetric up and down values for JER
+            data_over_mc_up[variation] = data_vals / mc_up
+            data_over_mc_down[variation] = 1 - (data_over_mc_up[variation] - 1)
+        else:
+            mc_up = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Up').values()[()]
+            mc_down = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Down').values()[()]
     
-        # Up and down data / MC ratios
-        data_over_mc_up[variation] = data_vals / mc_up
-        data_over_mc_down[variation] = data_vals / mc_down
+            # Up and down data / MC ratios
+            data_over_mc_up[variation] = data_vals / mc_up
+            data_over_mc_down[variation] = data_vals / mc_down
 
     # Now, combine the variations
     total_up_v = 0
@@ -253,7 +261,7 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
 
     for variations in variations_to_plot:
         h_mc_var = h.integrate('dataset', re.compile(f'(?!(EGamma)).*{year}'))
-        combined_var_up, combined_var_down = get_combined_variations(h_data, h_mc_var, variations, region)
+        combined_var_up, combined_var_down = get_combined_variations(h_data, h_mc_var, variations, region, smear)
 
         up_var = np.r_[combined_var_up, combined_var_up[-1]]
         down_var = np.r_[combined_var_down, combined_var_down[-1]]
