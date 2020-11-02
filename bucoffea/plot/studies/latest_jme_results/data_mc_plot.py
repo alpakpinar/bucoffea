@@ -76,6 +76,7 @@ def parse_cli():
     parser.add_argument('inpath', help='The path containing merged coffea files.')
     parser.add_argument('--distribution', help='Regex matching the distributions to be plotted.', default='.*')
     parser.add_argument('--smeared', help='Flag showing that the input has smearing applied.', action='store_true')
+    parser.add_argument('--variations', help='List of variations to be plotted in the ratio pad.', nargs='*', default=None)
     args = parser.parse_args()
     
     return args
@@ -130,7 +131,6 @@ def get_combined_variations(h_data, h_mc, variations, region):
     data_over_mc_up = {}
     data_over_mc_down = {}
 
-
     # Up and down variations for MC
     for variation in variations:
         mc_up = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Up').values()[()]
@@ -156,13 +156,14 @@ def get_combined_variations(h_data, h_mc, variations, region):
 
     return total_up_v, total_down_v
 
-def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=False, region='norecoil', ratio_with_sf=False):
+def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=False, region='norecoil', ratio_with_sf=False, variations=None):
     '''For the given distribution and year, construct data/MC comparison plot with all the JME variations'''
     # The list of variations, depending on we use smearing or not
-    if smear:
-        variations = ['jesTotal', 'jer']
-    else:
-        variations = ['jesTotal', 'unclustEn']
+    if variations is None:
+        if smear:
+            variations = ['jesTotal', 'jer']
+        else:
+            variations = ['jesTotal', 'unclustEn']
 
     acc.load(distribution)
     h = acc[distribution]
@@ -246,8 +247,8 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
     # 1. JES total up/down only
     # 2. 1 combined with JER up/down (for T1Smear) or unclust energy up/down (for T1)
     variations_to_plot = [
-        variations[:1],
-        variations
+        variations,
+        variations[:1]
     ]
 
     for variations in variations_to_plot:
@@ -337,7 +338,8 @@ def main():
                         year=year,
                         smear=args.smeared,
                         region=region,
-                        ratio_with_sf=True
+                        ratio_with_sf=True,
+                        variations=args.variations
                         )
 
 if __name__ == '__main__':
