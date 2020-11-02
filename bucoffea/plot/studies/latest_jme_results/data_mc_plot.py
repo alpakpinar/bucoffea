@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.ticker
 import warnings
 import argparse
+import copy
 
 from coffea import hist
 from matplotlib import pyplot as plt
@@ -77,6 +78,7 @@ def parse_cli():
     parser.add_argument('--distribution', help='Regex matching the distributions to be plotted.', default='.*')
     parser.add_argument('--smeared', help='Flag showing that the input has smearing applied.', action='store_true')
     parser.add_argument('--variations', help='List of variations to be plotted in the ratio pad.', nargs='*', default=None)
+    parser.add_argument('--plot_with_sf', help='If specified, only plot data/MC with the SF in place.', action='store_true')
     args = parser.parse_args()
     
     return args
@@ -164,8 +166,19 @@ def get_combined_variations(h_data, h_mc, variations, region, smear=False):
 
     return total_up_v, total_down_v
 
-def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=False, region='norecoil', ratio_with_sf=False, variations=None):
+def data_mc_comparison_plot(acc, outtag, 
+            distribution='met', 
+            year=2017, 
+            smear=False, 
+            region='norecoil', 
+            ratio_with_sf=False, 
+            only_plot_with_sf=False,
+            variations=None):
     '''For the given distribution and year, construct data/MC comparison plot with all the JME variations'''
+    # Do quick internal check
+    if only_plot_with_sf and not ratio_with_sf:
+        raise RuntimeError('only_plot_with_sf option only works if ratio_with_sf is set to True.')
+
     # The list of variations, depending on we use smearing or not
     if variations is None:
         if smear:
@@ -202,7 +215,21 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
 
     # Next, get MC (the nominal one)
     h_mc_nom = h.integrate('region', f'cr_2e_j_{region}')[ re.compile(f'(Top_FXFX|DYJetsToLL|Diboson).*{year}') ]
-    hist.plot1d(h_mc_nom, ax=ax, overlay='dataset', stack=True, clear=False)
+    
+    # Calculate data / MC SF
+    if ratio_with_sf:
+        sf = get_data_mc_sf_from_integral(
+            h_data.integrate('dataset'), 
+            h_mc_nom.integrate('dataset')
+            )
+        # In-place scaling
+        h_mc_scaled = copy.deepcopy(h_mc_nom)
+        h_mc_scaled.scale(sf)
+
+    # Use the scaled histogram or the other one
+    h_mc = h_mc_scaled if only_plot_with_sf else h_mc_nom
+
+    hist.plot1d(h_mc, ax=ax, overlay='dataset', stack=True, clear=False)
 
     ax.set_xlabel('')
     ax.set_yscale('log')
@@ -230,7 +257,7 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
     ax.set_title(region_labels[region])
 
     # Plot the ratio of nominal data/MC values
-    hist.plotratio(h_data.integrate('dataset'), h_mc_nom.integrate('dataset'),
+    hist.plotratio(h_data.integrate('dataset'), h_mc.integrate('dataset'),
             ax=rax,
             guide_opts={},
             unc='num',
@@ -276,15 +303,7 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
 
     rax.legend(prop={'size':10.}, ncol=2)
 
-    # Get data/MC SF by integrating over the distributions, plot the ratio scaled by SF
-    if ratio_with_sf:
-        sf = get_data_mc_sf_from_integral(
-            h_data.integrate('dataset'), 
-            h_mc_nom.integrate('dataset')
-            )
-        
-        print(f'Data/MC scale factor: {sf}')
-
+    if ratio_with_sf and not only_plot_with_sf:
         data_err_opts.pop('color')
 
         h_mc = h_mc_nom.integrate('dataset')
@@ -312,6 +331,10 @@ def data_mc_comparison_plot(acc, outtag, distribution='met', year=2017, smear=Fa
         outdir = f'./output/{outtag}/data_mc/smeared/{region}'
     else:
         outdir = f'./output/{outtag}/data_mc/not_smeared/{region}'
+    
+    if only_plot_with_sf:
+        outdir = pjoin(outdir, 'scaled')
+    
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
@@ -347,6 +370,7 @@ def main():
                         smear=args.smeared,
                         region=region,
                         ratio_with_sf=True,
+                        only_plot_with_sf=args.plot_with_sf,
                         variations=args.variations
                         )
 
