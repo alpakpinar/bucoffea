@@ -33,7 +33,7 @@ default:
         met: 50
   ak4:
     jer: false
-    puid: false
+    puid: true
   ak8:
     jer: false
   met:
