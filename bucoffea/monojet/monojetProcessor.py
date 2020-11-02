@@ -129,7 +129,8 @@ class monojetProcessor(processor.ProcessorABC):
             # All the split JES uncertainties, "" represents the nominal case with no variation (only for MC!)
             if not df['is_data']:
                 self._variations = ['', '_jesTotalUp', '_jesTotalDown',
-                                    '_unclustEnUp', '_unclustEnDown'
+                                    '_unclustEnUp', '_unclustEnDown',
+                                    '_jerUp', '_jerDown'
                                     ]
             # For data, only run the nominal case
             else:
