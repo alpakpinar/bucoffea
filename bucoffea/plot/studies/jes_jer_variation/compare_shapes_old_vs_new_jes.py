@@ -130,14 +130,14 @@ def make_comparison_plots(acc_dict, dataset_tag, year, variation='jesRelativeBal
     rax.grid(True)
     if not ('EC2' in variation or 'FlavorQCD' in variation):
         rax.set_ylim(0.4,1.6)
+        loc1 = MultipleLocator(0.2)
+        loc2 = MultipleLocator(0.1)
+        rax.yaxis.set_major_locator(loc1)
+        rax.yaxis.set_minor_locator(loc2)
     else:
-        rax.set_ylim(0.8,1.2)
-    rax.legend(ncol=2)
+        rax.set_ylim(0.9,1.1)
 
-    loc1 = MultipleLocator(0.2)
-    loc2 = MultipleLocator(0.1)
-    rax.yaxis.set_major_locator(loc1)
-    rax.yaxis.set_minor_locator(loc2)
+    rax.legend(ncol=2)
 
     # Save figure
     outdir = './output/jes_comparison_v1_v2'
