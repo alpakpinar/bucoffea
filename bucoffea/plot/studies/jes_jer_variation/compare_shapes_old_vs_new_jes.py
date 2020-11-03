@@ -128,7 +128,7 @@ def make_comparison_plots(acc_dict, dataset_tag, year, variation='jesRelativeBal
     rax.set_ylabel('v2 / v1')
     rax.set_xlabel(r'$M_{jj} \ (GeV)$')
     rax.grid(True)
-    if not 'EC2' in variation:
+    if not ('EC2' in variation or 'FlavorQCD' in variation):
         rax.set_ylim(0.4,1.6)
     else:
         rax.set_ylim(0.8,1.2)
@@ -179,7 +179,7 @@ def main():
                         'jesTotal'
                         ]
         
-        for dataset_tag in [f'qcd_zjets_{year}', f'ggh_{year}']:
+        for dataset_tag in [f'qcd_zjets_{year}']:
             for variation in variations:
                 make_comparison_plots(acc_dict, 
                         dataset_tag=dataset_tag,
