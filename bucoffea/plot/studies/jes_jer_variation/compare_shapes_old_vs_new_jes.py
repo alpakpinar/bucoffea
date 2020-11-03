@@ -176,12 +176,13 @@ def main():
                         'jesTotal'
                         ]
         
-        for variation in variations:
-            make_comparison_plots(acc_dict, 
-                    dataset_tag=f'qcd_zjets_{year}',
-                    year=year,
-                    variation=variation
-                    )
+        for dataset_tag in [f'qcd_z_jets_{year}', f'ggh_{year}']:
+            for variation in variations:
+                make_comparison_plots(acc_dict, 
+                        dataset_tag=dataset_tag,
+                        year=year,
+                        variation=variation
+                        )
             
 if __name__ == '__main__':
     main()
