@@ -141,7 +141,7 @@ def get_combined_variations(h_data, h_mc, variations, region, smear=False):
             
             # Symmetric up and down values for JER
             data_over_mc_up[variation] = data_vals / mc_up
-            data_over_mc_down[variation] = 1 - (data_over_mc_up[variation] - 1)
+            data_over_mc_down[variation] = 1 - (data_over_mc_up[variation] / data_over_mc_nom - 1)
         else:
             mc_up = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Up').values()[()]
             mc_down = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Down').values()[()]
@@ -263,7 +263,6 @@ def data_mc_comparison_plot(acc, outtag,
 
     rax.grid(True)
     rax.set_ylim(0,2)
-    rax.set_ylabel('Data / MC')
 
     loc1 = matplotlib.ticker.MultipleLocator(base=0.5)
     loc2 = matplotlib.ticker.MultipleLocator(base=0.1)
@@ -297,7 +296,7 @@ def data_mc_comparison_plot(acc, outtag,
                 alpha=0.5
                 )
 
-    rax.legend(prop={'size':10.}, ncol=2)
+    rax.legend(prop={'size':10.}, ncol=3)
 
     if ratio_with_sf and not only_plot_with_sf:
         data_err_opts.pop('color')
@@ -321,6 +320,7 @@ def data_mc_comparison_plot(acc, outtag,
                )
 
     rax.set_xlabel(get_x_label(distribution, smeared=smear))
+    rax.set_ylabel('Data / MC')
 
     # Save figure
     if smear:
