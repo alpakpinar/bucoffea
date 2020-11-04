@@ -20,7 +20,7 @@ def main():
 
     fileset = {
         "DYJetsToLL_0J-amcatnloFXFX_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aakpinar/nanopost/15Oct20_noskim/DYJetsToLL_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_0J-amcatnloFXFX_2017/201023_160853/0000/tree_1.root"
+            "root://cmsxrootd.fnal.gov//store/user/aakpinar/nanopost/15Oct20_noskim_v2/DYJetsToLL_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/DYJetsToLL_0J-amcatnloFXFX_2017/201102_163417/0000/tree_1.root"
         ]
     }
 
