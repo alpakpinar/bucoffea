@@ -478,19 +478,13 @@ def setup_candidates(df, cfg, variations):
     for var in variations:
         if var == '':
             continue
-        # Annoying difference for unclustered energy variations:
-        # These are named slightly differently + not calculated separately for T1 & T1Smear
-        if 'unclustEn' in var:
-            met_pt = df[f'{met_branch}_pt{var}']
-            met_phi = df[f'{met_branch}_phi{var}']
         # If JER is turned off, calculate the variations of MET pt around the unsmeared (T1) MET
+        if not cfg.MET.JER:
+            met_pt = df[f'{met_branch}_T1_pt{var}']
+            met_phi = df[f'{met_branch}_T1_phi{var}']
         else:
-            if not cfg.MET.JER:
-                met_pt = df[f'{met_branch}_T1_pt{var}']
-                met_phi = df[f'{met_branch}_T1_phi{var}']
-            else:
-                met_pt = df[f'{met_branch}_T1Smear_pt{var}']
-                met_phi = df[f'{met_branch}_T1Smear_phi{var}']
+            met_pt = df[f'{met_branch}_T1Smear_pt{var}']
+            met_phi = df[f'{met_branch}_T1Smear_phi{var}']
         # Set the MET values
         argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
         met.add_attributes(**argdict)
