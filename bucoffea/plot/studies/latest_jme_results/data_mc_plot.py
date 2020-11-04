@@ -179,12 +179,9 @@ def data_mc_comparison_plot(acc, outtag,
     if only_plot_with_sf and not ratio_with_sf:
         raise RuntimeError('only_plot_with_sf option only works if ratio_with_sf is set to True.')
 
-    # The list of variations, depending on we use smearing or not
+    # By default, the list of variations contains all three
     if variations is None:
-        if smear:
-            variations = ['jesTotal', 'jer']
-        else:
-            variations = ['jesTotal', 'unclustEn']
+        variations = ['jesTotal', 'jer', 'unclustEn']
 
     acc.load(distribution)
     h = acc[distribution]
@@ -278,11 +275,10 @@ def data_mc_comparison_plot(acc, outtag,
     edges = h_data.integrate('dataset').axes()[0].edges()
     centers = h_data.integrate('dataset').axes()[0].centers()
 
-    # Plot several combination of variations
-    # 1. JES total up/down only
-    # 2. 1 combined with JER up/down (for T1Smear) or unclust energy up/down (for T1)
+    # Plot several combinations of the three variations we have
     variations_to_plot = [
         variations,
+        variations[:2],
         variations[:1]
     ]
 
