@@ -141,7 +141,7 @@ def get_combined_variations(h_data, h_mc, variations, region, smear=False):
             
             # Symmetric up and down values for JER
             data_over_mc_up[variation] = data_vals / mc_up
-            data_over_mc_down[variation] = 1 - (data_over_mc_up[variation] / data_over_mc_nom - 1)
+            data_over_mc_down[variation] = data_over_mc_nom - (data_over_mc_up[variation] - data_over_mc_nom)
         else:
             mc_up = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Up').values()[()]
             mc_down = h_mc.integrate('region', f'cr_2e_j_{region}_{variation}Down').values()[()]
