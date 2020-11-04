@@ -299,7 +299,7 @@ def data_mc_comparison_plot(acc, outtag,
     rax.legend(prop={'size':10.}, ncol=3)
 
     if ratio_with_sf and not only_plot_with_sf:
-        data_err_opts.pop('color')
+        data_err_opts['color'] = 'red'
 
         h_mc = h_mc_nom.integrate('dataset')
         h_mc.scale(sf)
