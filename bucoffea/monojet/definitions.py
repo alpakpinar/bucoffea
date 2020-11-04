@@ -413,7 +413,7 @@ def setup_candidates(df, cfg, variations):
         # For other variations, read off the pt values from the input tree, as calculated by tools
         else:  
             # If JER is turned off, calculate the variations of jet pt around unsmeared pt
-            if not cfg.AK4.JER:
+            if not (df['is_data'] or cfg.AK4.JER):
                 ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
             else:
                 ak4_pt = df[f'Jet_pt{var}']
@@ -479,12 +479,12 @@ def setup_candidates(df, cfg, variations):
         if var == '':
             continue
         # If JER is turned off, calculate the variations of MET pt around the unsmeared (T1) MET
-        if not cfg.MET.JER:
-            met_pt = df[f'{met_branch}_T1_pt{var}']
-            met_phi = df[f'{met_branch}_T1_phi{var}']
-        else:
+        if not df['is_data'] and cfg.MET.JER:
             met_pt = df[f'{met_branch}_T1Smear_pt{var}']
             met_phi = df[f'{met_branch}_T1Smear_phi{var}']
+        else:
+            met_pt = df[f'{met_branch}_T1_pt{var}']
+            met_phi = df[f'{met_branch}_T1_phi{var}']
         # Set the MET values
         argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
         met.add_attributes(**argdict)
