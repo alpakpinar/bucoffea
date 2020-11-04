@@ -251,7 +251,12 @@ def data_mc_comparison_plot(acc, outtag,
     # Update legend
     ax.legend(ncol=1, prop={'size':12.})
 
-    ax.set_title(region_labels[region])
+    fig.text(0., 1., region_labels[region],
+            fontsize=14,
+            horizontalalignment='left',
+            verticalalignment='bottom',
+            transform=ax.transAxes
+            )
 
     # Plot the ratio of nominal data/MC values
     hist.plotratio(h_data.integrate('dataset'), h_mc.integrate('dataset'),
