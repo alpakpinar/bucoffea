@@ -350,6 +350,10 @@ def vbfhinv_regions(cfg):
             regions['sr_vbf_qcd_recoil_100_160'].remove('recoil')
             regions['sr_vbf_qcd_recoil_100_160'].append('recoil_100_160')
 
+        # QCD control region, with minimum delta phi requirement inverted
+        regions['sr_vbf_qcd_cr'] = copy.deepcopy(regions['sr_vbf_qcd'])
+        regions['sr_vbf_qcd_cr'].append('maxdphijr')
+
     if cfg and cfg.RUN.TRIGGER_STUDY_QCD:
         # Trigger study for QCD: Check the turn-on for around 200 < recoil < 250 GeV 
         # Compare between SR and QCD populated CR
