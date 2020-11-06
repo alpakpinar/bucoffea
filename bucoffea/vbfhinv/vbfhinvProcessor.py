@@ -457,7 +457,21 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     trigger_weight[np.isnan(trigger_weight)] = 1
                     region_weights.add('trigger', trigger_weight)
                 elif re.match(r'cr_(\d+)m.*', region) or re.match('sr_.*', region):
-                    region_weights.add('trigger_met', evaluator["trigger_met"](df['recoil_pt']))
+                    # Apply categorized SF, depending on the eta of the leading jet pair
+                    if cfg.RUN.APPLY_CATEGORIZED_SF:
+                        two_central_jets = (np.abs(diak4.i0.eta) <= 2.5) & (np.abs(diak4.i1.eta) <= 2.5)
+                        two_forward_jets = (np.abs(diak4.i0.eta) > 2.5) & (np.abs(diak4.i1.eta) > 2.5)
+                        one_jet_forward_one_jet_central = (~two_central_jets) & (~two_forward_jets)
+                        
+                        trig_met_w = np.where(
+                            two_central_jets,
+                            evaluator["trigger_met_two_central_jets"](df['recoil_pt']),
+                            evaluator["trigger_met_mixed"](df['recoil_pt'])
+                        )
+
+                        region_weights.add('trigger_met', trig_met_w)
+                    else:
+                        region_weights.add('trigger_met', evaluator["trigger_met"](df['recoil_pt']))
                 elif re.match(r'cr_g.*', region):
                     photon_trigger_sf(region_weights, photons, df)
 
