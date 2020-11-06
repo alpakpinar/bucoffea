@@ -345,6 +345,11 @@ def vbfhinv_regions(cfg):
                     regions[f'sr_vbf_qcd_recoil_{cuttag}'].remove('recoil')
                     regions[f'sr_vbf_qcd_recoil_{cuttag}'].append(f'recoil_{cuttag}')
 
+        if cfg.RUN.QCD_ESTIMATION.RECOIL_100_160:
+            regions['sr_vbf_qcd_recoil_100_160'] = copy.deepcopy(regions['sr_vbf_qcd'])
+            regions['sr_vbf_qcd_recoil_100_160'].remove('recoil')
+            regions['sr_vbf_qcd_recoil_100_160'].append('recoil_100_160')
+
     if cfg and cfg.RUN.TRIGGER_STUDY_QCD:
         # Trigger study for QCD: Check the turn-on for around 200 < recoil < 250 GeV 
         # Compare between SR and QCD populated CR

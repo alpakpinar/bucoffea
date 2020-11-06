@@ -257,6 +257,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
             selection.add('recoil_100', df['recoil_pt']>100)
             selection.add('recoil_150', df['recoil_pt']>150)
             selection.add('recoil_200', df['recoil_pt']>200)
+            
+        if cfg.RUN.QCD_ESTIMATION.RECOIL_100_160:
+            selection.add('recoil_100_160', (df['recoil_pt']>100) & (df['recoil_pt']<160)) 
 
         # AK4 dijet
         diak4 = ak4[:,:2].distincts()

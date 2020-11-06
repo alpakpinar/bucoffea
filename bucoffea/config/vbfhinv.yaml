@@ -235,8 +235,9 @@ default:
     trigger_study_qcd: False
     qcd_estimation: 
       run_study: True
-      looser_regions: True
-      categorize_by_detajj: True
+      looser_regions: False
+      categorize_by_detajj: False
+      recoil_100_160: True
   triggers:
     ht:
       gammaeff:
