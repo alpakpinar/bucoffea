@@ -471,7 +471,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
                         region_weights.add('trigger_met', trig_met_w)
                     else:
-                        region_weights.add('trigger_met', evaluator["trigger_met"](df['recoil_pt']))
+                        region_weights.add('trigger_met', evaluator["trigger_met_inclusive_nohfhf"](df['recoil_pt']))
                 elif re.match(r'cr_g.*', region):
                     photon_trigger_sf(region_weights, photons, df)
 
