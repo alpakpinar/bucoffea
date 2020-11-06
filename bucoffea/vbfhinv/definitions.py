@@ -385,12 +385,29 @@ def vbfhinv_regions(cfg):
 
     return regions
 
-def ak4_em_frac_weights(weights, diak4, evaluator):
+def ak4_em_frac_weights(weights, diak4, evaluator, cfg):
     '''Apply SF for EM fraction cut on jets. Event weight = (Leading jet weight) * (Trailing jet weight)'''
     # Separate weights for the two leading jets:
     # If jet pt < 100 GeV, use the SF from the lowest pt bin
-    w_ak40 = evaluator['ak4_em_frac_sf'](diak4.i0.pt, diak4.i0.eta).prod()
-    w_ak41 = evaluator['ak4_em_frac_sf'](diak4.i1.pt, diak4.i1.eta).prod()
+
+    # If "endcap only" option is specified, apply the scale factors only for jets in 2.5 < |eta| < 3.0
+    # For others, just apply a scale factor of 1, as we're not applying the cut there
+    if cfg.SF.AK4_EM_FRAC_SF.ENDCAP_ONLY:
+        ak40_in_endcap = (diak4.i0.abseta > 2.5) & (diak4.i0.abseta < 3.0)
+        ak41_in_endcap = (diak4.i1.abseta > 2.5) & (diak4.i1.abseta < 3.0)
+        w_ak40 = np.where(
+            ak40_in_endcap,
+            evaluator['ak4_em_frac_sf'](diak4.i0.pt, diak4.i0.eta).prod(),
+            1.
+        )
+        w_ak41 = np.where(
+            ak41_in_endcap,
+            evaluator['ak4_em_frac_sf'](diak4.i1.pt, diak4.i1.eta).prod(),
+            1.
+        )
+    else:
+        w_ak40 = evaluator['ak4_em_frac_sf'](diak4.i0.pt, diak4.i0.eta).prod()
+        w_ak41 = evaluator['ak4_em_frac_sf'](diak4.i1.pt, diak4.i1.eta).prod()
 
     em_frac_weight = w_ak40 * w_ak41
 
