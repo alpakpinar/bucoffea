@@ -293,9 +293,23 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
         
         # Cleaning cuts for signal region
-        max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
-        selection.add('max_neEmEF', (max_neEmEF < 0.7).any())
-        
+        # Apply the nef < 0.7 cut to jets that are only within 2.5 < |eta| < 3.0
+        if cfg.JET_ID.ENDCAP_ONLY:
+            ak40_in_endcap = (diak4.i0.abseta > 2.5) & (diak4.i0.abseta < 3.0)
+            ak41_in_endcap = (diak4.i1.abseta > 2.5) & (diak4.i1.abseta < 3.0)
+    
+            ak40_neEmEF = (diak4.i0.nef < 0.7) | (~ak40_in_endcap)
+            ak41_neEmEF = (diak4.i1.nef < 0.7) | (~ak41_in_endcap)
+    
+            max_neEmEF = (ak40_neEmEF & ak41_neEmEF)
+    
+            selection.add('max_neEmEF', max_neEmEF.any())
+
+        # Apply the nef < 0.7 cut to all jets
+        else:
+            max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
+            selection.add('max_neEmEF', (max_neEmEF < 0.7).any())
+    
         vec_b = calculate_vecB(ak4, met_pt, met_phi)
         vec_dphi = calculate_vecDPhi(ak4, met_pt, met_phi, df['TkMET_phi'])
 

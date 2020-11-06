@@ -133,6 +133,8 @@ default:
         dr: 0.4
   mitigation:
     hem: True
+  jet_id:
+    endcap_only: True
 
   sf:
     qcd_ew_nlo_w: # QCD x EW k factor for QCD Z
