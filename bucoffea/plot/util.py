@@ -206,7 +206,7 @@ def create_dataset_mapping(all_datasets):
         'JetHT_2018' : [x for x in all_datasets if re.match('JetHT_.*2018[A-Z]+',x)],
 
         'GJets_SM_5f_EWK-mg_2017' : ['GJets_SM_5f_EWK-mg_2017'],
-        'GJets_SM_5f_EWK-mg_2018' : ['GJets_SM_5f_EWK-mg_2017'],
+        'GJets_SM_5f_EWK-mg_2018' : [x for x in all_datasets if re.match('GJets_SM_5f_.*2018', x)],
 
         'G1Jet_Pt-amcatnlo_2016' : [x for x in all_datasets if re.match('G1Jet_Pt-.*-amcatnlo_2016',x)],
 
@@ -236,10 +236,10 @@ def create_dataset_mapping(all_datasets):
         'GJets_HT_MLM_{year}' : 'GJets_HT-(\d+)To.*-MLM_{year}',
         'GJets_DR-0p4_HT_MLM_{year}'    : 'GJets_DR-0p4_HT-(\d+)To.*-MLM_.*{year}',
         'WJetsToQQ_HT_MLM_{year}' : 'WJetsToQQ_HT-?(\d+)(T|t)o.*-MLM_{year}',
-        'DYJetsToLL_M-50_HT_MLM_{year}' : 'DYJetsToLL_M-50_HT-(\d+)to.*-MLM_{year}',
+        'DYJetsToLL_M-50_HT_MLM_{year}' : 'DYJetsToLL_M-50_HT-(\d+)to.*-MLM_.*{year}',
         'WJetsToLNu_HT_MLM_{year}' : 'WJetsToLNu_HT-(\d+)To.*-MLM_{year}',
 
-        'Top_FXFX_{year}' : '(TTJets-amcatnloFXFX|ST_((s|t)-channel|tW)_(anti)?top.*[iI]nclusiveDecays.*).*_{year}',
+        'Top_FXFX_{year}' : '(TTJets-amcatnloFXFX|ST_((s|t)-channel|tW)_(anti)?top.*).*_{year}',
         'Top_MLM_{year}' : '(TTJets.*MLM|ST_((s|t)-channel|tW)_(anti)?top).*_{year}',
         'TT_pow_{year}' : '(TTTo.*pow|ST).*{year}',
 
