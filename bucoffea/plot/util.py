@@ -132,6 +132,7 @@ def merge_extensions(histogram, acc, reweight_pu=True, noscale=False):
         base = d
 
         to_replace =[
+            '.*(_EXT).*',
             '.*(_ext\d+).*',
             '.*(_new_+pmx).*',
             '.*(_PSweights).*'
@@ -236,7 +237,7 @@ def create_dataset_mapping(all_datasets):
         'GJets_HT_MLM_{year}' : 'GJets_HT-(\d+)To.*-MLM_{year}',
         'GJets_DR-0p4_HT_MLM_{year}'    : 'GJets_DR-0p4_HT-(\d+)To.*-MLM_.*{year}',
         'WJetsToQQ_HT_MLM_{year}' : 'WJetsToQQ_HT-?(\d+)(T|t)o.*-MLM_{year}',
-        'DYJetsToLL_M-50_HT_MLM_{year}' : 'DYJetsToLL_M-50_HT-(\d+)to.*-MLM_.*{year}',
+        'DYJetsToLL_M-50_HT_MLM_{year}' : 'DYJetsToLL_M-50_HT-(\d+)to.*-MLM_{year}',
         'WJetsToLNu_HT_MLM_{year}' : 'WJetsToLNu_HT-(\d+)To.*-MLM_{year}',
 
         'Top_FXFX_{year}' : '(TTJets-amcatnloFXFX|ST_((s|t)-channel|tW)_(anti)?top.*).*_{year}',
