@@ -112,6 +112,22 @@ def compare_eff(acc, outtag, region='cr_2m', spec='regular', year=2017):
     fig.savefig(outpath)
     print(f'MSG% File saved: {outpath}')
 
+def get_varied_sf(data_eff, h_mc, region='cr_2m'):
+    '''Get the varied scale factor by varying the prefire weights.'''
+    h_mc_withCut_prefireUp = h_mc.integrate('region', f'{region}_withEmEF_prefireUp')
+    h_mc_withCut_prefireDown = h_mc.integrate('region', f'{region}_withEmEF_prefireDown')
+
+    h_mc_withoutCut_prefireUp = h_mc.integrate('region', f'{region}_noEmEF_prefireUp')
+    h_mc_withoutCut_prefireDown = h_mc.integrate('region', f'{region}_noEmEF_prefireDown')
+
+    mc_eff_prefireUp = h_mc_withCut_prefireUp.values()[()] / h_mc_withoutCut_prefireUp.values()[()]
+    mc_eff_prefireDown = h_mc_withCut_prefireDown.values()[()] / h_mc_withoutCut_prefireDown.values()[()]
+
+    sf_prefireUp = data_eff / mc_eff_prefireUp
+    sf_prefireDown = data_eff / mc_eff_prefireDown
+
+    return sf_prefireUp, sf_prefireDown
+
 def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
     '''Get 2D scale factor as a function of jet pt and eta, for the efficiency of the neutral EM fraction cut.'''
     variable = 'ak4_pt0_eta0'
@@ -141,6 +157,9 @@ def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
 
     # Scale factor: Data / MC efficiency
     sf = data_eff / mc_eff
+
+    # Uncertainties on the scale factors: Calculated by the variation of prefire weights
+    sf_up, sf_down = get_varied_sf(data_eff, h_mc, region=region)
 
     # Guard against NaN values
     sf[np.isnan(sf) | np.isinf(sf)] = 1.
@@ -174,8 +193,10 @@ def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
 
     plt.close(fig)
 
-    # Save the scale factors into ROOT file
+    # Save the scale factors into ROOT file with the up/down uncertainties
     rootfile[f'sf_{year}'] = (sf, xedges, yedges)
+    rootfile[f'sf_{year}_up'] = (sf_up, xedges, yedges)
+    rootfile[f'sf_{year}_down'] = (sf_down, xedges, yedges)
 
 def main():
     args = parse_cli()
