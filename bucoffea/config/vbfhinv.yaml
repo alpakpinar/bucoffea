@@ -223,7 +223,7 @@ default:
       regions:
         - regular
       gen_check: False
-      vary_prefire: False
+      vary_prefire: True
     save:
       passing: False
       tree: False
