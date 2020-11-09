@@ -459,10 +459,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 elif re.match(r'cr_(\d+)m.*', region) or re.match('sr_.*', region):
                     # Apply categorized SF, depending on the eta of the leading jet pair
                     if cfg.RUN.APPLY_CATEGORIZED_SF:
-                        two_central_jets = (np.abs(diak4.i0.eta) <= 2.5) & (np.abs(diak4.i1.eta) <= 2.5)
-                        two_forward_jets = (np.abs(diak4.i0.eta) > 2.5) & (np.abs(diak4.i1.eta) > 2.5)
-                        one_jet_forward_one_jet_central = (~two_central_jets) & (~two_forward_jets)
-                        
+                        two_central_jets = (diak4.i0.abseta <= 2.5) & (diak4.i1.abseta <= 2.5)
+
                         trig_met_w = np.where(
                             two_central_jets,
                             evaluator["trigger_met_two_central_jets"](df['recoil_pt']),
