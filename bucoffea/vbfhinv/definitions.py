@@ -350,6 +350,20 @@ def vbfhinv_regions(cfg):
             regions['sr_vbf_qcd_recoil_100_160'].remove('recoil')
             regions['sr_vbf_qcd_recoil_100_160'].append('recoil_100_160')
 
+            # Define regions A and B:
+            # A: QCD CR with 100 < MET < 160
+            # B: QCD SR with 100 < MET < 160
+
+            regions['sr_vbf_qcd_regionB'] = copy.deepcopy(regions['sr_vbf'])
+            regions['sr_vbf_qcd_regionB'].remove('recoil')
+            regions['sr_vbf_qcd_regionB'].append('recoil_100_160')
+
+            regions['sr_vbf_qcd_regionA'] = copy.deepcopy(regions['sr_vbf'])
+            regions['sr_vbf_qcd_regionA'].remove('recoil')
+            regions['sr_vbf_qcd_regionA'].remove('mindphijr')
+            regions['sr_vbf_qcd_regionA'].append('recoil_100_160')
+            regions['sr_vbf_qcd_regionA'].append('maxdphijr')
+
         # QCD control region, with minimum delta phi requirement inverted
         regions['sr_vbf_qcd_cr'] = copy.deepcopy(regions['sr_vbf_qcd'])
         regions['sr_vbf_qcd_cr'].append('maxdphijr')

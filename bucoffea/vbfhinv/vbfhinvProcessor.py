@@ -517,10 +517,15 @@ class vbfhinvProcessor(processor.ProcessorABC):
             mask = selection.all(*cuts)
 
             if cfg.RUN.SAVE.TREE:
-                if region in ['cr_1e_vbf','cr_1m_vbf']:
+                if region in ['sr_vbf', 'sr_vbf_qcd_cr', 'sr_vbf_qcd_recoil_100_160_sr', 'sr_vbf_qcd_recoil_100_160_cr']:
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
-                    output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
-                    output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
+                    output['tree_int64'][region]["run"]       +=  processor.column_accumulator(df["run"][mask])
+                    output['tree_int64'][region]["luminosityBlock"]       +=  processor.column_accumulator(df["luminosityBlock"][mask])
+                    
+                    if df['has_lhe_v_pt']:
+                        output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
+                        output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
+                    
                     output['tree_float16'][region]["recoil_pt"]   +=  processor.column_accumulator(np.float16(df["recoil_pt"][mask]))
                     output['tree_float16'][region]["recoil_phi"]  +=  processor.column_accumulator(np.float16(df["recoil_phi"][mask]))
                     output['tree_float16'][region]["mjj"]         +=  processor.column_accumulator(np.float16(df["mjj"][mask]))
@@ -534,6 +539,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     output['tree_float16'][region]["trailak4_phi"]        +=  processor.column_accumulator(np.float16(diak4.i1.phi[mask]))
 
                     output['tree_float16'][region]["minDPhiJetRecoil"]  +=  processor.column_accumulator(np.float16(df["minDPhiJetRecoil"][mask]))
+                    output['tree_float16'][region]["LHE_HT"]  +=  processor.column_accumulator(np.float16(df["LHE_HT"][mask]))
+                    
                     if '_1e_' in region:
                         output['tree_float16'][region]["leadlep_pt"]   +=  processor.column_accumulator(np.float16(electrons.pt.max()[mask]))
                         output['tree_float16'][region]["leadlep_eta"]   +=  processor.column_accumulator(np.float16(electrons[electrons.pt.argmax()].eta.max()[mask]))

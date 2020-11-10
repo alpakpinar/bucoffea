@@ -221,7 +221,7 @@ default:
     sync: False
     save:
       passing: False
-      tree: False
+      tree: True
     kinematics:
       save: False
       events:
@@ -237,7 +237,7 @@ default:
       run_study: True
       looser_regions: False
       categorize_by_detajj: False
-      recoil_100_160: False
+      recoil_100_160: True
   triggers:
     ht:
       gammaeff:
