@@ -460,7 +460,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     trigger_weight[np.isnan(trigger_weight)] = 1
                     region_weights.add('trigger', trigger_weight)
                 elif re.match(r'cr_(\d+)m.*', region) or re.match('sr_.*', region):
-                    met_trigger_sf(region_weights, diak4, df, apply_categorized=True)
+                    met_trigger_sf(region_weights, diak4, df, apply_categorized=cfg.RUN.APPLY_CATEGORIZED_SF)
                 elif re.match(r'cr_g.*', region):
                     photon_trigger_sf(region_weights, photons, df)
 
