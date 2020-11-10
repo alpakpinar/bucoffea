@@ -415,7 +415,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         # Save per-event values for synchronization
         if cfg.RUN.KINEMATICS.SAVE:
-            for event in cfg.RUN.KINEMATICS.EVENTS:
+            # If a file is specified with an event list, go through these events
+            if cfg.RUN.KINEMATICS.FILE:
+                events = np.loadtxt(bucoffea_path(cfg.RUN.KINEMATICS.FILE))
+            else:
+                events = cfg.RUN.KINEMATICS.EVENTS
+            for event in events:
                 mask = df['event'] == event
                 if not mask.any():
                     continue

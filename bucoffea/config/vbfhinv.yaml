@@ -223,7 +223,7 @@ default:
       passing: False
       tree: True
     kinematics:
-      save: False
+      save: True
       events:
         - 36533896
         - 35733274
@@ -231,6 +231,7 @@ default:
         - 30682767
         - 79123963
         - 51393664
+      file: data/sync/events_not_present_on_bu.txt
     trigger_study: False
     trigger_study_qcd: False
     qcd_estimation: 
