@@ -33,15 +33,19 @@ def check_files(fnum, fden):
     if not os.path.exists(fden):
         raise RuntimeError(f"File not found {fden}")
 
-def sigmoid(x,a,b):
-    return 1 / (1 + np.exp(-a * (x-b)) )
+def sigmoid(x,a,b,c):
+    return c / (1 + np.exp(-a * (x-b)) )
 
 def do_fit(xsf, ysf, ysferr):
     '''Fit a sigmoid function to scale factor data.'''
 
+    # Initial guess
+    p0 = (0.05, 200, 1)
+
     popt, pcov = curve_fit(
         sigmoid,
-        xsf, ysf
+        xsf, ysf,
+        p0=p0
     )
 
     # Diagonalize the covariance matrix + calculate fit variations
@@ -217,7 +221,7 @@ def main():
     ]
 
     # Save the SFs to an output ROOT file
-    outdir = f'./output/120pfht_mu_recoil/{outtag}/sigmoid_fit'
+    outdir = f'./output/120pfht_mu_recoil/{outtag}/sigmoid_fit/with_normalization'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
