@@ -518,7 +518,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             mask = selection.all(*cuts)
 
             if cfg.RUN.SAVE.TREE:
-                if region in ['sr_vbf', 'sr_vbf_qcd_cr', 'sr_vbf_qcd_regionA', 'sr_vbf_qcd_regionB']:
+                if region in ['sr_vbf_no_veto_all', 'sr_vbf_qcd_cr', 'sr_vbf_qcd_regionA', 'sr_vbf_qcd_regionB']:
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
                     output['tree_int64'][region]["run"]       +=  processor.column_accumulator(df["run"][mask])
                     output['tree_int64'][region]["luminosityBlock"]       +=  processor.column_accumulator(df["luminosityBlock"][mask])
@@ -527,9 +527,14 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
                         output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
                     
+                    output['tree_float16'][region]["met_pt"]   +=  processor.column_accumulator(np.float16(met_pt[mask]))
+                    output['tree_float16'][region]["met_phi"]   +=  processor.column_accumulator(np.float16(met_phi[mask]))
                     output['tree_float16'][region]["recoil_pt"]   +=  processor.column_accumulator(np.float16(df["recoil_pt"][mask]))
                     output['tree_float16'][region]["recoil_phi"]  +=  processor.column_accumulator(np.float16(df["recoil_phi"][mask]))
+                    
                     output['tree_float16'][region]["mjj"]         +=  processor.column_accumulator(np.float16(df["mjj"][mask]))
+                    output['tree_float16'][region]["detajj"]         +=  processor.column_accumulator(np.float16(df["detajj"][mask]))
+                    output['tree_float16'][region]["dphijj"]         +=  processor.column_accumulator(np.float16(df["dphijj"][mask]))
                     
                     output['tree_float16'][region]["leadak4_pt"]         +=  processor.column_accumulator(np.float16(diak4.i0.pt[mask]))
                     output['tree_float16'][region]["leadak4_eta"]        +=  processor.column_accumulator(np.float16(diak4.i0.eta[mask]))
