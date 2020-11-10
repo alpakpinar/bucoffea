@@ -163,6 +163,8 @@ def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
 
     # Guard against NaN values
     sf[np.isnan(sf) | np.isinf(sf)] = 1.
+    sf_up[np.isnan(sf_up) | np.isinf(sf_up)] = 1.
+    sf_down[np.isnan(sf_down) | np.isinf(sf_down)] = 1.
 
     # Plot the 2D scale factor
     fig, ax = plt.subplots()
