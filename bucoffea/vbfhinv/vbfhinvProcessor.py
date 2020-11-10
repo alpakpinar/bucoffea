@@ -424,16 +424,29 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 output['kinematics']['met_phi'] += [met_phi[mask]]
                 output['kinematics']['recoil'] += [df['recoil_pt'][mask]]
                 output['kinematics']['recoil_phi'] += [df['recoil_phi'][mask]]
-
-                output['kinematics']['ak4pt0'] += [ak4[leadak4_index][mask].pt]
-                output['kinematics']['ak4eta0'] += [ak4[leadak4_index][mask].eta]
-                output['kinematics']['leadbtag'] += [ak4.pt.max()<0][mask]
+                output['kinematics']['dpfcalo_sr'] += [df['dPFCaloSR'][mask]]
+                
+                output['kinematics']['ak4pt0'] += [diak4.i0.pt[mask]]
+                output['kinematics']['ak4eta0'] += [diak4.i0.eta[mask]]
+                output['kinematics']['ak4pt1'] += [diak4.i1.pt[mask]]
+                output['kinematics']['ak4eta1'] += [diak4.i1.eta[mask]]
+                
+                output['kinematics']['mjj'] += [df['mjj'][mask]]
+                output['kinematics']['detajj'] += [df['detajj'][mask]]
+                output['kinematics']['dphijj'] += [df['dphijj'][mask]]
+                output['kinematics']['mindphijm'] += [df['minDPhiJetMet'][mask]]
+                
+                output['kinematics']['vec_b'] += [vec_b[mask]]
+                output['kinematics']['vec_dphi'] += [vec_dphi[mask]]
+                output['kinematics']['max_neEmEF'] += [max_neEmEF[mask]]
 
                 output['kinematics']['nLooseMu'] += [muons.counts[mask]]
                 output['kinematics']['nTightMu'] += [muons[df['is_tight_muon']].counts[mask]]
                 output['kinematics']['mupt0'] += [muons[leadmuon_index][mask].pt]
                 output['kinematics']['mueta0'] += [muons[leadmuon_index][mask].eta]
 
+                output['kinematics']['nbjet'] += [bjets.counts[mask]]
+                
                 output['kinematics']['nLooseEl'] += [electrons.counts[mask]]
                 output['kinematics']['nTightEl'] += [electrons[df['is_tight_electron']].counts[mask]]
                 output['kinematics']['elpt0'] += [electrons[leadelectron_index][mask].pt]

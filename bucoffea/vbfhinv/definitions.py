@@ -358,12 +358,14 @@ def vbfhinv_regions(cfg):
             regions['sr_vbf_qcd_regionB'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
             regions['sr_vbf_qcd_regionB'].remove('met_sr')
             regions['sr_vbf_qcd_regionB'].append('met_100_160')
+            regions['sr_vbf_qcd_regionB'].remove('trig_met')
 
             regions['sr_vbf_qcd_regionA'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
             regions['sr_vbf_qcd_regionA'].remove('mindphijm')
             regions['sr_vbf_qcd_regionA'].append('maxdphijm')
             regions['sr_vbf_qcd_regionA'].remove('met_sr')
             regions['sr_vbf_qcd_regionA'].append('met_100_160')
+            regions['sr_vbf_qcd_regionA'].remove('trig_met')
 
         # QCD control region, with minimum delta phi requirement inverted
         regions['sr_vbf_qcd_cr'] = copy.deepcopy(regions['sr_vbf_qcd'])
