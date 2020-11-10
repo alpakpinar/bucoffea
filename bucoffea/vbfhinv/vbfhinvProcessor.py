@@ -245,6 +245,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('mindphijr',df['minDPhiJetRecoil'] > cfg.SELECTION.SIGNAL.MINDPHIJR)
         selection.add('maxdphijr',df['minDPhiJetRecoil'] <= cfg.SELECTION.SIGNAL.MINDPHIJR)
         selection.add('mindphijm',df['minDPhiJetMet'] > cfg.SELECTION.SIGNAL.MINDPHIJR)
+        selection.add('maxdphijm',df['minDPhiJetMet'] <= cfg.SELECTION.SIGNAL.MINDPHIJR)
 
         selection.add('dpfcalo_sr',np.abs(df['dPFCaloSR']) < cfg.SELECTION.SIGNAL.DPFCALO)
         selection.add('dpfcalo_cr',np.abs(df['dPFCaloCR']) < cfg.SELECTION.SIGNAL.DPFCALO)
@@ -254,12 +255,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         # Add slightly looser recoil cuts for QCD study
         if cfg.RUN.QCD_ESTIMATION.LOOSER_REGIONS:
-            selection.add('recoil_100', df['recoil_pt']>100)
-            selection.add('recoil_150', df['recoil_pt']>150)
-            selection.add('recoil_200', df['recoil_pt']>200)
+            selection.add('met_100', met_pt>100)
+            selection.add('met_150', met_pt>150)
+            selection.add('met_200', met_pt>200)
             
-        if cfg.RUN.QCD_ESTIMATION.RECOIL_100_160:
-            selection.add('recoil_100_160', (df['recoil_pt']>100) & (df['recoil_pt']<160)) 
+        if cfg.RUN.QCD_ESTIMATION.MET_100_160:
+            selection.add('met_100_160', (met_pt>100) & (met_pt<160)) 
 
         # AK4 dijet
         diak4 = ak4[:,:2].distincts()

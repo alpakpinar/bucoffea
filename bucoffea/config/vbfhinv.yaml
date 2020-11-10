@@ -237,7 +237,7 @@ default:
       run_study: True
       looser_regions: False
       categorize_by_detajj: False
-      recoil_100_160: True
+      met_100_160: True
   triggers:
     ht:
       gammaeff:

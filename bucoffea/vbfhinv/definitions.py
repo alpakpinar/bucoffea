@@ -320,8 +320,8 @@ def vbfhinv_regions(cfg):
 
     # Signal like region with dphi(j,r) cut removed, to be used for data-driven QCD estimation
     if cfg and cfg.RUN.QCD_ESTIMATION.RUN_STUDY:
-        regions['sr_vbf_qcd'] = copy.deepcopy(regions['sr_vbf'])
-        regions['sr_vbf_qcd'].remove('mindphijr')
+        regions['sr_vbf_qcd'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
+        regions['sr_vbf_qcd'].remove('mindphijm')
         
         # Regions with looser recoil cuts
         if cfg.RUN.QCD_ESTIMATION.LOOSER_REGIONS:
@@ -330,43 +330,44 @@ def vbfhinv_regions(cfg):
                 if cfg.RUN.QCD_ESTIMATION.CATEGORIZE_BY_DETAJJ:
                     # Region with detajj < 5.0
                     regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'] = copy.deepcopy(regions['sr_vbf_qcd'])
-                    regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'].remove('recoil')
-                    regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'].append(f'recoil_{cuttag}')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'].remove('met_sr')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'].append(f'met_{cuttag}')
                     regions[f'sr_vbf_qcd_recoil_{cuttag}_small_detajj'].append('small_detajj')
                     # Region with detajj > 5.0
                     regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'] = copy.deepcopy(regions['sr_vbf_qcd'])
-                    regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'].remove('recoil')
-                    regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'].append(f'recoil_{cuttag}')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'].remove('met_sr')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'].append(f'met_{cuttag}')
                     regions[f'sr_vbf_qcd_recoil_{cuttag}_large_detajj'].append('large_detajj')
 
                 # Detajj inclusive loose regions
                 else:
                     regions[f'sr_vbf_qcd_recoil_{cuttag}'] = copy.deepcopy(regions['sr_vbf_qcd'])
-                    regions[f'sr_vbf_qcd_recoil_{cuttag}'].remove('recoil')
-                    regions[f'sr_vbf_qcd_recoil_{cuttag}'].append(f'recoil_{cuttag}')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}'].remove('met_sr')
+                    regions[f'sr_vbf_qcd_recoil_{cuttag}'].append(f'met_{cuttag}')
 
-        if cfg.RUN.QCD_ESTIMATION.RECOIL_100_160:
-            regions['sr_vbf_qcd_recoil_100_160'] = copy.deepcopy(regions['sr_vbf_qcd'])
-            regions['sr_vbf_qcd_recoil_100_160'].remove('recoil')
-            regions['sr_vbf_qcd_recoil_100_160'].append('recoil_100_160')
+        # SR and QCD CR: With 100 < MET < 160 GeV
+        if cfg.RUN.QCD_ESTIMATION.MET_100_160:
+            regions['sr_vbf_qcd_met_100_160'] = copy.deepcopy(regions['sr_vbf_qcd'])
+            regions['sr_vbf_qcd_met_100_160'].remove('met_sr')
+            regions['sr_vbf_qcd_met_100_160'].append('met_100_160')
 
             # Define regions A and B:
             # A: QCD CR with 100 < MET < 160
             # B: QCD SR with 100 < MET < 160
 
-            regions['sr_vbf_qcd_regionB'] = copy.deepcopy(regions['sr_vbf'])
-            regions['sr_vbf_qcd_regionB'].remove('recoil')
-            regions['sr_vbf_qcd_regionB'].append('recoil_100_160')
+            regions['sr_vbf_qcd_regionB'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
+            regions['sr_vbf_qcd_regionB'].remove('met_sr')
+            regions['sr_vbf_qcd_regionB'].append('met_100_160')
 
-            regions['sr_vbf_qcd_regionA'] = copy.deepcopy(regions['sr_vbf'])
-            regions['sr_vbf_qcd_regionA'].remove('recoil')
-            regions['sr_vbf_qcd_regionA'].remove('mindphijr')
-            regions['sr_vbf_qcd_regionA'].append('recoil_100_160')
-            regions['sr_vbf_qcd_regionA'].append('maxdphijr')
+            regions['sr_vbf_qcd_regionA'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
+            regions['sr_vbf_qcd_regionA'].remove('mindphijm')
+            regions['sr_vbf_qcd_regionA'].append('maxdphijm')
+            regions['sr_vbf_qcd_regionA'].remove('met_sr')
+            regions['sr_vbf_qcd_regionA'].append('met_100_160')
 
         # QCD control region, with minimum delta phi requirement inverted
         regions['sr_vbf_qcd_cr'] = copy.deepcopy(regions['sr_vbf_qcd'])
-        regions['sr_vbf_qcd_cr'].append('maxdphijr')
+        regions['sr_vbf_qcd_cr'].append('maxdphijm')
 
     if cfg and cfg.RUN.TRIGGER_STUDY_QCD:
         # Trigger study for QCD: Check the turn-on for around 200 < recoil < 250 GeV 
