@@ -3,34 +3,48 @@
 import os
 import sys
 import uproot
+import argparse
 import numpy as np
 import pandas as pd
 
 pjoin = os.path.join
 
-# Event list from IC
-ic_file = 'MTR.txt'
-event_list_ic = np.loadtxt(ic_file, dtype=str)[:,1]
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('bu_file', help='BU input tree.')
+    parser.add_argument('ic_file', help='IC input tree.')
+    parser.add_argument('--region', help='The region to look at.', default='sr_vbf_qcd_regionA')
+    args = parser.parse_args()
+    return args
 
-df_ic = pd.read_csv(ic_file, sep=', ', names=['a', 'event', 'b', 'region', 'c'])
-events_ic = df_ic[['event', 'region']]
 
-# BU input tree
-bu_file = './qcd_10Nov20/tree_QCD_HT700to1000-mg_new_pmx_2017.root'
-region = 'sr_vbf_qcd_cr'
-events_bu = uproot.open(bu_file)[region].pandas.df()[['event', 'mjj']]
+def main():
+    args = parse_cli()
+    bu_file = args.bu_file
+    ic_file = args.ic_file
+    region = args.region
 
-merged_df = pd.merge(
-    events_ic,
-    events_bu,
-    how='left',
-    on='event',
-    suffixes=['_ic','_bu']
-)
+    # Read from the IC input file
+    df_ic = pd.read_csv(ic_file, sep=', ', header=None)
+    events_ic = df_ic.loc[:,1]
+    events_ic = events_ic.reset_index(name='event')
 
-# Find out which events are not present on BU side
-events_not_present_on_bu = merged_df[np.isnan(merged_df['mjj'])]['event']
+    # Read from the BU input file
+    events_bu = uproot.open(bu_file)[region].pandas.df()[['event', 'mjj']]
+    
+    merged_df = pd.merge(
+        events_ic,
+        events_bu,
+        how='left',
+        on='event',
+        suffixes=['_ic','_bu']
+    )
 
-# Dump the event list to a csv file
-events_not_present_on_bu.to_csv('events_not_present_on_bu.txt', index=False)
+    # Find out which events are not present on BU side
+    events_not_present_on_bu = merged_df[np.isnan(merged_df['mjj'])]['event']
+    
+    # Dump the event list to a csv file
+    events_not_present_on_bu.to_csv('events_not_present_on_bu.txt', index=False)
 
+if __name__ == '__main__':
+    main()
