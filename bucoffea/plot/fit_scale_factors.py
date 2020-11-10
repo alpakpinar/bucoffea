@@ -82,6 +82,22 @@ def fit_efficiencies(fdata, fmc, jeteta_config, year, outputrootfile, outdir):
     ax.set_ylabel('Trigger Efficiency')
     ax.legend()
 
+    # Show the fit parameter values on the plots
+    num_params = len(fit_params_data['fit'])
+    ax.text(0.25, 0.35, 'Data fit:', transform=ax.transAxes)
+    labels = ['a', 'b', 'c']
+    for idx in range(num_params):
+        x = 0.25 
+        y = 0.35 - (idx+1) * 0.08
+        ax.text(x,y, f'{labels[idx]}: {fit_params_data["fit"][idx]:.3f}', transform=ax.transAxes)
+
+    ax.text(0.48, 0.35, 'MC fit:', transform=ax.transAxes)
+    labels = ['a', 'b', 'c']
+    for idx in range(num_params):
+        x = 0.48
+        y = 0.35 - (idx+1) * 0.08
+        ax.text(x,y, f'{labels[idx]}: {fit_params_mc["fit"][idx]:.3f}', transform=ax.transAxes)
+
     # Calculate scale factors
     sf_orig = y_data / y_mc
     sf_fit = f_data / f_mc
