@@ -221,9 +221,9 @@ default:
     sync: False
     save:
       passing: False
-      tree: True
+      tree: False
     kinematics:
-      save: True
+      save: False
       events:
         - 36533896
         - 35733274
