@@ -322,6 +322,7 @@ def vbfhinv_regions(cfg):
     if cfg and cfg.RUN.QCD_ESTIMATION.RUN_STUDY:
         regions['sr_vbf_qcd'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
         regions['sr_vbf_qcd'].remove('mindphijm')
+        regions['sr_vbf_qcd'].remove('trig_met')
         
         # Regions with looser recoil cuts
         if cfg.RUN.QCD_ESTIMATION.LOOSER_REGIONS:
