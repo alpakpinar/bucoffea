@@ -492,7 +492,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     trigger_weight[np.isnan(trigger_weight)] = 1
                     region_weights.add('trigger', trigger_weight)
                 elif re.match(r'cr_(\d+)m.*', region) or re.match('sr_.*', region):
-                    region_weights.add('trigger_met', evaluator["trigger_met"](df['recoil_pt']))
+                    if region in ['sr_vbf_qcd_regionA', 'sr_vbf_qcd_regionB', 'sr_vbf_qcd_met_100_160']:
+                        region_weights.add('trigger_met', np.ones(df.size))
+                    else:
+                        region_weights.add('trigger_met', evaluator["trigger_met"](df['recoil_pt']))
                 elif re.match(r'cr_g.*', region):
                     photon_trigger_sf(region_weights, photons, df)
 
