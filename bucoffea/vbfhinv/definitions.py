@@ -371,6 +371,10 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_qcd_cr'] = copy.deepcopy(regions['sr_vbf_qcd'])
         regions['sr_vbf_qcd_cr'].append('maxdphijm')
 
+        # QCD CR with detajj between 5.5 and 6.5
+        regions['sr_vbf_qcd_cr_detajj'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
+        regions['sr_vbf_qcd_cr_detajj'].append('detajj_for_qcd')
+
     if cfg and cfg.RUN.TRIGGER_STUDY_QCD:
         # Trigger study for QCD: Check the turn-on for around 200 < recoil < 250 GeV 
         # Compare between SR and QCD populated CR

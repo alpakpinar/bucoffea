@@ -307,6 +307,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
         
+        selection.add('detajj_for_qcd', (df['detajj'] > 5.5) & (df['detajj'] < 6.5))
+
         # Cleaning cuts for signal region
         max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
         selection.add('max_neEmEF', (max_neEmEF < 0.7).any())
