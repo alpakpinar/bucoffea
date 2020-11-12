@@ -64,7 +64,6 @@ def parse_cli():
     parser.add_argument('--analysis', help='The analysis being considered, default is vbf.', default='vbf')
     parser.add_argument('--regroup', help='Construct the uncertainty plot with the sources grouped into correlated and uncorrelated.', action='store_true')
     parser.add_argument('--onlyRun', help='Specify regex to only run over some samples and skip others.')
-    parser.add_argument('--save_to_root', help='Save output uncertaintes to a root file.', action='store_true')
     parser.add_argument('--tabulate', help='Tabulate unc/variation values.', action='store_true')
     parser.add_argument('--znunu2016', help='Only run over Z(vv) 2016.', action='store_true')
     parser.add_argument('--binnings', help='The binnings to use for monojet analysis, can be monoj or monov. Default is both.', nargs='*', default=None)
@@ -189,14 +188,14 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
             # Save only specific shapes, determined by root_config dict (for now, only save QCD Z(vv))
             if root_config['shape'] not in dataset_tag:
                 continue
-            rootfile = root_config['file']
+            rootfile_sm = root_config['file_smooth']
+            rootfile_nm = root_config['file_normal']
             # Guard against inf/nan values
             ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
-            if save_smooth:
-                # Save only the smoothed version to the ROOT file
-                rootfile[f'{bin_tag}_{year}_{var_label}'] = (smooth_hist, edges)
-            else:
-                rootfile[f'{bin_tag}_{year}_{var_label}'] = (ratio, edges)
+
+            # Save the smoothed and non-smoothed values in different root files
+            rootfile_sm[f'{bin_tag}_{year}_{var_label}'] = (smooth_hist, edges)
+            rootfile_nm[f'{bin_tag}_{year}_{var_label}'] = (ratio, edges)
 
         # Store all uncertainties, later to be tabulated (top 5 only + total)
         if tabulate_top5:
@@ -581,25 +580,24 @@ def main():
     if not os.path.exists(outputrootdir):
         os.makedirs(outputrootdir)
 
-    # Configure root usage for the function 
-    if args.save_to_root:
-        if args.analysis == 'monojet':
-            outputrootfile = pjoin(outputrootdir, 'monoj_monov_shape_jes_uncs_smooth.root')
-        elif args.analysis == 'vbf':
-            outputrootfile = pjoin(outputrootdir, 'vbf_shape_jes_uncs_smooth.root')
-        rootfile = uproot.recreate(outputrootfile)
-        print(f'MSG% ROOT file is created: {rootfile}')
+    if args.analysis == 'monojet':
+        outputrootfile_smooth = pjoin(outputrootdir, 'monoj_monov_shape_jes_uncs_smooth.root')
+        outputrootfile_normal = pjoin(outputrootdir, 'monoj_monov_shape_jes_uncs_normal.root')
+    elif args.analysis == 'vbf':
+        outputrootfile_smooth = pjoin(outputrootdir, 'vbf_shape_jes_uncs_smooth.root')
+        outputrootfile_normal = pjoin(outputrootdir, 'vbf_shape_jes_uncs_normal.root')
+    
+    rootfile_smooth = uproot.recreate(outputrootfile_smooth)
+    rootfile_normal = uproot.recreate(outputrootfile_normal)
+    
+    print(f'MSG% ROOT file is created: {rootfile_smooth}')
+    print(f'MSG% ROOT file is created: {rootfile_normal}')
 
-        root_config = {
-            'save'  : args.save_to_root,
-            'shape' : 'qcd_zjets',
-            'file'  : rootfile if args.save_to_root else None
-        }
-    else:
-        root_config = {
-            'save'  : False,
-            'shape' : None,
-            'file'  : None
+    root_config = {
+        'save'  : True,
+        'shape' : 'qcd_zjets', # QCD Z(vv) shapes will be saved
+        'file_smooth'  : rootfile_smooth,
+        'file_normal'  : rootfile_normal,
         }
 
     for bin_tag, bins in binnings.items():
