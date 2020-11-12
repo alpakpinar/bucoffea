@@ -1,4 +1,5 @@
 import copy
+import re
 from coffea import hist
 
 Hist = hist.Hist
@@ -233,6 +234,11 @@ def vbfhinv_regions(cfg):
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation']
 
+    # Regions with the jet ID scale factor moved up and down:
+    # Identical selections + only the weights changed
+    regions['sr_vbf_ak4sfUp'] = copy.deepcopy(regions['sr_vbf'])
+    regions['sr_vbf_ak4sfDown'] = copy.deepcopy(regions['sr_vbf'])
+
     # For sync mode
     if cfg and cfg.RUN.SYNC:
         regions['cr_sync'] = [
@@ -385,12 +391,19 @@ def vbfhinv_regions(cfg):
 
     return regions
 
-def ak4_em_frac_weights(weights, diak4, evaluator):
+def ak4_em_frac_weights(weights, diak4, evaluator, region):
     '''Apply SF for EM fraction cut on jets. Event weight = (Leading jet weight) * (Trailing jet weight)'''
     # Separate weights for the two leading jets:
     # If jet pt < 100 GeV, use the SF from the lowest pt bin
-    w_ak40 = evaluator['ak4_em_frac_sf'](diak4.i0.pt, diak4.i0.eta).prod()
-    w_ak41 = evaluator['ak4_em_frac_sf'](diak4.i1.pt, diak4.i1.eta).prod()
+    if re.match('.*_ak4sfUp', region):
+        w_ak40 = evaluator['ak4_em_frac_sfUp'](diak4.i0.pt, diak4.i0.eta).prod()
+        w_ak41 = evaluator['ak4_em_frac_sfUp'](diak4.i1.pt, diak4.i1.eta).prod()
+    elif re.match('.*_ak4sfDown', region):
+        w_ak40 = evaluator['ak4_em_frac_sfDown'](diak4.i0.pt, diak4.i0.eta).prod()
+        w_ak41 = evaluator['ak4_em_frac_sfDown'](diak4.i1.pt, diak4.i1.eta).prod()
+    else:
+        w_ak40 = evaluator['ak4_em_frac_sf'](diak4.i0.pt, diak4.i0.eta).prod()
+        w_ak41 = evaluator['ak4_em_frac_sf'](diak4.i1.pt, diak4.i1.eta).prod()
 
     em_frac_weight = w_ak40 * w_ak41
 
