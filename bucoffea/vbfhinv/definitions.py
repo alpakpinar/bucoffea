@@ -354,6 +354,10 @@ def vbfhinv_regions(cfg):
             regions['sr_vbf_qcd_met_100_160'].remove('met_sr')
             regions['sr_vbf_qcd_met_100_160'].append('met_100_160')
 
+            # Region without MET cut, to study MET distribution
+            regions['sr_vbf_qcd_met_test'] = copy.deepcopy(regions['sr_vbf_qcd_met_100_160'])
+            regions['sr_vbf_qcd_met_test'].remove('met_100_160')
+
             # Define regions A and B:
             # A: QCD CR with 100 < MET < 160
             # B: QCD SR with 100 < MET < 160
