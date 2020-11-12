@@ -497,6 +497,12 @@ era2017:
     ak4_em_frac_sf:
       histogram: sf_2017
       file: data/sf/ak4/jet_em_frac_eff_sf.root
+    ak4_em_frac_sfUp:
+      histogram: sf_2017_up
+      file: data/sf/ak4/jet_em_frac_eff_sf.root
+    ak4_em_frac_sfDown:
+      histogram: sf_2017_down
+      file: data/sf/ak4/jet_em_frac_eff_sf.root
 
 era2018:
   triggers:
@@ -640,4 +646,10 @@ era2018:
 
     ak4_em_frac_sf:
       histogram: sf_2018
+      file: data/sf/ak4/jet_em_frac_eff_sf.root
+    ak4_em_frac_sfUp:
+      histogram: sf_2018_up
+      file: data/sf/ak4/jet_em_frac_eff_sf.root
+    ak4_em_frac_sfDown:
+      histogram: sf_2018_down
       file: data/sf/ak4/jet_em_frac_eff_sf.root
