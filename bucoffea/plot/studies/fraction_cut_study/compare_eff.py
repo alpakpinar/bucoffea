@@ -128,6 +128,37 @@ def get_varied_sf(data_eff, h_mc, region='cr_2m'):
 
     return sf_prefireUp, sf_prefireDown
 
+def plot_2d_eff(eff, outtag, xedges, yedges, xcenters, ycenters, year=2017, type='data'):
+    '''Plot 2D efficiencies for data or MC.'''
+    fig, ax = plt.subplots()
+    opts = {'cmap' : 'viridis'}
+    pc = ax.pcolormesh(xedges, yedges, eff.T, **opts)
+    fig.colorbar(pc, ax=ax, label=f'Efficiency')
+
+    ax.set_xlabel(r'Jet $p_T \ (GeV)$')
+    ax.set_ylabel(r'Jet $\eta$')
+
+    ax.set_title(f'{year} Efficiency: {type.upper()}')
+
+    opts = {
+        'horizontalalignment' : 'center',
+        'verticalalignment' : 'center'
+    }
+    for ix, xcenter in enumerate(xcenters):
+        for iy, ycenter in enumerate(ycenters):
+            ax.text(xcenter, ycenter, f'{eff[ix, iy]:.2f}', **opts)
+
+    # Save figure
+    outdir = f'./output/{outtag}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    outpath = pjoin(outdir, f'{type}_2d_eff_{year}.pdf')
+    fig.savefig(outpath)
+    print(f'MSG% File saved: {outpath}')
+
+    plt.close(fig)
+
+
 def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
     '''Get 2D scale factor as a function of jet pt and eta, for the efficiency of the neutral EM fraction cut.'''
     variable = 'ak4_pt0_eta0'
@@ -154,6 +185,10 @@ def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
 
     xedges, xcenters = pt_ax.edges(), pt_ax.centers()
     yedges, ycenters = eta_ax.edges(), eta_ax.centers()
+
+    # Plot the efficiencies first
+    plot_2d_eff(data_eff, outtag, xedges, yedges, xcenters, ycenters, year, type='data')
+    plot_2d_eff(mc_eff, outtag, xedges, yedges, xcenters, ycenters, year, type='mc')
 
     # Scale factor: Data / MC efficiency
     sf = data_eff / mc_eff
