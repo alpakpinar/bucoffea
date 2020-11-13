@@ -44,7 +44,7 @@ def preprocess(h, acc, region, year):
 def do_coarse_rebinning_for_2d(h):
     '''Make coarser binning for 2D SF histogram.'''
     coarse_binnings = {
-        'jetpt' : hist.Bin('jetpt', r'Jet $p_T \ (GeV)$', list(range(100,400,100)) + [400, 600, 1000])
+        'jetpt' : hist.Bin('jetpt', r'Jet $p_T \ (GeV)$', [40,80] + list(range(100,400,100)) + [400, 600, 1000])
     }
 
     h = h.rebin('jetpt', coarse_binnings['jetpt'])
