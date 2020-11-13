@@ -46,7 +46,7 @@ from bucoffea.helpers.gen import (
 from bucoffea.zmumu.definitions import zmumu_accumulator, zmumu_regions
 
 def add_selections_for_leading_jet(selection, lead_ak4):
-    lead_ak4_pt_eta = (lead_ak4.pt > 100) & (np.abs(lead_ak4.eta) < 4.7)
+    lead_ak4_pt_eta = (lead_ak4.pt > 40) & (np.abs(lead_ak4.eta) < 4.7)
     selection.add('lead_ak4_pt_eta', lead_ak4_pt_eta.any())
 
     has_track = np.abs(lead_ak4.eta) <= 2.5
@@ -63,7 +63,7 @@ def add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4):
     # Calculate Z pt and phi from the dimuons
     z_pt, z_eta, z_phi = calculate_z_pt_eta_phi(dimuons)
 
-    z_pt_eta = (z_pt > 100) & (np.abs(z_eta) < 4.7)
+    z_pt_eta = (z_pt > 40) & (np.abs(z_eta) < 4.7)
     selection.add('z_pt_eta', z_pt_eta.any())
 
     df['dphi_z_jet'] = dphi(z_phi.min(), leadak4.phi.max())
