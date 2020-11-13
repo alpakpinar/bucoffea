@@ -144,7 +144,7 @@ def plot_2d_eff(eff, outtag, xedges, yedges, xcenters, ycenters, year=2017, type
         'horizontalalignment' : 'center',
         'verticalalignment' : 'center'
     }
-    for ix, xcenter in enumerate(xcenters):
+    for ix, xcenter in enumerate(xcenters[2:], 2):
         for iy, ycenter in enumerate(ycenters):
             if not np.isnan(eff[ix,iy]):
                 ax.text(xcenter, ycenter, f'{eff[ix, iy]:.2f}', **opts)
@@ -219,7 +219,7 @@ def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
         'horizontalalignment' : 'center',
         'verticalalignment' : 'center'
     }
-    for ix, xcenter in enumerate(xcenters):
+    for ix, xcenter in enumerate(xcenters[2:], 2):
         for iy, ycenter in enumerate(ycenters):
             ax.text(xcenter, ycenter, f'{sf[ix, iy]:.2f}', **opts)
 
