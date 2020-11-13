@@ -146,7 +146,10 @@ def plot_2d_eff(eff, outtag, xedges, yedges, xcenters, ycenters, year=2017, type
     }
     for ix, xcenter in enumerate(xcenters):
         for iy, ycenter in enumerate(ycenters):
-            ax.text(xcenter, ycenter, f'{eff[ix, iy]:.2f}', **opts)
+            if not np.isnan(eff[ix,iy]):
+                ax.text(xcenter, ycenter, f'{eff[ix, iy]:.2f}', **opts)
+            else:
+                continue
 
     # Save figure
     outdir = f'./output/{outtag}'
