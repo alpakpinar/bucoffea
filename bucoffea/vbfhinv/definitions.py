@@ -402,6 +402,10 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_qcd_cr_detajj'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
         regions['sr_vbf_qcd_cr_detajj'].append('detajj_for_qcd')
 
+        # QCD control region with the leading jet having NEF < 0.05 
+        regions['sr_vbf_qcd_cr_detajj_ak40_nef_lt_005'] = copy.deepcopy(regions['sr_vbf_qcd_cr_detajj'])
+        regions['sr_vbf_qcd_cr_detajj_ak40_nef_lt_005'].append('ak40_nef_lt_005')
+
     if cfg and cfg.RUN.TRIGGER_STUDY_QCD:
         # Trigger study for QCD: Check the turn-on for around 200 < recoil < 250 GeV 
         # Compare between SR and QCD populated CR

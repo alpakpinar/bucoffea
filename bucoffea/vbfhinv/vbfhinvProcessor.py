@@ -309,6 +309,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         
         selection.add('detajj_for_qcd', (df['detajj'] > 5.5) & (df['detajj'] < 6.5))
 
+        selection.add('ak40_nef_lt_005', (diak4.i0.nef<0.05).any())
+
         # Cleaning cuts for signal region
         max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
         selection.add('max_neEmEF', (max_neEmEF < 0.7).any())
