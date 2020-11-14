@@ -69,6 +69,9 @@ def vbfhinv_accumulator(cfg):
     weight_ax = Bin("weight_value", "Weight",100,0.5,1.5)
     weight_wide_ax = Bin("weight_value", "Weight",100,-10,10)
 
+    vecb_ax = Bin("vecb", "VecB", 50, 0, 0.5)
+    vecdphi_ax = Bin("vecdphi", "VecDPhi", 50, 0, 1)
+
     nvtx_ax = Bin('nvtx','Number of vertices',100,-0.5,99.5)
     rho_ax = Bin('rho','Energy density',100, 0, 100)
     frac_ax = Bin('frac','Fraction', 50, 0, 1)
@@ -133,6 +136,10 @@ def vbfhinv_accumulator(cfg):
     items["dpfcalo_sr"] = Hist("Counts", dataset_ax, region_ax, dpfcalo_ax)
     items["dphijm"] = Hist("min(4 leading jets, MET)", dataset_ax, region_ax, dphi_ax)
     items["dphijr"] = Hist("min(4 leading jets, Recoil)", dataset_ax, region_ax, dphi_ax)
+
+    items["vecb"] = Hist("Counts", dataset_ax, region_ax, vecb_ax)
+    items["vecdphi"] = Hist("Counts", dataset_ax, region_ax, vecdphi_ax)
+    items["dphitkpf"] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
 
     # 2D histogram to be used for QCD estimation
     items["mjj_vs_dphi_qcd"] = Hist("Counts", dataset_ax, region_ax, mjj_ax, dphi_ax)

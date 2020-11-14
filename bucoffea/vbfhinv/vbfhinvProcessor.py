@@ -316,6 +316,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         vec_b = calculate_vecB(ak4, met_pt, met_phi)
         vec_dphi = calculate_vecDPhi(ak4, met_pt, met_phi, df['TkMET_phi'])
 
+        dphitkpf = dphi(met_phi, df['TkMET_phi'])
+
         no_jet_in_trk = (diak4.i0.abseta>2.5).any() & (diak4.i1.abseta>2.5).any()
         no_jet_in_hf = (diak4.i0.abseta<3.0).any() & (diak4.i1.abseta<3.0).any()
 
@@ -647,7 +649,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_nhf0',      frac=diak4.i0.nhf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nconst0',   nconst=diak4.i0.nconst[mask].flatten(), weight=w_diak4)
 
-            ezfill('ak4_eta0_phi0',  jeteta=diak4.i0.eta[mask].flatten(),  jetpt=diak4.i0.pt[mask].flatten(), weight=w_diak4)
+            ezfill('ak4_eta0_phi0',  jeteta=diak4.i0.eta[mask].flatten(),  jetphi=diak4.i0.pt[mask].flatten(), weight=w_diak4)
 
             # Trailing ak4
             ezfill('ak4_eta1',      jeteta=diak4.i1.eta[mask].flatten(),    weight=w_diak4)
@@ -679,6 +681,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('dphijj',             dphi=df["dphijj"][mask],   weight=rweight[mask] )
             ezfill('detajj',             deta=df["detajj"][mask],   weight=rweight[mask] )
             ezfill('mjj',                mjj=df["mjj"][mask],      weight=rweight[mask] )
+
+            # Store VecB/VecDPhi histograms
+            ezfill('vecb',         vecb=vec_b[mask],        weight=rweight[mask])
+            ezfill('vecdphi',      vecdphi=vec_dphi[mask],  weight=rweight[mask])
+            ezfill('dphitkpf',     dphi=dphitkpf[mask],     weight=rweight[mask])
 
             if gen_v_pt is not None:
                 ezfill('gen_vpt', vpt=gen_v_pt[mask], weight=df['Generator_weight'][mask])
