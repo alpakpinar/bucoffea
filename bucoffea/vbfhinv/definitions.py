@@ -33,6 +33,7 @@ def vbfhinv_accumulator(cfg):
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
     jet_eta_ax_coarse = Bin("jeteta", r"$\eta$", 10, -5, 5)
     jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
+    jet_phi_ax_coarse = Bin("jetphi", r"$\phi$", 20,-np.pi, np.pi)
 
     jet_mass_ax = Bin("mass", r"$M_{jet}$ (GeV)", 100,0,300)
 
@@ -113,6 +114,7 @@ def vbfhinv_accumulator(cfg):
     items["ak4_pt0_nhf0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax_coarse, frac_ax)
     items["ak4_pt0_nconst0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax_coarse, nconst_ax)
     items["ak4_pt0_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax,jet_eta_ax_coarse)
+    items["ak4_eta0_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, jet_phi_ax_coarse)
 
     items["ak4_pt"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_eta"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)

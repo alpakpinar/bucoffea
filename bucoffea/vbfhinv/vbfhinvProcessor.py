@@ -647,6 +647,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_nhf0',      frac=diak4.i0.nhf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nconst0',   nconst=diak4.i0.nconst[mask].flatten(), weight=w_diak4)
 
+            ezfill('ak4_eta0_phi0',  jeteta=diak4.i0.eta[mask].flatten(),  jetpt=diak4.i0.pt[mask].flatten(), weight=w_diak4)
+
             # Trailing ak4
             ezfill('ak4_eta1',      jeteta=diak4.i1.eta[mask].flatten(),    weight=w_diak4)
             ezfill('ak4_phi1',      jetphi=diak4.i1.phi[mask].flatten(),    weight=w_diak4)
@@ -677,7 +679,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('dphijj',             dphi=df["dphijj"][mask],   weight=rweight[mask] )
             ezfill('detajj',             deta=df["detajj"][mask],   weight=rweight[mask] )
             ezfill('mjj',                mjj=df["mjj"][mask],      weight=rweight[mask] )
-
 
             if gen_v_pt is not None:
                 ezfill('gen_vpt', vpt=gen_v_pt[mask], weight=df['Generator_weight'][mask])
