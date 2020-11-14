@@ -70,7 +70,7 @@ def vbfhinv_accumulator(cfg):
     weight_wide_ax = Bin("weight_value", "Weight",100,-10,10)
 
     vecb_ax = Bin("vecb", "VecB", 50, 0, 0.5)
-    vecdphi_ax = Bin("vecdphi", "VecDPhi", 50, 0, 1)
+    vecdphi_ax = Bin("vecdphi", "VecDPhi", 70, 0, 3.5)
 
     nvtx_ax = Bin('nvtx','Number of vertices',100,-0.5,99.5)
     rho_ax = Bin('rho','Energy density',100, 0, 100)
@@ -392,6 +392,10 @@ def vbfhinv_regions(cfg):
         # QCD control region with one jet in HF (Trk-HF or EE-HF)
         regions['sr_vbf_qcd_cr_one_jet_in_hf'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
         regions['sr_vbf_qcd_cr_one_jet_in_hf'].append('at_least_one_jet_in_hf')
+
+        # QCD control region with VecDPhi > 1.0
+        regions['sr_vbf_qcd_cr_large_vecdphi'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
+        regions['sr_vbf_qcd_cr_large_vecdphi'].append('large_vecdphi')
 
         # QCD CR with detajj between 5.5 and 6.5
         regions['sr_vbf_qcd_cr_detajj'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
