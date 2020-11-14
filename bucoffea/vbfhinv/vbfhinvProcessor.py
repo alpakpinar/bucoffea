@@ -627,6 +627,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_eta',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets)
             ezfill('ak4_phi',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets)
             ezfill('ak4_pt',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets)
+            ezfill('ak4_nef',    frac=ak4[mask].nef.flatten(),   weight=w_alljets)
+            ezfill('ak4_nhf',    frac=ak4[mask].nhf.flatten(),   weight=w_alljets)
 
             ezfill('ak4_eta_nopref',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets_nopref)
             ezfill('ak4_phi_nopref',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets_nopref)
