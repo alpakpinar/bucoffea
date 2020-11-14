@@ -31,7 +31,7 @@ def vbfhinv_accumulator(cfg):
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 100, 0, 1000)
     jet_pt_ax_coarse = Bin("jetpt", r"$p_{T}$ (GeV)", 5, 0, 500)
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
-    jet_eta_ax_coarse = Bin("jeteta", r"$\eta$", 10, -5, 5)
+    jet_eta_ax_coarse = Bin("jeteta", r"$\eta$", 20, -5, 5)
     jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
     jet_phi_ax_coarse = Bin("jetphi", r"$\phi$", 20,-np.pi, np.pi)
 
@@ -75,6 +75,7 @@ def vbfhinv_accumulator(cfg):
     nvtx_ax = Bin('nvtx','Number of vertices',100,-0.5,99.5)
     rho_ax = Bin('rho','Energy density',100, 0, 100)
     frac_ax = Bin('frac','Fraction', 50, 0, 1)
+    frac_ax_coarse = Bin('frac','Fraction', 20, 0, 1)
     Hist = hist.Hist
     items = {}
     items["genvpt_check"] = Hist("Counts", dataset_ax, type_ax, vpt_ax)
@@ -118,7 +119,12 @@ def vbfhinv_accumulator(cfg):
     items["ak4_pt0_nconst0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax_coarse, nconst_ax)
     items["ak4_pt0_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax,jet_eta_ax_coarse)
     items["ak4_eta0_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, jet_phi_ax_coarse)
+    items["ak4_eta0_nef0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, frac_ax_coarse)
+    items["ak4_eta0_nhf0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, frac_ax_coarse)
+    
     items["ak4_eta1_phi1"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, jet_phi_ax_coarse)
+    items["ak4_eta1_nef1"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, frac_ax_coarse)
+    items["ak4_eta1_nhf1"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, frac_ax_coarse)
 
     items["ak4_pt"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_eta"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
@@ -129,6 +135,9 @@ def vbfhinv_accumulator(cfg):
     items["ak4_btag"] = Hist("Counts", dataset_ax, region_ax, btag_ax)
     items["ak4_nef"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nhf"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
+
+    items["ak4_eta_nef"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, frac_ax)
+    items["ak4_eta_nhf"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, frac_ax)
 
     items["recoil_mjj"] = Hist("Counts", dataset_ax, region_ax, recoil_ax, mjj_ax)
     items["photon_eta_phi"] = Hist("Counts", dataset_ax, region_ax, eta_ax_coarse, phi_ax_coarse)
