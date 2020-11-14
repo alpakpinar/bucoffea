@@ -208,8 +208,9 @@ def do_submit(args):
     datasets_not_to_submit = [
         '(GluGlu|VBF)_HToInvisible_(?!M125).*',
         'W(plus|minus)H_WToQQ_HToInvisible_(?!M125).*',
+        'ZH_ZToQQ_HToInvisible_(?!M125).*',
+        'GJets_1j_Gpt.*',
         'SMS-T2qq.*'
-
     ]
 
     for dataset, files in dataset_files.items():
@@ -221,6 +222,7 @@ def do_submit(args):
         
         if skip_this_dataset:
             continue
+        
         print(f"Writing submission files for dataset: {dataset}.")
 
         if args.filesperjob:
