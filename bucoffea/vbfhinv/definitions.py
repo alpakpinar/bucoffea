@@ -407,6 +407,10 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_qcd_cr_large_vecdphi'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
         regions['sr_vbf_qcd_cr_large_vecdphi'].append('large_vecdphi')
 
+        # QCD control region with VecDPhi < 1.0
+        regions['sr_vbf_qcd_cr_small_vecdphi'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
+        regions['sr_vbf_qcd_cr_small_vecdphi'].append('small_vecdphi')
+
         # QCD CR with detajj between 5.5 and 6.5
         regions['sr_vbf_qcd_cr_detajj'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
         regions['sr_vbf_qcd_cr_detajj'].append('detajj_for_qcd')
