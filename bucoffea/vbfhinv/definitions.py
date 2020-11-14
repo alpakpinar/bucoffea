@@ -380,6 +380,10 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_qcd_cr'] = copy.deepcopy(regions['sr_vbf_qcd'])
         regions['sr_vbf_qcd_cr'].append('maxdphijm')
 
+        # QCD control region with one jet in HF (Trk-HF or EE-HF)
+        regions['sr_vbf_qcd_cr_one_jet_in_hf'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
+        regions['sr_vbf_qcd_cr_one_jet_in_hf'].append('at_least_one_jet_in_hf')
+
         # QCD CR with detajj between 5.5 and 6.5
         regions['sr_vbf_qcd_cr_detajj'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
         regions['sr_vbf_qcd_cr_detajj'].append('detajj_for_qcd')
