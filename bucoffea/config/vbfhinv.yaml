@@ -238,7 +238,7 @@ default:
       run_study: True
       looser_regions: False
       categorize_by_detajj: False
-      met_100_160: True
+      met_100_160: False
   triggers:
     ht:
       gammaeff:
