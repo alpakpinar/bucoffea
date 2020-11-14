@@ -2,6 +2,7 @@
 import argparse
 import math
 import os
+import re
 import shutil
 from datetime import datetime
 from multiprocessing.pool import Pool
@@ -204,7 +205,22 @@ def do_submit(args):
         pack_repo(gridpack_path)
         input_files.append(gridpack_path)
 
+    datasets_not_to_submit = [
+        '(GluGlu|VBF)_HToInvisible_(?!M125).*',
+        'W(plus|minus)H_WToQQ_HToInvisible_(?!M125).*',
+        'SMS-T2qq.*'
+
+    ]
+
     for dataset, files in dataset_files.items():
+        skip_this_dataset = False
+        for datasetregex in datasets_not_to_submit:
+            if re.match(datasetregex, dataset):
+                skip_this_dataset = True
+                break
+        
+        if skip_this_dataset:
+            continue
         print(f"Writing submission files for dataset: {dataset}.")
 
         if args.filesperjob:
