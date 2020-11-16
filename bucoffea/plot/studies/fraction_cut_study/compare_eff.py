@@ -50,6 +50,19 @@ def do_coarse_rebinning_for_2d(h):
     h = h.rebin('jetpt', coarse_binnings['jetpt'])
     return h
 
+def calculate_efficiency(h_data, h_mc, region='cr_2m'):
+    '''Calculate the efficiencies in data and MC and return the values.'''
+    h_data_withCut = h_data.integrate('region', f'{region}_withEmEF')
+    h_data_withoutCut = h_data.integrate('region', f'{region}_noEmEF')
+
+    h_mc_withCut = h_mc.integrate('region', f'{region}_withEmEF')
+    h_mc_withoutCut = h_mc.integrate('region', f'{region}_noEmEF')
+
+    data_eff = h_data_withCut.values()[()] / h_data_withoutCut.values()[()]
+    mc_eff = h_mc_withCut.values()[()] / h_mc_withoutCut.values()[()]
+
+    return data_eff, mc_eff
+
 def compare_eff(acc, outtag, region='cr_2m', spec='regular', year=2017):
     '''Calculate the efficiency of neutral EM fraction cut as a function of the jet eta, plot the efficiency for data and MC.'''
     acc.load('ak4_eta0')
@@ -161,6 +174,55 @@ def plot_2d_eff(eff, outtag, xedges, yedges, xcenters, ycenters, year=2017, type
 
     plt.close(fig)
 
+def plot_sf_for_endcap(acc, outtag, region='cr_2m', year=2017):
+    '''Plot 1D SF as a function of jet pt for endcap jets.'''
+    variable = 'ak4_pt0_eta0'
+    acc.load(variable)
+    h = acc[variable]
+
+    h_data, h_mc = preprocess(h, acc, region, year)
+
+    # Use coarser binnings
+    h_data = do_coarse_rebinning_for_2d(h_data)
+    h_mc = do_coarse_rebinning_for_2d(h_mc)
+
+    h_data_pos_endcap = h_data.integrate('jeteta', slice(2.5,3.0))
+    h_data_neg_endcap = h_data.integrate('jeteta', slice(-3.0,-2.5))
+    h_mc_pos_endcap = h_mc.integrate('jeteta', slice(2.5,3.0))
+    h_mc_neg_endcap = h_mc.integrate('jeteta', slice(-3.0,-2.5))
+
+    # Calculate efficiencies for the two endcap regions
+    data_eff_pos_endcap, mc_eff_pos_endcap = calculate_efficiency(h_data_pos_endcap, h_mc_pos_endcap)
+    data_eff_neg_endcap, mc_eff_neg_endcap = calculate_efficiency(h_data_neg_endcap, h_mc_neg_endcap)
+
+    # Calculate SF
+    sf_pos_endcap = data_eff_pos_endcap / mc_eff_pos_endcap
+    sf_neg_endcap = data_eff_neg_endcap / mc_eff_neg_endcap
+
+    # Guard against NaN values
+    sf_pos_endcap[np.isnan(sf_pos_endcap) | np.isinf(sf_pos_endcap)] = 1.
+    sf_neg_endcap[np.isnan(sf_neg_endcap) | np.isinf(sf_neg_endcap)] = 1.
+
+    pt_ax = h_data.axis('jetpt')
+    xcenters = pt_ax.centers()
+
+    # Plot the 1D SF for the two regions
+    fig, ax = plt.subplots()
+    ax.plot(xcenters, sf_pos_endcap, marker='o', label=r'$2.5 < \eta < 3.0$')
+    ax.plot(xcenters, sf_neg_endcap, marker='o', label=r'$-2.5 < \eta < -3.0$')
+
+    ax.set_xlabel(r'Jet $p_T \ (GeV)$')
+    ax.set_ylabel('Data/MC SF')
+    ax.legend()
+
+    # Save figure
+    outdir = f'./output/{outtag}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    outpath = pjoin(outdir, f'sf_1d_{year}.pdf')
+
+    fig.savefig(outpath)
+    print(f'File saved: {outpath}')
 
 def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
     '''Get 2D scale factor as a function of jet pt and eta, for the efficiency of the neutral EM fraction cut.'''
@@ -174,17 +236,10 @@ def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
     h_data = do_coarse_rebinning_for_2d(h_data)
     h_mc = do_coarse_rebinning_for_2d(h_mc)
 
-    h_data_withCut = h_data.integrate('region', f'{region}_withEmEF')
-    h_data_withoutCut = h_data.integrate('region', f'{region}_noEmEF')
+    data_eff, mc_eff = calculate_efficiency(h_data, h_mc)
 
-    h_mc_withCut = h_mc.integrate('region', f'{region}_withEmEF')
-    h_mc_withoutCut = h_mc.integrate('region', f'{region}_noEmEF')
-
-    data_eff = h_data_withCut.values()[()] / h_data_withoutCut.values()[()]
-    mc_eff = h_mc_withCut.values()[()] / h_mc_withoutCut.values()[()]
-
-    pt_ax = h_data_withCut.axis('jetpt')
-    eta_ax = h_data_withCut.axis('jeteta')
+    pt_ax = h_data.axis('jetpt')
+    eta_ax = h_data.axis('jeteta')
 
     xedges, xcenters = pt_ax.edges(), pt_ax.centers()
     yedges, ycenters = eta_ax.edges(), eta_ax.centers()
@@ -286,6 +341,9 @@ def main():
 
         # Calculate 2D scale factor and save to a root file
         get_2d_sf(acc, outtag, rootfile, region=region, year=year)
+
+        # Calculate 1D SF as a function of jet pt for the endcap jets only
+        plot_sf_for_endcap(acc, outtag, region=region, year=year)
 
 if __name__ == '__main__':
     main()
