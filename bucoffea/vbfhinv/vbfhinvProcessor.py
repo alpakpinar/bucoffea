@@ -582,17 +582,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_phi',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets)
             ezfill('ak4_pt',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets)
 
-            if cfg.RUN.EFF_STUDY.SAVE:
-                if region == 'inclusive':
-                    continue
-                ezfill('ak4_eta0',    jeteta=lead_ak4[mask].eta.flatten(), weight=rweight[mask])
-                ezfill('ak4_phi0',    jetphi=lead_ak4[mask].phi.flatten(), weight=rweight[mask])
-                ezfill('ak4_pt0',     jetpt=lead_ak4[mask].pt.flatten(),   weight=rweight[mask])
-                ezfill('ak4_nef0',    frac=lead_ak4[mask].nef.flatten(),   weight=rweight[mask])
-
-            ezfill('ak4_pt0_eta0',   jetpt=diak4.i0.pt[mask].flatten(),   jeteta=diak4.i0.eta[mask].flatten(),  weight=rweight[mask])
-            ezfill('ak4_pt1_eta1',   jetpt=diak4.i1.pt[mask].flatten(),   jeteta=diak4.i1.eta[mask].flatten(),  weight=rweight[mask])
-
             ezfill('ak4_eta_nopref',    jeteta=ak4[mask].eta.flatten(), weight=w_alljets_nopref)
             ezfill('ak4_phi_nopref',    jetphi=ak4[mask].phi.flatten(), weight=w_alljets_nopref)
             ezfill('ak4_pt_nopref',     jetpt=ak4[mask].pt.flatten(),   weight=w_alljets_nopref)
@@ -607,6 +596,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_nhf0',      frac=diak4.i0.nhf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nconst0',   nconst=diak4.i0.nconst[mask].flatten(), weight=w_diak4)
 
+            ezfill('ak4_pt0_eta0',   jetpt=diak4.i0.pt[mask].flatten(),   jeteta=diak4.i0.eta[mask].flatten(),  weight=w_diak4)
+
             # Trailing ak4
             ezfill('ak4_eta1',      jeteta=diak4.i1.eta[mask].flatten(),    weight=w_diak4)
             ezfill('ak4_phi1',      jetphi=diak4.i1.phi[mask].flatten(),    weight=w_diak4)
@@ -615,6 +606,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_chf1',      frac=diak4.i1.chf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nhf1',      frac=diak4.i1.nhf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nconst1',   nconst=diak4.i1.nconst[mask].flatten(), weight=w_diak4)
+
+            ezfill('ak4_pt1_eta1',   jetpt=diak4.i1.pt[mask].flatten(),   jeteta=diak4.i1.eta[mask].flatten(),  weight=w_diak4)
 
             # B tag discriminator
             btag = getattr(ak4, cfg.BTAG.ALGO)
