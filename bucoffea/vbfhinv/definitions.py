@@ -345,7 +345,6 @@ def vbfhinv_regions(cfg):
     if cfg and cfg.RUN.QCD_ESTIMATION.RUN_STUDY:
         regions['sr_vbf_qcd'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
         regions['sr_vbf_qcd'].remove('mindphijm')
-        regions['sr_vbf_qcd'].remove('trig_met')
         
         # Regions with looser recoil cuts
         if cfg.RUN.QCD_ESTIMATION.LOOSER_REGIONS:
@@ -374,10 +373,7 @@ def vbfhinv_regions(cfg):
             regions['sr_vbf_qcd_met_100_160'] = copy.deepcopy(regions['sr_vbf_qcd'])
             regions['sr_vbf_qcd_met_100_160'].remove('met_sr')
             regions['sr_vbf_qcd_met_100_160'].append('met_100_160')
-
-            # Region without MET cut, to study MET distribution
-            regions['sr_vbf_qcd_met_test'] = copy.deepcopy(regions['sr_vbf_qcd_met_100_160'])
-            regions['sr_vbf_qcd_met_test'].remove('met_100_160')
+            regions['sr_vbf_qcd_met_100_160'].remove('trig_met')
 
             # Define regions A and B:
             # A: QCD CR with 100 < MET < 160
