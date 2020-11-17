@@ -41,10 +41,16 @@ def preprocess(h, acc, region, year):
 
     return h_data, h_mc
 
+def ratio_unc(num, den, numunc, denunc):
+    sf = num / den
+    lo = numunc[0] / den
+    high = numunc[1] / den
+    return np.abs(np.vstack((lo, high)) - sf)
+
 def do_coarse_rebinning_for_2d(h):
     '''Make coarser binning for 2D SF histogram.'''
     coarse_binnings = {
-        'jetpt' : hist.Bin('jetpt', r'Jet $p_T \ (GeV)$', [40,80] + list(range(100,400,100)) + [400, 600, 1000])
+        'jetpt' : hist.Bin('jetpt', r'Jet $p_T \ (GeV)$', [40,80,120,160,200,300])
     }
 
     h = h.rebin('jetpt', coarse_binnings['jetpt'])
@@ -58,10 +64,21 @@ def calculate_efficiency(h_data, h_mc, region='cr_2m'):
     h_mc_withCut = h_mc.integrate('region', f'{region}_withEmEF')
     h_mc_withoutCut = h_mc.integrate('region', f'{region}_noEmEF')
 
-    data_eff = h_data_withCut.values()[()] / h_data_withoutCut.values()[()]
-    mc_eff = h_mc_withCut.values()[()] / h_mc_withoutCut.values()[()]
+    data_num = h_data_withCut.values(overflow='over')[()]
+    data_den = h_data_withoutCut.values(overflow='over')[()]
 
-    return data_eff, mc_eff
+    mc_num = h_mc_withCut.values(overflow='over')[()]
+    mc_den = h_mc_withoutCut.values(overflow='over')[()]
+
+    data_eff = data_num / data_den
+    mc_eff = mc_num / mc_den
+
+    # Calculate the uncertainties in data eff and MC eff
+    clopper_pearson_interval = hist.clopper_pearson_interval
+    data_eff_unc = clopper_pearson_interval(data_num, data_den)
+    mc_eff_unc = clopper_pearson_interval(mc_num, mc_den)
+
+    return data_eff, mc_eff, data_eff_unc, mc_eff_unc
 
 def compare_eff(acc, outtag, region='cr_2m', spec='regular', year=2017):
     '''Calculate the efficiency of neutral EM fraction cut as a function of the jet eta, plot the efficiency for data and MC.'''
@@ -133,8 +150,8 @@ def get_varied_sf(data_eff, h_mc, region='cr_2m'):
     h_mc_withoutCut_prefireUp = h_mc.integrate('region', f'{region}_noEmEF_prefireUp')
     h_mc_withoutCut_prefireDown = h_mc.integrate('region', f'{region}_noEmEF_prefireDown')
 
-    mc_eff_prefireUp = h_mc_withCut_prefireUp.values()[()] / h_mc_withoutCut_prefireUp.values()[()]
-    mc_eff_prefireDown = h_mc_withCut_prefireDown.values()[()] / h_mc_withoutCut_prefireDown.values()[()]
+    mc_eff_prefireUp = h_mc_withCut_prefireUp.values(overflow='over')[()] / h_mc_withoutCut_prefireUp.values(overflow='over')[()]
+    mc_eff_prefireDown = h_mc_withCut_prefireDown.values(overflow='over')[()] / h_mc_withoutCut_prefireDown.values(overflow='over')[()]
 
     sf_prefireUp = data_eff / mc_eff_prefireUp
     sf_prefireDown = data_eff / mc_eff_prefireDown
@@ -192,28 +209,46 @@ def plot_sf_for_endcap(acc, outtag, region='cr_2m', year=2017):
     h_mc_neg_endcap = h_mc.integrate('jeteta', slice(-3.0,-2.5))
 
     # Calculate efficiencies for the two endcap regions
-    data_eff_pos_endcap, mc_eff_pos_endcap = calculate_efficiency(h_data_pos_endcap, h_mc_pos_endcap)
-    data_eff_neg_endcap, mc_eff_neg_endcap = calculate_efficiency(h_data_neg_endcap, h_mc_neg_endcap)
+    data_eff_pos_endcap, mc_eff_pos_endcap, data_eff_unc_pos_endcap, mc_eff_unc_pos_endcap = calculate_efficiency(h_data_pos_endcap, h_mc_pos_endcap)
+    data_eff_neg_endcap, mc_eff_neg_endcap, data_eff_unc_neg_endcap, mc_eff_unc_neg_endcap = calculate_efficiency(h_data_neg_endcap, h_mc_neg_endcap)
 
     # Calculate SF
     sf_pos_endcap = data_eff_pos_endcap / mc_eff_pos_endcap
     sf_neg_endcap = data_eff_neg_endcap / mc_eff_neg_endcap
+
+    # Calculate the error on SF
+    sf_err_pos_endcap = ratio_unc(
+        data_eff_pos_endcap,
+        mc_eff_pos_endcap,
+        data_eff_unc_pos_endcap,
+        mc_eff_unc_pos_endcap
+    )
+
+    sf_err_neg_endcap = ratio_unc(
+        data_eff_neg_endcap,
+        mc_eff_neg_endcap,
+        data_eff_unc_neg_endcap,
+        mc_eff_unc_neg_endcap
+    )
 
     # Guard against NaN values
     sf_pos_endcap[np.isnan(sf_pos_endcap) | np.isinf(sf_pos_endcap)] = 1.
     sf_neg_endcap[np.isnan(sf_neg_endcap) | np.isinf(sf_neg_endcap)] = 1.
 
     pt_ax = h_data.axis('jetpt')
-    xcenters = pt_ax.centers()
+    xcenters = pt_ax.centers(overflow='over')
 
-    # Plot the 1D SF for the two regions
+    # Plot the 1D SF for the two regions (for now, do not plot errorbars until we figure it out)
     fig, ax = plt.subplots()
-    ax.plot(xcenters, sf_pos_endcap, marker='o', label=r'$2.5 < \eta < 3.0$')
-    ax.plot(xcenters, sf_neg_endcap, marker='o', label=r'$-2.5 < \eta < -3.0$')
+    ax.errorbar(xcenters, sf_pos_endcap, yerr=sf_err_pos_endcap, marker='o', label=r'$2.5 < \eta < 3.0$')
+    ax.errorbar(xcenters, sf_neg_endcap, yerr=sf_err_neg_endcap, marker='o', label=r'$-2.5 < \eta < -3.0$')
 
     ax.set_xlabel(r'Jet $p_T \ (GeV)$')
     ax.set_ylabel('Data/MC SF')
+    ax.set_ylim(0.7,1.3)
     ax.legend()
+
+    ax.set_title(f'Jet SFs in Endcap: {year}')
 
     # Save figure
     outdir = f'./output/{outtag}'
@@ -236,13 +271,13 @@ def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
     h_data = do_coarse_rebinning_for_2d(h_data)
     h_mc = do_coarse_rebinning_for_2d(h_mc)
 
-    data_eff, mc_eff = calculate_efficiency(h_data, h_mc)
+    data_eff, mc_eff, data_eff_unc, mc_eff_unc = calculate_efficiency(h_data, h_mc)
 
     pt_ax = h_data.axis('jetpt')
     eta_ax = h_data.axis('jeteta')
 
-    xedges, xcenters = pt_ax.edges(), pt_ax.centers()
-    yedges, ycenters = eta_ax.edges(), eta_ax.centers()
+    xedges, xcenters = pt_ax.edges(overflow='over'), pt_ax.centers(overflow='over')
+    yedges, ycenters = eta_ax.edges(overflow='over'), eta_ax.centers(overflow='over')
 
     # Plot the efficiencies first
     plot_2d_eff(data_eff, outtag, xedges, yedges, xcenters, ycenters, year, type='data')
