@@ -309,7 +309,7 @@ def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
         'horizontalalignment' : 'center',
         'verticalalignment' : 'center'
     }
-    for ix, xcenter in enumerate(xcenters[2:], 2):
+    for ix, xcenter in enumerate(xcenters):
         for iy, ycenter in enumerate(ycenters):
             ax.text(xcenter, ycenter, f'{sf[ix, iy]:.2f}', **opts)
 
