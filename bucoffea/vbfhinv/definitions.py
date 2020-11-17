@@ -399,10 +399,6 @@ def vbfhinv_regions(cfg):
         regions['sr_vbf_qcd_cr'] = copy.deepcopy(regions['sr_vbf_qcd'])
         regions['sr_vbf_qcd_cr'].append('maxdphijm')
 
-        # QCD control region with one jet in HF (Trk-HF or EE-HF)
-        regions['sr_vbf_qcd_cr_one_jet_in_hf'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
-        regions['sr_vbf_qcd_cr_one_jet_in_hf'].append('at_least_one_jet_in_hf')
-
         # QCD control region with VecDPhi > 1.0
         regions['sr_vbf_qcd_cr_large_vecdphi'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
         regions['sr_vbf_qcd_cr_large_vecdphi'].append('large_vecdphi')
@@ -414,10 +410,6 @@ def vbfhinv_regions(cfg):
         # QCD CR with detajj between 5.5 and 6.5
         regions['sr_vbf_qcd_cr_detajj'] = copy.deepcopy(regions['sr_vbf_qcd_cr'])
         regions['sr_vbf_qcd_cr_detajj'].append('detajj_for_qcd')
-
-        # QCD control region with the leading jet having NEF < 0.05 
-        regions['sr_vbf_qcd_cr_detajj_ak40_nef_lt_005'] = copy.deepcopy(regions['sr_vbf_qcd_cr_detajj'])
-        regions['sr_vbf_qcd_cr_detajj_ak40_nef_lt_005'].append('ak40_nef_lt_005')
 
     if cfg and cfg.RUN.TRIGGER_STUDY_QCD:
         # Trigger study for QCD: Check the turn-on for around 200 < recoil < 250 GeV 
