@@ -616,6 +616,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('dpfcalo_sr',            dpfcalo=df["dPFCaloSR"][mask],       weight=rweight[mask] )
             ezfill('met',                met=met_pt[mask],            weight=rweight[mask] )
             ezfill('met_phi',            phi=met_phi[mask],           weight=rweight[mask] )
+            ezfill('gen_met',            met=df['GenMET_pt'][mask],            weight=rweight[mask] )
+            ezfill('gen_met_phi',        phi=df['GenMET_phi'][mask],           weight=rweight[mask] )
             ezfill('recoil',             recoil=df["recoil_pt"][mask],      weight=rweight[mask] )
             ezfill('recoil_phi',         phi=df["recoil_phi"][mask],        weight=rweight[mask] )
             ezfill('dphijm',             dphi=df["minDPhiJetMet"][mask],    weight=rweight[mask] )
