@@ -313,6 +313,8 @@ def get_2d_sf(acc, outtag, rootfile, region='cr_2m', year=2017):
     }
     for ix, xcenter in enumerate(xcenters):
         for iy, ycenter in enumerate(ycenters):
+            textcol = 'black' if sf[ix, iy] > 0.95 else 'white'
+            opts['color'] = textcol
             ax.text(xcenter, ycenter, f'{sf[ix, iy]:.2f}', **opts)
 
     # Save figure
