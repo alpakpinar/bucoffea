@@ -616,8 +616,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('dpfcalo_sr',            dpfcalo=df["dPFCaloSR"][mask],       weight=rweight[mask] )
             ezfill('met',                met=met_pt[mask],            weight=rweight[mask] )
             ezfill('met_phi',            phi=met_phi[mask],           weight=rweight[mask] )
-            ezfill('gen_met',            met=df['GenMET_pt'][mask],            weight=rweight[mask] )
-            ezfill('gen_met_phi',        phi=df['GenMET_phi'][mask],           weight=rweight[mask] )
             ezfill('recoil',             recoil=df["recoil_pt"][mask],      weight=rweight[mask] )
             ezfill('recoil_phi',         phi=df["recoil_phi"][mask],        weight=rweight[mask] )
             ezfill('dphijm',             dphi=df["minDPhiJetMet"][mask],    weight=rweight[mask] )
@@ -627,6 +625,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('detajj',             deta=df["detajj"][mask],   weight=rweight[mask] )
             ezfill('mjj',                mjj=df["mjj"][mask],      weight=rweight[mask] )
 
+            ezfill('gen_met',            met=df['GenMET_pt'][mask],            weight=df['Generator_weight'][mask] )
+            ezfill('gen_met_phi',        phi=df['GenMET_phi'][mask],           weight=df['Generator_weight'][mask] )
 
             if gen_v_pt is not None:
                 ezfill('gen_vpt', vpt=gen_v_pt[mask], weight=df['Generator_weight'][mask])
