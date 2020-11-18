@@ -7,6 +7,7 @@ from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, 
 from coffea import hist
 from matplotlib import pyplot as plt
 from klepto.archives import dir_archive
+from pprint import pprint
 
 pjoin = os.path.join
 
@@ -14,7 +15,7 @@ def get_dataset_regex(tag, year):
     '''Given the dataset tag, get the dataset regex to look for.'''
     tag_to_regex = {
         'vbf' : 'VBF_HToInv.*M125.*{}',
-        'ggh' : 'GluGlu_HToInv.*M125.*{}',
+        'ggh' : 'GluGlu_HToInv.*M125_(TuneCP5|HiggspTgt190).*{}',
     }
 
     return re.compile( tag_to_regex[tag].format(year) )
@@ -50,13 +51,9 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
         'color':'k',
     }
     
-    line_opts = {
-        'color' : 'crimson'
-    }
-
     fig, ax, rax = fig_ratio()
     hist.plot1d(h_2016, ax=ax, overlay='dataset', error_opts=data_err_opts)
-    hist.plot1d(h_2017, ax=ax, overlay='dataset', line_opts=line_opts, clear=False)
+    hist.plot1d(h_2017, ax=ax, overlay='dataset', clear=False)
 
     ax.set_xlabel('')
     ax.set_yscale('log')
@@ -68,6 +65,7 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
         h_2016.integrate('dataset'),
         h_2017.integrate('dataset'),
         ax=rax,
+        unc='num',
         error_opts=data_err_opts
     )
 
