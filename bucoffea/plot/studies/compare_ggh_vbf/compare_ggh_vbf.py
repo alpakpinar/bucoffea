@@ -19,6 +19,14 @@ def get_dataset_regex(tag, year):
 
     return re.compile( tag_to_regex[tag].format(year) )
 
+def get_title(tag):
+    tag_to_title = {
+        'vbf' : 'VBF H(inv)',
+        'ggh' : 'ggH(inv)'
+    }
+
+    return tag_to_title[tag]
+
 def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusive'):
     '''Compare signal samples between 2016 and 2017.'''
     acc.load(distribution)
@@ -53,6 +61,7 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
     ax.set_xlabel('')
     ax.set_yscale('log')
     ax.set_ylim(1e-3, 1e5)
+    ax.set_title( get_title(tag) )
 
     # Plot the 2016 / 2017 ratio on the bottom
     hist.plotratio(
@@ -61,6 +70,13 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
         ax=rax,
         error_opts=data_err_opts
     )
+
+    ax.text(1., 1., region,
+                fontsize=10,
+                horizontalalignment='right',
+                verticalalignment='bottom',
+                transform=ax.transAxes
+            )
 
     rax.set_ylabel('2016 / 2017')
     rax.set_ylim(0.8,1.2)
