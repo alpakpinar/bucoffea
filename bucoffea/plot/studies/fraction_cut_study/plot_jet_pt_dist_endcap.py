@@ -29,9 +29,7 @@ legend_labels = {
     'EWKZ.*ZToLL.*' : r"EWK $Z\rightarrow \ell\ell$",
     'EWKZ.*ZToNuNu.*' : r"EWK $Z\rightarrow \nu\nu$",
     'EWKW.*' : r"EWK $W\rightarrow \ell\nu$",
-    'VBF_HToInv.*M125.*' : "VBF H(inv)",
-    'MET|Single(Electron|Photon|Muon)|EGamma.*' : "Data"
-
+    'VBF_HToInv.*M125.*' : "VBF H(inv)"
 }
 
 def get_title(distribution, year):
@@ -54,24 +52,16 @@ def plot_jet_pt(acc, outtag, distribution):
     endcap_slice = slice(2.5, 3.0)
     h = h.integrate('jeteta', endcap_slice).integrate('region', 'sr_vbf')
 
-    data_err_opts = {
-        'linestyle':'none',
-        'marker': '.',
-        'markersize': 10.,
-        'color':'k',
-    }
-
     signal_line_opts = {
-        'color' : 'crimson'
+        'color' : 'black',
+        'linewidth' : 2.
     }
 
     for year in [2017, 2018]:
-        h_data = h[f'MET_{year}']
         h_mc = h[re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}')]
-        h_signal = h[re.compile(f'VBF_HToInv.*M125.*{year}')]
+        h_signal = h[re.compile(f'VBF_HToInv.*M125_pow.*{year}')]
 
         fig, ax = plt.subplots()
-        hist.plot1d(h_data, ax=ax, overlay='dataset', error_opts=data_err_opts)
         hist.plot1d(h_mc, ax=ax, overlay='dataset', stack=True, clear=False)
         hist.plot1d(h_signal, ax=ax, overlay='dataset', clear=False, line_opts=signal_line_opts)
 
