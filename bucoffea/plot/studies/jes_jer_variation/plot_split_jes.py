@@ -52,6 +52,15 @@ titles_two_nuisances = {
     'qcd_zjets_2018' : r'$Z(\nu\nu) \ 2018$ corr vs uncorr JEC uncertainties'
 }
 
+root_histogram_names = {
+    'qcd_zjets_2017' : 'ZJetsToNuNu2017',
+    'qcd_zjets_2018' : 'ZJetsToNuNu2018',
+    'ewk_zjets_2017' : 'EWKZ2Jets_ZToNuNu2017',
+    'ewk_zjets_2018' : 'EWKZ2Jets_ZToNuNu2018',
+    'vbf_2017' : 'VBF2017',
+    'vbf_2018' : 'VBF2018',
+}
+
 # Binnings for mjj and recoil
 mjj_binning_v1 = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.])
 
@@ -185,17 +194,19 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
                 ax.plot(centers, smooth_hist, label=var_label, marker='o')
 
         if root_config['save']:
-            # Save only specific shapes, determined by root_config dict (for now, only save QCD Z(vv))
-            if root_config['shape'] not in dataset_tag:
+            # Only save QCD/EWK Z(vv) and VBF
+            if not re.match('(.*zjets|vbf).*', dataset_tag):
                 continue
             rootfile_sm = root_config['file_smooth']
             rootfile_nm = root_config['file_normal']
             # Guard against inf/nan values
             ratio[np.isnan(ratio) | np.isinf(ratio)] = 1.
 
+            roothistoname = root_histogram_names[dataset_tag]
+
             # Save the smoothed and non-smoothed values in different root files
-            rootfile_sm[f'{bin_tag}_{year}_{var_label}'] = (smooth_hist, edges)
-            rootfile_nm[f'{bin_tag}_{year}_{var_label}'] = (ratio, edges)
+            rootfile_sm[f'{roothistoname}_{var_label}'] = (smooth_hist, edges)
+            rootfile_nm[f'{roothistoname}_{var_label}'] = (ratio, edges)
 
         # Store all uncertainties, later to be tabulated (top 5 only + total)
         if tabulate_top5:
@@ -576,7 +587,7 @@ def main():
     print(f'Binnings to use: {", ".join(binnings_to_use)}')
 
     # Create an output root file to save the uncertainties
-    outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root'
+    outputrootdir = f'./output/{out_tag}/splitJEC/{args.analysis}/root/v2'
     if not os.path.exists(outputrootdir):
         os.makedirs(outputrootdir)
 
