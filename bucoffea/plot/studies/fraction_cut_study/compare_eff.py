@@ -176,6 +176,8 @@ def plot_2d_eff(eff, outtag, xedges, yedges, xcenters, ycenters, year=2017, type
     }
     for ix, xcenter in enumerate(xcenters):
         for iy, ycenter in enumerate(ycenters):
+            textcol = 'black' if eff[ix, iy] > 0.95 else 'white'
+            opts['color'] = textcol
             if not np.isnan(eff[ix,iy]):
                 ax.text(xcenter, ycenter, f'{eff[ix, iy]:.2f}', **opts)
             else:
