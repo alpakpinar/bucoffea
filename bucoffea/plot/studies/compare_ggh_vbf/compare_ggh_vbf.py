@@ -28,16 +28,22 @@ def get_title(tag):
 
     return tag_to_title[tag]
 
+def do_rebinning(h):
+    met_ax = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,500,50)) + list(range(500,1000,100)) + list(range(1000,2000,250)))
+    h = h.rebin('met', met_ax)
+    return h
+
 def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusive'):
     '''Compare signal samples between 2016 and 2017.'''
     acc.load(distribution)
     h = acc[distribution]
 
     h = merge_extensions(h, acc, reweight_pu=False)
-    scale_xs_lumi(h)
-    h = merge_datasets(h)
+    # scale_xs_lumi(h)
+    # h = merge_datasets(h)
 
     h = h.integrate('region', region)
+    h = do_rebinning(h)
 
     # Get 2016 and 2017 datasets
     h_2016 = h[ get_dataset_regex(tag, year=2016) ]
