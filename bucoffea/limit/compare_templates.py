@@ -97,8 +97,8 @@ def main():
     args = parse_commandline()
 
     # Based on input locations, derive tag names to identify the files
-    tag1 = os.path.basename(os.path.dirname(args.fname1))
-    tag2 = os.path.basename(os.path.dirname(args.fname2))
+    tag1 = 'Require genPartFlav==1'
+    tag2 = 'Require genPartFlav!=0'
 
     # Convert to dictionary
     h1 = make_dict(args.fname1)
