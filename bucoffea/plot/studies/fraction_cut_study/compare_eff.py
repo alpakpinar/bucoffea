@@ -174,7 +174,7 @@ def plot_2d_eff(eff, outtag, xedges, yedges, xcenters, ycenters, year=2017, type
         'horizontalalignment' : 'center',
         'verticalalignment' : 'center'
     }
-    for ix, xcenter in enumerate(xcenters[2:], 2):
+    for ix, xcenter in enumerate(xcenters):
         for iy, ycenter in enumerate(ycenters):
             if not np.isnan(eff[ix,iy]):
                 ax.text(xcenter, ycenter, f'{eff[ix, iy]:.2f}', **opts)
