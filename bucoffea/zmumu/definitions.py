@@ -110,13 +110,6 @@ def zmumu_regions(cfg):
     regions['cr_2m_noEmEF_no_prefire'] = two_mu_cuts
     regions['cr_2m_withEmEF_no_prefire'] = two_mu_cuts + ['ak4_neEmEF']
 
-    # Regions categorized by jet eta
-    if cfg.RUN.EFF_STUDY.SPLIT_JET_ETA:
-        regions['cr_2m_noEmEF_jeteta_lt_2_3'] = two_mu_cuts + ['jet_eta_lt_2_3']
-        regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_3_lt_2_7'] = two_mu_cuts + ['jet_eta_gt_2_3_lt_2_7']
-        regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_7_lt_3_0'] = two_mu_cuts + ['jet_eta_gt_2_7_lt_3_0']
-        regions['cr_2m_noEmEF_jeteta_gt_3_0'] = two_mu_cuts + ['jet_eta_gt_3_0']
-
     # Regions with tighter selections
     if cfg.RUN.EFF_STUDY.TIGHTCUTS:
         regions['cr_2m_noEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight']
