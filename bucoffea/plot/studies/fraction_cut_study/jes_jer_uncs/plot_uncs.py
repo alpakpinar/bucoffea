@@ -105,7 +105,7 @@ def plot_uncs(acc, outtag, variable='ak4_pt0_eta0', etaslice='pos'):
             reff = eff / nominal_eff
             rerr = err / nominal_eff
 
-            rax.errorbar(centers, reff, yerr=rerr, marker='o', ls='', color=f'C{idx+1}')
+            rax.errorbar(centers, reff, yerr=rerr, marker='o', ls='', color=f'C{idx}')
 
         rax.grid(True)
         if year == 2017:
@@ -116,6 +116,7 @@ def plot_uncs(acc, outtag, variable='ak4_pt0_eta0', etaslice='pos'):
             loc = MultipleLocator(0.01)
         
         rax.set_xlabel(r'Jet $p_T \ (GeV)$')
+        rax.set_ylabel('Ratio to nominal')
         rax.yaxis.set_major_locator(loc)
 
         # Save figure
