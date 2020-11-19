@@ -63,7 +63,7 @@ sr_cuts = [
         'filt_met',
         'trig_met',
         'mindphijm',
-        'recoil',
+        'met_sr',
         'two_jets',
         'leadak4_pt_eta',
         'leadak4_id',
@@ -76,10 +76,7 @@ sr_cuts = [
         'veto_photon',
         'veto_tau',
         'veto_b',
-        'max_neEmEF',
         'dpfcalo_sr',
-        'veto_hfhf',
-        'eemitigation'
 ]
 
 regions = {
@@ -166,7 +163,6 @@ class lightVbfhinvProcessor(processor.ProcessorABC):
 
         selection.add('dpfcalo_sr',np.abs(df['dPFCaloSR']) < cfg.SELECTION.SIGNAL.DPFCALO)
 
-        selection.add('recoil', df['recoil_pt']>cfg.SELECTION.SIGNAL.RECOIL)
         selection.add('met_sr', met_pt>cfg.SELECTION.SIGNAL.RECOIL)
 
         # AK4 dijet
@@ -194,32 +190,6 @@ class lightVbfhinvProcessor(processor.ProcessorABC):
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
         
-        # Cleaning cuts for signal region
-        max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
-        selection.add('max_neEmEF', (max_neEmEF < 0.7).any())
-        
-        vec_b = calculate_vecB(ak4, met_pt, met_phi)
-        vec_dphi = calculate_vecDPhi(ak4, met_pt, met_phi, df['TkMET_phi'])
-
-        no_jet_in_trk = (diak4.i0.abseta>2.5).any() & (diak4.i1.abseta>2.5).any()
-        no_jet_in_hf = (diak4.i0.abseta<3.0).any() & (diak4.i1.abseta<3.0).any()
-
-        at_least_one_jet_in_hf = (diak4.i0.abseta>3.0).any() | (diak4.i1.abseta>3.0).any()
-        at_least_one_jet_in_trk = (diak4.i0.abseta<2.5).any() | (diak4.i1.abseta<2.5).any()
-
-        # Categorized cleaning cuts
-        eemitigation = (
-                        (no_jet_in_hf | at_least_one_jet_in_trk) & (vec_dphi < 1.0)
-                    ) | (
-                        (no_jet_in_trk & at_least_one_jet_in_hf) & (vec_b < 0.2)
-                    )
-
-        selection.add('eemitigation', eemitigation)
-
-        # HF-HF veto in SR
-        both_jets_in_hf = (diak4.i0.abseta > 3.0) & (diak4.i1.abseta > 3.0)
-        selection.add('veto_hfhf', ~both_jets_in_hf.any())
-
         # Fill histograms
         output = self.accumulator.identity()
 
