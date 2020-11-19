@@ -47,8 +47,6 @@ from bucoffea.zmumu.definitions import zmumu_accumulator, zmumu_regions
 
 def add_selections_for_leading_jet(selection, lead_ak4, variation=''):
     lead_ak4_pt = getattr(lead_ak4, f'pt{variation}')
-    print(f'Variation: {variation}')
-    print(lead_ak4_pt)
     lead_ak4_pt_eta = (lead_ak4_pt > 40) & (np.abs(lead_ak4.eta) < 4.7)
     selection.add('lead_ak4_pt_eta', lead_ak4_pt_eta.any())
 
@@ -76,10 +74,6 @@ def add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4):
     df['z_pt_over_jet_pt'] = (z_pt.max() / leadak4.pt.max()) - 1
     selection.add('z_pt_over_jet_pt', np.abs(df['z_pt_over_jet_pt']) < 0.15)
     
-    # Tighter version of the same balance cut
-    selection.add('z_pt_over_jet_pt_tight', np.abs(df['z_pt_over_jet_pt']) < 0.1)
-    selection.add('z_pt_over_jet_pt_very_tight', np.abs(df['z_pt_over_jet_pt']) < 0.05)
-
     selection.add('met_pt', met_pt < 50)
 
     return selection
@@ -229,6 +223,9 @@ class zmumuProcessor(processor.ProcessorABC):
             selection.add('two_muons', muons.counts==2)
             selection.add('mu_pt_trig_safe', muons.pt.max() > 30)
     
+            # Store the selection object in the dictionary
+            selection_dict[var] = selection
+
         # Start to fill output
         output = self.accumulator.identity()
         
@@ -249,11 +246,20 @@ class zmumuProcessor(processor.ProcessorABC):
             output['sumw2'][dataset] +=  df['genEventSumw2']
             output['sumw_pileup'][dataset] +=  weights._weights['pileup'].sum()
 
-        regions = zmumu_regions(cfg)
+        regions = zmumu_regions(cfg, variations=self._variations)
 
         for region, cuts in regions.items():
             exclude = [None]
             region_weights = copy.deepcopy(weights)
+
+            # Get the variation in this region from the variation name
+            if region.endswith('EmEF') or 'prefire' in region:
+                var = ''
+            else:
+                var = '_' + region.split('_')[-1]
+
+            # Now that we know the variation, get the relevant selection object from the dict
+            selection = selection_dict[var]
 
             if not df['is_data']:
                 # For specific regions, include prefire weight up/down variations, instead of the central value
@@ -279,6 +285,7 @@ class zmumuProcessor(processor.ProcessorABC):
                 if re.match('^.*_no_prefire$', region):
                     exclude = ['prefire']
 
+            # Mask will be calculated from the relevant selection object
             mask = selection.all(*cuts)
 
             def ezfill(name, **kwargs):

@@ -76,7 +76,7 @@ def zmumu_accumulator(cfg):
 
     return processor.dict_accumulator(items)
 
-def zmumu_regions(cfg):
+def zmumu_regions(cfg, variations=['']):
     two_mu_cuts = [
         'single_mu_trig', 
         'two_muons', 
@@ -97,8 +97,9 @@ def zmumu_regions(cfg):
         ]
 
     regions = {}
-    regions['cr_2m_noEmEF'] = two_mu_cuts
-    regions['cr_2m_withEmEF'] = two_mu_cuts + ['ak4_neEmEF']
+    for var in variations:
+        regions[f'cr_2m_noEmEF{var}'] = two_mu_cuts
+        regions[f'cr_2m_withEmEF{var}'] = two_mu_cuts + ['ak4_neEmEF']
 
     # Regions with prefire weights varied
     regions['cr_2m_noEmEF_prefireUp'] = two_mu_cuts
@@ -110,26 +111,4 @@ def zmumu_regions(cfg):
     regions['cr_2m_noEmEF_no_prefire'] = two_mu_cuts
     regions['cr_2m_withEmEF_no_prefire'] = two_mu_cuts + ['ak4_neEmEF']
 
-    # Regions with tighter selections
-    if cfg.RUN.EFF_STUDY.TIGHTCUTS:
-        regions['cr_2m_noEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight']
-        regions['cr_2m_noEmEF_tightBalCut'].remove('z_pt_over_jet_pt')
-        regions['cr_2m_withEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight', 'ak4_neEmEF']
-        regions['cr_2m_withEmEF_tightBalCut'].remove('z_pt_over_jet_pt')
-    
-        regions['cr_2m_noEmEF_tightMassCut'] = two_mu_cuts + ['dimuon_mass_tight']
-        regions['cr_2m_noEmEF_tightMassCut'].remove('dimuon_mass')
-        regions['cr_2m_withEmEF_tightMassCut'] = two_mu_cuts + ['dimuon_mass_tight', 'ak4_neEmEF']
-        regions['cr_2m_withEmEF_tightMassCut'].remove('dimuon_mass')
-    
-        regions['cr_2m_noEmEF_tight'] = copy.deepcopy(regions['cr_2m_noEmEF_tightBalCut']) + ['dimuon_mass_tight']
-        regions['cr_2m_noEmEF_tight'].remove('dimuon_mass')
-        regions['cr_2m_withEmEF_tight'] = copy.deepcopy(regions['cr_2m_withEmEF_tightBalCut']) + ['dimuon_mass_tight']
-        regions['cr_2m_withEmEF_tight'].remove('dimuon_mass')
-        
-        regions['cr_2m_noEmEF_very_tight'] = copy.deepcopy(regions['cr_2m_noEmEF_tight']) + ['z_pt_over_jet_pt_very_tight']
-        regions['cr_2m_noEmEF_very_tight'].remove('z_pt_over_jet_pt_tight')
-        regions['cr_2m_withEmEF_very_tight'] = copy.deepcopy(regions['cr_2m_withEmEF_tight']) + ['z_pt_over_jet_pt_very_tight']
-        regions['cr_2m_withEmEF_very_tight'].remove('z_pt_over_jet_pt_tight')
-    
     return regions
