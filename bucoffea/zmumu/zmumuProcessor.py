@@ -261,6 +261,11 @@ class zmumuProcessor(processor.ProcessorABC):
             # Now that we know the variation, get the relevant selection object from the dict
             selection = selection_dict[var]
 
+            # Read in the relevant jet pt, MET pt/phi values
+            ak4_pt = getattr(ak4, f'pt{var}')
+            met_pt = getattr(met, f'pt{var}').flatten()
+            met_phi = getattr(met, f'phi{var}').flatten()
+
             if not df['is_data']:
                 # For specific regions, include prefire weight up/down variations, instead of the central value
                 if re.match('^.*EmEF.*Up$', region):
@@ -297,12 +302,16 @@ class zmumuProcessor(processor.ProcessorABC):
                                   **kwargs
                                   )
             # Leading ak4
+            leadak4_index = ak4_pt.argmax()
+            leadak4 = ak4[leadak4_index]
+            leadak4_pt = getattr(leadak4, f'pt{var}')
+
             rweight = region_weights.partial_weight(exclude=exclude)
             w_leadak4 = weight_shape(leadak4.eta[mask], rweight[mask])
 
             ezfill('ak4_eta0',   jeteta=leadak4.eta[mask].flatten(),    weight=w_leadak4)
             ezfill('ak4_phi0',   jetphi=leadak4.phi[mask].flatten(),    weight=w_leadak4)
-            ezfill('ak4_pt0',    jetpt=leadak4.pt[mask].flatten(),      weight=w_leadak4)
+            ezfill('ak4_pt0',    jetpt=leadak4_pt[mask].flatten(),      weight=w_leadak4)
             ezfill('ak4_chf0',    frac=leadak4.chf[mask].flatten(),     weight=w_leadak4)
             ezfill('ak4_nhf0',    frac=leadak4.nhf[mask].flatten(),     weight=w_leadak4)
             ezfill('ak4_nef0',    frac=leadak4.nef[mask].flatten(),     weight=w_leadak4)
