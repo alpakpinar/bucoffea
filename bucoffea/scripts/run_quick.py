@@ -44,6 +44,9 @@ def main():
     elif args.processor == 'sumw':
         from bucoffea.gen import mcSumwProcessor
         processorInstance = mcSumwProcessor()
+    elif args.processor == 'lvbfhinv':
+        from bucoffea.vbfhinv.lightvbfhinvProcessor import lightVbfhinvProcessor
+        processorInstance = lightVbfhinvProcessor()
 
     for dataset, filelist in fileset.items():
         newlist = []
