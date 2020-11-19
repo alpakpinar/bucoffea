@@ -39,8 +39,7 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
     h = acc[distribution]
 
     h = merge_extensions(h, acc, reweight_pu=False)
-    # scale_xs_lumi(h)
-    # h = merge_datasets(h)
+    h = merge_datasets(h)
 
     h = h.integrate('region', region)
     h = do_rebinning(h)
@@ -63,7 +62,7 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
 
     ax.set_xlabel('')
     ax.set_yscale('log')
-    ax.set_ylim(1e-3, 1e5)
+    ax.set_ylim(1e-5, 1e1)
     ax.set_title( get_title(tag) )
 
     # Plot the 2016 / 2017 ratio on the bottom
@@ -110,7 +109,7 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
-    regions = ['inclusive', 'sr_vbf_no_veto_all']
+    regions = ['inclusive', 'sr_vbf']
     distributions = ['met', 'gen_met']
     for tag in ['ggh', 'vbf']:
         for region in regions:
