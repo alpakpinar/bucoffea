@@ -394,8 +394,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
             weights = candidate_weights(weights, df, evaluator, muons, electrons, photons, cfg)
             weights = pileup_weights(weights, df, evaluator, cfg)
-            if df['year'] != 2016:
-                weights = ak4_em_frac_weights(weights, diak4, evaluator)
+            # weights = ak4_em_frac_weights(weights, diak4, evaluator)
             if not (gen_v_pt is None):
                 weights = theory_weights_vbf(weights, df, evaluator, gen_v_pt, df['mjj_gen'])
 
