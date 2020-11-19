@@ -59,7 +59,7 @@ def add_selections_for_leading_jet(selection, lead_ak4, variation=''):
 
     return selection
 
-def add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4):
+def add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4, variation=''):
     '''The set of selections to be used for selecting Z(mumu) + jet events.'''
     # Calculate Z pt and phi from the dimuons
     z_pt, z_eta, z_phi = calculate_z_pt_eta_phi(dimuons)
@@ -71,7 +71,9 @@ def add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4):
     selection.add('dphi_z_jet', df['dphi_z_jet'] > 2.7)
 
     # Add balance cut for the pt of Z and the jet
-    df['z_pt_over_jet_pt'] = (z_pt.max() / leadak4.pt.max()) - 1
+    leadak4_pt = getattr(leadak4, f'pt{variation}')
+    print(leadak4_pt.max())
+    df['z_pt_over_jet_pt'] = (z_pt.max() / leadak4_pt.max()) - 1
     selection.add('z_pt_over_jet_pt', np.abs(df['z_pt_over_jet_pt']) < 0.15)
     
     selection.add('met_pt', met_pt < 50)
@@ -206,7 +208,7 @@ class zmumuProcessor(processor.ProcessorABC):
 
             # Selections for dimuons
             dimuons = muons.distincts()
-            selection = add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4)
+            selection = add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4, variation=var)
     
             leadmuon_index=muons.pt.argmax()
             
