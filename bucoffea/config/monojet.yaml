@@ -32,18 +32,18 @@ default:
         mt: 160
         met: 50
   ak4:
-    jer: false
+    jer: true
   ak8:
-    jer: false
+    jer: true
   met:
-    jer: false
+    jer: true
   tau:
     cuts:
       pt: 18
       eta: 2.3
     branch:
-      id: Tau_idDecayModeNewDMs
-      iso: Tau_idDeepTau2017v2p1VSjet
+      id: Tau_idDecayMode
+      iso: Tau_idMVAoldDM2017v2
   photon:
     cuts:
       loose:
@@ -53,7 +53,7 @@ default:
         pt: 230
         pttrig: 230
     branch:
-      id: Photon_cutBased_Fall17V1Bitmap
+      id: Photon_cutBasedBitmap
       idv7: Photon_cutBased
   muon:
     cuts:
