@@ -66,10 +66,19 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
     ax.set_ylabel('Normalized Counts')
     ax.set_title( get_title(tag) )
 
+    # Update legend labels: Use shorter names for datasets
+    handles, labels = ax.get_legend_handles_labels()
+
     # Plot the 2016 / 2017 ratio on the bottom
+    h_2016_integ = h_2016.integrate('dataset')
+    h_2017_integ = h_2017.integrate('dataset')
+
+    h_2016_integ.scale(1/np.sum(h_2016_integ.values()[()]) ),
+    h_2017_integ.scale(1/np.sum(h_2017_integ.values()[()]) ),
+
     hist.plotratio(
-        h_2016.integrate('dataset'),
-        h_2017.integrate('dataset'),
+        h_2016_integ,
+        h_2017_integ,
         ax=rax,
         unc='num',
         overflow='over',
@@ -84,14 +93,14 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
             )
 
     rax.set_ylabel('2016 / 2017')
-    rax.set_ylim(0.8,1.2)
+    rax.set_ylim(0.5,1.5)
     rax.grid(True)
     rax.axhline(1, xmin=0, xmax=1, color='red')
     
     if distribution == 'met':
-        rax.set_xlabel('MET (GeV)')
+        rax.set_xlabel(r'Higgs $p_T$ (GeV)')
     else:
-        rax.set_xlabel('GenMET (GeV)')
+        rax.set_xlabel(r'Higgs GEN-$p_T$ (GeV)')
 
     # Save figure
     outdir = f'./output/{outtag}'
