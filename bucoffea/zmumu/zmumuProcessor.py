@@ -45,8 +45,11 @@ from bucoffea.helpers.gen import (
 
 from bucoffea.zmumu.definitions import zmumu_accumulator, zmumu_regions
 
-def add_selections_for_leading_jet(selection, lead_ak4):
-    lead_ak4_pt_eta = (lead_ak4.pt > 40) & (np.abs(lead_ak4.eta) < 4.7)
+def add_selections_for_leading_jet(selection, lead_ak4, variation=''):
+    lead_ak4_pt = getattr(lead_ak4, f'pt{variation}')
+    print(f'Variation: {variation}')
+    print(lead_ak4_pt)
+    lead_ak4_pt_eta = (lead_ak4_pt > 40) & (np.abs(lead_ak4.eta) < 4.7)
     selection.add('lead_ak4_pt_eta', lead_ak4_pt_eta.any())
 
     has_track = np.abs(lead_ak4.eta) <= 2.5
@@ -131,26 +134,25 @@ class zmumuProcessor(processor.ProcessorABC):
         df['is_nlo_w'] = is_nlo_w(dataset)
         df['is_lo_znunu'] = is_lo_znunu(dataset)
 
+        # Define the jetMET variations, for data only run over the nominal case
+        if df['is_data']:
+            self._variations = ['']
+        else:
+            self._variations = [
+                '',
+                '_jerUp',
+                '_jerDown',
+                '_jesTotalUp',
+                '_jesTotalDown'
+            ]
+
         # Pre-filtered candidates
-        met_pt, met_phi, ak4, bjets, _, muons, electrons, taus, photons = setup_candidates(df, cfg)
+        met, ak4, bjets, _, muons, electrons, taus, photons = setup_candidates(df, cfg, variations=self._variations)
 
         # Remove jets in accordance with the noise recipe
         if df['year'] == 2017:
             ak4   = ak4[(ak4.ptraw>50) | (ak4.abseta<2.65) | (ak4.abseta>3.139)]
             bjets = bjets[(bjets.ptraw>50) | (bjets.abseta<2.65) | (bjets.abseta>3.139)]
-
-        # Filtering ak4 jets according to pileup ID
-        ak4 = ak4[ak4.puid]
-
-        gen_v_pt = None
-        if not df['is_data']:
-            gen = setup_gen_candidates(df)
-        if df['is_lo_w'] or df['is_lo_z'] or df['is_nlo_z'] or df['is_nlo_w']:
-            dressed = setup_dressed_gen_candidates(df)
-            fill_gen_v_info(df, gen, dressed)
-            gen_v_pt = df['gen_v_pt_combined']
-
-        df['recoil_pt'], df['recoil_phi'] = recoil(met_pt, met_phi, electrons, muons, photons)
 
         # Muons
         df['is_tight_muon'] = muons.tightId \
@@ -165,51 +167,68 @@ class zmumuProcessor(processor.ProcessorABC):
 
         df['is_tight_photon'] = photons.mediumId & photons.barrel
         
-        selection = processor.PackedSelection()
+        # Store the PackedSelection objects in a dict
+        selection_dict = {}
 
-        # HEM veto for 2018
-        pass_all = np.ones(df.size)==1
-        if df['year'] == 2018:
-            selection.add('hemveto', df['hemveto'])
-        else:
-            selection.add('hemveto', pass_all)
+        for var in self._variations:
+            # Filtering ak4 jets according to pileup ID
+            ak4_puid = getattr(ak4, f'puid{var}')
+            ak4 = ak4[ak4_puid]
 
-        # Electron and b vetoes for 2m CR
-        selection.add('veto_ele', electrons.counts==0)
-        selection.add('veto_b', bjets.counts==0)
+            # Read the relevant jet pt and MET pt and phi values for this variation            
+            ak4_pt = getattr(ak4, f'pt{var}')
+            met_pt = getattr(met, f'pt{var}').flatten()
+            met_phi = getattr(met, f'phi{var}').flatten()
 
-        # Selections for leading jet
-        leadak4_index = ak4.pt.argmax()
-        leadak4 = ak4[leadak4_index]
-        selection = add_selections_for_leading_jet(selection, leadak4)
+            gen_v_pt = None
+            if not df['is_data']:
+                gen = setup_gen_candidates(df)
+            if df['is_lo_w'] or df['is_lo_z'] or df['is_nlo_z'] or df['is_nlo_w']:
+                dressed = setup_dressed_gen_candidates(df)
+                fill_gen_v_info(df, gen, dressed)
+                gen_v_pt = df['gen_v_pt_combined']
+    
+            df['recoil_pt'], df['recoil_phi'] = recoil(met_pt, met_phi, electrons, muons, photons)
 
-        selection = add_trigger_selection(df, selection)
+            selection = processor.PackedSelection()
 
-        # Selections for dimuons
-        dimuons = muons.distincts()
-        selection = add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4)
+            # HEM veto for 2018
+            pass_all = np.ones(df.size)==1
+            if df['year'] == 2018:
+                selection.add('hemveto', df['hemveto'])
+            else:
+                selection.add('hemveto', pass_all)
 
-        leadmuon_index=muons.pt.argmax()
-        
-        selection.add('at_least_one_tight_mu', df['is_tight_muon'].any())
-        selection.add('dimuon_mass', ((dimuons.mass > cfg.SELECTION.CONTROL.DOUBLEMU.MASS.MIN) \
-                                    & (dimuons.mass < cfg.SELECTION.CONTROL.DOUBLEMU.MASS.MAX)).any())
+            # Electron and b vetoes for 2m CR
+            selection.add('veto_ele', electrons.counts==0)
+            selection.add('veto_b', bjets.counts==0)
 
-        selection.add('dimuon_mass_tight', ((dimuons.mass > 75) \
-                                    & (dimuons.mass < 105)).any())
+            # Selections for leading jet
+            leadak4_index = ak4_pt.argmax()
+            leadak4 = ak4[leadak4_index]
+            selection = add_selections_for_leading_jet(selection, leadak4, variation=var)
 
-        dimuon_charge = dimuons.i0['charge'] + dimuons.i1['charge']
-        selection.add('dimuon_charge', (dimuon_charge==0).any())
+            selection = add_trigger_selection(df, selection)
 
-        selection.add('two_muons', muons.counts==2)
-        selection.add('mu_pt_trig_safe', muons.pt.max() > 30)
-
-        # Eta cuts for the leading jet
-        selection.add('jet_eta_lt_2_3', (leadak4.abseta < 2.3).any())
-        selection.add('jet_eta_gt_2_3_lt_2_7', ((leadak4.abseta >= 2.3) & (leadak4.abseta < 2.7)).any() )
-        selection.add('jet_eta_gt_2_7_lt_3_0', ((leadak4.abseta >= 2.7) & (leadak4.abseta < 3.0)).any() )
-        selection.add('jet_eta_gt_3_0', (leadak4.abseta >= 3.0).any())
-
+            # Selections for dimuons
+            dimuons = muons.distincts()
+            selection = add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4)
+    
+            leadmuon_index=muons.pt.argmax()
+            
+            selection.add('at_least_one_tight_mu', df['is_tight_muon'].any())
+            selection.add('dimuon_mass', ((dimuons.mass > cfg.SELECTION.CONTROL.DOUBLEMU.MASS.MIN) \
+                                        & (dimuons.mass < cfg.SELECTION.CONTROL.DOUBLEMU.MASS.MAX)).any())
+    
+            selection.add('dimuon_mass_tight', ((dimuons.mass > 75) \
+                                        & (dimuons.mass < 105)).any())
+    
+            dimuon_charge = dimuons.i0['charge'] + dimuons.i1['charge']
+            selection.add('dimuon_charge', (dimuon_charge==0).any())
+    
+            selection.add('two_muons', muons.counts==2)
+            selection.add('mu_pt_trig_safe', muons.pt.max() > 30)
+    
         # Start to fill output
         output = self.accumulator.identity()
         

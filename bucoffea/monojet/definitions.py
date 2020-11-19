@@ -263,7 +263,7 @@ def monojet_accumulator(cfg):
     return  processor.dict_accumulator(items)
 
 
-def setup_candidates(df, cfg):
+def setup_candidates(df, cfg, variations=None):
     if df['is_data'] and extract_year(df['dataset']) != 2018:
         # 2016, 2017 data
         jes_suffix = ''
@@ -405,6 +405,20 @@ def setup_candidates(df, cfg):
         hadflav= 0*df['Jet_pt'] if df['is_data'] else df['Jet_hadronFlavour']
     )
 
+    # Get and store the varied pt values for the jets in the same ak4 collection
+    for var in variations:
+        if var == '':
+            continue
+        if not cfg.AK4.JER:
+            ak4_pt = df[f'Jet_pt{var}'] / df['Jet_corr_JER']
+        else:
+            ak4_pt = df[f'Jet_pt{var}']
+        
+        ak4_puid = (ak4_pt > 50) | (df['Jet_puId']&2>0)
+
+        argdict = {f'pt{var}' : ak4_pt, f'puid{var}' : ak4_puid}
+        ak4.add_attributes(**argdict)
+
     # Before cleaning, apply HEM veto
     hem_ak4 = ak4[ (ak4.pt>30) &
         (-3.0 < ak4.eta) &
@@ -470,10 +484,29 @@ def setup_candidates(df, cfg):
     else:
         met_branch = 'MET'
 
-    met_pt = df[f'{met_branch}_pt{jes_suffix_met}']
-    met_phi = df[f'{met_branch}_phi{jes_suffix_met}']
+    met = JaggedCandidateArray.candidatesfromcounts(
+        np.ones(df.size),
+        pt=df[f'{met_branch}_T1Smear_pt'] if cfg.MET.JER else df[f'{met_branch}_T1_pt'],
+        phi=df[f'{met_branch}_T1Smear_phi'] if cfg.MET.JER else df[f'{met_branch}_T1_phi'],
+        eta=np.zeros(df.size), # dummy
+        mass=np.zeros(df.size), # dummy
+    )
 
-    return met_pt, met_phi, ak4, bjets, ak8, muons, electrons, taus, photons
+    # Read and store varied MET pt/phi values in the same MET collection
+    for var in variations:
+        if var == '':
+            continue
+        if not cfg.MET.JER:
+            met_pt = df[f'{met_branch}_T1_pt{var}']
+            met_phi = df[f'{met_branch}_T1_phi{var}']
+        else:
+            met_pt = df[f'{met_branch}_T1Smear_pt{var}']
+            met_phi = df[f'{met_branch}_T1Smear_phi{var}']
+
+        argdict = {f'pt{var}' : met_pt, f'phi{var}' : met_phi}
+        met.add_attributes(**argdict)
+
+    return met, ak4, bjets, ak8, muons, electrons, taus, photons
 
 def monojet_regions(cfg):
     common_cuts = [
