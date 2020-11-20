@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import warnings
 import numpy as np
 from bucoffea.plot.util import fig_ratio
 from coffea import hist
@@ -12,7 +13,19 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-np.seterr(divide='ignore')
+warnings.filterwarnings('ignore')
+
+def get_dataset_names(tag1, tag2):
+    '''Given the two dataset tags to compare, return the names of these.'''
+    datasets_to_compare = {
+        'ggh_inc_2016'  : 'GluGlu_HToInvisible_M125_pow_pythia8_2016',
+        'ggh_filt_2016' : 'GluGlu_HToInvisible_M125_TuneCP5_pow_pythia8_2016',
+        'ggh_filt_2017' : 'GluGlu_HToInvisible_M125_HiggspTgt190_TuneCP5_pow_pythia8_2017',
+        'vbf_inc_2016'  : 'VBF_HToInvisible_M125_pow_pythia8_2016',
+        'vbf_filt_2017' : 'VBF_HToInvisible_M125_TuneCP5_pow_pythia8_2017'
+    }
+
+    return datasets_to_compare[tag1], datasets_to_compare[tag2] 
 
 def get_dataset_regex(tag, year):
     '''Given the dataset tag, get the dataset regex to look for.'''
@@ -36,17 +49,19 @@ def do_rebinning(h):
     h = h.rebin('met', met_ax)
     return h
 
-def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusive'):
-    '''Compare signal samples between 2016 and 2017.'''
+def compare_datasets(acc, outtag, tag1, tag2, distribution='met', region='inclusive'):
+    '''Compare the provided signal samples.'''
     acc.load(distribution)
     h = acc[distribution]
 
     h = h.integrate('region', region)
     h = do_rebinning(h)
 
-    # Get 2016 and 2017 datasets
-    h_2016 = h[ get_dataset_regex(tag, year=2016) ]
-    h_2017 = h[ get_dataset_regex(tag, year=2017) ]
+    # Get the individual histograms for the two datasets
+    dataset_names = get_dataset_names(tag1, tag2)
+    h1 = h[dataset_names[0]]
+    h2 = h[dataset_names[1]]
+
 
     # Plot the comparison!
     data_err_opts = {
@@ -57,28 +72,28 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
     }
     
     fig, ax, rax = fig_ratio()
-    hist.plot1d(h_2016, ax=ax, overlay='dataset', overflow='over', density=True, error_opts=data_err_opts)
-    hist.plot1d(h_2017, ax=ax, overlay='dataset', overflow='over', density=True, clear=False)
+    hist.plot1d(h1, ax=ax, overlay='dataset', overflow='over', density=True, error_opts=data_err_opts)
+    hist.plot1d(h2, ax=ax, overlay='dataset', overflow='over', density=True, clear=False)
 
     ax.set_xlabel('')
     ax.set_yscale('log')
     ax.set_ylim(1e-5, 1e1)
     ax.set_ylabel('Normalized Counts')
-    ax.set_title( get_title(tag) )
+    # ax.set_title( get_title(tag) )
 
     # Update legend labels: Use shorter names for datasets
     handles, labels = ax.get_legend_handles_labels()
 
     # Plot the 2016 / 2017 ratio on the bottom
-    h_2016_integ = h_2016.integrate('dataset')
-    h_2017_integ = h_2017.integrate('dataset')
+    h1_integ = h1.integrate('dataset')
+    h2_integ = h2.integrate('dataset')
 
-    h_2016_integ.scale(1/np.sum(h_2016_integ.values()[()]) ),
-    h_2017_integ.scale(1/np.sum(h_2017_integ.values()[()]) ),
+    h1_integ.scale(1/np.sum(h1_integ.values()[()]) ),
+    h2_integ.scale(1/np.sum(h2_integ.values()[()]) ),
 
     hist.plotratio(
-        h_2016_integ,
-        h_2017_integ,
+        h1_integ,
+        h2_integ,
         ax=rax,
         unc='num',
         overflow='over',
@@ -107,7 +122,7 @@ def compare_ggh_vbf(acc, outtag, tag='vbf', distribution='met', region='inclusiv
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'{tag}_{distribution}_{region}.pdf')
+    outpath = pjoin(outdir, f'{tag1}_{tag2}_{distribution}_{region}.pdf')
     fig.savefig(outpath)
     plt.close(fig)
 
@@ -122,12 +137,22 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
+    tags_to_compare = [
+        ('ggh_filt_2016', 'ggh_filt_2017'),
+        ('vbf_inc_2016', 'vbf_filt_2017'),
+        ('ggh_inc_2016', 'ggh_filt_2016'),
+    ]
+
     regions = ['inclusive', 'sr_vbf']
     distributions = ['met', 'gen_met']
-    for tag in ['ggh', 'vbf']:
+    for tag1, tag2 in tags_to_compare:
         for region in regions:
             for distribution in distributions:
-                compare_ggh_vbf(acc, outtag, tag=tag, distribution=distribution, region=region)
+                compare_datasets(acc, outtag, 
+                            tag1=tag1, 
+                            tag2=tag2,
+                            distribution=distribution, 
+                            region=region)
 
 if __name__ == '__main__':
     main()
