@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import uproot
 import numpy as np
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
@@ -27,7 +28,7 @@ def get_legend_label(variation):
         return 'Nominal'
     return variation.replace('_', '')
 
-def plot_uncs(acc, outtag, variable='ak4_pt0_eta0', etaslice='pos'):
+def plot_uncs(acc, outtag, outputrootfile, variable='ak4_pt0_eta0', etaslice='pos'):
     '''As a function of the given variable, plot the JES/JER uncertainties.'''
     acc.load(variable)
     h = acc[variable]
@@ -66,6 +67,7 @@ def plot_uncs(acc, outtag, variable='ak4_pt0_eta0', etaslice='pos'):
         fig, ax, rax = fig_ratio()
         
         eff_dict = {}
+        edges = _h.axis('jetpt').edges(overflow='over')
         centers = _h.axis('jetpt').centers(overflow='over')
 
         for idx, var in enumerate(variations):
@@ -133,6 +135,11 @@ def plot_uncs(acc, outtag, variable='ak4_pt0_eta0', etaslice='pos'):
 
         print(f'File saved: {outpath}')
 
+        # Save to output ROOT file
+        for variation, vals in eff_dict.items():
+            tup = (vals['eff'], edges)
+            outputrootfile[f'mc_eff_{etaslice}_endcap_{year}{variation}'] = tup
+
 def main():
     inpath = sys.argv[1]
     acc = dir_archive(inpath)
@@ -141,8 +148,17 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
-    plot_uncs(acc, outtag, etaslice='pos')
-    plot_uncs(acc, outtag, etaslice='neg')
+    # Output ROOT file
+    outdir = f'./output/{outtag}/root'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    outputrootpath = pjoin(outdir, 'mc_eff_vars.root')
+    outputrootfile = uproot.recreate(outputrootpath)
+    print(f'ROOT file created: {outputrootpath}')
+
+    plot_uncs(acc, outtag, outputrootfile, etaslice='pos')
+    plot_uncs(acc, outtag, outputrootfile, etaslice='neg')
 
 if __name__ == '__main__':
     main()
