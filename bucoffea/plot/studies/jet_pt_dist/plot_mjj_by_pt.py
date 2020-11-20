@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 
 pjoin = os.path.join
 
-def plot_mjj_by_leadingjetpt(acc, outtag, pt_slices, year):
+def plot_mjj_by_leadingjetpt(acc, outtag, pt_slices, year, etaslice='pos'):
     '''In bins of leading jet pt, plot mjj distribution for the total background in SR.'''
     distribution = 'ak4_pt0_mjj'
     acc.load(distribution)
@@ -22,7 +22,7 @@ def plot_mjj_by_leadingjetpt(acc, outtag, pt_slices, year):
     h = merge_datasets(h)
 
     # Get signal region
-    h = h.integrate('region', 'sr_vbf_no_veto_all')
+    h = h.integrate('region', f'sr_vbf_ak40_{etaslice}_endcap')
 
     # Get background MC (total)
     mc_regex = re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}')
@@ -81,7 +81,9 @@ def main():
     ]
 
     for year in [2017, 2018]:
-        plot_mjj_by_leadingjetpt(acc, outtag, pt_slices, year)
+        # Positive and negative eta slices (for endcap)
+        for etaslice in ['pos', 'neg']:
+            plot_mjj_by_leadingjetpt(acc, outtag, pt_slices, year, etaslice)
 
 if __name__ == '__main__':
     main()
