@@ -49,7 +49,7 @@ def plot_mjj_by_leadingjetpt(acc, outtag, pt_slices, year, etaslice='pos'):
 
     ax.legend(labels=labels, title=r'Leading jet $p_T$')
     ax.set_yscale('log')
-    ax.set_ylim(1e-1, 1e7)
+    ax.set_ylim(1e-2, 1e4)
     ax.set_title('Total Background in SR')
 
     # Save figure
@@ -77,7 +77,7 @@ def main():
         slice(80,120),
         slice(120,200),
         slice(200,300),
-        slice(300,),
+        slice(300,None),
     ]
 
     for year in [2017, 2018]:
