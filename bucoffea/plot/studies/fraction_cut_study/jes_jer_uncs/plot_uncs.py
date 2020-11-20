@@ -46,13 +46,17 @@ def plot_uncs(acc, outtag, variable='ak4_pt0_eta0', etaslice='pos'):
         h = h.integrate('jeteta', slice(-3.0,-2.5))
         fig_title = r'Jet: $-3.0 < \eta < -2.5$'
 
-    # List of JES/JER uncertainties
+    # List of uncertainties
     variations = [
         '',
         '_jerUp',
         '_jerDown',
         '_jesTotalUp',
-        '_jesTotalDown'
+        '_jesTotalDown',
+        '_pileupUp',
+        '_pileupDown',
+        '_prefireUp',
+        '_prefireDown'
     ]
 
     for year in [2017, 2018]:
