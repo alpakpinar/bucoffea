@@ -28,6 +28,10 @@ def plot_mjj_by_leadingjetpt(acc, outtag, pt_slices, year):
     mc_regex = re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}')
     h = h.integrate('dataset', mc_regex)
 
+    # Rebin mjj
+    mjj_ax = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.])
+    h = h.rebin('mjj', mjj_ax)
+
     fig, ax = plt.subplots()
     for pt_slice in pt_slices:
         # Get the mjj distribution with the relevant jet pt slice
@@ -35,7 +39,18 @@ def plot_mjj_by_leadingjetpt(acc, outtag, pt_slices, year):
 
         hist.plot1d(_h, ax=ax, clear=False)
 
-    # TODO: Aesthetic details here
+    labels = [
+        r'$40 < p_T < 80$',
+        r'$80 < p_T < 120$',
+        r'$120 < p_T < 200$',
+        r'$200 < p_T < 300$',
+        r'$p_T > 300$',
+    ]
+
+    ax.legend(labels=labels, title=r'Leading jet $p_T$')
+    ax.set_yscale('log')
+    ax.set_ylim(1e-1, 1e7)
+    ax.set_title('Total Background in SR')
 
     # Save figure
     outdir = f'./output/{outtag}'
