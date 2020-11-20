@@ -107,6 +107,12 @@ def zmumu_regions(cfg, variations=['']):
     regions['cr_2m_noEmEF_prefireDown'] = two_mu_cuts
     regions['cr_2m_withEmEF_prefireDown'] = two_mu_cuts + ['ak4_neEmEF']
 
+    # Regions with pileup weights varied
+    regions['cr_2m_noEmEF_pileupUp'] = two_mu_cuts
+    regions['cr_2m_withEmEF_pileupUp'] = two_mu_cuts + ['ak4_neEmEF']
+    regions['cr_2m_noEmEF_pileupDown'] = two_mu_cuts
+    regions['cr_2m_withEmEF_pileupDown'] = two_mu_cuts + ['ak4_neEmEF']
+
     # Regions with no prefire weight applied
     regions['cr_2m_noEmEF_no_prefire'] = two_mu_cuts
     regions['cr_2m_withEmEF_no_prefire'] = two_mu_cuts + ['ak4_neEmEF']

@@ -1,4 +1,5 @@
 import copy
+import re
 
 import coffea.processor as processor
 import numpy as np
@@ -803,10 +804,19 @@ def theory_weights_vbf(weights, df, evaluator, gen_v_pt, mjj):
 
     return weights
 
-def pileup_weights(weights, df, evaluator, cfg):
+def pileup_weights(weights, df, evaluator, cfg, region=None):
 
     if cfg.SF.PILEUP.MODE == 'nano':
-        pu_weight = df['puWeight']
+        if not region:
+            pu_weight = df['puWeight']
+        else:
+            if re.match('^.*EmEF.*pileupUp', region):
+                pu_weight = df['puWeightUp']
+            elif re.match('^.*EmEF.*pileupDown', region):
+                pu_weight = df['puWeightDown']
+            else:
+                pu_weight = df['puWeight']
+                
     elif cfg.SF.PILEUP.MODE == 'manual':
         pu_weight = evaluator['pileup'](df['Pileup_nTrueInt'])
     else:

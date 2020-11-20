@@ -72,7 +72,6 @@ def add_muon_selections(df, selection, dimuons, leadak4, met_pt, ak4, variation=
 
     # Add balance cut for the pt of Z and the jet
     leadak4_pt = getattr(leadak4, f'pt{variation}')
-    print(leadak4_pt.max())
     df['z_pt_over_jet_pt'] = (z_pt.max() / leadak4_pt.max()) - 1
     selection.add('z_pt_over_jet_pt', np.abs(df['z_pt_over_jet_pt']) < 0.15)
     
@@ -239,14 +238,12 @@ class zmumuProcessor(processor.ProcessorABC):
             weights.add('gen', df['Generator_weight'])
 
             weights = candidate_weights(weights, df, evaluator, muons, electrons, photons, cfg)
-            weights = pileup_weights(weights, df, evaluator, cfg)
             if not (gen_v_pt is None):
                 weights = theory_weights_monojet(weights, df, evaluator, gen_v_pt)
 
         if not df['is_data']:
             output['sumw'][dataset] +=  df['genEventSumw']
             output['sumw2'][dataset] +=  df['genEventSumw2']
-            output['sumw_pileup'][dataset] +=  weights._weights['pileup'].sum()
 
         regions = zmumu_regions(cfg, variations=self._variations)
 
@@ -255,7 +252,7 @@ class zmumuProcessor(processor.ProcessorABC):
             region_weights = copy.deepcopy(weights)
 
             # Get the variation in this region from the variation name
-            if region.endswith('EmEF') or 'prefire' in region:
+            if (region.endswith('EmEF')) or ('prefire' in region) or ('pileup' in region):
                 var = ''
             else:
                 var = '_' + region.split('_')[-1]
@@ -268,15 +265,20 @@ class zmumuProcessor(processor.ProcessorABC):
             met_pt = getattr(met, f'pt{var}').flatten()
             met_phi = getattr(met, f'phi{var}').flatten()
 
+            # For nominal case, calculate prefire and pileup weight variations
             if not df['is_data']:
+                # Pileup weights, for PU up/down regions use the varied weights
+                # For other regions use the nominal PU weight from NanoAOD 
+                weights = pileup_weights(weights, df, evaluator, cfg, region)
+
                 # For specific regions, include prefire weight up/down variations, instead of the central value
-                if re.match('^.*EmEF.*Up$', region):
+                if re.match('^.*EmEF.*prefireUp$', region):
                     try:
                         region_weights.add('prefire', df['PrefireWeight_Up'])
                     except KeyError:
                         region_weights.add('prefire', np.ones(df.size))
                     
-                elif re.match('^.*EmEF.*Down$', region):
+                elif re.match('^.*EmEF.*prefireDown$', region):
                     try:
                         region_weights.add('prefire', df['PrefireWeight_Down'])
                     except KeyError:
@@ -289,6 +291,7 @@ class zmumuProcessor(processor.ProcessorABC):
                     except KeyError:
                         region_weights.add('prefire', np.ones(df.size))
 
+                # No prefire weight region: Exclude the prefire weight
                 if re.match('^.*_no_prefire$', region):
                     exclude = ['prefire']
 
