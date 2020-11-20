@@ -269,7 +269,7 @@ class zmumuProcessor(processor.ProcessorABC):
             if not df['is_data']:
                 # Pileup weights, for PU up/down regions use the varied weights
                 # For other regions use the nominal PU weight from NanoAOD 
-                weights = pileup_weights(weights, df, evaluator, cfg, region)
+                region_weights = pileup_weights(region_weights, df, evaluator, cfg, region)
 
                 # For specific regions, include prefire weight up/down variations, instead of the central value
                 if re.match('^.*EmEF.*prefireUp$', region):
