@@ -292,6 +292,13 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
         
+        # Leading jet in endcap
+        leading_jet_pos_endcap = (diak4.i0.eta > 2.5) & (diak4.i0.eta < 3.0)
+        leading_jet_neg_endcap = (diak4.i0.eta > -3.0) & (diak4.i0.eta < -2.5)
+
+        selection.add('ak40_pos_endcap', leading_jet_pos_endcap.any())
+        selection.add('ak40_neg_endcap', leading_jet_neg_endcap.any())
+
         # Cleaning cuts for signal region
         max_neEmEF = np.maximum(diak4.i0.nef, diak4.i1.nef)
         selection.add('max_neEmEF', (max_neEmEF < 0.7).any())
