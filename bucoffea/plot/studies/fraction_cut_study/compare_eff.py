@@ -75,8 +75,8 @@ def calculate_efficiency(h_data, h_mc, region='cr_2m'):
 
     # Calculate the uncertainties in data eff and MC eff
     clopper_pearson_interval = hist.clopper_pearson_interval
-    data_eff_unc = clopper_pearson_interval(data_num, data_den)
-    mc_eff_unc = clopper_pearson_interval(mc_num, mc_den)
+    data_eff_unc = np.abs(clopper_pearson_interval(data_num, data_den) - data_eff)
+    mc_eff_unc = np.abs(clopper_pearson_interval(mc_num, mc_den) - mc_eff)
 
     return data_eff, mc_eff, data_eff_unc, mc_eff_unc
 

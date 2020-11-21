@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator
 from klepto.archives import dir_archive
 from pprint import pprint
-from compare_eff import ratio_unc
+from compare_eff import ratio_unc, calculate_efficiency
 
 pjoin = os.path.join
 
@@ -39,38 +39,24 @@ def preprocess(h, acc, year):
 
     return h_data, h_mc
 
-def calc_eff(h_data, h_mc, regiontag='ak40_in_endcap'):
-    '''
-    Calculate the efficiencies in data and MC and their stat uncertainties.
-    Calculate the values for endcap jets, on positive or negative side or both.
-    '''
-    h_data_withCut = h_data.integrate('region', f'cr_2m_withEmEF_{regiontag}')
-    h_data_withoutCut = h_data.integrate('region', f'cr_2m_noEmEF_{regiontag}')
-
-    h_mc_withCut = h_mc.integrate('region', f'cr_2m_withEmEF_{regiontag}')
-    h_mc_withoutCut = h_mc.integrate('region', f'cr_2m_noEmEF_{regiontag}')
-
-    data_num = h_data_withCut.values(overflow='over')[()]
-    data_den = h_data_withoutCut.values(overflow='over')[()]
-
-    mc_num = h_mc_withCut.values(overflow='over')[()]
-    mc_den = h_mc_withoutCut.values(overflow='over')[()]
-
-    data_eff = data_num / data_den
-    mc_eff = mc_num / mc_den
-
-    # Calculate the uncertainties in data eff and MC eff
-    clopper_pearson_interval = hist.clopper_pearson_interval
-    data_eff_unc = clopper_pearson_interval(data_num, data_den)
-    mc_eff_unc = clopper_pearson_interval(mc_num, mc_den)
-
-    return data_eff, mc_eff, data_eff_unc, mc_eff_unc
-    
 def plot_sf_for_endcap(acc, outtag, rootfile, year=2017, regiontag='ak40_in_endcap'):
     '''Plot 1D SF as a function of jet pt for endcap jets.'''
-    variable = 'ak4_pt0'
+    variable = 'ak4_pt0_eta0'
     acc.load(variable)
     h = acc[variable]
+
+    # Integrate over the eta distribution, depending on the endcap region we're looking at
+    if regiontag == 'ak40_in_endcap':
+        _h1 = h.integrate('jeteta', slice(2.5,3.0))
+        _h2 = h.integrate('jeteta', slice(-3.0,-2.5))
+        _h1.add(_h2)
+        h = _h1
+    elif regiontag == 'ak40_in_pos_endcap':
+        h = h.integrate('jeteta', slice(2.5, 3.0))
+    elif regiontag == 'ak40_in_neg_endcap':
+        h = h.integrate('jeteta', slice(-3.0, -2.5))
+    else:
+        raise RuntimeError(f'Unknown region tag: {regiontag}')
 
     h_data, h_mc = preprocess(h, acc, year)
 
@@ -78,12 +64,8 @@ def plot_sf_for_endcap(acc, outtag, rootfile, year=2017, regiontag='ak40_in_endc
     h_data = do_coarse_rebinning(h_data)
     h_mc = do_coarse_rebinning(h_mc)
 
-    # Calculate efficiencies for the given endcap region:
-    # Specified by regiontag as one of the following:
-    # "ak40_in_endcap" : Positive and negative etas combined
-    # "ak40_in_pos_endcap" : Positive endcap side
-    # "ak40_in_neg_endcap" : Negative endcap side
-    data_eff, mc_eff, data_eff_unc, mc_eff_unc = calc_eff(h_data, h_mc, regiontag)
+    # Calculate efficiencies for the given endcap region
+    data_eff, mc_eff, data_eff_unc, mc_eff_unc = calculate_efficiency(h_data, h_mc, region='cr_2m')
 
     # Calculate SF
     sf = data_eff / mc_eff
@@ -340,7 +322,7 @@ def main():
     for year in [2017, 2018]:
         for regiontag in regiontags:
             # Calculate 1D SF as a function of jet pt for the endcap jets only
-            # plot_sf_for_endcap(acc, outtag, year=year, regiontag=regiontag, rootfile=rootfile)
+            plot_sf_for_endcap(acc, outtag, year=year, regiontag=regiontag, rootfile=rootfile)
 
             for variation in variations:
                 plot_sf_with_variations(acc, outtag,
