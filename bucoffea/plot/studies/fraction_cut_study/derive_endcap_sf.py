@@ -28,7 +28,6 @@ def do_coarse_rebinning(h):
     h = h.rebin('jetpt', coarse_binnings['jetpt'])
     return h
 
-
 def preprocess(h, acc, year):
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
@@ -109,10 +108,22 @@ def plot_sf_for_endcap(acc, outtag, rootfile, year=2017, regiontag='ak40_in_endc
 
     ax.set_xlabel(r'Jet $p_T \ (GeV)$')
     ax.set_ylabel('Data/MC SF')
-    ax.set_ylim(0.7,1.3)
-    ax.legend()
+    ax.set_ylim(0.8,1.2)
 
     ax.set_title(f'Jet SFs in Endcap: {year}')
+
+    regiontag_to_text = {
+        'ak40_in_endcap' : r'$2.5 < |\eta| < 3.0$',
+        'ak40_in_pos_endcap' : r'$2.5 < \eta < 3.0$',
+        'ak40_in_neg_endcap' : r'$-3.0 < \eta < -2.5$',
+    }
+
+    ax.text(1., 1., regiontag_to_text[regiontag],
+        fontsize=12,
+        horizontalalignment='right',
+        verticalalignment='bottom',
+        transform=ax.transAxes
+        )
 
     # Save figure
     outdir = f'./output/{outtag}/endcap_sf'
