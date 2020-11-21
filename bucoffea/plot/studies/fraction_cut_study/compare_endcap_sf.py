@@ -58,7 +58,7 @@ def compare_endcap_sf(f, outdir, year):
     ax.errorbar(xcenters, y=h_ak40_in_neg_endcap, yerr=h_ak40_in_neg_endcap_err, label=r'$-3.0 < \eta < -2.5$', **opts)
 
     ax.legend(title=r'Jet $\eta$')
-    ax.set_ylim(0.7,1.3)
+    ax.set_ylim(0.8,1.2)
     ax.set_ylabel('Data / MC SF')
     ax.set_xlabel(r'Jet $p_T \ (GeV)$')
 
