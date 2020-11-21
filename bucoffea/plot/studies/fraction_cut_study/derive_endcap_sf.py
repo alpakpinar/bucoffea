@@ -245,11 +245,15 @@ def plot_sf_with_variations(acc, outtag, rootfile, variation, year=2017, regiont
 
     # Plot the variations in SF
     fig, ax, rax = fig_ratio()
-    for var, data in sf.items(): 
-        ax.errorbar(xcenters, y=data['sf'], yerr=data['err'], label=var, marker='o')
+    for var, data in sf.items():
+        label = var if var != 'nom' else 'Nominal' 
+        ax.errorbar(xcenters, y=data['sf'], yerr=data['err'], label=label, marker='o')
 
     ax.legend()
     ax.set_ylabel('Data / MC SF')
+    ax.set_ylim(0.8,1.2)
+
+    ax.set_title(f'{variation} Uncertainties', fontsize=14)
 
     # Plot the ratio of the variations to the nominal
     for idx, (var, data) in enumerate(sf.items()):
@@ -276,7 +280,7 @@ def plot_sf_with_variations(acc, outtag, rootfile, variation, year=2017, regiont
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'{variation}_sf_variations_{year}.pdf')
+    outpath = pjoin(outdir, f'{variation}_sf_variations_{regiontag}_{year}.pdf')
     fig.savefig(outpath)
     plt.close(fig)
 
@@ -308,17 +312,26 @@ def main():
     rootfile = uproot.recreate( pjoin(outputrootpath, 'jet_sf_endcaps.root') )
     print(f'ROOT file created: {rootfile}')
 
+    # List of systematic variations
+    variations = [
+        'jesTotal',
+        'jer',
+        'prefire',
+        'pileup'
+    ]
+
     for year in [2017, 2018]:
         for regiontag in regiontags:
             # Calculate 1D SF as a function of jet pt for the endcap jets only
             # plot_sf_for_endcap(acc, outtag, year=year, regiontag=regiontag, rootfile=rootfile)
 
-            plot_sf_with_variations(acc, outtag,
-                    rootfile=rootfile,
-                    variation='jesTotal',
-                    year=year,
-                    regiontag=regiontag
-                    )
+            for variation in variations:
+                plot_sf_with_variations(acc, outtag,
+                        rootfile=rootfile,
+                        variation=variation,
+                        year=year,
+                        regiontag=regiontag
+                        )
 
 if __name__ == '__main__':
     main()
