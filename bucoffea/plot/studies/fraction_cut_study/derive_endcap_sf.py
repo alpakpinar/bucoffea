@@ -253,7 +253,24 @@ def plot_sf_with_variations(acc, outtag, rootfile, variation, year=2017, regiont
     ax.set_ylabel('Data / MC SF')
     ax.set_ylim(0.8,1.2)
 
-    ax.set_title(f'{variation} Uncertainties', fontsize=14)
+    ax.set_title(f'{variation.capitalize() if variation != "jer" else variation.upper()} Uncertainties', fontsize=14)
+
+    if regiontag == 'ak40_in_endcap': 
+        text = r'$2.5 < |\eta| < 3.0$'
+    elif regiontag == 'ak40_in_pos_endcap':
+        text = r'$2.5 < \eta < 3.0$'
+    elif regiontag == 'ak40_in_neg_endcap':
+        text = r'$-3.0 < \eta < -2.5$'
+    else:
+        raise ValueError(f'Invalid region tag: {regiontag}')
+
+    ax.text(
+        1., 1., text,
+        fontsize=12,
+        horizontalalignment='right',
+        verticalalignment='bottom',
+        transform=ax.transAxes
+    )
 
     # Plot the ratio of the variations to the nominal
     for idx, (var, data) in enumerate(sf.items()):
