@@ -45,7 +45,7 @@ def ratio_unc(num, den, numunc, denunc):
     sf = num / den
     lo = numunc[0] / den
     high = numunc[1] / den
-    return np.abs(np.vstack((lo, high)) - sf)
+    return np.vstack([lo, high])
 
 def do_coarse_rebinning_for_2d(h):
     '''Make coarser binning for 2D SF histogram.'''
