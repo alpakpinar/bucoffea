@@ -117,6 +117,17 @@ def zmumu_regions(cfg):
         regions['cr_2m_noEmEF_jeteta_jet_eta_gt_2_7_lt_3_0'] = two_mu_cuts + ['jet_eta_gt_2_7_lt_3_0']
         regions['cr_2m_noEmEF_jeteta_gt_3_0'] = two_mu_cuts + ['jet_eta_gt_3_0']
 
+    if cfg.RUN.EFF_STUDY.ENDCAP_ONLY_REGIONS:
+        # Leading jet in the positive endcap: i.e. 2.5 < eta < 3.0
+        regions['cr_2m_noEmEF_ak40_in_pos_endcap'] = two_mu_cuts + ['ak40_in_pos_endcap']
+        regions['cr_2m_withEmEF_ak40_in_pos_endcap'] = two_mu_cuts + ['ak40_in_pos_endcap', 'ak4_neEmEF']
+        # Leading jet in the negative endcap: i.e. -3.0 < eta < -2.5
+        regions['cr_2m_noEmEF_ak40_in_neg_endcap'] = two_mu_cuts + ['ak40_in_neg_endcap']
+        regions['cr_2m_withEmEF_ak40_in_neg_endcap'] = two_mu_cuts + ['ak40_in_neg_endcap', 'ak4_neEmEF']
+        # Leading jet in endcap (both sides): 2.5 < |eta| < 3.0
+        regions['cr_2m_noEmEF_ak40_in_endcap'] = two_mu_cuts + ['ak40_in_endcap']
+        regions['cr_2m_withEmEF_ak40_in_endcap'] = two_mu_cuts + ['ak40_in_endcap', 'ak4_neEmEF']
+
     # Regions with tighter selections
     if cfg.RUN.EFF_STUDY.TIGHTCUTS:
         regions['cr_2m_noEmEF_tightBalCut'] = two_mu_cuts + ['z_pt_over_jet_pt_tight']

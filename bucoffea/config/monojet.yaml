@@ -197,6 +197,7 @@ default:
     eff_study:
       tightcuts: False
       split_jet_eta: False
+      endcap_only_regions: True
   triggers:
     ht:
       gammaeff:

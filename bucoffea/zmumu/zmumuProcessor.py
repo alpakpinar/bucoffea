@@ -210,6 +210,14 @@ class zmumuProcessor(processor.ProcessorABC):
         selection.add('jet_eta_gt_2_7_lt_3_0', ((leadak4.abseta >= 2.7) & (leadak4.abseta < 3.0)).any() )
         selection.add('jet_eta_gt_3_0', (leadak4.abseta >= 3.0).any())
 
+        ak40_in_pos_endcap = (leadak4.eta > 2.5) & (leadak4.eta < 3.0)
+        ak40_in_neg_endcap = (leadak4.eta > -3.0) & (leadak4.eta < -2.5)
+        ak40_in_endcap = (leadak4.abseta > 2.5) & (leadak4.abseta < 3.0)
+
+        selection.add('ak40_in_pos_endcap', ak40_in_pos_endcap.any())
+        selection.add('ak40_in_neg_endcap', ak40_in_neg_endcap.any())
+        selection.add('ak40_in_endcap', ak40_in_endcap.any())
+
         # Start to fill output
         output = self.accumulator.identity()
         
