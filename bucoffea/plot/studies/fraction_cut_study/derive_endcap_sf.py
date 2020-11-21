@@ -11,6 +11,7 @@ import numpy as np
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
 from coffea import hist
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MultipleLocator
 from klepto.archives import dir_archive
 from pprint import pprint
 from compare_eff import ratio_unc
@@ -140,8 +141,32 @@ def plot_sf_for_endcap(acc, outtag, rootfile, year=2017, regiontag='ak40_in_endc
     rootfile[f'{root_hist_tag}_statUp'] = (sf+sf_err[0], xedges)
     rootfile[f'{root_hist_tag}_statDown'] = (sf-sf_err[1], xedges)
 
-def calculate_sf_with_variations(h_mc, data_eff, data_eff_err, variation, sf):
+def calculate_sf_with_variations(h_mc, data_eff, data_eff_err, variation):
     '''Given the MC histogram containing the variations and the variation type, compute the variations of the SF.'''
+    sf = {}
+    # For MC calculate the nominal efficiency first
+    h_mc_withCut = h_mc.integrate('region', 'cr_2m_withEmEF')
+    h_mc_withoutCut = h_mc.integrate('region', 'cr_2m_noEmEF')
+    mc_num = h_mc_withCut.values(overflow='over')[()]
+    mc_den = h_mc_withoutCut.values(overflow='over')[()]
+
+    mc_eff_nom = mc_num / mc_den
+    mc_eff_nom_err = np.abs(hist.clopper_pearson_interval(mc_num, mc_den) - mc_eff_nom)
+
+    sf_nom = data_eff / mc_eff_nom
+    sf_nom_err = ratio_unc(
+            data_eff, 
+            mc_eff_nom,
+            data_eff_err,
+            mc_eff_nom_err
+            )
+
+    # Store the nominal SF and its stat error in the SF dictionary
+    sf['nom'] = {
+        'sf' : sf_nom, 
+        'err' : sf_nom_err
+    }
+
     # Calculate the up and down variations of the SF
     for var in [f'{variation}Up', f'{variation}Down']:
         h_mc_withCut = h_mc.integrate('region', f'cr_2m_withEmEF_{var}')
@@ -153,7 +178,7 @@ def calculate_sf_with_variations(h_mc, data_eff, data_eff_err, variation, sf):
         mc_eff = mc_num / mc_den
         mc_eff_err = np.abs(hist.clopper_pearson_interval(mc_num, mc_den) - mc_eff)
 
-        sf = data_eff / mc_eff
+        _sf = data_eff / mc_eff
         sf_err = ratio_unc(
             data_eff,
             mc_eff,
@@ -162,7 +187,7 @@ def calculate_sf_with_variations(h_mc, data_eff, data_eff_err, variation, sf):
         )
 
         sf[var] = {
-            'sf' : sf,
+            'sf' : _sf,
             'err' : sf_err
         }
 
@@ -176,9 +201,23 @@ def plot_sf_with_variations(acc, outtag, rootfile, variation, year=2017, regiont
     3. Pileup
     4. Prefire
     '''
-    variable = 'ak4_pt0'
+    # Load in the 2D jet pt/eta distribution, later we'll integrate over the eta axis to get endcap jets
+    variable = 'ak4_pt0_eta0'
     acc.load(variable)
     h = acc[variable]
+
+    # Integrate over the eta distribution, depending on the endcap region we're looking at
+    if regiontag == 'ak40_in_endcap':
+        _h1 = h.integrate('jeteta', slice(2.5,3.0))
+        _h2 = h.integrate('jeteta', slice(-3.0,-2.5))
+        _h1.add(_h2)
+        h = _h1
+    elif regiontag == 'ak40_in_pos_endcap':
+        h = h.integrate('jeteta', slice(2.5, 3.0))
+    elif regiontag == 'ak40_in_neg_endcap':
+        h = h.integrate('jeteta', slice(-3.0, -2.5))
+    else:
+        raise RuntimeError(f'Unknown region tag: {regiontag}')
 
     h_data, h_mc = preprocess(h, acc, year)
 
@@ -199,35 +238,10 @@ def plot_sf_with_variations(acc, outtag, rootfile, variation, year=2017, regiont
     data_eff = data_num / data_den
     data_eff_err = np.abs(hist.clopper_pearson_interval(data_num, data_den) - data_eff)
 
-    # For MC calculate the nominal efficiency and the variations
-    h_mc_withCut = h_mc.integrate('region', 'cr_2m_withEmEF')
-    h_mc_withoutCut = h_mc.integrate('region', 'cr_2m_noEmEF')
-    mc_num = h_mc_withCut.values(overflow='over')[()]
-    mc_den = h_mc_withoutCut.values(overflow='over')[()]
-
-    mc_eff_nom = mc_num / mc_den
-    mc_eff_nom_err = np.abs(hist.clopper_pearson_interval(mc_num, mc_den) - mc_eff)
-
     # SF dictionary will contain:
     # Data/MC SF for each case: Nominal + variations
     # Stat error on data/MC SF for each case: Nominal + variations
-    sf = {}
-    sf_nom = data_eff / mc_eff_nom
-    sf_nom_err = ratio_unc(
-            data_eff, 
-            mc_eff_nom,
-            data_eff_err,
-            mc_eff_nom_err
-            )
-
-    # Nominal SF and its error
-    sf['nom'] : {
-        'sf' : sf_nom, 
-        'err' : sf_nom_err
-    }
-
-    # Calculate the variations of the SF with the given uncertainty
-    sf = calculate_sf_with_variations(h_mc, data_eff, data_eff_err, variation, sf)
+    sf = calculate_sf_with_variations(h_mc, data_eff, data_eff_err, variation)
 
     # Plot the variations in SF
     fig, ax, rax = fig_ratio()
@@ -235,19 +249,27 @@ def plot_sf_with_variations(acc, outtag, rootfile, variation, year=2017, regiont
         ax.errorbar(xcenters, y=data['sf'], yerr=data['err'], label=var, marker='o')
 
     ax.legend()
+    ax.set_ylabel('Data / MC SF')
 
     # Plot the ratio of the variations to the nominal
     for idx, (var, data) in enumerate(sf.items()):
         if var == 'nom':
             continue
-        rsf = data['sf'] / sf_nom
-        rsf_err = data['err'] / sf_nom
+        rsf = data['sf'] / sf['nom']['sf']
+        rsf_err = data['err'] / sf['nom']['sf']
         rax.errorbar(xcenters, y=rsf, yerr=rsf_err, marker='o', color=f'C{idx}', ls='')
 
     rax.set_xlabel(r'Jet $p_T \ (GeV)$')
     rax.set_ylabel('Ratio to nominal')
-    rax.set_ylim(0.9,1.1)
+    rax.set_ylim(0.96,1.04)
     rax.grid(True)
+
+    loc1 = MultipleLocator(0.02)
+    loc2 = MultipleLocator(0.01)
+    rax.yaxis.set_major_locator(loc1)
+    rax.yaxis.set_minor_locator(loc2)
+
+    rax.axhline(1, xmin=0, xmax=1, color='red')
 
     # Save figure
     outdir = f'./output/{outtag}/endcap_sf'
@@ -289,7 +311,14 @@ def main():
     for year in [2017, 2018]:
         for regiontag in regiontags:
             # Calculate 1D SF as a function of jet pt for the endcap jets only
-            plot_sf_for_endcap(acc, outtag, year=year, regiontag=regiontag, rootfile=rootfile)
+            # plot_sf_for_endcap(acc, outtag, year=year, regiontag=regiontag, rootfile=rootfile)
+
+            plot_sf_with_variations(acc, outtag,
+                    rootfile=rootfile,
+                    variation='jesTotal',
+                    year=year,
+                    regiontag=regiontag
+                    )
 
 if __name__ == '__main__':
     main()
