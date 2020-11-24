@@ -103,6 +103,98 @@ def get_combined_sf(fin, outpath):
             fout[f'sf_neg_endcap_{year}_{sys}Up'] = (new_sf_neg + sf_up, edges)
             fout[f'sf_neg_endcap_{year}_{sys}Down'] = (new_sf_neg + sf_down, edges)
 
+    return fout
+
+def save_to_root(fin, outpath):
+    '''
+    Prepare final ROOT files with the SF for positive and negative endcaps, to be applied in the analysis.
+    Uncertainties:
+    -  Stat uncertainties (shape)
+    -  Flat JES/JER 1% for 2017
+    '''
+    outputrootdir = pjoin(outpath, 'root')
+    if not os.path.exists(outputrootdir):
+        os.makedirs(outputrootdir)
+    
+    outrootpath = pjoin(outputrootdir, 'jet_id_sf_for_endcaps.root')
+    fout = uproot.recreate(outrootpath)
+    print(f'ROOT file created: {fout}')
+
+    for year in [2017, 2018]:
+        for endcap in ['pos', 'neg']:
+            sf_nom = fin[f'sf_{endcap}_endcap_{year}'].values
+
+            # Stat up/down variations
+            sf_statUp = fin[f'sf_{endcap}_endcap_{year}_statUp'].values
+            sf_statDown = fin[f'sf_{endcap}_endcap_{year}_statDown'].values
+
+            stat_err_up = sf_statUp / sf_nom - 1
+            stat_err_down = sf_statDown / sf_nom - 1
+
+            # For 2017, add flat 1% for JES and 1% for JER
+            if year == 2017:
+                jes = 0.01
+                jer = 0.01
+            else:
+                jes = 0.
+                jer = 0.
+
+            total_err_up = np.sqrt(stat_err_up**2 + jes**2 + jer**2)
+            total_err_down = np.sqrt(stat_err_down**2 + jes**2 + jer**2)
+
+            # Calculate the final up and down variations on the SF
+            sf_totalUp = sf_nom * (1 + total_err_up)
+            sf_totalDown = sf_nom * (1 - total_err_down)
+
+            edges = fin[f'sf_{endcap}_endcap_{year}'].edges
+
+            # Save SF + final uncertainties to output ROOT file
+            fout[f'sf_{endcap}_endcap_{year}'] = (sf_nom, edges)
+            fout[f'sf_{endcap}_endcap_{year}_up'] = (sf_totalUp, edges)
+            fout[f'sf_{endcap}_endcap_{year}_down'] = (sf_totalDown, edges)
+
+    return fout
+
+def plot_final_uncs(fin, outpath):
+    '''Plot the final SF + uncertainties, all in the same plot.'''
+    legend_labels = {
+        'pos': r'$2.5 < \eta < 3.0$, {}',
+        'neg': r'$-3.0 < \eta < -2.5$, {}',
+    }
+
+    fig, ax = plt.subplots()
+
+    for year in [2017, 2018]:
+        for endcap in ['pos', 'neg']:
+            sf_nom = fin[f'sf_{endcap}_endcap_{year}'].values
+            sf_up = fin[f'sf_{endcap}_endcap_{year}_up'].values
+            sf_down = fin[f'sf_{endcap}_endcap_{year}_down'].values
+
+            centers = 0.5 * np.sum(fin[f'sf_{endcap}_endcap_{year}'].bins, axis=1)
+
+            sf_err = np.vstack([
+                np.abs(sf_up - sf_nom),
+                np.abs(sf_down - sf_nom),
+            ])
+
+            # Plot the SF with uncertainties
+            legend_label = legend_labels[endcap].format(year)
+            ax.errorbar(centers, sf_nom, yerr=sf_err, marker='o', label=legend_label)
+    
+    ax.legend(title='Region, year')
+    ax.set_xlabel(r'Jet $p_T \ (GeV)$')
+    ax.set_ylabel('Data / MC SF')
+    ax.set_ylim(0.8,1.2)
+    ax.set_title('Jet ID SF For VBF Analysis')
+    ax.grid(True)
+
+    # Save figure
+    outfile = pjoin(outpath, 'final_sf.pdf')
+    fig.savefig(outfile)
+    plt.close(fig)
+
+    print(f'File saved: {outfile}')
+
 def main():
     # Path to the input ROOT file containing individual SFs and their uncertainties
     inpath = sys.argv[1]
@@ -110,7 +202,11 @@ def main():
 
     outpath = os.path.dirname(os.path.dirname(inpath))
 
-    get_combined_sf(fin, outpath)
+    fout = get_combined_sf(fin, outpath)
+
+    fout = save_to_root(fout, outpath)
+
+    plot_final_uncs(fout, outpath)
 
 if __name__ == '__main__':
     main()
