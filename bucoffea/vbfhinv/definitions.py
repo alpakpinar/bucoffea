@@ -1,4 +1,5 @@
 import copy
+import re
 from coffea import hist
 
 Hist = hist.Hist
@@ -256,28 +257,28 @@ def vbfhinv_regions(cfg):
 
     cr_2m_cuts.remove('veto_muo')
 
-    regions['cr_2m_vbf'] = cr_2m_cuts
+    # regions['cr_2m_vbf'] = cr_2m_cuts
 
     # Single muon CR
     cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:] + ['dpfcalo_cr']
     cr_1m_cuts.remove('veto_muo')
-    regions['cr_1m_vbf'] = cr_1m_cuts
+    # regions['cr_1m_vbf'] = cr_1m_cuts
 
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
     # cr_2e_cuts.remove('veto_ele')
-    regions['cr_2e_vbf'] = cr_2e_cuts
+    # regions['cr_2e_vbf'] = cr_2e_cuts
 
     # Single electron CR
     cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', 'veto_muo','met_el'] + common_cuts[1:] + ['dpfcalo_cr', 'no_el_in_hem']
     # cr_1e_cuts.remove('veto_ele')
-    regions['cr_1e_vbf'] =  cr_1e_cuts
+    # regions['cr_1e_vbf'] =  cr_1e_cuts
 
     # Photon CR
     cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts + ['dpfcalo_cr']
     cr_g_cuts.remove('veto_photon')
 
-    regions['cr_g_vbf'] = cr_g_cuts
+    # regions['cr_g_vbf'] = cr_g_cuts
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [
@@ -312,6 +313,10 @@ def vbfhinv_regions(cfg):
         tmp[new_region].append("mindphijm")
 
     regions.update(tmp)
+    
+    # SRs with the jet EM fraction SF weights varied
+    regions['sr_vbf_jetsfUp'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
+    regions['sr_vbf_jetsfDown'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
 
     if cfg and  cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
@@ -385,7 +390,7 @@ def vbfhinv_regions(cfg):
 
     return regions
 
-def ak4_em_frac_weights(weights, diak4, evaluator):
+def ak4_em_frac_weights(weights, diak4, evaluator, region):
     '''Apply SF for EM fraction cut on jets. Event weight = (Leading jet weight) * (Trailing jet weight)'''
     # Separate weights for the two leading jets:
     # Calculate each jet weight based on the jet pt, if the jet is not in the endcap, assign a weight of 1.
@@ -395,22 +400,29 @@ def ak4_em_frac_weights(weights, diak4, evaluator):
     ak41_in_pos_endcap = ((diak4.i1.eta > 2.5) & (diak4.i1.eta < 3.0)).any()
     ak41_in_neg_endcap = ((diak4.i1.eta > -3.0) & (diak4.i1.eta < -2.5)).any()
 
+    # Weight variations
+    weight_suffix = ''
+    if re.match('sr.*jetsfUp', region):
+        weight_suffix = '_up'
+    elif re.match('sr.*jetsfDown', region):
+        weight_suffix = '_down'
+
     w_ak40 = np.where(
         ak40_in_pos_endcap,
-        evaluator['ak4_em_frac_sf_pos_endcap'](diak4.i0.pt).prod(),
+        evaluator[f'ak4_em_frac_sf_pos_endcap{weight_suffix}'](diak4.i0.pt).prod(),
         np.where(
             ak40_in_neg_endcap,
-            evaluator['ak4_em_frac_sf_neg_endcap'](diak4.i0.pt).prod(),
+            evaluator[f'ak4_em_frac_sf_neg_endcap{weight_suffix}'](diak4.i0.pt).prod(),
             1.
         )
     )
 
     w_ak41 = np.where(
         ak41_in_pos_endcap,
-        evaluator['ak4_em_frac_sf_pos_endcap'](diak4.i1.pt).prod(),
+        evaluator[f'ak4_em_frac_sf_pos_endcap{weight_suffix}'](diak4.i1.pt).prod(),
         np.where(
             ak41_in_neg_endcap,
-            evaluator['ak4_em_frac_sf_neg_endcap'](diak4.i1.pt).prod(),
+            evaluator[f'ak4_em_frac_sf_neg_endcap{weight_suffix}'](diak4.i1.pt).prod(),
             1.
         )
     )

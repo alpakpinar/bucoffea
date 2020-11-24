@@ -497,8 +497,20 @@ era2017:
     ak4_em_frac_sf_pos_endcap:
       histogram: sf_pos_endcap_2017
       file: data/sf/ak4/jet_id_sf_for_endcaps.root
+    ak4_em_frac_sf_pos_endcap_up:
+      histogram: sf_pos_endcap_2017_up
+      file: data/sf/ak4/jet_id_sf_for_endcaps.root
+    ak4_em_frac_sf_pos_endcap_down:
+      histogram: sf_pos_endcap_2017_down
+      file: data/sf/ak4/jet_id_sf_for_endcaps.root
     ak4_em_frac_sf_neg_endcap:
       histogram: sf_neg_endcap_2017
+      file: data/sf/ak4/jet_id_sf_for_endcaps.root
+    ak4_em_frac_sf_neg_endcap_up:
+      histogram: sf_neg_endcap_2017_up
+      file: data/sf/ak4/jet_id_sf_for_endcaps.root
+    ak4_em_frac_sf_neg_endcap_down:
+      histogram: sf_neg_endcap_2017_down
       file: data/sf/ak4/jet_id_sf_for_endcaps.root
 
 era2018:
@@ -644,6 +656,18 @@ era2018:
     ak4_em_frac_sf_pos_endcap:
       histogram: sf_pos_endcap_2018
       file: data/sf/ak4/jet_id_sf_for_endcaps.root
+    ak4_em_frac_sf_pos_endcap_up:
+      histogram: sf_pos_endcap_2018_up
+      file: data/sf/ak4/jet_id_sf_for_endcaps.root
+    ak4_em_frac_sf_pos_endcap_down:
+      histogram: sf_pos_endcap_2018_down
+      file: data/sf/ak4/jet_id_sf_for_endcaps.root
     ak4_em_frac_sf_neg_endcap:
       histogram: sf_neg_endcap_2018
+      file: data/sf/ak4/jet_id_sf_for_endcaps.root
+    ak4_em_frac_sf_neg_endcap_up:
+      histogram: sf_neg_endcap_2018_up
+      file: data/sf/ak4/jet_id_sf_for_endcaps.root
+    ak4_em_frac_sf_neg_endcap_down:
+      histogram: sf_neg_endcap_2018_down
       file: data/sf/ak4/jet_id_sf_for_endcaps.root
