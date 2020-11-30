@@ -270,6 +270,12 @@ def vbfhinv_regions(cfg):
     regions['cr_1m_vbf_no_calo_cut'] = copy.deepcopy(cr_1m_cuts)
     regions['cr_1m_vbf_no_calo_cut'].remove('dpfcalo_cr')
 
+    # Single muon CR with looser ID selection on leading jets
+    regions['cr_1m_vbf_loose_ak4_id'] = copy.deepcopy(cr_1m_cuts)
+    regions['cr_1m_vbf_loose_ak4_id'].remove('leadak4_id')
+    regions['cr_1m_vbf_loose_ak4_id'].remove('trailak4_id')
+    regions['cr_1m_vbf_loose_ak4_id'].append('leadak4_id_loose')
+
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
     # cr_2e_cuts.remove('veto_ele')
@@ -283,6 +289,12 @@ def vbfhinv_regions(cfg):
     # Single electron CR without the caloMET cut
     regions['cr_1e_vbf_no_calo_cut'] = copy.deepcopy(cr_1e_cuts)
     regions['cr_1e_vbf_no_calo_cut'].remove('dpfcalo_cr')
+
+    # Single electron CR with looser ID selection on leading jets
+    regions['cr_1e_vbf_loose_ak4_id'] = copy.deepcopy(cr_1e_cuts)
+    regions['cr_1e_vbf_loose_ak4_id'].remove('leadak4_id')
+    regions['cr_1e_vbf_loose_ak4_id'].remove('trailak4_id')
+    regions['cr_1e_vbf_loose_ak4_id'].append('leadak4_id_loose')
 
     # Photon CR
     cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts + ['dpfcalo_cr']
