@@ -234,6 +234,8 @@ def vbfhinv_regions(cfg):
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation']
 
+    regions['sr_vbf_nopuid'] = copy.deepcopy(regions['sr_vbf'])
+
     # For sync mode
     if cfg and cfg.RUN.SYNC:
         regions['cr_sync'] = [
@@ -263,6 +265,10 @@ def vbfhinv_regions(cfg):
     cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:] + ['dpfcalo_cr']
     cr_1m_cuts.remove('veto_muo')
     regions['cr_1m_vbf'] = cr_1m_cuts
+    
+    # Single muon CR without the caloMET cut
+    regions['cr_1m_vbf_no_calo_cut'] = copy.deepcopy(cr_1m_cuts)
+    regions['cr_1m_vbf_no_calo_cut'].remove('dpfcalo_cr')
 
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
@@ -274,11 +280,19 @@ def vbfhinv_regions(cfg):
     # cr_1e_cuts.remove('veto_ele')
     regions['cr_1e_vbf'] =  cr_1e_cuts
 
+    # Single electron CR without the caloMET cut
+    regions['cr_1e_vbf_no_calo_cut'] = copy.deepcopy(cr_1e_cuts)
+    regions['cr_1e_vbf_no_calo_cut'].remove('dpfcalo_cr')
+
     # Photon CR
     cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts + ['dpfcalo_cr']
     cr_g_cuts.remove('veto_photon')
 
     regions['cr_g_vbf'] = cr_g_cuts
+
+    # Photon CR without the caloMET cut
+    regions['cr_g_vbf_no_calo_cut'] = copy.deepcopy(cr_g_cuts)
+    regions['cr_g_vbf_no_calo_cut'].remove('dpfcalo_cr')
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [
