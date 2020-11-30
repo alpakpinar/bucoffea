@@ -306,6 +306,13 @@ def vbfhinv_regions(cfg):
     regions['cr_g_vbf_no_calo_cut'] = copy.deepcopy(cr_g_cuts)
     regions['cr_g_vbf_no_calo_cut'].remove('dpfcalo_cr')
 
+    # Photon CR with looser ID selection on leading jets
+    regions['cr_g_vbf_loose_ak4_id'] = copy.deepcopy(cr_g_cuts)
+    regions['cr_g_vbf_loose_ak4_id'].remove('leadak4_id')
+    regions['cr_g_vbf_loose_ak4_id'].remove('trailak4_id')
+    regions['cr_g_vbf_loose_ak4_id'].append('leadak4_id_loose')
+
+
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [
                                         'filt_met',
