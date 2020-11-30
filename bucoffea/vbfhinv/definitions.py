@@ -268,6 +268,13 @@ def vbfhinv_regions(cfg):
     regions['cr_1m_vbf_diak4_central'] = copy.deepcopy(regions['cr_1m_vbf'])
     regions['cr_1m_vbf_diak4_central'].append('diak4_central')
 
+    if cfg.RUN.PUREGIONS:
+        regions['cr_1m_vbf_small_pu'] = copy.deepcopy(regions['cr_1m_vbf'])
+        regions['cr_1m_vbf_small_pu'].append('small_pu')
+        
+        regions['cr_1m_vbf_large_pu'] = copy.deepcopy(regions['cr_1m_vbf'])
+        regions['cr_1m_vbf_large_pu'].append('large_pu')
+
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
     # cr_2e_cuts.remove('veto_ele')
@@ -281,6 +288,13 @@ def vbfhinv_regions(cfg):
     # 1e CR with both jets being central
     regions['cr_1e_vbf_diak4_central'] = copy.deepcopy(regions['cr_1e_vbf'])
     regions['cr_1e_vbf_diak4_central'].append('diak4_central')
+
+    if cfg.RUN.PUREGIONS:
+        regions['cr_1e_vbf_small_pu'] = copy.deepcopy(regions['cr_1e_vbf'])
+        regions['cr_1e_vbf_small_pu'].append('small_pu')
+        
+        regions['cr_1e_vbf_large_pu'] = copy.deepcopy(regions['cr_1e_vbf'])
+        regions['cr_1e_vbf_large_pu'].append('large_pu')
 
     # Photon CR
     cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts + ['dpfcalo_cr']

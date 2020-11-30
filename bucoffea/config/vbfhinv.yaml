@@ -219,6 +219,7 @@ default:
 
   run:
     sync: False
+    puregions: False
     save:
       passing: False
       tree: False

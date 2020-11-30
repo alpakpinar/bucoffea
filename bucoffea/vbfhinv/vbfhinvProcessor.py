@@ -341,6 +341,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
             selection.add('two_forward_jets', two_forward_jets.any())
             selection.add('one_jet_forward_one_jet_central', one_jet_forward_one_jet_central.any())
 
+        npvgood = df['PV_npvsGood']
+        selection.add('small_pu', npvgood <= 20)
+        selection.add('large_pu', (npvgood >= 30) & (npvgood <= 60))
+
         # Dimuon CR
         leadmuon_index=muons.pt.argmax()
         selection.add('at_least_one_tight_mu', df['is_tight_muon'].any())
