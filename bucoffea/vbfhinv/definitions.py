@@ -257,7 +257,7 @@ def vbfhinv_regions(cfg):
 
     cr_2m_cuts.remove('veto_muo')
 
-    regions['cr_2m_vbf'] = cr_2m_cuts
+    # regions['cr_2m_vbf'] = cr_2m_cuts
 
     # Single muon CR
     cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:] + ['dpfcalo_cr']
@@ -278,7 +278,7 @@ def vbfhinv_regions(cfg):
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
     # cr_2e_cuts.remove('veto_ele')
-    regions['cr_2e_vbf'] = cr_2e_cuts
+    # regions['cr_2e_vbf'] = cr_2e_cuts
 
     # Single electron CR
     cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', 'veto_muo','met_el'] + common_cuts[1:] + ['dpfcalo_cr', 'no_el_in_hem']
@@ -301,6 +301,10 @@ def vbfhinv_regions(cfg):
     cr_g_cuts.remove('veto_photon')
 
     regions['cr_g_vbf'] = cr_g_cuts
+
+    # Photon CR with both jets being central
+    regions['cr_g_vbf_diak4_central'] = copy.deepcopy(regions['cr_g_vbf'])
+    regions['cr_g_vbf_diak4_central'].append('diak4_central')
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [
