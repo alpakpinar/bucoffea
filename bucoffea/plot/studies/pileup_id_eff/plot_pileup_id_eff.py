@@ -5,6 +5,7 @@ import sys
 import re
 import numpy as np
 from coffea import hist
+from bucoffea.helpers.paths import bucoffea_path
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
 from matplotlib import pyplot as plt
 from klepto.archives import dir_archive
@@ -82,18 +83,18 @@ def calculate_pileupid_eff(acc_dict, outtag, proc='znunu', region='sr_vbf', dist
 def main():
     # Two accumulators: One of them has PU ID applied, the other one doesn't have PU ID
     acc_dict = {
-        'withPileup' : dir_archive(''),
-        'noPileup' : dir_archive(''),
+        'withPileup' : dir_archive(bucoffea_path('submission/merged_2020-12-01_vbfhinv_03Sep20v7')),
+        'noPileup' : dir_archive(bucoffea_path('submission/merged_2020-12-01_vbfhinv_03Sep20v7_nopuid')),
     }
 
     for acc in acc_dict.values():
         acc.load('sumw')
         acc.load('sumw2')
 
-    outtag = 'comp_30Nov20'
+    outtag = 'comp_01Dec20'
 
     for proc in ['znunu']:
-        for dist in ['mjj', 'npv']:
+        for dist in ['mjj', 'npvgood']:
             calculate_pileupid_eff(acc_dict, outtag,
                     proc=proc,
                     region='sr_vbf',
