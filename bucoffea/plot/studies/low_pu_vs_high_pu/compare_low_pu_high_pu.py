@@ -125,7 +125,7 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj', plo
         sumw = np.sum(h_pu_inc.values()[()])
         h_pu_inc.scale(1/sumw)
 
-        for idx, putag in enumerate(['nvtx_lt_20', 'nvtx_btw_30_60', 'nvtx_ht_30']):
+        for idx, putag in enumerate(['nvtx_btw_30_60', 'nvtx_ht_30', 'nvtx_lt_20']):
             data_err_opts['color'] = f'C{idx+1}'
             htemp = _h.integrate('region', f'{regiontag}_{putag}')
             sumwtemp = np.sum(htemp.values()[()])
