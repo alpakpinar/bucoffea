@@ -267,6 +267,9 @@ def vbfhinv_regions(cfg):
     # 1m CR with both jets being central
     regions['cr_1m_vbf_diak4_central'] = copy.deepcopy(regions['cr_1m_vbf'])
     regions['cr_1m_vbf_diak4_central'].append('diak4_central')
+    regions['cr_1m_vbf_diak4_central'].remove('leadak4_id')
+    regions['cr_1m_vbf_diak4_central'].remove('trailak4_id')
+    regions['cr_1m_vbf_diak4_central'].append('leadak4_id_loose')
 
     if cfg.RUN.PUREGIONS:
         regions['cr_1m_vbf_small_pu'] = copy.deepcopy(regions['cr_1m_vbf'])
@@ -288,6 +291,9 @@ def vbfhinv_regions(cfg):
     # 1e CR with both jets being central
     regions['cr_1e_vbf_diak4_central'] = copy.deepcopy(regions['cr_1e_vbf'])
     regions['cr_1e_vbf_diak4_central'].append('diak4_central')
+    regions['cr_1e_vbf_diak4_central'].remove('leadak4_id')
+    regions['cr_1e_vbf_diak4_central'].remove('trailak4_id')
+    regions['cr_1e_vbf_diak4_central'].append('leadak4_id_loose')
 
     if cfg.RUN.PUREGIONS:
         regions['cr_1e_vbf_small_pu'] = copy.deepcopy(regions['cr_1e_vbf'])
@@ -305,6 +311,9 @@ def vbfhinv_regions(cfg):
     # Photon CR with both jets being central
     regions['cr_g_vbf_diak4_central'] = copy.deepcopy(regions['cr_g_vbf'])
     regions['cr_g_vbf_diak4_central'].append('diak4_central')
+    regions['cr_g_vbf_diak4_central'].remove('leadak4_id')
+    regions['cr_g_vbf_diak4_central'].remove('trailak4_id')
+    regions['cr_g_vbf_diak4_central'].append('leadak4_id_loose')
 
     if cfg and cfg.RUN.SYNC:
         regions['sync_sr_vbf_round1'] = [

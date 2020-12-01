@@ -266,6 +266,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
         leadak4_central = diak4.i0.abseta <= 2.5
         trailak4_central = diak4.i1.abseta <= 2.5
 
+        # Leading jet ID requirement without the CHF/NHF requirements
+        leadak4_id_loose = diak4.i0.tightId
+
         df['mjj'] = diak4.mass.max()
         df['dphijj'] = dphi(diak4.i0.phi.min(), diak4.i1.phi.max())
         df['detajj'] = np.abs(diak4.i0.eta - diak4.i1.eta).max()
@@ -291,6 +294,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('trailak4_pt_eta', trailak4_pt_eta.any())
         selection.add('hemisphere', hemisphere)
         selection.add('leadak4_id',leadak4_id.any())
+        selection.add('leadak4_id_loose',leadak4_id_loose.any())
         selection.add('trailak4_id',trailak4_id.any())
         selection.add('mjj', df['mjj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.MASS)
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
