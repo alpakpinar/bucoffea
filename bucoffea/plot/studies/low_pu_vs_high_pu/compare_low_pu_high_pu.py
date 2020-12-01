@@ -34,10 +34,10 @@ def get_title(region, year, plot='data'):
 def get_new_legend_label(oldlabel):
     '''Get prettier legend labels for the comparison plot.'''
     newlabels = {
-        '(c|s)r_.*_vbf$' : 'PU Inclusive',
-        '(c|s)r_.*_vbf_nvtx_lt_20' : r'$N_{PV} \leq 20$',
-        '(c|s)r_.*_vbf_nvtx_btw_30_60' : r'$30 \leq N_{PV} \leq 60$',
-        '(c|s)r_.*_vbf_nvtx_ht_30' : r'$N_{PV} \geq 30$',
+        '(c|s)r_vbf(_no_veto_all)?$' : 'PU Inclusive',
+        '(c|s)r_vbf(_no_veto_all)?_nvtx_lt_20' : r'$N_{PV} \leq 20$',
+        '(c|s)r_vbf(_no_veto_all)?_nvtx_btw_30_60' : r'$30 \leq N_{PV} \leq 60$',
+        '(c|s)r_vbf(_no_veto_all)?_nvtx_ht_30' : r'$N_{PV} \geq 30$',
     }
 
     for label, newlabel in newlabels.items():
@@ -116,7 +116,7 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj', plo
         }
 
         # Plot ratio w.r.t. PU inclusive case
-        h_pu_inc = _h.integrate('region', 'sr_vbf')
+        h_pu_inc = _h.integrate('region', regiontag)
         
         for idx, putag in enumerate(['nvtx_lt_20', 'nvtx_btw_30_60', 'nvtx_ht_30']):
             data_err_opts['color'] = f'C{idx+1}'
