@@ -12,16 +12,22 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-def get_title(region, year):
+def get_title(region, year, plot='data'):
     mapping = {
-        'cr_1m_vbf' : r'MET {} Dataset: $1\mu$ CR',
-        'cr_1e_vbf' : r'EGamma {} Dataset: $1e$ CR',
-        'cr_g_vbf' : r'EGamma {} Dataset: $\gamma$ CR',
+        'sr_vbf' : r'{} {}: Signal Region',
+        'cr_1m_vbf' : r'{} {}: $1\mu$ CR',
+        'cr_1e_vbf' : r'{} {}: $1e$ CR',
+        'cr_g_vbf' : r'{} {}: $\gamma$ CR',
+    }
+
+    dataset_tags = {
+        'data' : 'Data',
+        'mc' : 'Total Background (MC)'
     }
 
     for regex, titletemp in mapping.items():
         if re.match(regex, region):
-            return titletemp.format(year)
+            return titletemp.format(dataset_tags[plot], year)
 
     raise RuntimeError(f'Could not find title for: {region}, {year}')
 
@@ -99,7 +105,7 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj', plo
         ax.legend(title='Pileup', handles=handles)
 
         ax.set_title( 
-            get_title(region, year),
+            get_title(region, year, plot=plot),
             fontsize=14
             )
 
