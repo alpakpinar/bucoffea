@@ -12,6 +12,13 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+def compute_integral(h):
+    mjj_edges = h.axis('mjj').edges()
+    binwidths = np.diff(mjj_edges)
+    sumw = h.values()[()]
+
+    return np.sum(sumw * binwidths) 
+
 def get_title(region, year, plot='data'):
     mapping = {
         'sr_vbf' : r'{} {}: Signal Region',
@@ -83,9 +90,9 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj', plo
         
         # Region tag: For MC, get no veto region (SR)
         regiontag = region
-        if region == 'sr_vbf':
-            if plot == 'mc':
-                regiontag = 'sr_vbf_no_veto_all'
+        # if region == 'sr_vbf':
+            # if plot == 'mc':
+                # regiontag = 'sr_vbf_no_veto_all'
         
         _h = h.integrate('dataset', dataset)[re.compile(f'{regiontag}(_nvtx)?.*(?<!all)$')]
 
@@ -122,14 +129,14 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj', plo
         h_pu_inc = _h.integrate('region', regiontag)
         
         # Normalize the histograms to their integrals
-        sumw = np.sum(h_pu_inc.values()[()])
-        h_pu_inc.scale(1/sumw)
+        integral_nom = compute_integral(h_pu_inc)
+        h_pu_inc.scale(1/integral_nom)
 
         for idx, putag in enumerate(['nvtx_btw_30_60', 'nvtx_ht_30', 'nvtx_lt_20']):
             data_err_opts['color'] = f'C{idx+1}'
             htemp = _h.integrate('region', f'{regiontag}_{putag}')
-            sumwtemp = np.sum(htemp.values()[()])
-            htemp.scale(1/sumwtemp)
+            integral_temp = compute_integral(htemp)
+            htemp.scale(1/integral_temp)
             
             hist.plotratio(
                 htemp,
