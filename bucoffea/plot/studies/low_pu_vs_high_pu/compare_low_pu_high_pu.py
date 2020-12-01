@@ -40,7 +40,7 @@ def get_new_legend_label(oldlabel):
     
     raise RuntimeError(f'Could not find legend label for: {oldlabel}')
 
-def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj'):
+def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj', plot='data'):
     '''For the given variable, compare the distribution at low PU and high PU (in data).'''
     acc.load(distribution)
     h = acc[distribution]
@@ -54,11 +54,34 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj'):
         h = h.rebin('mjj', mjj_ax)
             
     for year in [2017, 2018]:
-        if 'cr_1m' in region or 'sr' in region:
-            dataset = f'MET_{year}'
+        data = {
+            'sr_vbf' : f'MET_{year}',
+            'cr_1m_vbf' : f'MET_{year}',
+            'cr_1e_vbf' : f'EGamma_{year}',
+            'cr_g_vbf' : f'EGamma_{year}',
+        }
+        
+        mc = {
+            'sr_vbf' : re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
+            'cr_1m_vbf' : re.compile(f'(EWKW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
+            'cr_1e_vbf' : re.compile(f'(EWKW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
+            'cr_g_vbf' : re.compile(f'(GJets_(DR-0p4|SM).*|QCD_data.*|WJetsToLNu.*HT.*).*{year}'),
+        }
+
+        if plot == 'data':
+            dataset = data[region]
+        elif plot == 'mc':
+            dataset = mc[region]
         else:
-            dataset = f'EGamma_{year}'
-        _h = h.integrate('dataset', dataset)[re.compile(f'{region}_nvtx.*')]
+            raise ValueError(f'Invalid value for plot argument: {plot}')
+        
+        # Region tag: For MC, get no veto region (SR)
+        regiontag = region
+        if region == 'sr_vbf':
+            if plot == 'mc':
+                regiontag = 'sr_vbf_no_veto_all'
+        
+        _h = h.integrate('dataset', dataset)[re.compile(f'{regiontag}_nvtx.*')]
 
         fig, ax, rax = fig_ratio()
         hist.plot1d(_h, ax=ax, overlay='region')
@@ -89,10 +112,10 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj'):
         # Plot ratio w.r.t. PU inclusive case
         h_pu_inc = _h.integrate('region', 'sr_vbf')
         
-        for idx, regiontag in enumerate(['nvtx_lt_20', 'nvtx_btw_30_60', 'nvtx_ht_30']):
+        for idx, putag in enumerate(['nvtx_lt_20', 'nvtx_btw_30_60', 'nvtx_ht_30']):
             data_err_opts['color'] = f'C{idx+1}'
             hist.plotratio(
-                _h.integrate('region', re.compile(f'{region}_{regiontag}')),
+                _h.integrate('region', re.compile(f'{regiontag}_{putag}')),
                 h_pu_inc,
                 ax=rax,
                 unc='num',
@@ -111,7 +134,7 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj'):
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
-        outpath = pjoin(outdir, f'data_comp_{region}_{year}.pdf')
+        outpath = pjoin(outdir, f'{plot}_comp_{region}_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
         print(f'File saved: {outpath}')
@@ -126,7 +149,10 @@ def main():
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
     for region in ['sr_vbf']:
-        compare_low_pu_high_pu(acc, outtag, region=region)
+        # Plot = 'data' will plot the comparison for data
+        # Plot = 'mc' will plot the comparison for total MC in the region
+        for plot in ['data', 'mc']:
+            compare_low_pu_high_pu(acc, outtag, region=region, plot=plot)
 
 if __name__ == '__main__':
     main()
