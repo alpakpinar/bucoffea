@@ -28,8 +28,10 @@ def get_title(region, year):
 def get_new_legend_label(oldlabel):
     '''Get prettier legend labels for the comparison plot.'''
     newlabels = {
-        'cr_.*_vbf_large_pu' : r'$30 \leq N_{PV} \leq 60$',
-        'cr_.*_vbf_small_pu' : r'$N_{PV} \leq 20$',
+        '(c|s)r_.*_vbf$' : 'PU Inclusive',
+        '(c|s)r_.*_vbf_nvtx_lt_20' : r'$N_{PV} \leq 20$',
+        '(c|s)r_.*_vbf_nvtx_btw_30_60' : r'$30 \leq N_{PV} \leq 60$',
+        '(c|s)r_.*_vbf_nvtx_ht_30' : r'$N_{PV} \geq 30$',
     }
 
     for label, newlabel in newlabels.items():
@@ -38,7 +40,7 @@ def get_new_legend_label(oldlabel):
     
     raise RuntimeError(f'Could not find legend label for: {oldlabel}')
 
-def compare_low_pu_high_pu(acc, outtag, region='cr_1m_vbf', distribution='mjj'):
+def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj'):
     '''For the given variable, compare the distribution at low PU and high PU (in data).'''
     acc.load(distribution)
     h = acc[distribution]
@@ -52,11 +54,11 @@ def compare_low_pu_high_pu(acc, outtag, region='cr_1m_vbf', distribution='mjj'):
         h = h.rebin('mjj', mjj_ax)
             
     for year in [2017, 2018]:
-        if 'cr_1m' in region:
+        if 'cr_1m' in region or 'sr' in region:
             dataset = f'MET_{year}'
         else:
             dataset = f'EGamma_{year}'
-        _h = h.integrate('dataset', dataset)[re.compile(f'{region}.*_(small|large)_pu')]
+        _h = h.integrate('dataset', dataset)[re.compile(f'{region}_nvtx.*')]
 
         fig, ax, rax = fig_ratio()
         hist.plot1d(_h, ax=ax, overlay='region')
@@ -82,20 +84,23 @@ def compare_low_pu_high_pu(acc, outtag, region='cr_1m_vbf', distribution='mjj'):
             'linestyle':'none',
             'marker': '.',
             'markersize': 10.,
-            'color':'k',
         }
 
-        # Plot ratio
-        hist.plotratio(
-            _h.integrate('region', re.compile(f'{region}.*large_pu')),
-            _h.integrate('region', re.compile(f'{region}.*small_pu')),
-            ax=rax,
-            unc='num',
-            error_opts=data_err_opts
-        )
+        # Plot ratio w.r.t. PU inclusive case
+        h_pu_inc = _h.integrate('region', 'sr_vbf')
+        
+        for idx, regiontag in enumerate(['nvtx_lt_20', 'nvtx_btw_30_60', 'nvtx_ht_30']):
+            data_err_opts['color'] = f'C{idx+1}'
+            hist.plotratio(
+                _h.integrate('region', re.compile(f'{region}_{regiontag}')),
+                h_pu_inc,
+                ax=rax,
+                unc='num',
+                error_opts=data_err_opts,
+            )
 
         rax.set_xlabel(r'$M_{jj} \ (GeV)$')
-        rax.set_ylabel('High PU / Low PU')
+        rax.set_ylabel('Ratio to PU inc.')
         rax.set_ylim(0,2)
         rax.grid(True)
 
@@ -106,7 +111,7 @@ def compare_low_pu_high_pu(acc, outtag, region='cr_1m_vbf', distribution='mjj'):
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
-        outpath = pjoin(outdir, f'met_data_comp_{region}_{year}.pdf')
+        outpath = pjoin(outdir, f'data_comp_{region}_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
         print(f'File saved: {outpath}')
@@ -120,7 +125,7 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
-    for region in ['cr_1e_vbf', 'cr_g_vbf']:
+    for region in ['sr_vbf']:
         compare_low_pu_high_pu(acc, outtag, region=region)
 
 if __name__ == '__main__':
