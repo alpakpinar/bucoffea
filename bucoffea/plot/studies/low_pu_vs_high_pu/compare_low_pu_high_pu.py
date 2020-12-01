@@ -87,13 +87,16 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj', plo
             if plot == 'mc':
                 regiontag = 'sr_vbf_no_veto_all'
         
-        _h = h.integrate('dataset', dataset)[re.compile(f'{regiontag}_nvtx.*')]
+        _h = h.integrate('dataset', dataset)[re.compile(f'{regiontag}(_nvtx)?.*(?<!all)$')]
+
+        pprint(_h.values())
 
         fig, ax, rax = fig_ratio()
-        hist.plot1d(_h, ax=ax, overlay='region')
+        hist.plot1d(_h, ax=ax, overlay='region', density=True)
 
         ax.set_yscale('log')
-        ax.set_ylim(1e0,1e6)
+        ax.set_ylim(1e-7,1e1)
+        ax.set_ylabel('Normalized Counts')
         ax.set_xlabel('')
 
         # Handle legend labels
@@ -118,22 +121,31 @@ def compare_low_pu_high_pu(acc, outtag, region='sr_vbf', distribution='mjj', plo
         # Plot ratio w.r.t. PU inclusive case
         h_pu_inc = _h.integrate('region', regiontag)
         
+        # Normalize the histograms to their integrals
+        sumw = np.sum(h_pu_inc.values()[()])
+        h_pu_inc.scale(1/sumw)
+
         for idx, putag in enumerate(['nvtx_lt_20', 'nvtx_btw_30_60', 'nvtx_ht_30']):
             data_err_opts['color'] = f'C{idx+1}'
+            htemp = _h.integrate('region', f'{regiontag}_{putag}')
+            sumwtemp = np.sum(htemp.values()[()])
+            htemp.scale(1/sumwtemp)
+            
             hist.plotratio(
-                _h.integrate('region', re.compile(f'{regiontag}_{putag}')),
+                htemp,
                 h_pu_inc,
                 ax=rax,
                 unc='num',
                 error_opts=data_err_opts,
+                clear=False
             )
 
         rax.set_xlabel(r'$M_{jj} \ (GeV)$')
         rax.set_ylabel('Ratio to PU inc.')
-        rax.set_ylim(0,2)
+        rax.set_ylim(0.8,1.2)
         rax.grid(True)
 
-        rax.axhline(1, xmin=0, xmax=1, color='red')
+        rax.axhline(1, xmin=0, xmax=1, color='black')
 
         # Save figure
         outdir = f'./output/{outtag}'
