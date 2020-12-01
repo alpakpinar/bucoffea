@@ -286,7 +286,7 @@ def vbfhinv_regions(cfg):
         regions['cr_1m_vbf_nvtx_lt_20'].append('nvtx_lt_20')
         
         regions['cr_1m_vbf_nvtx_btw_30_60'] = copy.deepcopy(regions['cr_1m_vbf'])
-        regions['cr_1m_vbf_nvtx_btw_30_60'].append('nvtx_bt_30_60')
+        regions['cr_1m_vbf_nvtx_btw_30_60'].append('nvtx_btw_30_60')
 
         regions['cr_1m_vbf_nvtx_ht_30'] = copy.deepcopy(regions['cr_1m_vbf'])
         regions['cr_1m_vbf_nvtx_ht_30'].append('nvtx_ht_30')
