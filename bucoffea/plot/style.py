@@ -410,6 +410,33 @@ def plot_settings():
                 'ylim' : (1e-1,1e6)
             }
         },
+        'cr_1m_vbf_diak4_central' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e5)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e6)
+            },
+            'ak4_pt1' : {
+                'ylim' : (1e-3,1e6)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_nhf1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_chf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_chf1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+        },
         'cr_1m_vbf' : {
             'recoil' : {
                 'ylim' : (1e-3,1e5)
@@ -495,6 +522,33 @@ def plot_settings():
             'dphijj' : {
                 'ylim' : (1e0,1e8)
             }
+        },
+        'cr_1e_vbf_diak4_central' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e5)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e6)
+            },
+            'ak4_pt1' : {
+                'ylim' : (1e-3,1e6)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_nhf1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_chf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_chf1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
         },
         'cr_1e_vbf' : {
             'recoil' : {
@@ -600,6 +654,33 @@ def plot_settings():
             'dphijj' : {
                 'ylim' : (1e0,1e7)
             }
+        },
+        'cr_g_vbf_diak4_central' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e5)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e6)
+            },
+            'ak4_pt1' : {
+                'ylim' : (1e-3,1e6)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_nhf1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_chf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
+            'ak4_chf1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e0,1e8)
+            },
         },
         'cr_g_vbf' : {
             'recoil' : {
