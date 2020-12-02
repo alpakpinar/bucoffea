@@ -33,16 +33,16 @@ def plot_vh_in_sr(acc, outtag, dataset, variable='mjj'):
         os.makedirs(outdir)
 
     for year in [2017, 2018]:
-        datasetregex = dataset.format(year)
-        h = h.integrate('dataset', datasetregex)[ re.compile('inclusive|sr_vbf_no_veto_all') ]
+        datasetregex = re.compile(dataset.format(year))
+        _h = h.integrate('dataset', datasetregex)[ re.compile('inclusive|sr_vbf_no_veto_all') ]
 
         fig, ax = plt.subplots()
-        hist.plot1d(h, ax=ax, overlay='region')
+        hist.plot1d(_h, ax=ax, overlay='region')
 
         ax.set_yscale('log')
-        ax.set_ylim(1e-3, 1e5)
+        ax.set_ylim(1e-5, 1e5)
 
-        outpath = pjoin(outdir, f'{dataset}_comparison_{year}.pdf')
+        outpath = pjoin(outdir, f'{dataset.split("_")[0]}_comparison_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
