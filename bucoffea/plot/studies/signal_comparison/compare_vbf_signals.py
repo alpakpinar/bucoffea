@@ -7,7 +7,6 @@ import numpy as np
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
 from matplotlib import pyplot as plt
-from matplotlib.ticker import MultipleLocator
 from klepto.archives import dir_archive
 from pprint import pprint
 
@@ -23,6 +22,11 @@ def compare_vbf_signals(acc, outtag, variable='mjj'):
     # h = merge_datasets(h)
 
     h = h.integrate('region', 'sr_vbf_no_veto_all')
+
+    # Rebin for mjj
+    if variable == 'mjj':
+        mjj_ax = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.])
+        h = h.rebin('mjj', mjj_ax)
 
     # Will only look at 2018 for this comparison
     year = 2018
@@ -46,11 +50,11 @@ def compare_vbf_signals(acc, outtag, variable='mjj'):
 
         handle.set_label(newlabel)
     
-    ax.legend(handles)
+    ax.legend(handles=handles)
 
     # Plot ratio
-    hnum = h.integrate('dataset', f'VBF_HToInvisible_M125_PSweights_withDipoleRecoil_pow_pythia8_{year}') # With DR
-    hden = h.integrate('dataset', f'VBF_HToInvisible_M125_PSweights_pow_pythia8_{year}') # Without DR
+    hnum = h.integrate('dataset', f'VBF_HToInvisible_M125_withDipoleRecoil_pow_pythia8_{year}') # With DR
+    hden = h.integrate('dataset', f'VBF_HToInvisible_M125_pow_pythia8_{year}') # Without DR
 
     data_err_opts = {
         'linestyle':'none',
@@ -69,9 +73,6 @@ def compare_vbf_signals(acc, outtag, variable='mjj'):
     rax.set_ylabel('With DR / Without')
     rax.set_ylim(0.8,1.2)
     rax.grid(True)
-
-    loc = MultipleLocator(0.05)
-    rax.yaxis.set_major_locator(loc)
 
     # Save figure
     outdir = f'./output/{outtag}'
