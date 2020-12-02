@@ -42,6 +42,19 @@ def plot_vh_in_sr(acc, outtag, dataset, variable='mjj'):
         ax.set_yscale('log')
         ax.set_ylim(1e-5, 1e5)
 
+        handles, labels = ax.get_legend_handles_labels()
+        newlabels = {
+            'inclusive' : 'Inclusive',
+            'sr_vbf_no_veto_all' : 'Signal Region'
+        }
+
+        for handle, label in zip(handles, labels):
+            handle.set_label(
+                newlabels[label]
+            )
+
+        ax.legend(title='Region', handles=handles)
+
         outpath = pjoin(outdir, f'{dataset.split("_")[0]}_comparison_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
