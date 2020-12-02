@@ -55,7 +55,12 @@ def plot_vh_in_sr(acc, outtag, dataset, variable='mjj'):
 
         ax.legend(title='Region', handles=handles)
 
-        outpath = pjoin(outdir, f'{dataset.split("_")[0]}_comparison_{year}.pdf')
+        dataset_tag = dataset.split("_")[0]
+
+        title = f'{dataset_tag}(inv) {year}'
+        ax.set_title(title)
+
+        outpath = pjoin(outdir, f'{dataset_tag}_comparison_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
