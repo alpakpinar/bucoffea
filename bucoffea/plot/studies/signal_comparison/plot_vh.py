@@ -36,16 +36,24 @@ def plot_vh_in_sr(acc, outtag, dataset, variable='mjj'):
         datasetregex = re.compile(dataset.format(year))
         _h = h.integrate('dataset', datasetregex)[ re.compile('inclusive|sr_vbf_no_veto_all') ]
 
+        # Also get the VBF signal for reference
+        vbfregex = re.compile(f'VBF_HToInvisible_M125_pow_pythia8_{year}')
+        hsignal = h.integrate('dataset', vbfregex).integrate('region', 'sr_vbf_no_veto_all')
+
         fig, ax = plt.subplots()
         hist.plot1d(_h, ax=ax, overlay='region')
+        hist.plot1d(hsignal, ax=ax, clear=False)
 
         ax.set_yscale('log')
         ax.set_ylim(1e-5, 1e5)
 
+        dataset_tag = dataset.split("_")[0]
+
         handles, labels = ax.get_legend_handles_labels()
         newlabels = {
-            'inclusive' : 'Inclusive',
-            'sr_vbf_no_veto_all' : 'Signal Region'
+            'inclusive' : f'{dataset_tag} Inclusive',
+            'sr_vbf_no_veto_all' : f'{dataset_tag} Signal Region',
+            'None' : 'VBF Signal Region'
         }
 
         for handle, label in zip(handles, labels):
@@ -54,8 +62,6 @@ def plot_vh_in_sr(acc, outtag, dataset, variable='mjj'):
             )
 
         ax.legend(title='Region', handles=handles)
-
-        dataset_tag = dataset.split("_")[0]
 
         title = f'{dataset_tag}(inv) {year}'
         ax.set_title(title)
