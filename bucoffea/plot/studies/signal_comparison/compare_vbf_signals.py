@@ -7,6 +7,7 @@ import numpy as np
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MultipleLocator
 from klepto.archives import dir_archive
 from pprint import pprint
 
@@ -71,8 +72,13 @@ def compare_vbf_signals(acc, outtag, variable='mjj'):
 
     rax.set_xlabel(r'$M_{jj} \ (GeV)$')
     rax.set_ylabel('With DR / Without')
-    rax.set_ylim(0.8,1.2)
+    rax.set_ylim(0.7,1.3)
     rax.grid(True)
+
+    rax.axhline(1, xmin=0, xmax=1, color='red')
+
+    loc = MultipleLocator(0.1)
+    rax.yaxis.set_major_locator(loc)
 
     # Save figure
     outdir = f'./output/{outtag}'
