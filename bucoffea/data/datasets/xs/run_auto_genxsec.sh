@@ -62,12 +62,11 @@ run_from_list() {
                 continue
         fi
 
+                
         get_xs $DATASET
     done < ${LIST}
 }
 
-run_from_list ../datasets_2017.txt
-run_from_list ../datasets_2018.txt
-run_from_list ../datasets_2016.txt
+run_from_list ../datasets_vbf_dipole_recoil.txt
 
 
