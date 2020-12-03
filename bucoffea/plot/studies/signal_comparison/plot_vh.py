@@ -13,6 +13,15 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+def calculate_integral(h):
+    '''For a given histogram, calculate the integral of the distribution.'''
+    edges = h.axes()[0].edges()
+    binwidths = np.diff(edges)
+    binvals = h.values()[()]
+
+    integral = np.sum(binwidths * binvals)
+    return integral
+
 def plot_vh_in_sr(acc, outtag, dataset, variable='mjj'):
     '''Plot WH or ZH before and after the VBF signal region selection.'''
     acc.load(variable)
@@ -65,6 +74,19 @@ def plot_vh_in_sr(acc, outtag, dataset, variable='mjj'):
 
         title = f'{dataset_tag}(inv) {year}'
         ax.set_title(title)
+
+        # Calculate the ratio of VH integral / VBF integral to get a sense of the relative contribution
+        integral_vbf = calculate_integral(hsignal)
+        integral_vh = calculate_integral(_h.integrate('region', 'sr_vbf_no_veto_all'))
+
+        integral_ratio = (integral_vh / integral_vbf) * 100
+
+        ax.text(1., 1., f'VH/VBF: {integral_ratio:.3f}%',
+            fontsize=12,
+            horizontalalignment='right',
+            verticalalignment='bottom',
+            transform=ax.transAxes
+        )
 
         outpath = pjoin(outdir, f'{dataset_tag}_comparison_{year}.pdf')
         fig.savefig(outpath)
