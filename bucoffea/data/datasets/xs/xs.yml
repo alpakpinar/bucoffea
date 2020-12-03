@@ -3263,6 +3263,8 @@ VBF_HToInvisible_M110_pow_pythia8_2016:
 VBF_HToInvisible_M125_PSweights_pow_pythia8_2018:
   gen: 3.861
   nnlo: 3.782
+VBF_HToInvisible_M125_PSweights_withDipoleRecoil_pow_pythia8_2018:
+  gen: 3.861
 VBF_HToInvisible_M125_pow_pythia8_2016:
   gen: 0.0
   nnlo: 3.782
@@ -3271,6 +3273,8 @@ VBF_HToInvisible_M125_pow_pythia8_2017:
   nnlo: 3.782
 VBF_HToInvisible_M125_pow_pythia8_2018:
   nnlo: 3.782
+VBF_HToInvisible_M125_withDipoleRecoil_pow_pythia8_2018:
+  gen: 3.861
 VBF_HToInvisible_M150_pow_pythia8_2016:
   gen: 0.0
 VBF_HToInvisible_M200_pow_pythia8_2016:
@@ -3502,11 +3506,11 @@ WZ_2016:
 WZ_2017:
   gen: 27.56
   nlo: 47.13
-WZ_EXT_2017:
-  gen: 27.56
-  nlo: 47.13
 WZ_2018:
   gen: 27.55
+  nlo: 47.13
+WZ_EXT_2017:
+  gen: 27.56
   nlo: 47.13
 WZ_PSweights_2018:
   gen: 27.56

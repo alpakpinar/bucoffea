@@ -870,3 +870,4 @@
 /ADDMonoJet_MD-9_d-2_TuneCUETP8M1_13TeV-pythia8/RunIISummer16NanoAODv7-PUMoriond17_Nano02Apr2020_102X_mcRun2_asymptotic_v8-v1/NANOAODSIM 4.248e-01 8.053e-04 pb
 /ADDMonoJet_MD-9_d-3_TuneCUETP8M1_13TeV-pythia8/RunIISummer16NanoAODv7-PUMoriond17_Nano02Apr2020_102X_mcRun2_asymptotic_v8-v1/NANOAODSIM 7.593e-02 1.305e-04 pb
 /ADDMonoJet_MD-9_d-4_TuneCUETP8M1_13TeV-pythia8/RunIISummer16NanoAODv7-PUMoriond17_Nano02Apr2020_102X_mcRun2_asymptotic_v8-v1/NANOAODSIM 1.967e-02 3.864e-05 pb
+/VBF_HToInvisible_M125_TuneCP5_PSweights_withDipoleRecoil_13TeV_powheg_pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM 3.861e+00 1.790e-02 pb
