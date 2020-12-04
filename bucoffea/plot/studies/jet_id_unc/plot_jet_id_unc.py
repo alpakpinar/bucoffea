@@ -13,7 +13,7 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-def plot_jet_id_unc(acc, outtag):
+def plot_jet_id_unc(acc, outtag, dataset='ZJetsToNuNu'):
     '''Plot the variation in mjj distribution in signal with the propagation of jet ID uncertainties in the analysis.'''
     acc.load('mjj')
     h = acc['mjj']
@@ -27,7 +27,7 @@ def plot_jet_id_unc(acc, outtag):
     h = h.rebin('mjj', mjj_ax)
             
     for year in [2017, 2018]:
-        _h = h.integrate('dataset', re.compile(f'VBF_HToInv.*{year}'))
+        _h = h.integrate('dataset', re.compile(f'{dataset}.*{year}'))
         h_nom = _h.integrate('region', 'sr_vbf_no_veto_all')
         h_sfup = _h.integrate('region', 'sr_vbf_jetsfUp')
         h_sfdown = _h.integrate('region', 'sr_vbf_jetsfDown')
@@ -40,7 +40,7 @@ def plot_jet_id_unc(acc, outtag):
         ax.set_xlabel('')
         # ax.set_yscale('log')
         # ax.set_ylim(1e-3, 1e5)
-        ax.set_title(f'Jet SF Uncertainties on VBF H(inv): {year}')
+        ax.set_title(f'Jet SF Uncertainties on QCD Z(vv): {year}')
 
         labels = [
             'Nominal',
