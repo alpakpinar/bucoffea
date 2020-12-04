@@ -22,7 +22,7 @@ def calculate_integral(h):
     integral = np.sum(binwidths * binvals)
     return integral
 
-def plot_vh_in_sr(acc, outtag, dataset, variable='mjj'):
+def plot_vh_in_sr(acc, outtag, variable='mjj'):
     '''Plot WH or ZH before and after the VBF signal region selection.'''
     acc.load(variable)
     h = acc[variable]
@@ -42,53 +42,53 @@ def plot_vh_in_sr(acc, outtag, dataset, variable='mjj'):
         os.makedirs(outdir)
 
     for year in [2017, 2018]:
-        datasetregex = re.compile(dataset.format(year))
-        _h = h.integrate('dataset', datasetregex)[ re.compile('inclusive|sr_vbf_no_veto_all') ]
-
-        # Also get the VBF signal for reference
-        vbfregex = re.compile(f'VBF_HToInvisible_M125_pow_pythia8_{year}')
-        hsignal = h.integrate('dataset', vbfregex).integrate('region', 'sr_vbf_no_veto_all')
+        _h = h.integrate('region', 'sr_vbf_no_veto_all')[re.compile(f'(VBF_HToInvisible_M125_pow|WH|ZH|GluGlu).*{year}')]
 
         fig, ax = plt.subplots()
-        hist.plot1d(_h, ax=ax, overlay='region')
-        hist.plot1d(hsignal, ax=ax, clear=False)
+        hist.plot1d(_h, ax=ax, overlay='dataset')
 
         ax.set_yscale('log')
-        ax.set_ylim(1e-5, 1e5)
-
-        dataset_tag = dataset.split("_")[0]
+        ax.set_ylim(1e-5, 1e7)
 
         handles, labels = ax.get_legend_handles_labels()
         newlabels = {
-            'inclusive' : f'{dataset_tag} Inclusive',
-            'sr_vbf_no_veto_all' : f'{dataset_tag} Signal Region',
-            'None' : 'VBF Signal Region'
+            'VBF.*M125_pow.*' : r'VBF $H(inv)$',
+            'WH.*' : r'$WH(inv)$',
+            'ZH.*' : r'$ZH(inv)$',
+            'GluGlu.*' : r'$ggH(inv)$',
         }
 
         for handle, label in zip(handles, labels):
-            handle.set_label(
-                newlabels[label]
-            )
+            newlabel = None
+            for regex, _newlabel in newlabels.items():
+                if re.match(regex, label):
+                    newlabel = _newlabel
+                    break
+            if not newlabel:
+                raise RuntimeError(f'Could not handle the legend label: {label}')
+            
+            handle.set_label(newlabel)
 
-        ax.legend(title='Region', handles=handles)
+        ax.legend(title='Dataset', handles=handles)
 
-        title = f'{dataset_tag}(inv) {year}'
-        ax.set_title(title)
+        title = f'Signal Region: {year}'
+        ax.set_title(title, fontsize=14)
 
         # Calculate the ratio of VH integral / VBF integral to get a sense of the relative contribution
-        integral_vbf = calculate_integral(hsignal)
-        integral_vh = calculate_integral(_h.integrate('region', 'sr_vbf_no_veto_all'))
+        integral_vbf = calculate_integral(_h.integrate('dataset', re.compile(f'VBF.*{year}')))
+        integral_wh = calculate_integral(_h.integrate('dataset', re.compile(f'WH.*{year}')))
+        # integral_zh = calculate_integral(_h.integrate('dataset', re.compile(f'ZH.*{year}')))
 
-        integral_ratio = (integral_vh / integral_vbf) * 100
+        integral_ratio = (integral_wh / integral_vbf) * 100
 
-        ax.text(1., 1., f'VH/VBF: {integral_ratio:.3f}%',
+        ax.text(1., 1., f'WH/VBF: {integral_ratio:.3f}%',
             fontsize=12,
             horizontalalignment='right',
             verticalalignment='bottom',
             transform=ax.transAxes
         )
 
-        outpath = pjoin(outdir, f'{dataset_tag}_comparison_{year}.pdf')
+        outpath = pjoin(outdir, f'signal_region_comparison_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
@@ -102,13 +102,7 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
-    datasets = [
-        'WH_WToQQ_Hinv.*{}',
-        'ZH_ZToQQ_HToInv.*{}'
-    ]
-
-    for dataset in datasets:
-        plot_vh_in_sr(acc, outtag, dataset=dataset, variable='mjj')
+    plot_vh_in_sr(acc, outtag, variable='mjj')
 
 if __name__ == '__main__':
     main()
