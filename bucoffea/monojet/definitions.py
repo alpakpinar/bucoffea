@@ -163,10 +163,12 @@ def monojet_accumulator(cfg):
 
     if cfg and cfg.RUN.MONOVMISTAG:
         items["ak8_passloose_pt0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_pt_ax)
+        items["ak8_passmedium_pt0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_pt_ax)
         items["ak8_passtight_pt0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_pt_ax)
         items["ak8_passloosemd_pt0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_pt_ax)
         items["ak8_passtightmd_pt0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_pt_ax)
         items["ak8_passloose_mass0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_mass_ax)
+        items["ak8_passmedium_mass0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_mass_ax)
         items["ak8_passtight_mass0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_mass_ax)
         items["ak8_passloosemd_mass0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_mass_ax)
         items["ak8_passtightmd_mass0"] = Hist("Counts", dataset_ax, region_ax, wppass_ax, jet_mass_ax)
@@ -298,7 +300,12 @@ def setup_candidates(df, cfg):
         dxy=df['Muon_dxy'],
         dz=df['Muon_dz']
     )
-
+    
+    # For MC, add the matched gen-particle info for checking
+    if not df['is_data']:
+        kwargs = {'genpartflav' : df['Muon_genPartFlav']}
+        muons.add_attributes(**kwargs) 
+    
     # All muons must be at least loose
     muons = muons[muons.looseId \
                     & (muons.iso < cfg.MUON.CUTS.LOOSE.ISO) \
@@ -323,6 +330,12 @@ def setup_candidates(df, cfg):
         dz=np.abs(df['Electron_dz']),
         barrel=np.abs(df['Electron_eta']+df['Electron_deltaEtaSC']) <= 1.4442
     )
+
+    # For MC, add the matched gen-particle info for checking
+    if not df['is_data']:
+        kwargs = {'genpartflav' : df['Electron_genPartFlav']}
+        electrons.add_attributes(**kwargs)
+         
     # All electrons must be at least loose
     pass_dxy = (electrons.barrel & (np.abs(electrons.dxy) < cfg.ELECTRON.CUTS.LOOSE.DXY.BARREL)) \
     | (~electrons.barrel & (np.abs(electrons.dxy) < cfg.ELECTRON.CUTS.LOOSE.DXY.ENDCAP))
@@ -558,9 +571,14 @@ def monojet_regions(cfg):
     regions['cr_g_j'] = cr_g_cuts + j_cuts
     regions['cr_g_v'] = cr_g_cuts + v_cuts
 
-    # additional regions to test out deep ak8 WvsQCD tagger
+    # DeepAK8 WPs for signal regions with different level of purities
+    wp_to_run = ['loose', 'tight']
+    # and more WPs when doing the mistag measurement
+    if cfg and cfg.RUN.MONOVMISTAG:
+        wp_to_run += ['medium', 'inclusive']
+
     for region in ['sr_v','cr_2m_v','cr_1m_v','cr_2e_v','cr_1e_v','cr_g_v']:
-        for wp in ['loose', 'tight']:
+        for wp in wp_to_run:
             # the new region name will be, for example, cr_2m_loose_v
             newRegionName=region.replace('_v','_'+wp+'_v')
             regions[newRegionName] = copy.deepcopy(regions[region])
@@ -579,9 +597,12 @@ def monojet_regions(cfg):
             # save a copy of the v-tagged regions but not applying mistag SFs, for the sake of measuring mistag SF later
 
             if cfg and cfg.RUN.MONOVMISTAG:
-                if wp in ['loose','tight']:
+                if wp in ['loose','medium','tight']:
                     noMistagRegionName = region.replace('_v', '_nomistag_'+ wp + '_v')
                     regions[noMistagRegionName]=copy.deepcopy(regions[newRegionName])
+                    noMistagNoMassRegionName = region.replace('_v', '_nomistag_nomass_'+ wp + '_v')
+                    regions[noMistagNoMassRegionName]=copy.deepcopy(regions[newRegionName])
+                    regions[noMistagNoMassRegionName].remove('leadak8_mass')
 
     # Veto weight region
     tmp = {}
