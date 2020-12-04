@@ -77,11 +77,18 @@ def plot_vh_in_sr(acc, outtag, variable='mjj'):
         # Calculate the ratio of VH integral / VBF integral to get a sense of the relative contribution
         integral_vbf = calculate_integral(_h.integrate('dataset', re.compile(f'VBF.*{year}')))
         integral_wh = calculate_integral(_h.integrate('dataset', re.compile(f'WH.*{year}')))
-        # integral_zh = calculate_integral(_h.integrate('dataset', re.compile(f'ZH.*{year}')))
+        integral_zh = calculate_integral(_h.integrate('dataset', re.compile(f'ZH.*{year}')))
 
-        integral_ratio = (integral_wh / integral_vbf) * 100
+        integral_ratio_wh = (integral_wh / integral_vbf) * 100
+        integral_ratio_zh = (integral_zh / integral_vbf) * 100
 
-        ax.text(1., 1., f'WH/VBF: {integral_ratio:.3f}%',
+        ax.text(0.97, 0.05, f'WH/VBF: {integral_ratio_wh:.2f}%',
+            fontsize=12,
+            horizontalalignment='right',
+            verticalalignment='bottom',
+            transform=ax.transAxes
+        )
+        ax.text(0.97, 0.15, f'ZH/VBF: {integral_ratio_zh:.2f}%',
             fontsize=12,
             horizontalalignment='right',
             verticalalignment='bottom',
