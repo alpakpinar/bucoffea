@@ -315,8 +315,8 @@ def vbfhinv_regions(cfg):
     regions.update(tmp)
     
     # SRs with the jet EM fraction SF weights varied
-    regions['sr_vbf_jetsfUp'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
-    regions['sr_vbf_jetsfDown'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
+    regions['sr_vbf_no_veto_all_jetsfUp'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
+    regions['sr_vbf_no_veto_all_jetsfDown'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
 
     if cfg and  cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
