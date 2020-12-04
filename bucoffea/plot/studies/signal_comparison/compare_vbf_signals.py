@@ -13,7 +13,7 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-def compare_vbf_signals(acc, outtag, variable='mjj'):
+def compare_vbf_signals(acc, outtag, region='sr_vbf_no_veto_all', variable='mjj'):
     '''Compare VBF signals for 2018: with and without dipole recoil.'''
     acc.load(variable)
     h = acc[variable]
@@ -22,7 +22,7 @@ def compare_vbf_signals(acc, outtag, variable='mjj'):
     scale_xs_lumi(h)
     # h = merge_datasets(h)
 
-    h = h.integrate('region', 'sr_vbf_no_veto_all')
+    h = h.integrate('region', region)
 
     # Rebin for mjj
     if variable == 'mjj':
@@ -51,7 +51,12 @@ def compare_vbf_signals(acc, outtag, variable='mjj'):
 
         handle.set_label(newlabel)
     
-    ax.legend(handles=handles)
+    regiontitles = {
+        'sr_vbf_no_veto_all' : 'Signal Region',
+        'inclusive' : 'Inclusive',
+    }
+
+    ax.legend(handles=handles, title=regiontitles[region])
 
     # Plot ratio
     hnum = h.integrate('dataset', f'VBF_HToInvisible_M125_withDipoleRecoil_pow_pythia8_{year}') # With DR
@@ -85,7 +90,7 @@ def compare_vbf_signals(acc, outtag, variable='mjj'):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'vbf_signal_comparison.pdf')
+    outpath = pjoin(outdir, f'vbf_signal_comparison_{region}.pdf')
     fig.savefig(outpath)
     plt.close(fig)
 
@@ -99,7 +104,8 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
-    compare_vbf_signals(acc, outtag)
+    for region in ['sr_vbf_no_veto_all', 'inclusive']:
+        compare_vbf_signals(acc, outtag, region=region)
 
 if __name__ == '__main__':
     main()
