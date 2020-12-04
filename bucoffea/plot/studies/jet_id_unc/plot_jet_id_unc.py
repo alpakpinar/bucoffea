@@ -29,23 +29,23 @@ def plot_jet_id_unc(acc, outtag, dataset='ZJetsToNuNu'):
     for year in [2017, 2018]:
         _h = h.integrate('dataset', re.compile(f'{dataset}.*{year}'))
         h_nom = _h.integrate('region', 'sr_vbf_no_veto_all')
-        h_sfup = _h.integrate('region', 'sr_vbf_jetsfUp')
-        h_sfdown = _h.integrate('region', 'sr_vbf_jetsfDown')
+        h_sfup = _h.integrate('region', 'sr_vbf_no_veto_all_jetsfUp')
+        h_sfdown = _h.integrate('region', 'sr_vbf_no_veto_all_jetsfDown')
 
         fig, ax, rax = fig_ratio()
-        hist.plot1d(h_nom, ax=ax)
-        hist.plot1d(h_sfup, ax=ax, clear=False)
+        hist.plot1d(h_sfup, ax=ax)
         hist.plot1d(h_sfdown, ax=ax, clear=False)
+        hist.plot1d(h_nom, ax=ax, clear=False)
 
         ax.set_xlabel('')
-        # ax.set_yscale('log')
-        # ax.set_ylim(1e-3, 1e5)
+        ax.set_yscale('log')
+        ax.set_ylim(1e0, 1e5)
         ax.set_title(f'Jet SF Uncertainties on QCD Z(vv): {year}')
 
         labels = [
-            'Nominal',
             'Jet ID SF up',
             'Jet ID SF down',
+            'Nominal',
         ]
 
         ax.legend(labels=labels)
@@ -57,12 +57,12 @@ def plot_jet_id_unc(acc, outtag, dataset='ZJetsToNuNu'):
             'markersize': 10.,
         }
 
-        hist.plotratio(h_sfup, h_nom, ax=rax, unc='num', label='Jet SF Up', error_opts=data_err_opts)
-        hist.plotratio(h_sfdown, h_nom, ax=rax, unc='num', label='Jet SF Down', clear=False, error_opts=data_err_opts)
+        hist.plotratio(h_sfup, h_nom, ax=rax, unc='num', error_opts=data_err_opts)
+        hist.plotratio(h_sfdown, h_nom, ax=rax, unc='num', clear=False, error_opts=data_err_opts)
 
         rax.set_xlabel(r'$M_{jj} \ (GeV)$')
         rax.set_ylabel('Ratio to Nominal')
-        rax.set_ylim(0.9,1.1)
+        rax.set_ylim(0.95,1.05)
         rax.grid(True)
 
         rax.axhline(1, xmin=0, xmax=1, color='black')
