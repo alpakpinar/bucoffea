@@ -322,6 +322,9 @@ def vbfhinv_regions(cfg):
 
     regions.update(tmp)
 
+    regions['sr_vbf_no_veto_all_ee_hf'] = copy.deepcopy(regions['sr_vbf_no_veto_all'])
+    regions['sr_vbf_no_veto_all_ee_hf'].append('ee_hf')
+
     if cfg and cfg.RUN.TRIGGER_STUDY:
         # Trigger studies
         # num = numerator, den = denominator

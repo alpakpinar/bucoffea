@@ -325,6 +325,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
 
         selection.add('eemitigation', eemitigation)
 
+        # Selector for EE-HF events
+        one_jet_in_ee_one_in_hf = no_jet_in_trk & at_least_one_jet_in_hf
+        selection.add('ee_hf', one_jet_in_ee_one_in_hf)
+
         # HF-HF veto in SR
         both_jets_in_hf = (diak4.i0.abseta > 3.0) & (diak4.i1.abseta > 3.0)
         selection.add('veto_hfhf', ~both_jets_in_hf.any())
