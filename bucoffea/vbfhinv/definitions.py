@@ -45,6 +45,9 @@ def vbfhinv_accumulator(cfg):
     deta_ax = Bin("deta", r"$\Delta\eta$", 50, 0, 10)
     dr_ax = Bin("dr", r"$\Delta R$", 50, 0, 2)
 
+    vec_dphi_ax = Bin("vecdphi", r"VecDeltaPhi", 50, 0, 3.5)
+    vec_b_ax = Bin("vecb", r"VecB", 25, 0, 0.5)
+
     pt_ax = Bin("pt", r"$p_{T}$ (GeV)", 100, 0, 1000)
     pt_ax_mu = Bin("pt", r"$p_{T}$ (GeV)", [20,25,30,40,50,60,120])
     pt_ax_el = Bin("pt", r"$p_{T}$ (GeV)", [10,20,35,50,100,200,500])
@@ -128,6 +131,11 @@ def vbfhinv_accumulator(cfg):
     items["dpfcalo_sr"] = Hist("Counts", dataset_ax, region_ax, dpfcalo_ax)
     items["dphijm"] = Hist("min(4 leading jets, MET)", dataset_ax, region_ax, dphi_ax)
     items["dphijr"] = Hist("min(4 leading jets, Recoil)", dataset_ax, region_ax, dphi_ax)
+
+    items["vecdphi"] = Hist("Counts", dataset_ax, region_ax, vec_dphi_ax)
+    items["vecb"] = Hist("Counts", dataset_ax, region_ax, vec_b_ax)
+    items["dphitkpf"] = Hist("Counts", dataset_ax, region_ax, dphi_ax)
+    items["vecb_dphitkpf"] = Hist("Counts", dataset_ax, region_ax, vec_b_ax, dphi_ax)
 
     # Multiplicity histograms
     for cand in ['ak4', 'ak8', 'bjet', 'loose_ele', 'loose_muo', 'tight_ele', 'tight_muo', 'tau', 'photon','hlt_single_muon','muons_hltmatch']:

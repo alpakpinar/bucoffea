@@ -308,6 +308,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         vec_b = calculate_vecB(ak4, met_pt, met_phi)
         vec_dphi = calculate_vecDPhi(ak4, met_pt, met_phi, df['TkMET_phi'])
 
+        dphitkpf = dphi(met_phi, df['TkMET_phi'])
+
         no_jet_in_trk = (diak4.i0.abseta>2.5).any() & (diak4.i1.abseta>2.5).any()
         no_jet_in_hf = (diak4.i0.abseta<3.0).any() & (diak4.i1.abseta<3.0).any()
 
@@ -633,6 +635,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('detajj',             deta=df["detajj"][mask],   weight=rweight[mask] )
             ezfill('mjj',                mjj=df["mjj"][mask],      weight=rweight[mask] )
 
+            ezfill('vecdphi',            vecdphi=vec_dphi[mask],    weight=rweight[mask] )
+            ezfill('vecb',               vecb=vec_b[mask],          weight=rweight[mask] )
+            ezfill('dphitkpf',           dphi=dphitkpf[mask],       weight=rweight[mask] )
+            
+            ezfill('vecb_dphitkpf',      vecb=vec_b[mask],          dphi=dphitkpf[mask],       weight=rweight[mask] )
 
             if gen_v_pt is not None:
                 ezfill('gen_vpt', vpt=gen_v_pt[mask], weight=df['Generator_weight'][mask])
