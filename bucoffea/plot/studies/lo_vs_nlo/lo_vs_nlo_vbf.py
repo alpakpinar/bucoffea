@@ -46,6 +46,7 @@ def plot(args):
             # ( EGamma = SingleElectron+SinglePhoton for 2017)
             data = {
                 'sr_vbf' : f'MET_{year}',
+                'sr_vbf_high_detajj' : f'MET_{year}',
                 'cr_1m_vbf' : f'MET_{year}',
                 'cr_2m_vbf' : f'MET_{year}',
                 'cr_1e_vbf' : f'EGamma_{year}',
@@ -58,6 +59,7 @@ def plot(args):
             # Here for LO V samples (HT binned)
             mc_lo = {
                 'sr_vbf' : re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
+                'sr_vbf_high_detajj' : re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
                 'cr_1m_vbf' : re.compile(f'(EWKW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
                 'cr_1e_vbf' : re.compile(f'(EWKW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
                 'cr_2m_vbf' : re.compile(f'(EWKZ.*ZToLL.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),

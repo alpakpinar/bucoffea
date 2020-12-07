@@ -23,6 +23,33 @@ from collections import defaultdict
 def plot_settings():
     plot_settings = defaultdict(lambda: defaultdict(lambda : None),
     {
+        'sr_vbf_high_detajj' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt1' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_nef0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e8)
+            },
+            'ak4_nhf0' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e8)
+            },
+            'ak4_nef1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e8)
+            },
+            'ak4_nhf1' : {
+                'xlim' : (0,1),
+                'ylim' : (1e1,1e8)
+            },
+        },
         'sr_vbf' : {
             'recoil' : {
                 'ylim' : (1e-3,1e3)
