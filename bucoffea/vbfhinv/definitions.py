@@ -100,6 +100,7 @@ def vbfhinv_accumulator(cfg):
     items["ak4_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
     items["ak4_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
     items["ak4_chf0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
+    items["ak4_nef0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nhf0"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nconst0"] = Hist("Counts", dataset_ax, region_ax, nconst_ax)
 
@@ -108,6 +109,7 @@ def vbfhinv_accumulator(cfg):
     items["ak4_eta1"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
     items["ak4_phi1"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
     items["ak4_chf1"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
+    items["ak4_nef1"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nhf1"] = Hist("Counts", dataset_ax, region_ax, frac_ax)
     items["ak4_nconst1"] = Hist("Counts", dataset_ax, region_ax, nconst_ax)
 
