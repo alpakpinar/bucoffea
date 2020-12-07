@@ -33,14 +33,19 @@ def get_ylabel_from_regionpair(region1, region2):
     except KeyError:
         raise ValueError(f'Could not set up y-label for regions: {region1}, {region2}')
 
-def plot_postfit_ratios(infile, region_pairs):
-    '''Plot template ratios for postfit, given the input fit diagnostics file.'''
+def plot_ratios(infile, region_pairs, ratio='postfit'):
+    '''Plot template ratios for prefit or postfit, given the input fit diagnostics file.'''
     # Output directory to save plots
-    outdir = f'./output/'
+    outdir = f'./output/{ratio}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    shapedir = infile['shapes_fit_s']
+    if ratio == 'postfit':
+        shapedir = infile['shapes_fit_s']
+    elif ratio == 'prefit':
+        shapedir = infile['shapes_prefit']
+    else:
+        raise ValueError(f'Invalid value for ratio: {ratio}')
 
     for year in [2017, 2018]:
         for region1, region2 in region_pairs:
@@ -111,7 +116,10 @@ def plot_postfit_ratios(infile, region_pairs):
             ax.legend(title='Ratios')
             ax.set_ylabel( get_ylabel_from_regionpair(region1, region2) )
 
-            ax.set_title('Post-fit Ratio', fontsize=14)
+            if ratio == 'prefit':
+                ax.set_title('Pre-fit Ratio', fontsize=14)
+            else:
+                ax.set_title('Post-fit Ratio', fontsize=14)
 
             ax.text(0.1, 1., year,
                 fontsize=14,
@@ -177,7 +185,9 @@ def main():
         ('dimuon', 'photon'),
     ]
 
-    plot_postfit_ratios(infile, region_pairs)
+    # Plot prefit and postfit ratios between these regions
+    for ratio in ['prefit', 'postfit']:
+        plot_ratios(infile, region_pairs, ratio=ratio)
 
 if __name__ == '__main__':
     main()
