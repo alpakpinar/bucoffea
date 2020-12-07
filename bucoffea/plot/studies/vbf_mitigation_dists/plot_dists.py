@@ -35,6 +35,25 @@ def plot_2d(acc, outtag, region):
         }
         hist.plot2d(_h, ax=ax, xaxis='dphi', patch_opts=patch_opts)
 
+        # Calculate the fraction of events falling into dphitkpf > 1.0
+        mask = h.axis('dphi').centers() > 1.0
+
+        htemp = _h.integrate('vecb')
+
+        total_events = np.sum(htemp.values()[()])
+        high_dphi_events = np.sum(htemp.values()[()][mask])
+
+        # Get the ratio of high dphi events to total events in signal
+        r = high_dphi_events / total_events * 100
+
+        ax.text(0.98, 0.9, f'High dphi / total: {r:.2f}%',
+            fontsize=14,
+            horizontalalignment='right',
+            verticalalignment='bottom',
+            transform=ax.transAxes
+            )
+
+
         ax.set_ylim(0,0.3)
         ax.set_xlabel(r'$\Delta\phi(Tk,PF)$')
         ax.set_title(f'VBF H(inv) EE-HF Events: {year}', fontsize=14)

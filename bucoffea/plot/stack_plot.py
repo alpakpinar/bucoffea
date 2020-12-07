@@ -65,7 +65,8 @@ legend_labels = {
         'WN*J.*LNu.*' : "QCD W$\\rightarrow\\ell\\nu$",
         'EWKW.*LNu.*' : "EWK W$\\rightarrow\\ell\\nu$",
         'ZJetsToNuNu.*.*' : "QCD Z$\\rightarrow\\nu\\nu$",
-        'EWKZ.*ZToNuNu.*' : "EWK Z$\\rightarrow\\nu\\nu$"
+        'EWKZ.*ZToNuNu.*' : "EWK Z$\\rightarrow\\nu\\nu$",
+        'VBF.*M125.*' : "VBF $H(inv)$"
     },
     'Monojet/Mono-V': {
         'GJets_DR-0p4.*' : "$\\gamma$+jets",

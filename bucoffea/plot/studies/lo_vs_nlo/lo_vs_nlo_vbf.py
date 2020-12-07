@@ -110,6 +110,7 @@ def plot(args):
                                 year=year,
                                 data=data[region],
                                 mc=imc,
+                                signal=re.compile(f'VBF_HToInv.*M125.*{year}'),
                                 ylim=plotset[distribution].get('ylim',None),
                                 xlim=plotset[distribution].get('xlim',None),
                                 tag = 'losf',
