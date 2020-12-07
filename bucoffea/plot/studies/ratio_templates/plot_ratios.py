@@ -114,7 +114,7 @@ def plot_ratios(infile, region_pairs, ratio='postfit'):
                     )
 
             ax.legend(title='Ratios')
-            ax.set_ylabel( get_ylabel_from_regionpair(region1, region2) )
+            ax.set_ylabel( get_ylabel_from_regionpair(region1, region2), fontsize=14 )
 
             if ratio == 'prefit':
                 ax.set_title('Pre-fit Ratio', fontsize=14)
@@ -155,8 +155,8 @@ def plot_ratios(infile, region_pairs, ratio='postfit'):
             rax.grid(True)
             rax.set_ylim(0.5,1.5)
             rax.set_xlim(200., 5000.)
-            rax.set_ylabel('Data/MC')
-            rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+            rax.set_ylabel('Data/MC', fontsize=14)
+            rax.set_xlabel(r'$M_{jj} \ (GeV)$', fontsize=14)
     
             loc = MultipleLocator(0.5)
             rax.yaxis.set_major_locator(loc)
