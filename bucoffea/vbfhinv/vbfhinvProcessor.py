@@ -293,6 +293,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
         
+        high_detajj = df['detajj'] > 5.5
+        selection.add('high_detajj', high_detajj)
+
         # Cleaning cuts for signal region
 
         # NEF cut: Only for endcap jets, require NEF < 0.7
