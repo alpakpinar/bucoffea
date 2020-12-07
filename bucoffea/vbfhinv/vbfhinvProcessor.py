@@ -293,7 +293,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
         
-        high_detajj = df['detajj'] > 5.5
+        high_detajj = df['detajj'] > 5.0
         selection.add('high_detajj', high_detajj)
 
         # Cleaning cuts for signal region
