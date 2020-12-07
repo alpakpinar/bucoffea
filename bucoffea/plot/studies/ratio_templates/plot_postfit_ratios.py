@@ -12,10 +12,31 @@ from bucoffea.plot.util import fig_ratio
 
 pjoin = os.path.join
 
-def plot_postfit_ratios(infile, outtag, region_pairs):
+def get_lumi(year):
+    if year == 2017:
+        return 41.5
+    elif year == 2018:
+        return 59.7
+
+def get_ylabel_from_regionpair(region1, region2):
+    mapping = {
+        'dielec' : r'$Z(ee)$',
+        'dimuon' : r'$Z(\mu\mu)$',
+        'singleel' : r'$W(e\nu)$',
+        'singlemu' : r'$W(\mu\nu)$',
+        'photon' : r'$\gamma$ + jets',
+    }
+
+    try:
+        ylabel = f'{mapping[region1]} / {mapping[region2]}'
+        return ylabel
+    except KeyError:
+        raise ValueError(f'Could not set up y-label for regions: {region1}, {region2}')
+
+def plot_postfit_ratios(infile, region_pairs):
     '''Plot template ratios for postfit, given the input fit diagnostics file.'''
     # Output directory to save plots
-    outdir = f'./output/{outtag}'
+    outdir = f'./output/'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -87,31 +108,76 @@ def plot_postfit_ratios(infile, outtag, region_pairs):
                     **fill_opts
                     )
 
-            # TODO: Continue here --> Ratio pad & save figure
-            # fig.savefig(f'test_{year}.pdf')
+            ax.legend(title='Ratios')
+            ax.set_ylabel( get_ylabel_from_regionpair(region1, region2) )
+
+            ax.set_title('Post-fit Ratio', fontsize=14)
+
+            ax.text(0.1, 1., year,
+                fontsize=14,
+                horizontalalignment='right',
+                verticalalignment='bottom',
+                transform=ax.transAxes
+            )
+
+            ax.text(1., 1., r'${} \ fb^{{-1}}$ (13 TeV)'.format(get_lumi(year)),
+                fontsize=14,
+                horizontalalignment='right',
+                verticalalignment='bottom',
+                transform=ax.transAxes
+            )
+
+            # Plot ratio of ratios
+            r = r_data / r_mc
+            r_err = yerr_data/ r_mc
+            
+            rax.errorbar(centers, r, yerr=r_err, **data_err_opts)
+            rax.axhline(1, xmin=0, xmax=1, color='red')
+
+            # MC uncertainty
+            rr_mc_up = r_mc_up[:-1] / r_mc 
+            rr_mc_down = r_mc_down[:-1] / r_mc 
+    
+            rax.fill_between(edges,
+                y1=np.r_[rr_mc_down, rr_mc_down[-1]],
+                y2=np.r_[rr_mc_up, rr_mc_up[-1]],
+                **fill_opts
+                )
+    
+            rax.grid(True)
+            rax.set_ylim(0.5,1.5)
+            rax.set_xlim(200., 5000.)
+            rax.set_ylabel('Data/MC')
+            rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+    
+            loc = MultipleLocator(0.5)
+            rax.yaxis.set_major_locator(loc)
+
+            # Save figure
+            outpath = pjoin(outdir, f'ratio_{region1}_{region2}_{year}.pdf')
+            fig.savefig(outpath)
             plt.close(fig)
+
+            print(f'File saved: {outpath}')
 
 def main():
     # Path to input fit diagnostics file
     inpath = sys.argv[1]
     infile = uproot.open(inpath)
 
-    outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
-
-    regions = [
-        'singlemu',
-        'singleel',
-        'dimuon',
-        'dielec',
-        'photon'
-    ]
-    
     # Pairs of regions for which we're going to take the ratio
     region_pairs = [
-        ('dielec', 'dimuon')
+        ('dielec', 'dimuon'),
+        ('singleel', 'singlemu'),
+        ('singleel', 'photon'),
+        ('singlemu', 'photon'),
+        ('dielec', 'singleel'),
+        ('dimuon', 'singlemu'),
+        ('dielec', 'photon'),
+        ('dimuon', 'photon'),
     ]
 
-    plot_postfit_ratios(infile, outtag, region_pairs)
+    plot_postfit_ratios(infile, region_pairs)
 
 if __name__ == '__main__':
     main()
