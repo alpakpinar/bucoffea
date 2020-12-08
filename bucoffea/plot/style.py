@@ -23,8 +23,31 @@ from collections import defaultdict
 def plot_settings():
     plot_settings = defaultdict(lambda: defaultdict(lambda : None),
     {
+        'sr_vbf_no_horn_veto' : {
+            'recoil' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt0' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_pt1' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'dpftk_sr' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'ak4_eta0' : {
+                'ylim' : (1e-3,1e8)
+            },
+            'ak4_eta1' : {
+                'ylim' : (1e-3,1e8)
+            },
+        },
         'sr_vbf' : {
             'recoil' : {
+                'ylim' : (1e-3,1e3)
+            },
+            'dpftk_sr' : {
                 'ylim' : (1e-3,1e3)
             },
             'ak4_pt0' : {
