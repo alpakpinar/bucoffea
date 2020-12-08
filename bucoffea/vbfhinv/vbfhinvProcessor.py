@@ -622,6 +622,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             # MET
             ezfill('dpfcalo_cr',            dpfcalo=df["dPFCaloCR"][mask],       weight=rweight[mask] )
             ezfill('dpfcalo_sr',            dpfcalo=df["dPFCaloSR"][mask],       weight=rweight[mask] )
+            ezfill('dpftk_sr',              dpftk=df["dPFTkSR"][mask],           weight=rweight[mask] )
             ezfill('met',                met=met_pt[mask],            weight=rweight[mask] )
             ezfill('met_phi',            phi=met_phi[mask],           weight=rweight[mask] )
             ezfill('recoil',             recoil=df["recoil_pt"][mask],      weight=rweight[mask] )
