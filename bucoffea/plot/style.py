@@ -34,7 +34,7 @@ def plot_settings():
                 'ylim' : (1e-3,1e3)
             },
             'dpftk_sr' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e6)
             },
             'ak4_eta0' : {
                 'ylim' : (1e-3,1e8)
@@ -48,7 +48,7 @@ def plot_settings():
                 'ylim' : (1e-3,1e3)
             },
             'dpftk_sr' : {
-                'ylim' : (1e-3,1e3)
+                'ylim' : (1e-3,1e6)
             },
             'ak4_pt0' : {
                 'ylim' : (1e-3,1e3)

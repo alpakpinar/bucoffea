@@ -330,7 +330,7 @@ def make_plot(acc, region, distribution, year,  data, mc, signal=None, outdir='.
                )
     # Aesthetics
     ax.set_yscale("log")
-    ax.set_ylabel('Events / GeV')
+    ax.set_ylabel('Events / Bin Width')
     plot_settings=style.plot_settings()
     if region in plot_settings.keys():
         plot_settings=plot_settings[region]
