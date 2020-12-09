@@ -32,7 +32,7 @@ def vbfhinv_accumulator(cfg):
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 100, 0, 1000)
     jet_pt_ax_coarse = Bin("jetpt", r"$p_{T}$ (GeV)", 5, 0, 500)
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
-    jet_eta_ax_coarse = Bin("jeteta", r"$\eta$", 20, -5, 5)
+    jet_eta_ax_coarse = Bin("jeteta", r"$\eta$", 10, -5, 5)
     jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
 
     jet_mass_ax = Bin("mass", r"$M_{jet}$ (GeV)", 100,0,300)
@@ -113,8 +113,8 @@ def vbfhinv_accumulator(cfg):
     items["ak4_pt0_nconst0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax_coarse, nconst_ax)
     items["ak4_pt0_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax,jet_eta_ax_coarse)
 
-    items["ak4_eta0_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, jet_phi_ax)
-    items["ak4_eta1_phi1"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, jet_phi_ax)
+    items["ak4_eta0_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax, jet_phi_ax)
+    items["ak4_eta1_phi1"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax, jet_phi_ax)
 
     items["ak4_pt"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_eta"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
@@ -523,7 +523,7 @@ def jme_map_weights(weights, diak4, evaluator, df):
             event_weights = event_weights * (w_ak40 * w_ak41)
         # For data, assign a weight of 0 (discard event) if jet is located in any of these hot/cold zones
         else:
-            good_event = ((w_ak40 != 0.) & (w_ak41 != 0.)).any() 
+            good_event = (w_ak40 == 1.) & (w_ak41 == 1.) 
             event_weights *= np.where(good_event, 1, 0)
 
     weights.add('jme_maps', event_weights)
