@@ -10,7 +10,7 @@ import coffea.processor as processor
 from awkward import JaggedArray
 import numpy as np
 from bucoffea.helpers import object_overlap, sigmoid3
-from bucoffea.helpers.dataset import extract_year
+from bucoffea.helpers.dataset import extract_year, extract_runperiod
 from bucoffea.helpers.paths import bucoffea_path
 from bucoffea.helpers.gen import find_first_parent
 from bucoffea.monojet.definitions import accu_int, defaultdict_accumulator_of_empty_column_accumulator_float16, defaultdict_accumulator_of_empty_column_accumulator_int64,defaultdict_accumulator_of_empty_column_accumulator_bool
@@ -482,3 +482,47 @@ def met_trigger_sf(weights, diak4, df, apply_categorized=True):
     sf[np.isnan(sf) | np.isinf(sf)] == 1
     weights.add("trigger_met", sf)
 
+def jme_map_weights(weights, diak4, evaluator, df):
+    '''
+    Get a weight for the event, according to eta-phi of the two leading jets.
+    To assign the weight, use hot/cold maps provided by JME.
+    '''
+    year = df['year']
+
+    # Extract run period for data
+    if df['is_data']:
+        run_period = extract_runperiod(df['dataset'])
+        if year == 2017 and run_period in ['D', 'E']:
+            run_suffix = '_runDE'
+        else:
+            run_suffix = f'_run{run_period}'
+
+    else:
+        run_suffix = ''
+
+    # Extract the weights for leading and trailing jet in the event
+    datamc_suffix = '_data' if df['is_data'] else '_mc'
+
+    categories = [
+        f'hotTowers_dR0{datamc_suffix}{run_suffix}',
+        f'hotTowers_dR2{datamc_suffix}{run_suffix}',
+        f'coldTowers_dR0{datamc_suffix}{run_suffix}',
+        f'coldTowers_dR2{datamc_suffix}{run_suffix}',
+    ]
+
+    event_weights = np.ones(df.size)
+
+    for category in categories:
+        w_ak40 = 1 - evaluator[category](diak4.i0.eta, diak4.i0.phi).prod()
+        w_ak41 = 1 - evaluator[category](diak4.i1.eta, diak4.i1.phi).prod()
+
+        if not df['is_data']:
+            event_weights = event_weights * (w_ak40 * w_ak41)
+        # For data, assign a weight of 0 (discard event) if jet is located in any of these hot/cold zones
+        else:
+            good_event = ((w_ak40 != 0.) & (w_ak41 != 0.)).any() 
+            event_weights *= np.where(good_event, 1, 0)
+
+    weights.add('jme_maps', event_weights)
+
+    return weights

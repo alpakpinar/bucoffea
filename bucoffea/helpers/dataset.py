@@ -53,6 +53,11 @@ def extract_year(dataset):
             return 2010+x
     raise RuntimeError("Could not determine dataset year")
 
+def extract_runperiod(dataset):
+    '''For data, extract the run period.'''
+    runperiod = re.findall('\d+([A-Z])', dataset)[0]
+    return runperiod
+
 def rand_dataset_dict(keys, year):
     '''
     Creates a map of dataset names -> short dataset names for randomized parameter samples

@@ -53,7 +53,8 @@ from bucoffea.vbfhinv.definitions import (
                                            vbfhinv_accumulator,
                                            vbfhinv_regions,
                                            ak4_em_frac_weights,
-                                           met_trigger_sf
+                                           met_trigger_sf,
+                                           jme_map_weights
                                          )
 
 def trigger_selection(selection, df, cfg):
@@ -406,6 +407,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
             weights = ak4_em_frac_weights(weights, diak4, evaluator)
             if not (gen_v_pt is None):
                 weights = theory_weights_vbf(weights, df, evaluator, gen_v_pt, df['mjj_gen'])
+
+        # JME hot/cold map weights
+        weights = jme_map_weights(weights, diak4, evaluator, df)
 
         # Save per-event values for synchronization
         if cfg.RUN.KINEMATICS.SAVE:
