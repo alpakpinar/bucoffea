@@ -502,6 +502,72 @@ era2017:
       histogram: sf_neg_endcap_2017
       file: data/sf/ak4/jet_id_sf_for_endcaps.root
 
+    # JME hot/cold jet maps
+    # Data
+    hotTowers_dR0_data_runB:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/hotjets-17runB_dR0.root
+    hotTowers_dR2_data_runB:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/hotjets-17runB_dR2.root
+    hotTowers_dR0_data_runC:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/hotjets-17runC_dR0.root
+    hotTowers_dR2_data_runC:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/hotjets-17runC_dR2.root
+    hotTowers_dR0_data_runDE:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/hotjets-17runDE_dR0.root
+    hotTowers_dR2_data_runDE:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/hotjets-17runDE_dR2.root
+    hotTowers_dR0_data_runF:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/hotjets-17runF_dR0.root
+    hotTowers_dR2_data_runF:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/hotjets-17runF_dR2.root
+
+    coldTowers_dR0_data_runB:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/coldjets-17runB_dR0.root
+    coldTowers_dR2_data_runB:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/coldjets-17runB_dR2.root
+    coldTowers_dR0_data_runC:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/coldjets-17runC_dR0.root
+    coldTowers_dR2_data_runC:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/coldjets-17runC_dR2.root
+    coldTowers_dR0_data_runDE:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/coldjets-17runDE_dR0.root
+    coldTowers_dR2_data_runDE:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/coldjets-17runDE_dR2.root
+    coldTowers_dR0_data_runF:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/coldjets-17runF_dR0.root
+    coldTowers_dR2_data_runF:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/coldjets-17runF_dR2.root
+
+    # MC
+    hotTowers_dR0_mc:
+      histogram: all
+      file: data/sf/ak4/jmemaps/mc/hotTowers_dR0_2017.root
+    hotTowers_dR2_mc:
+      histogram: all
+      file: data/sf/ak4/jmemaps/mc/hotTowers_dR2_2017.root
+    coldTowers_dR0_mc:
+      histogram: all
+      file: data/sf/ak4/jmemaps/mc/coldTowers_dR0_2017.root
+    coldTowers_dR2_mc:
+      histogram: all
+      file: data/sf/ak4/jmemaps/mc/coldTowers_dR2_2017.root
+
 era2018:
   triggers:
     met:
@@ -648,3 +714,69 @@ era2018:
     ak4_em_frac_sf_neg_endcap:
       histogram: sf_neg_endcap_2018
       file: data/sf/ak4/jet_id_sf_for_endcaps.root
+    
+    # JME hot/cold jet maps
+    # Data
+    hotTowers_dR0_data_runA:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/hotjets-18runA_dR0.root
+    hotTowers_dR2_data_runA:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/hotjets-18runA_dR2.root
+    hotTowers_dR0_data_runB:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/hotjets-18runB_dR0.root
+    hotTowers_dR2_data_runB:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/hotjets-18runB_dR2.root
+    hotTowers_dR0_data_runC:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/hotjets-18runC_dR0.root
+    hotTowers_dR2_data_runC:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/hotjets-18runC_dR2.root
+    hotTowers_dR0_data_runD:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/hotjets-18runD_dR0.root
+    hotTowers_dR2_data_runD:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/hotjets-18runD_dR2.root
+
+    coldTowers_dR0_data_runA:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/coldjets-18runA_dR0.root
+    coldTowers_dR2_data_runA:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/coldjets-18runA_dR2.root
+    coldTowers_dR0_data_runB:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/coldjets-18runB_dR0.root
+    coldTowers_dR2_data_runB:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/coldjets-18runB_dR2.root
+    coldTowers_dR0_data_runC:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/coldjets-18runC_dR0.root
+    coldTowers_dR2_data_runC:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/coldjets-18runC_dR2.root
+    coldTowers_dR0_data_runD:
+      histogram: mapdR0
+      file: data/sf/ak4/jmemaps/data/coldjets-18runD_dR0.root
+    coldTowers_dR2_data_runD:
+      histogram: mapdR2
+      file: data/sf/ak4/jmemaps/data/coldjets-18runD_dR2.root
+
+    # MC
+    hotTowers_dR0_mc:
+      histogram: all
+      file: data/sf/ak4/jmemaps/mc/hotTowers_dR0_2018.root
+    hotTowers_dR2_mc:
+      histogram: all
+      file: data/sf/ak4/jmemaps/mc/hotTowers_dR2_2018.root
+    coldTowers_dR0_mc:
+      histogram: all
+      file: data/sf/ak4/jmemaps/mc/coldTowers_dR0_2018.root
+    coldTowers_dR2_mc:
+      histogram: all
+      file: data/sf/ak4/jmemaps/mc/coldTowers_dR2_2018.root
