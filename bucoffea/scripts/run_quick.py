@@ -18,8 +18,8 @@ def parse_commandline():
 def main():
 
     fileset = {
-        "VBF_HToInvisible_M125_pow_pythia8_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/03Sep20v7/VBF_HToInvisible_M125_13TeV_TuneCP5_powheg_pythia8/VBF_HToInvisible_M125_pow_pythia8_2017/200925_184136/0000/tree_1.root"
+        "MET_ver1_2017D" : [
+            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/03Sep20v7/MET/MET_ver1_2017D/200925_205524/0000/tree_1.root"
         ]
     }
 
