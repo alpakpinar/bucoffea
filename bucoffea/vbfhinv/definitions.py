@@ -485,10 +485,11 @@ def met_trigger_sf(weights, diak4, df, apply_categorized=True):
     sf[np.isnan(sf) | np.isinf(sf)] == 1
     weights.add("trigger_met", sf)
 
-def jme_map_weights(weights, diak4, evaluator, df):
+def jme_map_weights(weights, diak4, evaluator, df, categories=['hotTowers_dR0']):
     '''
     Get a weight for the event, according to eta-phi of the two leading jets.
     To assign the weight, use hot/cold maps provided by JME.
+    The list of maps going to be used will be given in "categories" argument.
     '''
     year = df['year']
 
@@ -506,16 +507,15 @@ def jme_map_weights(weights, diak4, evaluator, df):
     # Extract the weights for leading and trailing jet in the event
     datamc_suffix = '_data' if df['is_data'] else '_mc'
 
-    categories = [
-        f'hotTowers_dR0{datamc_suffix}{run_suffix}',
-        f'hotTowers_dR2{datamc_suffix}{run_suffix}',
-        f'coldTowers_dR0{datamc_suffix}{run_suffix}',
-        f'coldTowers_dR2{datamc_suffix}{run_suffix}',
+    categories_to_run = [
+        f'{category}{datamc_suffix}{run_suffix}' for category in categories
     ]
+
+    pprint(categories_to_run)
 
     event_weights = np.ones(df.size)
 
-    for category in categories:
+    for category in categories_to_run:
         w_ak40 = 1 - evaluator[category](diak4.i0.eta, diak4.i0.phi).prod()
         w_ak41 = 1 - evaluator[category](diak4.i1.eta, diak4.i1.phi).prod()
 
