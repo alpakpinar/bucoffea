@@ -237,6 +237,15 @@ def vbfhinv_regions(cfg):
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation']
 
+    # Signal regions with specific JME maps applied
+    regions['sr_vbf_hotTowers_dR0'] = copy.deepcopy(regions['sr_vbf'])
+    regions['sr_vbf_hotTowers_dR2'] = copy.deepcopy(regions['sr_vbf'])
+    regions['sr_vbf_coldTowers_dR0'] = copy.deepcopy(regions['sr_vbf'])
+    regions['sr_vbf_coldTowers_dR2'] = copy.deepcopy(regions['sr_vbf'])
+
+    regions['sr_vbf_hotAndColdTowers_dR0'] = copy.deepcopy(regions['sr_vbf'])
+    regions['sr_vbf_hotAndColdTowers_dR2'] = copy.deepcopy(regions['sr_vbf'])
+    
     # For sync mode
     if cfg and cfg.RUN.SYNC:
         regions['cr_sync'] = [
@@ -510,8 +519,6 @@ def jme_map_weights(weights, diak4, evaluator, df, categories=['hotTowers_dR0'])
     categories_to_run = [
         f'{category}{datamc_suffix}{run_suffix}' for category in categories
     ]
-
-    pprint(categories_to_run)
 
     event_weights = np.ones(df.size)
 

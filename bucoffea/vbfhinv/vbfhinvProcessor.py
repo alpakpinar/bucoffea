@@ -408,9 +408,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             if not (gen_v_pt is None):
                 weights = theory_weights_vbf(weights, df, evaluator, gen_v_pt, df['mjj_gen'])
 
-        # JME hot/cold map weights
-        weights = jme_map_weights(weights, diak4, evaluator, df)
-
         # Save per-event values for synchronization
         if cfg.RUN.KINEMATICS.SAVE:
             for event in cfg.RUN.KINEMATICS.EVENTS:
@@ -460,6 +457,27 @@ class vbfhinvProcessor(processor.ProcessorABC):
         for region, cuts in regions.items():
             exclude = [None]
             region_weights = copy.deepcopy(weights)
+
+            # JME map weights
+            jme_map_categories = {
+                'sr_vbf_hotTowers_dR0' : ['hotTowers_dR0'],
+                'sr_vbf_hotTowers_dR2' : ['hotTowers_dR2'],
+                'sr_vbf_coldTowers_dR0' : ['coldTowers_dR0'],
+                'sr_vbf_coldTowers_dR2' : ['coldTowers_dR2'],
+                'sr_vbf_hotAndColdTowers_dR0' : ['hotTowers_dR0', 'coldTowers_dR0'],
+                'sr_vbf_hotAndColdTowers_dR2' : ['hotTowers_dR2', 'coldTowers_dR2'],
+            }
+
+            if region in jme_map_categories.keys():
+                region_weights = jme_map_weights(
+                                        region_weights,
+                                        diak4,
+                                        evaluator,
+                                        df,
+                                        categories=jme_map_categories[region]
+                                        )
+            else:
+                pass
 
             if not df['is_data']:
                 ### Trigger weights
