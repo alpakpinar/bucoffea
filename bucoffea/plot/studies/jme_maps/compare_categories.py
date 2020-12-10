@@ -49,19 +49,23 @@ def compare_categories(acc, outtag, year, dr_tag, categories, distribution='mjj'
     centers = h.axis('mjj').centers(overflow='over')
 
     sumw = {}
+    sumw2 = {}
 
     for category in categories:
         _h = h.integrate('region', f'sr_vbf{category}')
         if category == '':
             hist.plot1d(_h, ax=ax, overflow='over', error_opts=data_err_opts)
-            legend_labels.append('Nominal')
         else:
             hist.plot1d(_h, ax=ax, overflow='over', clear=False)
-            legend_labels.append(category.replace('_', '', 1))
+            legend_labels.append(category.replace('_', '', 1) + ' veto')
 
-        sumw[category] = _h.values()[()]
+        sumw[category], sumw2[category] = _h.values(overflow='over', sumw2=True)[()]
+    
+    legend_labels.append('No JME map veto')
 
     ax.legend(labels=legend_labels)
+    ax.set_yscale('log')
+    ax.set_ylim(1e-2, 1e6)
 
     dataset_tags = {
         'MET' : 'Data',
@@ -85,16 +89,19 @@ def compare_categories(acc, outtag, year, dr_tag, categories, distribution='mjj'
     # Plot ratios
     sumw_nom = sumw['']
     data_err_opts.pop('color')
-    
+
     for category in categories:
         if category == '':
             continue
         r = sumw[category] / sumw_nom
 
-        rax.plot(centers, r, **data_err_opts)
+        # Error on ratio
+        rerr = np.sqrt(sumw2[category]) / sumw_nom
+
+        rax.errorbar(centers, r, yerr=rerr, **data_err_opts)
 
     rax.set_xlabel(r'$M_{jj} \ (GeV)$')
-    rax.set_ylabel('Ratio to Nominal')
+    rax.set_ylabel('Ratio to "no JME veto"')
     rax.grid(True)
     rax.set_ylim(0.5,1.5)
 
@@ -105,7 +112,7 @@ def compare_categories(acc, outtag, year, dr_tag, categories, distribution='mjj'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'comparison_{dr_tag}_{distribution}.pdf')
+    outpath = pjoin(outdir, f'comparison_{dataset}_{dr_tag}_{distribution}_{year}.pdf')
     fig.savefig(outpath)
     plt.close(fig)
     print(f'File saved: {outpath}')
@@ -129,13 +136,15 @@ def main():
     ]
 
     for year in [2017, 2018]:
-        for idx, categories in enumerate(jme_categories):
-            compare_categories(acc, outtag,
-                    year=year,
-                    categories=categories,
-                    distribution='mjj',
-                    dr_tag=dr_tags[idx]
-                    )
+        for dataset in ['MET', 'VBF']:
+            for idx, categories in enumerate(jme_categories):
+                compare_categories(acc, outtag,
+                        year=year,
+                        categories=categories,
+                        distribution='mjj',
+                        dataset=dataset,
+                        dr_tag=dr_tags[idx]
+                        )
 
 if __name__ == '__main__':
     main()
