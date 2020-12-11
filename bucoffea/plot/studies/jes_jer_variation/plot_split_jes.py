@@ -163,6 +163,9 @@ def plot_split_jecunc(acc, out_tag, dataset_tag, bins, bin_tag, year, plot_total
         var_label = region.name.replace(f'{region_to_use}{region_suffix}_', '')
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
 
+        if 'jer' in var_label:
+            var_label = re.sub('jer', f'jer_{year}', var_label)
+
         if not plot_smooth:
             if var_label_skimmed in vars_to_plot:
                 hist.plotratio(h_var, h_nom, ax=ax, clear=False, label=var_label, unc='num',  guide_opts={}, error_opts=data_err_opts)

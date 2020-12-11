@@ -162,6 +162,10 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
         var_label = region.name.replace(f'{region_num}{region_suffix}_', '')
         var_label_skimmed = re.sub('(Up|Down)', '', var_label)
 
+        var_label_for_root = var_label
+        if 'jer' in var_label:
+            var_label_for_root = re.sub('jer', f'jer_{year}', var_label)
+
         region_for_num = f'{region_num}{region_suffix}_{var_label}'
         region_for_den = f'{region_den}{region_suffix}_{var_label}'
 
@@ -175,7 +179,7 @@ def plot_split_jecunc_ratios(acc, out_tag, transfer_factor_tag, dataset_info, ye
 
         # Save the uncertainties to an output root file (do not save combined lepton channels)
         if not 'zll' in transfer_factor_tag:
-            hist_name = f'{transfer_factor_tag}_{process}_{var_label}'
+            hist_name = f'{transfer_factor_tag}_{process}_{var_label_for_root}'
             outputrootfile[hist_name] = (dratio, edges)
     
         # Store the uncs and variations
