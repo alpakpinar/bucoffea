@@ -35,7 +35,7 @@ def preprocess(h, acc, distribution, region):
 
     return h
 
-def compare_data_mc(acc_dict, year, categories, distribution='mjj', region='sr_vbf'):
+def compare_data_mc(acc_dict, year, category_tag, categories, distribution='mjj', region='sr_vbf'):
     '''Compare data/MC ratio for the given region for several JME map vetoes.'''
     h_dict = {}
     for category in categories:
@@ -74,7 +74,7 @@ def compare_data_mc(acc_dict, year, categories, distribution='mjj', region='sr_v
     ax.axhline(1, xmin=0, xmax=1, color='k', lw=2)
 
     # Save figure
-    outdir = './output/data_mc'
+    outdir = f'./output/data_mc/{category_tag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -89,18 +89,29 @@ def main():
         'noveto' : dir_archive( bucoffea_path('submission/merged_2020-12-03_vbfhinv_run_02Dec20') ),
         'veto_hotTowers_dR0' : dir_archive( bucoffea_path('submission/merged_2020-12-10_vbfhinv_veto_hotTowers_dR0') ),
         'veto_hotTowers_dR2' : dir_archive( bucoffea_path('submission/merged_2020-12-10_vbfhinv_veto_hotTowers_dR2') ),
+        'veto_coldTowers_dR0' : dir_archive( bucoffea_path('submission/merged_2020-12-10_vbfhinv_veto_coldTowers_dR0') ),
+        'veto_coldTowers_dR2' : dir_archive( bucoffea_path('submission/merged_2020-12-10_vbfhinv_veto_coldTowers_dR2') ),
+        'veto_hotAndColdTowers_dR0' : dir_archive( bucoffea_path('submission/merged_2020-12-10_vbfhinv_veto_hotAndColdTowers_dR0') ),
+        'veto_hotAndColdTowers_dR2' : dir_archive( bucoffea_path('submission/merged_2020-12-10_vbfhinv_veto_hotAndColdTowers_dR2') ),
     }
 
     for acc in acc_dict.values():
         acc.load('sumw')
         acc.load('sumw2')
 
+    categories_to_compare = {
+        'hotMap'    : ('noveto', 'veto_hotTowers_dR0', 'veto_hotTowers_dR2'),
+        'coldMap'   : ('noveto', 'veto_coldTowers_dR0', 'veto_coldTowers_dR2'),
+        'hotAndColdMap' : ('noveto', 'veto_hotAndColdTowers_dR0', 'veto_hotAndColdTowers_dR2'),
+    }
+
     for year in [2017, 2018]:
-        for distribution in ['mjj', 'detajj']:
+        for category_tag, categories in categories_to_compare.items():
             compare_data_mc(acc_dict, 
                     year=year, 
-                    categories=acc_dict.keys(),
-                    distribution=distribution
+                    category_tag=category_tag,
+                    categories=categories,
+                    distribution='mjj'
                     )
 
 if __name__ == '__main__':
