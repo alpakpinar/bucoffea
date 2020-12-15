@@ -225,14 +225,15 @@ def vbfhinv_regions(cfg):
         'veto_tau',
         'veto_b',
         'max_neEmEF',
-        'veto_hfhf'
+        'veto_hfhf',
+        'full_hornveto'
     ]
 
     regions = {}
     regions['inclusive'] = ['inclusive']
 
     # Signal regions (v = mono-V, j = mono-jet)
-    regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation']
+    regions['sr_vbf'] = ['trig_met','metphihemextveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation']
 
     # For sync mode
     if cfg and cfg.RUN.SYNC:

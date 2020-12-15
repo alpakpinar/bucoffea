@@ -271,6 +271,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
         trailing_jet_in_horn = ((diak4.i1.abseta<3.2) & (diak4.i1.abseta>2.8)).any()
 
         selection.add('hornveto', (df['dPFTkSR'] < 0.8) | ~(leading_jet_in_horn | trailing_jet_in_horn))
+        selection.add('full_hornveto', ~(leading_jet_in_horn | trailing_jet_in_horn))
 
         if df['year'] == 2018:
             if df['is_data']:
