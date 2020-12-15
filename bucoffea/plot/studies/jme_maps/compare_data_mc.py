@@ -22,6 +22,18 @@ xlabels = {
     'detajj' : r'$\Delta\eta_{jj}$',
 }
 
+def title_from_region(region):
+    mapping = {
+        'sr_vbf' : 'Signal Region',
+        'cr_1m_vbf' : r'$1\mu$ CR',
+        'cr_1e_vbf' : r'$1e$ CR',
+        'cr_2m_vbf' : r'$2\mu$ CR',
+        'cr_2e_vbf' : r'$2e$ CR',
+        'cr_g_vbf' : r'$\gamma$ CR',
+    }
+
+    return mapping[region]
+
 def preprocess(h, acc, distribution, region):
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
@@ -42,8 +54,26 @@ def compare_data_mc(acc_dict, year, category_tag, categories, distribution='mjj'
         acc_dict[category].load(distribution)
         h_dict[category] = preprocess(acc_dict[category][distribution], acc_dict[category], distribution, region)
 
-    data = f'MET_{year}'
-    mc = re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|DYJetsToLL_M-50_HT_MLM.*|WJetsToLNu.*HT.*).*{year}')
+    d_data = {
+        'sr_vbf' : f'MET_{year}',
+        'cr_1m_vbf' : f'MET_{year}',
+        'cr_2m_vbf' : f'MET_{year}',
+        'cr_1e_vbf' : f'EGamma_{year}',
+        'cr_2e_vbf' : f'EGamma_{year}',
+        'cr_g_vbf' : f'EGamma_{year}',
+    }
+
+    d_mc = {
+        'sr_vbf' : re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
+        'cr_1m_vbf' : re.compile(f'(EWKW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
+        'cr_1e_vbf' : re.compile(f'(EWKW.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}'),
+        'cr_2m_vbf' : re.compile(f'(EWKZ.*ZToLL.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
+        'cr_2e_vbf' : re.compile(f'(EWKZ.*ZToLL.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*).*{year}'),
+        'cr_g_vbf' : re.compile(f'(GJets_(DR-0p4|SM_5f_EWK).*|QCD_data.*|WJetsToLNu.*HT.*).*{year}'),
+    }
+
+    data = d_data[region]
+    mc = d_mc[region]
 
     fig, ax = plt.subplots()
 
@@ -67,9 +97,9 @@ def compare_data_mc(acc_dict, year, category_tag, categories, distribution='mjj'
 
     ax.set_xlabel(xlabels[distribution], fontsize=14)
     ax.set_ylabel('Data / MC', fontsize=14)
-    ax.set_ylim(0.8,1.5)
+    ax.set_ylim(0.5,1.5)
     ax.legend()
-    ax.set_title(f'Data/MC in SR: {year}', fontsize=14)
+    ax.set_title(f'Data/MC in {title_from_region(region)}: {year}', fontsize=14)
 
     ax.axhline(1, xmin=0, xmax=1, color='k', lw=2)
 
@@ -105,14 +135,25 @@ def main():
         'hotAndColdMap' : ('noveto', 'veto_hotAndColdTowers_dR0', 'veto_hotAndColdTowers_dR2'),
     }
 
+    regions = [
+        'sr_vbf',
+        'cr_1m_vbf',
+        'cr_1e_vbf',
+        'cr_2m_vbf',
+        'cr_2e_vbf',
+        'cr_g_vbf',
+    ]
+
     for year in [2017, 2018]:
-        for category_tag, categories in categories_to_compare.items():
-            compare_data_mc(acc_dict, 
-                    year=year, 
-                    category_tag=category_tag,
-                    categories=categories,
-                    distribution='mjj'
-                    )
+        for region in regions:
+            for category_tag, categories in categories_to_compare.items():
+                compare_data_mc(acc_dict, 
+                        year=year, 
+                        category_tag=category_tag,
+                        categories=categories,
+                        distribution='mjj',
+                        region=region
+                        )
 
 if __name__ == '__main__':
     main()
