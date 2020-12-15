@@ -209,6 +209,9 @@ def vbfhinv_regions(cfg):
     common_cuts = [
         'veto_ele',
         'veto_muo',
+        'veto_photon',
+        'veto_tau',
+        'veto_b',
         'filt_met',
         'mindphijr',
         'recoil',
@@ -221,9 +224,6 @@ def vbfhinv_regions(cfg):
         'mjj',
         'dphijj',
         'detajj',
-        'veto_photon',
-        'veto_tau',
-        'veto_b',
         'max_neEmEF',
         'veto_hfhf',
         'full_hornveto'
