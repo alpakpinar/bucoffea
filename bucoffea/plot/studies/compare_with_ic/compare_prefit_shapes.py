@@ -282,9 +282,9 @@ def compare_prefit_shapes(ic_file, bu_file, tag, year):
             if process in ['top', 'diboson', 'qcd']:
                 rax.set_ylim(0.8,1.2)
             else:
-                rax.set_ylim(0.94,1.06)
-                loc = matplotlib.ticker.MultipleLocator(base=0.02)
-                rax.yaxis.set_major_locator(loc)
+                rax.set_ylim(0.5,1.5)
+                # loc = matplotlib.ticker.MultipleLocator(base=0.02)
+                # rax.yaxis.set_major_locator(loc)
 
             rax.set_ylabel('BU / IC')
             rax.set_xlabel(r'$M_{jj} \ (GeV)$')
