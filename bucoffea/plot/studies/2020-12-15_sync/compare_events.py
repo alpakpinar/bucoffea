@@ -42,7 +42,7 @@ def get_merged_df(bu_file, ic_file):
 
     return merged_df
 
-def compare_jet_pt(merged_df):
+def compare_jet_pt(merged_df, jobtag):
     '''Compare BU and IC jet pts.'''
     leading_jet_pts = {
         'BU' : merged_df['leadak4_pt_bu'],
@@ -58,7 +58,7 @@ def compare_jet_pt(merged_df):
 
     # Plot the % differences
     fig, ax = plt.subplots()
-    bins = np.linspace(-1,1)
+    bins = np.linspace(-0.3,0.3)
     ax.hist(leading_jet_pt_diff, bins=bins, label=r'Leading jet $p_T$', histtype='step')
     ax.hist(trailing_jet_pt_diff, bins=bins, label=r'Trailing jet $p_T$', histtype='step')
 
@@ -66,10 +66,21 @@ def compare_jet_pt(merged_df):
     ax.set_ylabel('Counts')
     ax.legend()
 
-    fig.savefig('test.pdf')
+    # Save figure
+    outdir = f'./output/{jobtag}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outpath = pjoin(outdir, f'jet_pt_comp.pdf')
+    fig.savefig(outpath)
+    plt.close(fig)
+
+    print(f'File saved: {outpath}')
 
 def main():
     inpath = './trees/16Dec20_qcdW'
+    jobtag = os.path.basename(inpath)
+
     bu_file = uproot.open( 
         pjoin(inpath, 'tree_WJetsToLNu_HT-600To800_2017.root')
     )
@@ -78,8 +89,7 @@ def main():
     )
 
     merged_df = get_merged_df(bu_file, ic_file)
-
-    compare_jet_pt(merged_df)
+    compare_jet_pt(merged_df, jobtag)
 
 if __name__ == '__main__':
     main()
