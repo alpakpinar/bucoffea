@@ -55,6 +55,35 @@ def get_merged_df(bu_file, ic_file, region):
 
     return merged_df
 
+def plot_jet_pt_dist(merged_df, jobtag, region, jet='trailak4'):
+    '''Plot distribution of jet pts.'''
+    jet_pt_bu = merged_df[f'{jet}_pt_bu']
+    jet_pt_ic = merged_df[f'{jet}_pt_ic']
+
+    fig, ax = plt.subplots()
+    bins = np.arange(40,800,20)
+
+    ax.hist(jet_pt_bu, bins=bins, label='BU', histtype='step')
+    ax.hist(jet_pt_ic, bins=bins, label='IC', histtype='step')
+
+    if jet == 'leadak4':
+        xlabel = r'Leading Jet $p_T$ (GeV)'
+    else:
+        xlabel = r'Trailing Jet $p_T$ (GeV)'
+    
+    ax.set_xlabel(xlabel, fontsize=14)
+    ax.set_ylabel('Counts', fontsize=14)
+
+    outdir = f'./output/{jobtag}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outpath = pjoin(outdir, f'{jet}_pt_comparison_{region}.pdf')
+    fig.savefig(outpath)
+    plt.close(fig)
+
+    print(f'File saved: {outpath}')
+
 def compare_jet_pt(merged_df, jobtag, region):
     '''Compare BU and IC jet pts.'''
     leading_jet_pts = {
@@ -68,6 +97,9 @@ def compare_jet_pt(merged_df, jobtag, region):
 
     leading_jet_pt_diff = (leading_jet_pts['BU'] - leading_jet_pts['IC']) / leading_jet_pts['BU']
     trailing_jet_pt_diff = (trailing_jet_pts['BU'] - trailing_jet_pts['IC']) / trailing_jet_pts['BU']
+
+    merged_df['leading_jet_pt_diff'] = leading_jet_pt_diff
+    merged_df['trailing_jet_pt_diff'] = trailing_jet_pt_diff
 
     # Plot the % differences
     fig, ax = plt.subplots()
@@ -96,6 +128,9 @@ def compare_jet_pt(merged_df, jobtag, region):
 
     print(f'File saved: {outpath}')
 
+    # Return the updated merged df
+    return merged_df
+
 def main():
     # Region: 1m CR or inclusive?
     region = sys.argv[1]
@@ -112,7 +147,10 @@ def main():
     )
 
     merged_df = get_merged_df(bu_file, ic_file, region)
-    compare_jet_pt(merged_df, jobtag, region)
+    merged_df = compare_jet_pt(merged_df, jobtag, region)
+
+    for jet in ['leadak4', 'trailak4']:
+        plot_jet_pt_dist(merged_df, jobtag, region, jet=jet)
 
 if __name__ == '__main__':
     main()
