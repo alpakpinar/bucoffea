@@ -515,6 +515,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             if cfg.RUN.SAVE.TREE:
                 if region in ['cr_1m_vbf', 'cr_sync_vbf']:
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
+                    output['tree_int64'][region]["run"]       +=  processor.column_accumulator(df["run"][mask])
+                    output['tree_int64'][region]["lumi"]       +=  processor.column_accumulator(df["luminosityBlock"][mask])
                     if df['has_lhe_v_pt']:
                         output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
                         output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
