@@ -28,8 +28,17 @@ columns_ic = {
     'diCleanJet_M' : 'mjj',
 }
 
-def get_merged_df(bu_file, ic_file):
-    df_bu = bu_file['cr_1m_vbf'].pandas.df()[columns_bu]
+def get_merged_df(bu_file, ic_file, region):
+    bu_regions = {
+        'singlemu'  : 'cr_1m_vbf',
+        'inclusive' : 'cr_sync_vbf'
+    }
+    try:
+        bu_region = bu_regions[region]
+    except KeyError:
+        raise ValueError(f'Invalid region: {region}')
+
+    df_bu = bu_file[bu_region].pandas.df()[columns_bu]
     df_ic = ic_file['Events'].pandas.df()[columns_ic.keys()]
 
     # Rename IC columns so that they are compatible with BU
@@ -42,7 +51,7 @@ def get_merged_df(bu_file, ic_file):
 
     return merged_df
 
-def compare_jet_pt(merged_df, jobtag):
+def compare_jet_pt(merged_df, jobtag, region):
     '''Compare BU and IC jet pts.'''
     leading_jet_pts = {
         'BU' : merged_df['leadak4_pt_bu'],
@@ -66,30 +75,40 @@ def compare_jet_pt(merged_df, jobtag):
     ax.set_ylabel('Counts')
     ax.legend()
 
+    title = r'$\approx$Inclusive QCD W' if region == 'inclusive' else r'QCD W Events Passing $1\mu$ CR'
+    ax.set_title(title, fontsize=14)
+
+    ax.set_yscale('log')
+    ax.set_ylim(1e-3, 1e5)
+
     # Save figure
     outdir = f'./output/{jobtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    outpath = pjoin(outdir, f'jet_pt_comp.pdf')
+    outpath = pjoin(outdir, f'jet_pt_comp_{region}.pdf')
     fig.savefig(outpath)
     plt.close(fig)
 
     print(f'File saved: {outpath}')
 
 def main():
+    # Region: 1m CR or inclusive?
+    region = sys.argv[1]
     inpath = './trees/16Dec20_qcdW'
     jobtag = os.path.basename(inpath)
 
     bu_file = uproot.open( 
         pjoin(inpath, 'tree_WJetsToLNu_HT-600To800_2017.root')
     )
+    ic_filetag = '_inclusive' if region == 'inclusive' else ''
+
     ic_file = uproot.open( 
-        pjoin(inpath, 'Skim_WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8.root')
+        pjoin(inpath, f'Skim_WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8{ic_filetag}.root')
     )
 
-    merged_df = get_merged_df(bu_file, ic_file)
-    compare_jet_pt(merged_df, jobtag)
+    merged_df = get_merged_df(bu_file, ic_file, region)
+    compare_jet_pt(merged_df, jobtag, region)
 
 if __name__ == '__main__':
     main()
