@@ -15,8 +15,12 @@ columns_bu = [
     'run',
     'lumi',
     'leadak4_pt',
+    'leadak4_pt_nosmear',
+    'leadak4_pt_raw',
     'leadak4_eta',
     'trailak4_pt',
+    'trailak4_pt_nosmear',
+    'trailak4_pt_raw',
     'trailak4_eta',
     'mjj',
 ]
@@ -88,15 +92,20 @@ def compare_jet_pt(merged_df, jobtag, region):
     '''Compare BU and IC jet pts.'''
     leading_jet_pts = {
         'BU' : merged_df['leadak4_pt_bu'],
+        'BU unsmeared' : merged_df['leadak4_pt_nosmear'],
         'IC' : merged_df['leadak4_pt_ic'],
     } 
     trailing_jet_pts = {
         'BU' : merged_df['trailak4_pt_bu'],
+        'BU unsmeared' : merged_df['trailak4_pt_nosmear'],
         'IC' : merged_df['trailak4_pt_ic'],
     } 
 
     leading_jet_pt_diff = (leading_jet_pts['BU'] - leading_jet_pts['IC']) / leading_jet_pts['BU']
     trailing_jet_pt_diff = (trailing_jet_pts['BU'] - trailing_jet_pts['IC']) / trailing_jet_pts['BU']
+
+    leading_jet_pt_unsmeared_diff = (leading_jet_pts['BU unsmeared'] - leading_jet_pts['IC']) / leading_jet_pts['BU unsmeared']
+    trailing_jet_pt_unsmeared_diff = (trailing_jet_pts['BU unsmeared'] - trailing_jet_pts['IC']) / trailing_jet_pts['BU unsmeared']
 
     merged_df['leading_jet_pt_diff'] = leading_jet_pt_diff
     merged_df['trailing_jet_pt_diff'] = trailing_jet_pt_diff
@@ -107,6 +116,9 @@ def compare_jet_pt(merged_df, jobtag, region):
     ax.hist(leading_jet_pt_diff, bins=bins, label=r'Leading jet $p_T$', histtype='step')
     ax.hist(trailing_jet_pt_diff, bins=bins, label=r'Trailing jet $p_T$', histtype='step')
 
+    ax.hist(leading_jet_pt_unsmeared_diff, bins=bins, label=r'Leading jet $p_T$: BU non-smeared', histtype='step')
+    ax.hist(trailing_jet_pt_unsmeared_diff, bins=bins, label=r'Trailing jet $p_T$: BU non-smeared', histtype='step')
+
     ax.set_xlabel('(BU-IC) / BU')
     ax.set_ylabel('Counts')
     ax.legend()
@@ -115,7 +127,7 @@ def compare_jet_pt(merged_df, jobtag, region):
     ax.set_title(title, fontsize=14)
 
     ax.set_yscale('log')
-    ax.set_ylim(1e-3, 1e5)
+    ax.set_ylim(1e-3, 1e8)
 
     # Save figure
     outdir = f'./output/{jobtag}'
