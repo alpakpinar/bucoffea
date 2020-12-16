@@ -513,7 +513,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             mask = selection.all(*cuts)
 
             if cfg.RUN.SAVE.TREE:
-                if region in ['inclusive', 'cr_1m_vbf']:
+                if region in ['cr_1m_vbf']:
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
                     if df['has_lhe_v_pt']:
                         output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
