@@ -12,6 +12,8 @@ pjoin = os.path.join
 
 columns_bu = [
     'event',
+    'run',
+    'lumi',
     'leadak4_pt',
     'leadak4_eta',
     'trailak4_pt',
@@ -21,6 +23,8 @@ columns_bu = [
 
 columns_ic = {
     'event' : 'event',
+    'run' : 'run',
+    'luminosityBlock' : 'lumi',
     'Leading_jet_pt' : 'leadak4_pt',
     'Leading_jet_eta' : 'leadak4_eta',
     'Subleading_jet_pt' : 'trailak4_pt',
@@ -47,7 +51,7 @@ def get_merged_df(bu_file, ic_file, region):
         inplace=True
     )
 
-    merged_df = pd.merge(df_bu, df_ic, on='event', suffixes=['_bu', '_ic'])
+    merged_df = pd.merge(df_bu, df_ic, on=['event', 'run', 'lumi'], suffixes=['_bu', '_ic'])
 
     return merged_df
 
