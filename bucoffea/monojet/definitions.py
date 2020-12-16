@@ -402,6 +402,7 @@ def setup_candidates(df, cfg):
         abseta=np.abs(df['Jet_eta']),
         phi=df['Jet_phi'],
         mass=np.zeros_like(df['Jet_pt']),
+        jerfac=df['Jet_corr_JER'],
         looseId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
         tightId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
         puid=((df['Jet_puId']&2>0) | ((df[f'Jet_pt{jes_suffix}'] if (df['is_data'] or cfg.AK4.JER) else df[f'Jet_pt{jes_suffix}']/df['Jet_corr_JER'])>50)), # medium pileup jet ID
