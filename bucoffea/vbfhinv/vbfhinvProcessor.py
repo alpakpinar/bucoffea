@@ -513,7 +513,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             mask = selection.all(*cuts)
 
             if cfg.RUN.SAVE.TREE:
-                if region in ['cr_1m_vbf', 'cr_sync_vbf']:
+                if region in ['sr_vbf_no_veto_all', 'cr_1m_vbf', 'cr_sync_vbf']:
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
                     output['tree_int64'][region]["run"]       +=  processor.column_accumulator(df["run"][mask])
                     output['tree_int64'][region]["lumi"]       +=  processor.column_accumulator(df["luminosityBlock"][mask])
