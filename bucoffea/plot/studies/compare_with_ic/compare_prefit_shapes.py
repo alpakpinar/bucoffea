@@ -266,12 +266,17 @@ def compare_prefit_shapes(ic_file, bu_file, tag, year):
             ax.set_yscale('log')
             if process not in ['diboson', 'top']:
                 if 'dielec' in region or 'dimu' in region:
-                    ax.set_ylim(1e-4, 1e3)
+                    ax.set_ylim(1e-6, 1e3)
                 else:
-                    ax.set_ylim(1e-3, 1e4)
+                    if process not in ['qcd']:
+                        ax.set_ylim(1e-3, 1e4)
+                    else:
+                        ax.set_ylim(1e-6, 1e3)
             else:
                 ax.set_ylim(1e-6, 1e3)
-            ax.set_title(titles[process].format(year))
+            ax.set_title(titles[process].format(year), fontsize=14)
+
+            ax.set_ylabel('Events', fontsize=14)
 
             # Plot ratio
             ratio = bu_vals / ic_vals
@@ -282,12 +287,12 @@ def compare_prefit_shapes(ic_file, bu_file, tag, year):
             if process in ['top', 'diboson', 'qcd']:
                 rax.set_ylim(0.8,1.2)
             else:
-                rax.set_ylim(0.5,1.5)
-                # loc = matplotlib.ticker.MultipleLocator(base=0.02)
-                # rax.yaxis.set_major_locator(loc)
+                rax.set_ylim(0.94,1.06)
+                loc = matplotlib.ticker.MultipleLocator(base=0.02)
+                rax.yaxis.set_major_locator(loc)
 
-            rax.set_ylabel('BU / IC')
-            rax.set_xlabel(r'$M_{jj} \ (GeV)$')
+            rax.set_ylabel('BU / IC', fontsize=14)
+            rax.set_xlabel(r'$M_{jj} \ (GeV)$', fontsize=14)
 
             xlim = rax.get_xlim()
             rax.plot(xlim, [1., 1.], color='red')
