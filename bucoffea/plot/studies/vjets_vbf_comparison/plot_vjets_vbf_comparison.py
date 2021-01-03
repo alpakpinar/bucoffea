@@ -65,8 +65,14 @@ def plot_vjets_vbf_comparison(acc, distribution='mjj'):
         hist.plot1d(h_vbf, ax=ax, clear=False, density=True)
         hist.plot1d(h_ggh, ax=ax, clear=False, density=True)
 
+        ylims = {
+            'mjj' : (1e-9, 1e1), 
+            'detajj' : (1e-6, 1e1), 
+            'dphijj' : (1e-1, 1e1), 
+        }
+
         ax.set_yscale('log')
-        ax.set_ylim(1e-9, 1e1)
+        ax.set_ylim(ylims[distribution])
         ax.set_ylabel('Normalized Counts')
 
         ax.text(1., 1., year,
@@ -84,7 +90,7 @@ def plot_vjets_vbf_comparison(acc, distribution='mjj'):
             'ggH(inv)',
         ]
 
-        ax.legend(labels=labels)
+        ax.legend(title='Process', labels=labels)
 
         # Save figure
         outpath = pjoin(outdir, f'signal_bkg_comparison_{distribution}_{year}.pdf')
@@ -98,7 +104,8 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
-    plot_vjets_vbf_comparison(acc)
+    for distribution in ['mjj', 'detajj', 'dphijj']:
+        plot_vjets_vbf_comparison(acc, distribution=distribution)
 
 if __name__ == '__main__':
     main()
