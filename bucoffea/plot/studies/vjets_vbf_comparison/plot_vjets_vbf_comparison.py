@@ -24,7 +24,7 @@ def rebin(h, distribution):
     
     return h
 
-def plot_vjets_vbf_comparison(acc, distribution='mjj'):
+def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
     '''Plot a comparison of V+jets (QCD and EWK) and signal (VBF and ggH) spectra, in terms of the given distribution.'''
     acc.load(distribution)
     h = acc[distribution]
@@ -39,7 +39,7 @@ def plot_vjets_vbf_comparison(acc, distribution='mjj'):
     h = h.integrate('region', 'sr_vbf')
 
     # Output directory to save plots
-    outdir = f'./output'
+    outdir = f'./output/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -92,6 +92,15 @@ def plot_vjets_vbf_comparison(acc, distribution='mjj'):
 
         ax.legend(title='Process', labels=labels)
 
+        # Update x-labels if necessary
+        xlabels_to_update = {
+            'detajj' : r'$\Delta\eta_{jj}$',
+            'dphijj' : r'$\Delta\phi_{jj}$',
+        }
+
+        if distribution in xlabels_to_update.keys():
+            ax.set_xlabel(xlabels_to_update[distribution])
+
         # Save figure
         outpath = pjoin(outdir, f'signal_bkg_comparison_{distribution}_{year}.pdf')
         fig.savefig(outpath)
@@ -104,8 +113,10 @@ def main():
     acc.load('sumw')
     acc.load('sumw2')
 
+    outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
+
     for distribution in ['mjj', 'detajj', 'dphijj']:
-        plot_vjets_vbf_comparison(acc, distribution=distribution)
+        plot_vjets_vbf_comparison(acc, outtag, distribution=distribution)
 
 if __name__ == '__main__':
     main()
