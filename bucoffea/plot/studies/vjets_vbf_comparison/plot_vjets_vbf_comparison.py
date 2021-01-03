@@ -16,7 +16,9 @@ pjoin = os.path.join
 
 def rebin(h, distribution):
     mapping = {
-        'mjj' : hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.])
+        'mjj' : hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.]),
+        'detajj' : hist.Bin("deta", r"$\Delta\eta_{jj}$", 25, 0, 10),
+        'dphijj' : hist.Bin("dphi", r"$\Delta\phi_{jj}$", 25, 0, 3.5),
     }
     # Rebin if neccessary
     if distribution in mapping.keys():
@@ -35,8 +37,7 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
 
     h = rebin(h, distribution)
     # Take the region with no mjj/detajj/dphijj cut applied 
-    # h = h.integrate('region', 'sr_vbf_nodijetcut')
-    h = h.integrate('region', 'sr_vbf')
+    h = h.integrate('region', 'sr_vbf_nodijetcut')
 
     # Output directory to save plots
     outdir = f'./output/{outtag}'
@@ -66,9 +67,9 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
         hist.plot1d(h_ggh, ax=ax, clear=False, density=True)
 
         ylims = {
-            'mjj' : (1e-9, 1e1), 
+            'mjj' : (1e-7, 1e1), 
             'detajj' : (1e-6, 1e1), 
-            'dphijj' : (1e-1, 1e1), 
+            'dphijj' : (1e-3, 1e1), 
         }
 
         ax.set_yscale('log')
@@ -91,15 +92,6 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
         ]
 
         ax.legend(title='Process', labels=labels)
-
-        # Update x-labels if necessary
-        xlabels_to_update = {
-            'detajj' : r'$\Delta\eta_{jj}$',
-            'dphijj' : r'$\Delta\phi_{jj}$',
-        }
-
-        if distribution in xlabels_to_update.keys():
-            ax.set_xlabel(xlabels_to_update[distribution])
 
         # Save figure
         outpath = pjoin(outdir, f'signal_bkg_comparison_{distribution}_{year}.pdf')
