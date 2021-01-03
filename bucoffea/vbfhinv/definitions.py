@@ -234,6 +234,9 @@ def vbfhinv_regions(cfg):
     # Signal regions (v = mono-V, j = mono-jet)
     regions['sr_vbf'] = ['trig_met','metphihemextveto','hornveto'] + common_cuts + ['dpfcalo_sr', 'eemitigation']
 
+    # Signal region without the dijet cuts
+    regions['sr_vbf_nodijetcut'] = [cut for cut in regions['sr_vbf'] if cut not in ['mjj', 'detajj', 'dphijj']]
+
     # For sync mode
     if cfg and cfg.RUN.SYNC:
         regions['cr_sync'] = [
