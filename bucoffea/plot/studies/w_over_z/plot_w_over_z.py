@@ -27,7 +27,7 @@ def get_ylabel(channel):
     }
     return mapping[channel]
 
-def plot_z_over_w(infile, outtag, channel='muons'):
+def plot_z_over_w(infile, outtag, channel='muons', plot='total_bkg'):
     '''Given the fit diagnostics file, plot the pre-fit Z/W ratio as a function of mjj.'''
     regions = get_regions(channel)
     prefit_dir = infile['shapes_prefit']
@@ -41,8 +41,20 @@ def plot_z_over_w(infile, outtag, channel='muons'):
         z_indir = prefit_dir[f'vbf_{year}_{regions[0]}']
         w_indir = prefit_dir[f'vbf_{year}_{regions[1]}']
 
-        zll_hist = z_indir['total_background']
-        wlv_hist = w_indir['total_background']
+        if plot == 'total_bkg':
+            zll_hist = z_indir['total_background']
+            wlv_hist = w_indir['total_background']
+            plotlabel = 'Total Bkg Ratio (MC)'
+        elif plot == 'leading_bkg':
+            zll_hist = z_indir['qcd_zll']
+            wlv_hist = w_indir['qcd_wjets']
+            plotlabel = 'QCD Z / W'
+        elif plot == 'subleading_ewk_bkg':
+            zll_hist = z_indir['ewk_zll']
+            wlv_hist = w_indir['ewk_wjets']
+            plotlabel = 'EWK Z / W'
+        else:
+            raise ValueError(f'Invalid value for plot variable: {plot}')
 
         # Compute the ratio and the uncertainty on the ratio
         edges = zll_hist.edges
@@ -52,7 +64,7 @@ def plot_z_over_w(infile, outtag, channel='muons'):
         fig, ax = plt.subplots()
         hep.histplot(ratio, edges, yerr=ratio_err, ax=ax)
 
-        ax.text(0., 1., 'Total Bkg Ratio (MC)', 
+        ax.text(0., 1., plotlabel, 
             fontsize=14,
             horizontalalignment='left',
             verticalalignment='bottom',
@@ -81,7 +93,7 @@ def plot_z_over_w(infile, outtag, channel='muons'):
         ax.axhline(0.1, xmin=0, xmax=1, color='black', ls='--')
 
         # Save figure
-        outpath = pjoin(outdir, f'z_over_w_{channel}_{year}.pdf')
+        outpath = pjoin(outdir, f'z_over_w_{channel}_{plot}_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
@@ -97,7 +109,8 @@ def main():
 
     # Z(ee)/W(ev) and Z(mm)/W(mv) ratios
     for channel in ['electrons', 'muons']:
-        plot_z_over_w(infile, outtag, channel=channel)
+        for plot in ['total_bkg', 'leading_bkg', 'subleading_ewk_bkg']:
+            plot_z_over_w(infile, outtag, channel=channel, plot=plot)
 
 if __name__ == '__main__':
     main()
