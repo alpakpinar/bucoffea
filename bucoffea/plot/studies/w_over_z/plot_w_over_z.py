@@ -41,8 +41,8 @@ def plot_z_over_w(infile, outtag, channel='muons'):
         z_indir = prefit_dir[f'vbf_{year}_{regions[0]}']
         w_indir = prefit_dir[f'vbf_{year}_{regions[1]}']
 
-        zll_hist = z_indir['qcd_zll']
-        wlv_hist = w_indir['qcd_wjets']
+        zll_hist = z_indir['total_background']
+        wlv_hist = w_indir['total_background']
 
         # Compute the ratio and the uncertainty on the ratio
         edges = zll_hist.edges
@@ -52,7 +52,7 @@ def plot_z_over_w(infile, outtag, channel='muons'):
         fig, ax = plt.subplots()
         hep.histplot(ratio, edges, yerr=ratio_err, ax=ax)
 
-        ax.text(0., 1., 'MC / MC', 
+        ax.text(0., 1., 'Total Bkg Ratio (MC)', 
             fontsize=14,
             horizontalalignment='left',
             verticalalignment='bottom',
