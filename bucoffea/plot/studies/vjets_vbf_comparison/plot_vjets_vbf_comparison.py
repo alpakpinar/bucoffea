@@ -45,8 +45,7 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
         os.makedirs(outdir)
 
     for year in [2017, 2018]:
-        # Check the regex!
-        h_qcdz = h.integrate('dataset', re.compile(f'ZJetsToNuNu.*{year}'))
+        h_qcdz = h.integrate('dataset', re.compile(f'(ZJetsToNuNu|DYJetsToLL).*{year}'))
         h_qcdw = h.integrate('dataset', re.compile(f'WJetsToLNu.*{year}'))
         h_ewkz = h.integrate('dataset', re.compile(f'EWKZ2Jets.*{year}'))
         h_ewkw = h.integrate('dataset', re.compile(f'EWKW2Jets.*{year}'))
