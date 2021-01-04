@@ -312,6 +312,13 @@ def vbfhinv_regions(cfg):
         tmp[new_region].append("met_sr")
         tmp[new_region].append("mindphijm")
 
+    for region in regions.keys():
+        if region == 'inclusive':
+            continue
+        new_region = f'{region}_central_nu'
+        tmp[new_region] = copy.deepcopy(regions[region])
+        tmp[new_region].append('central_nu')
+
     regions.update(tmp)
 
     if cfg and cfg.RUN.TRIGGER_STUDY:

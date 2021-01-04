@@ -35,6 +35,7 @@ from bucoffea.helpers.gen import (
                                   setup_gen_candidates,
                                   setup_dressed_gen_candidates,
                                   setup_lhe_cleaned_genjets,
+                                  setup_lhe_neutrinos,
                                   fill_gen_v_info
                                  )
 from bucoffea.helpers.weights import (
@@ -173,6 +174,16 @@ class vbfhinvProcessor(processor.ProcessorABC):
             df['mjj_gen'] = digenjet.mass.max()
             df['mjj_gen'] = np.where(df['mjj_gen'] > 0, df['mjj_gen'], 0)
 
+        lhe_neutrinos = setup_lhe_neutrinos(df)
+
+        # Get neutrinos from gen candidates 
+        neutrino_mask = ((np.abs(gen.pdg)==12) | (np.abs(gen.pdg)==14) | (np.abs(gen.pdg)==16)) & (gen.status==1)
+        neutrinos = gen[neutrino_mask]
+
+        # Matching for gen-level neutrinos
+        # and LHE-level neutrinos
+        # Only get matched gen-level neutrinos
+        neutrinos = neutrinos[neutrinos.match(lhe_neutrinos, deltaRCut=0.4)]
 
         # Candidates
         # Already pre-filtered!
@@ -292,7 +303,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('mjj', df['mjj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.MASS)
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
-        
+
+        # Add neutrino eta cut
+        neutrino_eta = np.abs(neutrinos.eta) < 2.5
+        selection.add('central_nu', neutrino_eta.all())
+
         # Cleaning cuts for signal region
 
         # NEF cut: Only for endcap jets, require NEF < 0.7
