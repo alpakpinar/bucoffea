@@ -174,16 +174,16 @@ class vbfhinvProcessor(processor.ProcessorABC):
             df['mjj_gen'] = digenjet.mass.max()
             df['mjj_gen'] = np.where(df['mjj_gen'] > 0, df['mjj_gen'], 0)
 
-        lhe_neutrinos = setup_lhe_neutrinos(df)
-
-        # Get neutrinos from gen candidates 
-        neutrino_mask = ((np.abs(gen.pdg)==12) | (np.abs(gen.pdg)==14) | (np.abs(gen.pdg)==16)) & (gen.status==1)
-        neutrinos = gen[neutrino_mask]
-
-        # Matching for gen-level neutrinos
-        # and LHE-level neutrinos
-        # Only get matched gen-level neutrinos
-        neutrinos = neutrinos[neutrinos.match(lhe_neutrinos, deltaRCut=0.4)]
+            lhe_neutrinos = setup_lhe_neutrinos(df)
+    
+            # Get neutrinos from gen candidates 
+            neutrino_mask = ((np.abs(gen.pdg)==12) | (np.abs(gen.pdg)==14) | (np.abs(gen.pdg)==16)) & (gen.status==1)
+            neutrinos = gen[neutrino_mask]
+    
+            # Matching for gen-level neutrinos
+            # and LHE-level neutrinos
+            # Only get matched gen-level neutrinos
+            neutrinos = neutrinos[neutrinos.match(lhe_neutrinos, deltaRCut=0.4)]
 
         # Candidates
         # Already pre-filtered!
@@ -304,9 +304,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('dphijj', df['dphijj'] < cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DPHI)
         selection.add('detajj', df['detajj'] > cfg.SELECTION.SIGNAL.DIJET.SHAPE_BASED.DETA)
 
-        # Add neutrino eta cut
-        neutrino_eta = np.abs(neutrinos.eta) < 2.5
-        selection.add('central_nu', neutrino_eta.all())
+        # Add neutrino eta cut (for MC only)
+        if df['has_lhe_v_pt']:
+            neutrino_eta = np.abs(neutrinos.eta) < 2.5
+            selection.add('central_nu', neutrino_eta.all())
+        else:
+            selection.add('central_nu', pass_all)
 
         # Cleaning cuts for signal region
 
@@ -653,6 +656,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 ezfill('gen_vpt', vpt=gen_v_pt[mask], weight=df['Generator_weight'][mask])
                 ezfill('gen_mjj', mjj=df['mjj_gen'][mask], weight=df['Generator_weight'][mask])
 
+                if '_1e_' in region or '_1m_' in region:
+                    w_nu = weight_shape(neutrinos.pt[mask], rweight[mask])
+                    ezfill('gen_nu_pt',     pt=neutrinos.pt[mask].flatten(),   weight=w_nu)
+                    ezfill('gen_nu_eta',    eta=neutrinos.eta[mask].flatten(),  weight=w_nu)
+                    ezfill('gen_nu_phi',    phi=neutrinos.phi[mask].flatten(),  weight=w_nu)
 
             # Photon CR data-driven QCD estimate
             if df['is_data'] and re.match("cr_g.*", region) and re.match("(SinglePhoton|EGamma).*", dataset):
@@ -715,13 +723,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 ezfill('electron_mt',   mt=df['MT_el'][mask],               weight=rweight[mask])
                 ezfill('electron_eta',  eta=electrons.eta[mask].flatten(),  weight=w_allel)
                 ezfill('electron_phi',  phi=electrons.phi[mask].flatten(),  weight=w_allel)
-
-
-            if '_1e_' in region or '_1m_' in region:
-                w_nu = weight_shape(neutrinos.pt[mask], rweight[mask])
-                ezfill('gen_nu_pt',     pt=neutrinos.pt[mask].flatten(),   weight=w_nu)
-                ezfill('gen_nu_eta',    eta=neutrinos.eta[mask].flatten(),  weight=w_nu)
-                ezfill('gen_nu_phi',    phi=neutrinos.phi[mask].flatten(),  weight=w_nu)
 
             # Dielectron
             if '_2e_' in region:
