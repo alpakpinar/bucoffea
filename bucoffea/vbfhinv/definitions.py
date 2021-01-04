@@ -173,6 +173,11 @@ def vbfhinv_accumulator(cfg):
 
     items["tau_pt"] = Hist("Counts", dataset_ax, region_ax, pt_ax_tau)
 
+    # Histograms for gen-neutrino
+    items["gen_nu_pt"] = Hist("Counts", dataset_ax, region_ax, pt_ax)
+    items["gen_nu_eta"] = Hist("Counts", dataset_ax, region_ax, eta_ax)
+    items["gen_nu_phi"] = Hist("Counts", dataset_ax, region_ax, phi_ax)
+
     # One cutflow counter per region
     regions = vbfhinv_regions(cfg).keys()
     for region in regions:

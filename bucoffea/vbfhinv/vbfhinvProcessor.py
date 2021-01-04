@@ -716,6 +716,13 @@ class vbfhinvProcessor(processor.ProcessorABC):
                 ezfill('electron_eta',  eta=electrons.eta[mask].flatten(),  weight=w_allel)
                 ezfill('electron_phi',  phi=electrons.phi[mask].flatten(),  weight=w_allel)
 
+
+            if '_1e_' in region or '_1m_' in region:
+                w_nu = weight_shape(neutrinos.pt[mask], rweight[mask])
+                ezfill('gen_nu_pt',     pt=neutrinos.pt[mask].flatten(),   weight=w_nu)
+                ezfill('gen_nu_eta',    eta=neutrinos.eta[mask].flatten(),  weight=w_nu)
+                ezfill('gen_nu_phi',    phi=neutrinos.phi[mask].flatten(),  weight=w_nu)
+
             # Dielectron
             if '_2e_' in region:
                 w_diel = weight_shape(dielectrons.pt[mask], rweight[mask])
