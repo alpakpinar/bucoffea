@@ -27,12 +27,12 @@ def get_ylabel(channel):
     }
     return mapping[channel]
 
-def plot_z_over_w(infile, channel='muons'):
+def plot_z_over_w(infile, outtag, channel='muons'):
     '''Given the fit diagnostics file, plot the pre-fit Z/W ratio as a function of mjj.'''
     regions = get_regions(channel)
     prefit_dir = infile['shapes_prefit']
     
-    outdir = './output'
+    outdir = f'./output/{outtag}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -93,9 +93,11 @@ def main():
     inpath = pjoin(indir, 'fitDiagnostics_vbf_combined.root')
     infile = uproot.open(inpath)
 
+    outtag = re.findall('merged_.*', indir)[0].replace('/', '')
+
     # Z(ee)/W(ev) and Z(mm)/W(mv) ratios
     for channel in ['electrons', 'muons']:
-        plot_z_over_w(infile, channel=channel)
+        plot_z_over_w(infile, outtag, channel=channel)
 
 if __name__ == '__main__':
     main()
