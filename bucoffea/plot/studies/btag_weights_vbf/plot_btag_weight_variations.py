@@ -8,6 +8,7 @@ import numpy as np
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi, fig_ratio
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MultipleLocator
 from klepto.archives import dir_archive
 
 pjoin = os.path.join
@@ -54,7 +55,7 @@ def plot_btag_weight_variations(acc, outtag, dataset, year, region='sr_vbf'):
 
     histos = {}
     fig, ax, rax = fig_ratio()
-    for tag, distribution in distributions.items():
+    for idx, (tag, distribution) in enumerate(distributions.items()):
         acc.load(distribution)
         histos[tag] = preprocess(acc[distribution], acc, dataset, year, region)
 
@@ -63,8 +64,10 @@ def plot_btag_weight_variations(acc, outtag, dataset, year, region='sr_vbf'):
         # Plot the ratios w.r.t. nominal
         if tag == 'nominal':
             continue
+        data_err_opts['color'] = f'C{idx}'
         hist.plotratio(histos[tag], histos['nominal'], 
             ax=rax,
+            unc='num',
             clear=False,
             error_opts=data_err_opts
             )
@@ -76,7 +79,10 @@ def plot_btag_weight_variations(acc, outtag, dataset, year, region='sr_vbf'):
     ])
     ax.set_title(dataset_to_title(dataset), fontsize=14)
 
-    ax.text(1., 0., year,
+    ax.set_yscale('log')
+    ax.set_ylim(1e0, 1e5)
+
+    ax.text(1., 1., year,
         fontsize=14,
         horizontalalignment='right',
         verticalalignment='bottom',
@@ -84,9 +90,14 @@ def plot_btag_weight_variations(acc, outtag, dataset, year, region='sr_vbf'):
     )
 
     rax.set_ylabel('Ratio to Nominal')
-    rax.set_ylim(0.8,1.2)
+    rax.set_ylim(0.96,1.04)
     rax.grid(True)
     rax.axhline(1, xmin=0, xmax=1, color='black')
+
+    loc1 = MultipleLocator(0.02)
+    loc2 = MultipleLocator(0.01)
+    rax.yaxis.set_major_locator(loc1)
+    rax.yaxis.set_minor_locator(loc2)
 
     # Save figure
     outpath = pjoin(outdir, f'{dataset}_{year}_bweight_variations.pdf')
