@@ -44,6 +44,9 @@ def main():
     elif args.processor == 'sumw':
         from bucoffea.gen import mcSumwProcessor
         processorInstance = mcSumwProcessor()
+    elif args.processor == 'qcd':
+        from bucoffea.qcd.qcdProcessor import qcdProcessor
+        processorInstance = qcdProcessor()
 
     for dataset, filelist in fileset.items():
         newlist = []
