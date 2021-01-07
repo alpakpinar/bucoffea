@@ -632,6 +632,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_nhf1',      frac=diak4.i1.nhf[mask].flatten(),      weight=w_diak4)
             ezfill('ak4_nconst1',   nconst=diak4.i1.nconst[mask].flatten(), weight=w_diak4)
 
+            ezfill('ak4_eta0_eta1', jeteta0=diak4.i0.eta[mask].flatten(),    jeteta1=diak4.i1.eta[mask].flatten(),    weight=w_diak4)
+
             # B tag discriminator
             btag = getattr(ak4, cfg.BTAG.ALGO)
             w_btag = weight_shape(btag[mask], rweight[mask])
