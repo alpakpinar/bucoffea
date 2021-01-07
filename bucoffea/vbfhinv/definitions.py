@@ -264,10 +264,26 @@ def vbfhinv_regions(cfg):
 
     regions['cr_2m_vbf'] = cr_2m_cuts
 
+    # 2m CR without dpfCalo cut
+    regions['cr_2m_vbf_nodpfcalo'] = copy.deepcopy(regions['cr_2m_vbf'])
+    regions['cr_2m_vbf_nodpfcalo'].remove('dpfcalo_cr')
+
+    # 2m CR without HF-HF veto
+    regions['cr_2m_vbf_nohfveto'] = copy.deepcopy(regions['cr_2m_vbf'])
+    regions['cr_2m_vbf_nohfveto'].remove('veto_hfhf')
+
     # Single muon CR
     cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:] + ['dpfcalo_cr']
     cr_1m_cuts.remove('veto_muo')
     regions['cr_1m_vbf'] = cr_1m_cuts
+
+    # 1m CR without dpfCalo cut
+    regions['cr_1m_vbf_nodpfcalo'] = copy.deepcopy(regions['cr_1m_vbf'])
+    regions['cr_1m_vbf_nodpfcalo'].remove('dpfcalo_cr')
+
+    # 1m CR without HF-HF veto
+    regions['cr_1m_vbf_nohfveto'] = copy.deepcopy(regions['cr_1m_vbf'])
+    regions['cr_1m_vbf_nohfveto'].remove('veto_hfhf')
 
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
@@ -317,12 +333,13 @@ def vbfhinv_regions(cfg):
         tmp[new_region].append("met_sr")
         tmp[new_region].append("mindphijm")
 
-    for region in regions.keys():
-        if region == 'inclusive':
-            continue
-        new_region = f'{region}_central_nu'
-        tmp[new_region] = copy.deepcopy(regions[region])
-        tmp[new_region].append('central_nu')
+    if cfg.RUN.NEUTRINO_STUDY:
+        for region in regions.keys():
+            if region == 'inclusive':
+                continue
+            new_region = f'{region}_central_nu'
+            tmp[new_region] = copy.deepcopy(regions[region])
+            tmp[new_region].append('central_nu')
 
     regions.update(tmp)
 
