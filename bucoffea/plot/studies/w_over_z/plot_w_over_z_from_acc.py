@@ -191,6 +191,56 @@ def compare_z_over_w_with_and_without_nucut(acc, outtag, proc='qcd', channel='mu
         plt.close(fig)
         print(f'File saved: {outpath}')
 
+def plot_z_over_w_with_and_without_hfveto(acc, outtag, channel='muons', proc='qcd', distribution='mjj'):
+    '''Plot Z/W ratio with and without HF-HF veto applied.'''
+    acc.load(distribution)
+    h = preprocess(acc[distribution], acc, distribution)
+
+    outdir = f'./output/{outtag}/from_acc/with_without_hf_veto'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    for year in [2017, 2018]:
+        h_z = h.integrate('region', f'cr_{regions[channel][0]}_vbf').integrate('dataset', re.compile(dataset_regex[f'{proc}Z'].format(year)))
+        h_z_nohfhf = h.integrate('region', f'cr_{regions[channel][0]}_vbf_nohfveto').integrate('dataset', re.compile(dataset_regex[f'{proc}Z'].format(year)))
+
+        h_w = h.integrate('region', f'cr_{regions[channel][1]}_vbf').integrate('dataset', re.compile(dataset_regex[f'{proc}W'].format(year)))
+        h_w_nohfhf = h.integrate('region', f'cr_{regions[channel][1]}_vbf_nohfveto').integrate('dataset', re.compile(dataset_regex[f'{proc}W'].format(year)))
+
+        fig, ax = plt.subplots()
+        hist.plotratio(h_z, h_w,
+            ax=ax,
+            unc='num',
+            label='With HF-HF veto',
+            error_opts=data_err_opts
+        )
+
+        hist.plotratio(h_z_nohfhf, h_w_nohfhf,
+            ax=ax,
+            unc='num',
+            label='Without HF-HF veto',
+            clear=False,
+            error_opts=data_err_opts
+        )
+
+        ax.text(0., 1., f'{proc.upper()} Z/W',
+            fontsize=14,
+            horizontalalignment='left',
+            verticalalignment='bottom',
+            transform=ax.transAxes
+        )
+
+        ax.set_xlim(200,5000)
+        ax.set_ylim(0,0.1)
+        ax.set_ylabel(get_ylabel(channel))
+        ax.legend()
+        ax.grid(True)
+
+        outpath = pjoin(outdir, f'{proc}_z_over_w_{channel}_{distribution}_{year}.pdf')
+        fig.savefig(outpath)
+        plt.close(fig)
+        print(f'File saved: {outpath}')
+
 def main():
     inpath = sys.argv[1]
     acc = dir_archive(inpath)
@@ -207,6 +257,12 @@ def main():
                 compare_z_over_w_with_and_without_nucut(acc, outtag, proc=proc, channel=channel)
         except KeyError:
             print(f'Cannot find region with neutrino eta cut in {inpath}, skipping.')
+
+        for proc in ['qcd', 'ewk']:
+            try:
+                plot_z_over_w_with_and_without_hfveto(acc, outtag, proc=proc, channel=channel)
+            except KeyError:
+                print(f'Cannot find region without HF veto in {inpath}, skipping.')
 
 if __name__ == '__main__':
     main()
