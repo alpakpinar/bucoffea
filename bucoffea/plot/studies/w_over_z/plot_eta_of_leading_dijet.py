@@ -40,10 +40,13 @@ def plot_eta_of_leading_dijet(acc, outtag, tag, dataset):
     for year in [2017, 2018]:
         _h = h.integrate('dataset', re.compile(f'{dataset}{year}')).integrate('region', region_to_look)
 
+        # Calculate percentage of HF-HF events
+        per_hfhf_events = np.sum(_h.values()[()][:4, -4:] + _h.values()[()][-4:, :4]) / np.sum(_h.values()[()]) * 100
+
         fig, ax = plt.subplots()
         hist.plot2d(_h, ax=ax, 
             xaxis='jeteta0',
-            patch_opts={'norm' : colors.LogNorm()}
+            patch_opts={'norm' : colors.LogNorm(vmin=1e-3, vmax=1e2)}
             )
 
         ax.text(0., 1., dataset_tag,
@@ -55,6 +58,13 @@ def plot_eta_of_leading_dijet(acc, outtag, tag, dataset):
 
         ax.text(1., 1., year,
             fontsize=14,
+            horizontalalignment='right',
+            verticalalignment='bottom',
+            transform=ax.transAxes
+        )
+
+        ax.text(0.98, 0.9, f'% HF-HF: {per_hfhf_events:.2f}',
+            fontsize=12,
             horizontalalignment='right',
             verticalalignment='bottom',
             transform=ax.transAxes
