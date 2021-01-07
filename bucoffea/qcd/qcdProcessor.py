@@ -14,18 +14,25 @@ Cat = hist.Cat
 
 # List of triggers we are considering
 trigger_list = [
-    'HLT_AK4PFJet30',
-    'HLT_AK4PFJet50',
-    'HLT_AK4PFJet80',
-    'HLT_AK4PFJet100',
-    'HLT_AK4PFJet120',
-    'HLT_DiPFJet15_NoCaloMatched',
-    'HLT_DiPFJet25_NoCaloMatched',
-    'HLT_DiPFJet15_FBEta3_NoCaloMatched',
-    'HLT_DiPFJet25_FBEta3_NoCaloMatched',
-    'HLT_DiPFJetAve15_HFJEC',
-    'HLT_DiPFJetAve25_HFJEC',
-    'HLT_DiPFJetAve35_HFJEC',
+    # 'HLT_AK4PFJet30',
+    # 'HLT_AK4PFJet50',
+    # 'HLT_AK4PFJet80',
+    # 'HLT_AK4PFJet100',
+    # 'HLT_AK4PFJet120',
+    'HLT_PFJet40',
+    'HLT_PFJet60',
+    'HLT_PFJet80',
+    'HLT_PFJet140',
+    'HLT_PFHT180',
+    'HLT_PFHT250',
+    'HLT_PFHT370',
+    # 'HLT_DiPFJet15_NoCaloMatched',
+    # 'HLT_DiPFJet25_NoCaloMatched',
+    # 'HLT_DiPFJet15_FBEta3_NoCaloMatched',
+    # 'HLT_DiPFJet25_FBEta3_NoCaloMatched',
+    # 'HLT_DiPFJetAve15_HFJEC',
+    # 'HLT_DiPFJetAve25_HFJEC',
+    # 'HLT_DiPFJetAve35_HFJEC',
 ]
 
 def qcd_regions():
