@@ -266,10 +266,16 @@ def vbfhinv_regions(cfg):
 
     regions['cr_2m_vbf'] = cr_2m_cuts
 
+    regions['cr_2m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_2m_vbf'])
+    regions['cr_2m_vbf_nodphijjcut'].remove('dphijj')
+
     # Single muon CR
     cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:] + ['dpfcalo_cr']
     cr_1m_cuts.remove('veto_muo')
     regions['cr_1m_vbf'] = cr_1m_cuts
+
+    regions['cr_1m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_1m_vbf'])
+    regions['cr_1m_vbf_nodphijjcut'].remove('dphijj')
 
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
