@@ -114,8 +114,6 @@ def vbfhinv_accumulator(cfg):
     items["ak4_pt0_nhf0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax_coarse, frac_ax)
     items["ak4_pt0_nconst0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax_coarse, nconst_ax)
     items["ak4_pt0_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax,jet_eta_ax_coarse)
-    
-    items["ak4_eta0_eta1"] = Hist("Counts", dataset_ax, region_ax, lead_jet_eta_ax_coarse, trail_jet_eta_ax_coarse)
 
     items["ak4_pt"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_eta"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
@@ -268,26 +266,10 @@ def vbfhinv_regions(cfg):
 
     regions['cr_2m_vbf'] = cr_2m_cuts
 
-    # 2m CR without dpfCalo cut
-    regions['cr_2m_vbf_nodpfcalo'] = copy.deepcopy(regions['cr_2m_vbf'])
-    regions['cr_2m_vbf_nodpfcalo'].remove('dpfcalo_cr')
-
-    # 2m CR without HF-HF veto
-    regions['cr_2m_vbf_nohfveto'] = copy.deepcopy(regions['cr_2m_vbf'])
-    regions['cr_2m_vbf_nohfveto'].remove('veto_hfhf')
-
     # Single muon CR
     cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:] + ['dpfcalo_cr']
     cr_1m_cuts.remove('veto_muo')
     regions['cr_1m_vbf'] = cr_1m_cuts
-
-    # 1m CR without dpfCalo cut
-    regions['cr_1m_vbf_nodpfcalo'] = copy.deepcopy(regions['cr_1m_vbf'])
-    regions['cr_1m_vbf_nodpfcalo'].remove('dpfcalo_cr')
-
-    # 1m CR without HF-HF veto
-    regions['cr_1m_vbf_nohfveto'] = copy.deepcopy(regions['cr_1m_vbf'])
-    regions['cr_1m_vbf_nohfveto'].remove('veto_hfhf')
 
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
@@ -298,6 +280,10 @@ def vbfhinv_regions(cfg):
     cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', 'veto_muo','met_el'] + common_cuts[1:] + ['dpfcalo_cr', 'no_el_in_hem']
     # cr_1e_cuts.remove('veto_ele')
     regions['cr_1e_vbf'] =  cr_1e_cuts
+
+    # Single electron CR without the MET > 80 GeV cut
+    regions['cr_1e_vbf_nometcut'] = copy.deepcopy(regions['cr_1e_vbf'])
+    regions['cr_1e_vbf_nometcut'].remove('met_el')
 
     # Photon CR
     cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts + ['dpfcalo_cr']
