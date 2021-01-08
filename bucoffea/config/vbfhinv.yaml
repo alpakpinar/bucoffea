@@ -233,6 +233,8 @@ default:
         - 51393664
     trigger_study: False
     neutrino_study: False
+    met_cut_check: False
+    dphijj_cut_check: True
     apply_categorized_sf: True
   triggers:
     ht:

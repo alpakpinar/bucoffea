@@ -266,16 +266,17 @@ def vbfhinv_regions(cfg):
 
     regions['cr_2m_vbf'] = cr_2m_cuts
 
-    regions['cr_2m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_2m_vbf'])
-    regions['cr_2m_vbf_nodphijjcut'].remove('dphijj')
-
     # Single muon CR
     cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:] + ['dpfcalo_cr']
     cr_1m_cuts.remove('veto_muo')
     regions['cr_1m_vbf'] = cr_1m_cuts
 
-    regions['cr_1m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_1m_vbf'])
-    regions['cr_1m_vbf_nodphijjcut'].remove('dphijj')
+    if cfg.RUN.DPHIJJ_CUT_CHECK:
+        regions['cr_1m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_1m_vbf'])
+        regions['cr_1m_vbf_nodphijjcut'].remove('dphijj')
+
+        regions['cr_2m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_2m_vbf'])
+        regions['cr_2m_vbf_nodphijjcut'].remove('dphijj')
 
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
@@ -288,8 +289,9 @@ def vbfhinv_regions(cfg):
     regions['cr_1e_vbf'] =  cr_1e_cuts
 
     # Single electron CR without the MET > 80 GeV cut
-    regions['cr_1e_vbf_nometcut'] = copy.deepcopy(regions['cr_1e_vbf'])
-    regions['cr_1e_vbf_nometcut'].remove('met_el')
+    if cfg.RUN.MET_CUT_CHECK:
+        regions['cr_1e_vbf_nometcut'] = copy.deepcopy(regions['cr_1e_vbf'])
+        regions['cr_1e_vbf_nometcut'].remove('met_el')
 
     # Photon CR
     cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts + ['dpfcalo_cr']
