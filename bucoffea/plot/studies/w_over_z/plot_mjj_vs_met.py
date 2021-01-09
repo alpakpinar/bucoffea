@@ -17,7 +17,7 @@ pjoin = os.path.join
 
 REBIN = {
     'mjj' : hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.]),
-    'met' : hist.Bin('met', r'$p_T^{miss} \ (GeV)$', list(range(0,500,50)) + list(range(500,1000,100)) + list(range(1000,2000,250))),
+    'met' : hist.Bin('met', r'$p_T^{miss} \ (GeV)$', list(range(0,400,40)) + list(range(400,1000,100))),
 }
 
 def plot_mjj_vs_met(acc, outtag):
@@ -63,6 +63,8 @@ def plot_mjj_vs_met(acc, outtag):
             verticalalignment='bottom',
             transform=ax.transAxes
         )
+
+        ax.axvline(80, ymin=0, ymax=1, color='red', lw=2)
 
         # Save figure
         outpath = pjoin(outdir, f'qcd_w_mjj_vs_met_{year}.pdf')
