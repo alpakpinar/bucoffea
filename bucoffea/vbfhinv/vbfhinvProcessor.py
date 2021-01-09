@@ -691,7 +691,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
                         weight=w)
 
             # Two dimensional
-            ezfill('recoil_mjj',         recoil=df["recoil_pt"][mask], mjj=df["mjj"][mask], weight=rweight[mask] )
+            ezfill('met_mjj',         met=met_pt[mask], mjj=df["mjj"][mask], weight=rweight[mask] )
 
             # Muons
             if '_1m_' in region or '_2m_' in region or 'no_veto' in region:
