@@ -232,7 +232,7 @@ default:
         - 79123963
         - 51393664
     trigger_study: False
-    btag_study: False
+    btag_study: True
     apply_categorized_sf: True
   triggers:
     ht:

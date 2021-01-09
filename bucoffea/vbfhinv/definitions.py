@@ -95,6 +95,7 @@ def vbfhinv_accumulator(cfg):
     if cfg.RUN.BTAG_STUDY:
         items["mjj_bveto_up"] = Hist("Counts", dataset_ax, region_ax, mjj_ax)
         items["mjj_bveto_down"] = Hist("Counts", dataset_ax, region_ax, mjj_ax)
+        items["mjj_nobweight"] = Hist("Counts", dataset_ax, region_ax, mjj_ax)
 
     items["ak4_pt0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_ptraw0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
@@ -316,6 +317,14 @@ def vbfhinv_regions(cfg):
         tmp[new_region].append("met_sr")
         tmp[new_region].append("mindphijm")
 
+    if cfg.RUN.BTAG_STUDY:
+        for region in regions.keys():
+            if region == 'inclusive':
+                continue
+            new_region = f'{region}_nobweight'
+            tmp[new_region] = copy.deepcopy(regions[region])
+            tmp[new_region].append('hard_b_veto')
+    
     regions.update(tmp)
 
     if cfg and cfg.RUN.TRIGGER_STUDY:

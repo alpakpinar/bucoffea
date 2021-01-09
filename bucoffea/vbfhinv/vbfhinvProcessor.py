@@ -249,6 +249,8 @@ class vbfhinvProcessor(processor.ProcessorABC):
         else:
             selection.add('veto_b', pass_all)
 
+        selection.add('hard_b_veto', bjets.counts==0)
+        
         selection.add('dpfcalo_sr',np.abs(df['dPFCaloSR']) < cfg.SELECTION.SIGNAL.DPFCALO)
         selection.add('dpfcalo_cr',np.abs(df['dPFCaloCR']) < cfg.SELECTION.SIGNAL.DPFCALO)
 
@@ -647,6 +649,9 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     rw = region_weights.partial_weight(exclude=exclude+['bveto'])
                     ezfill('mjj_bveto_up',    mjj=df['mjj'][mask],  weight=(rw*(1-bsf_variations['up']).prod())[mask])
                     ezfill('mjj_bveto_down',  mjj=df['mjj'][mask],  weight=(rw*(1-bsf_variations['down']).prod())[mask])
+
+                    if re.match('.*_nobweight', region):
+                        ezfill('mjj_nobweight',   mjj=df['mjj'][mask],  weight=rw[mask])
 
             if gen_v_pt is not None:
                 ezfill('gen_vpt', vpt=gen_v_pt[mask], weight=df['Generator_weight'][mask])
