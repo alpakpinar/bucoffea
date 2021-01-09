@@ -95,7 +95,6 @@ def vbfhinv_accumulator(cfg):
     if cfg.RUN.BTAG_STUDY:
         items["mjj_bveto_up"] = Hist("Counts", dataset_ax, region_ax, mjj_ax)
         items["mjj_bveto_down"] = Hist("Counts", dataset_ax, region_ax, mjj_ax)
-        items["mjj_nobweight"] = Hist("Counts", dataset_ax, region_ax, mjj_ax)
 
     items["ak4_pt0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_ptraw0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
