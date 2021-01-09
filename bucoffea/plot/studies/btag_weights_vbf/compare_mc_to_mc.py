@@ -37,13 +37,13 @@ def compare_mc_to_mc(acc, outtag, year, distribution='mjj'):
 
     # Regions + datasets to look at
     regions_and_datasets = [
-        {'region': re.compile('sr_vbf.*'), 'dataset': f'ZJetsToNuNu.*{year}', 'tag': 'qcd_znunu', 'plot_tag' : ''},
-        {'region': re.compile('sr_vbf.*'), 'dataset': f'WJetsToLNu.*{year}', 'tag': 'qcd_wlnu', 'plot_tag' : ''},
-        {'region': re.compile('cr_1m_vbf.*'), 'dataset': f'WJetsToLNu.*{year}', 'tag': 'qcd_wmunu', 'plot_tag' : ''},
-        {'region': re.compile('cr_1e_vbf.*'), 'dataset': f'WJetsToLNu.*{year}', 'tag': 'qcd_wenu', 'plot_tag' : ''},
-        {'region': re.compile('cr_2m_vbf.*'), 'dataset': f'DYJetsToLL.*{year}', 'tag': 'qcd_zmumu', 'plot_tag' : ''},
-        {'region': re.compile('cr_2e_vbf.*'), 'dataset': f'DYJetsToLL.*{year}', 'tag': 'qcd_zee', 'plot_tag' : ''},
-        {'region': re.compile('cr_g_vbf.*'), 'dataset': f'GJets_DR-0p4.*{year}', 'tag': 'qcd_gjets', 'plot_tag' : ''},
+        {'region': re.compile('sr_vbf.*'), 'dataset': f'ZJetsToNuNu.*{year}', 'tag': 'qcd_znunu', 'plot_tag' : r'QCD $Z(\nu\nu)$'},
+        {'region': re.compile('sr_vbf.*'), 'dataset': f'WJetsToLNu.*{year}', 'tag': 'qcd_wlnu', 'plot_tag' : r'QCD $W(\ell\nu)$'},
+        {'region': re.compile('cr_1m_vbf.*'), 'dataset': f'WJetsToLNu.*{year}', 'tag': 'qcd_wmunu', 'plot_tag' : r'QCD $W(\mu\nu)$'},
+        {'region': re.compile('cr_1e_vbf.*'), 'dataset': f'WJetsToLNu.*{year}', 'tag': 'qcd_wenu', 'plot_tag' : r'QCD $W(e\nu)$'},
+        {'region': re.compile('cr_2m_vbf.*'), 'dataset': f'DYJetsToLL.*{year}', 'tag': 'qcd_zmumu', 'plot_tag' : r'QCD $Z(\mu\mu)$'},
+        {'region': re.compile('cr_2e_vbf.*'), 'dataset': f'DYJetsToLL.*{year}', 'tag': 'qcd_zee', 'plot_tag' : r'QCD $Z(ee)$'},
+        {'region': re.compile('cr_g_vbf.*'), 'dataset': f'GJets_DR-0p4.*{year}', 'tag': 'qcd_gjets', 'plot_tag' : r'QCD $\gamma$+jets'},
     ]
 
     for data in regions_and_datasets:
@@ -69,7 +69,7 @@ def compare_mc_to_mc(acc, outtag, year, distribution='mjj'):
             transform=ax.transAxes
         )
 
-        outpath = pjoin(outdir, f'{tag}_bweight_conp_{year}.pdf')
+        outpath = pjoin(outdir, f'{data["tag"]}_bweight_conp_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
         print(f'File saved: {outpath}')
