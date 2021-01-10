@@ -67,19 +67,25 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
         # Now, plot 'em all!
         fig, ax = plt.subplots()
 
-        hist.plot1d(h_qcdz, ax=ax, density=True)
-        hist.plot1d(h_ewkz, ax=ax, clear=False, density=True)
-        hist.plot1d(h_vbf, ax=ax, clear=False, density=True)
-        hist.plot1d(h_ggh, ax=ax, clear=False, density=True)
+        line_opts = {
+            'linewidth' : 2
+        }
+
+        hist.plot1d(h_qcdz, ax=ax, density=True, line_opts=line_opts)
+        hist.plot1d(h_ewkz, ax=ax, clear=False, density=True, line_opts=line_opts)
+        hist.plot1d(h_vbf, ax=ax, clear=False, density=True, line_opts=line_opts)
+        hist.plot1d(h_ggh, ax=ax, clear=False, density=True, line_opts=line_opts)
 
         ylims = {
-            'mjj' : (1e-7, 1e1), 
-            'detajj' : (1e-6, 1e1), 
+            'mjj' : (1e-7, 1e-1), 
+            'detajj' : (1e-5, 1e1), 
             'dphijj' : (1e-3, 1e1), 
         }
 
-        ax.set_yscale('log')
-        ax.set_ylim(ylims[distribution])
+        if distribution == 'mjj':
+            ax.set_yscale('log')
+            ax.set_ylim(ylims[distribution])
+        
         ax.set_ylabel('Normalized Counts')
 
         # CMS label & text
@@ -94,7 +100,7 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
             'ggH(inv)',
         ]
 
-        ax.legend(title='Process', labels=labels)
+        ax.legend(labels=labels)
 
         # Save figure
         outpath = pjoin(outdir, f'signal_bkg_comparison_{distribution}_{year}.pdf')
