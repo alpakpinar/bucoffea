@@ -5,6 +5,10 @@ import sys
 import re
 import uproot
 import numpy as np
+import mplhep as hep
+import matplotlib
+# Use a different backend for matplotlib, otherwise HEP styling doesn't work for some reason
+matplotlib.use('tkagg')
 
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
@@ -13,6 +17,9 @@ from klepto.archives import dir_archive
 from pprint import pprint
 
 pjoin = os.path.join
+
+# Use default CMS styling
+plt.style.use(hep.style.CMS)
 
 def rebin(h, distribution):
     mapping = {
@@ -75,12 +82,9 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
         ax.set_ylim(ylims[distribution])
         ax.set_ylabel('Normalized Counts')
 
-        ax.text(1., 1., year,
-            fontsize=14,
-            horizontalalignment='right',
-            verticalalignment='bottom',
-            transform=ax.transAxes
-        )
+        # CMS label & text
+        hep.cms.label(year=year, paper=True)
+        hep.cms.text()
 
         # Fix legend labels
         labels = [
