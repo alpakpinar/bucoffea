@@ -272,13 +272,6 @@ def vbfhinv_regions(cfg):
     cr_1m_cuts.remove('veto_muo')
     regions['cr_1m_vbf'] = cr_1m_cuts
 
-    if cfg.RUN.DPHIJJ_CUT_CHECK:
-        regions['cr_1m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_1m_vbf'])
-        regions['cr_1m_vbf_nodphijjcut'].remove('dphijj')
-
-        regions['cr_2m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_2m_vbf'])
-        regions['cr_2m_vbf_nodphijjcut'].remove('dphijj')
-
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
     # cr_2e_cuts.remove('veto_ele')
@@ -293,6 +286,20 @@ def vbfhinv_regions(cfg):
     if cfg.RUN.MET_CUT_CHECK:
         regions['cr_1e_vbf_nometcut'] = copy.deepcopy(regions['cr_1e_vbf'])
         regions['cr_1e_vbf_nometcut'].remove('met_el')
+    
+    # W and Z CRs (muons and electrons) without dphijj cut
+    if cfg.RUN.DPHIJJ_CUT_CHECK:
+        regions['cr_1m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_1m_vbf'])
+        regions['cr_1m_vbf_nodphijjcut'].remove('dphijj')
+
+        regions['cr_1e_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_1e_vbf'])
+        regions['cr_1e_vbf_nodphijjcut'].remove('dphijj')
+
+        regions['cr_2m_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_2m_vbf'])
+        regions['cr_2m_vbf_nodphijjcut'].remove('dphijj')
+
+        regions['cr_2e_vbf_nodphijjcut'] = copy.deepcopy(regions['cr_2e_vbf'])
+        regions['cr_2e_vbf_nodphijjcut'].remove('dphijj')
 
     # Photon CR
     cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts + ['dpfcalo_cr']
