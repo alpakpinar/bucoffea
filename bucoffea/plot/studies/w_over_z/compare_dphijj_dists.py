@@ -166,7 +166,7 @@ def main():
             try:
                 plot_2d_dphijj_vs_mjj(acc, outtag, year, channel=channel)
             except KeyError:
-                print(x'Could not find the 2D dphijj/mjj histogram, skipping')
+                print('Could not find the 2D dphijj/mjj histogram, skipping')
 
 if __name__ == '__main__':
     main()
