@@ -39,7 +39,8 @@ def preprocess(h, acc, two_dim=False):
 
     # Rebin mjj too if we're plotting 2D histogram
     if two_dim:
-        new_mjj_ax = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.])
+        # new_mjj_ax = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.])
+        new_mjj_ax = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 900., 1500., 2750., 5000.])
         h = h.rebin('mjj', new_mjj_ax)
 
     return h
@@ -116,6 +117,9 @@ def plot_2d_dphijj_vs_mjj(acc, outtag, year, channel='muons'):
     mjj_edges = h_z.axis('mjj').edges()
     dphi_edges = h_z.axis('dphi').edges()
 
+    mjj_centers = h_z.axis('mjj').centers()
+    dphi_centers = h_z.axis('dphi').centers()
+
     # Calculate the Z / W ratio (both normalized)
     sumw_z_norm = h_z.values()[()] / np.sum(h_z.values()[()] )
     sumw_w_norm = h_w.values()[()] / np.sum(h_w.values()[()] )
@@ -128,7 +132,7 @@ def plot_2d_dphijj_vs_mjj(acc, outtag, year, channel='muons'):
     cb = fig.colorbar(pc)
     cb.set_label('Ratio', fontsize=14)
 
-    pc.set_clim(0,2)
+    pc.set_clim(0.5,1.5)
 
     ax.set_xlabel(r'$M_{jj} \ (GeV)$', fontsize=14)
     ax.set_ylabel(r'$\Delta\phi_{jj}$', fontsize=14)
@@ -149,6 +153,19 @@ def plot_2d_dphijj_vs_mjj(acc, outtag, year, channel='muons'):
 
     ax.axhline(1.5, xmin=0, xmax=1, color='k')
 
+    for ix in range(len(mjj_centers)):
+        for iy in range(len(dphi_centers)):
+            if np.isnan(r.T[ix,iy]):
+                continue
+            ax.text(
+                mjj_centers[ix],
+                dphi_centers[iy],
+                f'{r.T[ix, iy]:.2f}',
+                ha='center',
+                va='center',
+                fontsize=6
+            )
+            
     # Save figure
     outpath = pjoin(outdir, f'dphijj_vs_mjj_z_over_w_{channel}_{year}.pdf')
     fig.savefig(outpath)
