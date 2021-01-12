@@ -100,8 +100,8 @@ def compare_dphijj_dists(acc, outtag, year, channel='muons'):
 
 def plot_2d_dphijj_vs_mjj(acc, outtag, year, channel='muons'):
     '''Plot dphijj vs mjj histogram for the Z / W ratio.'''
-    acc.load('dphijj_vs_mjj')
-    h = preprocess(acc['dphijj_vs_mjj'], acc, two_dim=True)
+    acc.load('dphijj_mjj')
+    h = preprocess(acc['dphijj_mjj'], acc, two_dim=True)
 
     outdir = f'./output/{outtag}/from_acc'
     if not os.path.exists(outdir):
@@ -112,7 +112,6 @@ def plot_2d_dphijj_vs_mjj(acc, outtag, year, channel='muons'):
     h_z = h.integrate('region', regions_to_look[0]).integrate('dataset', re.compile(f'DYJetsToLL.*{year}'))
     h_w = h.integrate('region', regions_to_look[1]).integrate('dataset', re.compile(f'WJetsToLNu.*{year}'))
 
-    # Plot dphijj distributions (normalized)
     fig, ax = plt.subplots()
     mjj_edges = h_z.axis('mjj').edges()
     dphi_edges = h_z.axis('dphi').edges()
@@ -124,7 +123,12 @@ def plot_2d_dphijj_vs_mjj(acc, outtag, year, channel='muons'):
     r = sumw_z_norm / sumw_w_norm
 
     opts = {'cmap' : 'viridis'}
-    ax.pcolormesh(mjj_edges, dphi_edges, r.T, **opts)
+    pc = ax.pcolormesh(mjj_edges, dphi_edges, r, **opts)
+    
+    cb = fig.colorbar(pc)
+    cb.set_label('Ratio', fontsize=14)
+
+    pc.set_clim(0,2)
 
     ax.set_xlabel(r'$M_{jj} \ (GeV)$', fontsize=14)
     ax.set_ylabel(r'$\Delta\phi_{jj}$', fontsize=14)
@@ -142,6 +146,8 @@ def plot_2d_dphijj_vs_mjj(acc, outtag, year, channel='muons'):
         verticalalignment='bottom',
         transform=ax.transAxes
     )
+
+    ax.axhline(1.5, xmin=0, xmax=1, color='k')
 
     # Save figure
     outpath = pjoin(outdir, f'dphijj_vs_mjj_z_over_w_{channel}_{year}.pdf')
