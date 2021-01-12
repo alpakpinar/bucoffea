@@ -17,7 +17,8 @@ pjoin = os.path.join
 
 REBIN = {
     'mjj' : hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.]),
-    'met' : hist.Bin('met', r'$p_T^{miss} \ (GeV)$', list(range(0,400,40)) + list(range(400,1000,100))),
+    # 'met' : hist.Bin('met', r'$p_T^{miss} \ (GeV)$', list(range(0,400,40)) + list(range(400,1000,100))),
+    'met' : hist.Bin('met', r'$p_T^{miss} \ (GeV)$', [0,80,200] + list(range(400,900,250))),
 }
 
 def plot_mjj_vs_met(acc, outtag):
@@ -65,6 +66,26 @@ def plot_mjj_vs_met(acc, outtag):
         )
 
         ax.axvline(80, ymin=0, ymax=1, color='red', lw=2)
+
+        xcenters = _h.axis('met').centers()
+        ycenters = _h.axis('mjj').centers()
+
+        sumw = _h.values()[()]
+
+        for iy in range(len(ycenters)):
+            met_counts = sumw[:,iy]
+            # Calculate the percentage of events with MET < 80 (first bin vs. the rest)
+            percentage_with_low_met = met_counts[0] / np.sum(met_counts) * 100
+
+            # Print these values onto the left-most column
+            xcenter = xcenters[0]
+            color = 'black' if percentage_with_low_met > 15 else 'white'
+            ax.text(xcenter, ycenters[iy], f'{percentage_with_low_met:.2f}%',
+                fontsize=8,
+                ha='center',
+                va='center',
+                color=color
+            )
 
         # Save figure
         outpath = pjoin(outdir, f'qcd_w_mjj_vs_met_{year}.pdf')
