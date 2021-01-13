@@ -55,6 +55,9 @@ def plot_btag_weights(h, outtag, dataset, region, year):
 
     ax.get_legend().remove()
 
+    # Vertical line at 0
+    ax.axvline(0, ymin=0, ymax=1, color='red', ls='--')
+
     # Save figure
     outdir = f'./output/{outtag}/btag_weights'
     if not os.path.exists(outdir):
