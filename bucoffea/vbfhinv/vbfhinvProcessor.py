@@ -526,10 +526,15 @@ class vbfhinvProcessor(processor.ProcessorABC):
             mask = selection.all(*cuts)
 
             if cfg.RUN.SAVE.TREE:
-                if region in ['cr_1e_vbf','cr_1m_vbf']:
+                if region != 'inclusive':
                     output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
-                    output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
-                    output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
+                    output['tree_int64'][region]["run"]       +=  processor.column_accumulator(df["run"][mask])
+                    output['tree_int64'][region]["lumi"]       +=  processor.column_accumulator(df["luminosityBlock"][mask])
+                    
+                    if df['has_lhe_v_pt']:
+                        output['tree_float16'][region]["gen_v_pt"]    +=  processor.column_accumulator(np.float16(gen_v_pt[mask]))
+                        output['tree_float16'][region]["gen_mjj"]     +=  processor.column_accumulator(np.float16(df['mjj_gen'][mask]))
+                    
                     output['tree_float16'][region]["recoil_pt"]   +=  processor.column_accumulator(np.float16(df["recoil_pt"][mask]))
                     output['tree_float16'][region]["recoil_phi"]  +=  processor.column_accumulator(np.float16(df["recoil_phi"][mask]))
                     output['tree_float16'][region]["mjj"]         +=  processor.column_accumulator(np.float16(df["mjj"][mask]))
@@ -555,10 +560,10 @@ class vbfhinvProcessor(processor.ProcessorABC):
                     for name, w in region_weights._weights.items():
                         output['tree_float16'][region][f"weight_{name}"] += processor.column_accumulator(np.float16(w[mask]))
                     output['tree_float16'][region][f"weight_total"] += processor.column_accumulator(np.float16(rweight[mask]))
-                if region=='inclusive':
-                    output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
-                    for name in selection.names:
-                        output['tree_bool'][region][name] += processor.column_accumulator(np.bool_(selection.all(*[name])[mask]))
+                # if region=='inclusive':
+                    # output['tree_int64'][region]["event"]       +=  processor.column_accumulator(df["event"][mask])
+                    # for name in selection.names:
+                        # output['tree_bool'][region][name] += processor.column_accumulator(np.bool_(selection.all(*[name])[mask]))
             # Save the event numbers of events passing this selection
             # Save the event numbers of events passing this selection
             if cfg.RUN.SAVE.PASSING:
@@ -657,7 +662,6 @@ class vbfhinvProcessor(processor.ProcessorABC):
             if gen_v_pt is not None:
                 ezfill('gen_vpt', vpt=gen_v_pt[mask], weight=df['Generator_weight'][mask])
                 ezfill('gen_mjj', mjj=df['mjj_gen'][mask], weight=df['Generator_weight'][mask])
-
 
             # Photon CR data-driven QCD estimate
             if df['is_data'] and re.match("cr_g.*", region) and re.match("(SinglePhoton|EGamma).*", dataset):
