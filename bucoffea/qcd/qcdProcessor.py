@@ -133,14 +133,6 @@ class qcdProcessor(processor.ProcessorABC):
 
             w_one_per_event = df['Generator_weight'][mask]
 
-            ezfill('ak4_pt0',   jetpt=digenjet.i0.pt[mask].flatten(),    weight=w_one_per_event)
-            ezfill('ak4_eta0',  jeteta=digenjet.i0.eta[mask].flatten(),  weight=w_one_per_event)
-            ezfill('ak4_phi0',  jetphi=digenjet.i0.phi[mask].flatten(),  weight=w_one_per_event)
-
-            ezfill('ak4_pt1',   jetpt=digenjet.i1.pt[mask].flatten(),    weight=w_one_per_event)
-            ezfill('ak4_eta1',  jeteta=digenjet.i1.eta[mask].flatten(),  weight=w_one_per_event)
-            ezfill('ak4_phi1',  jetphi=digenjet.i1.phi[mask].flatten(),  weight=w_one_per_event)
-
             ezfill('genmet_pt',   met=genmet_pt[mask],      weight=w_one_per_event)
             ezfill('genmet_phi',  metphi=genmet_phi[mask],  weight=w_one_per_event)
             ezfill('gen_ht',      ht=ht[mask],           weight=w_one_per_event)
