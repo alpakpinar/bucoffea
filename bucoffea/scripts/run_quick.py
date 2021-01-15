@@ -18,8 +18,8 @@ def parse_commandline():
 def main():
 
     fileset = {
-        "VBF_HToInvisible_M125_pow_pythia8_2017" : [
-            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/03Sep20v7/VBF_HToInvisible_M125_13TeV_TuneCP5_powheg_pythia8/VBF_HToInvisible_M125_pow_pythia8_2017/200925_184136/0000/tree_1.root"
+        "QCD_HT1000to1500-mg_new_pmx_2017" : [
+            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/03Sep20v7/QCD_HT1000to1500_TuneCP5_13TeV-madgraph-pythia8/QCD_HT1000to1500-mg_new_pmx_2017/200925_182728/0000/tree_1.root"
         ]
     }
 
@@ -44,6 +44,9 @@ def main():
     elif args.processor == 'sumw':
         from bucoffea.gen import mcSumwProcessor
         processorInstance = mcSumwProcessor()
+    elif args.processor == 'qcd':
+        from bucoffea.qcd.qcdProcessor import qcdProcessor
+        processorInstance = qcdProcessor()
 
     for dataset, filelist in fileset.items():
         newlist = []
