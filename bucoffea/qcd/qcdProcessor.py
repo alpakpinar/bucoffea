@@ -30,6 +30,10 @@ def qcd_accumulator():
     met_phi_ax = Bin("metphi", r"MET $\phi$", 50,-np.pi, np.pi)
 
     items = {}
+
+    items['sumw'] = processor.defaultdict_accumulator(float)
+    items['sumw2'] = processor.defaultdict_accumulator(float)
+
     items["ak4_pt"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_eta"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
     items["ak4_phi"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
@@ -111,6 +115,9 @@ class qcdProcessor(processor.ProcessorABC):
 
         # Fill histograms
         output = self.accumulator.identity()
+
+        output['sumw'][dataset] +=  df['genEventSumw']
+        output['sumw2'][dataset] +=  df['genEventSumw2']
 
         regions = qcd_regions()
 
