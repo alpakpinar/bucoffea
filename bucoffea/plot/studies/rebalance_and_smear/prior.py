@@ -81,11 +81,6 @@ def plot_2d_prior(acc, outtag, distribution):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    # Rebin htmiss (use coarser binning)
-    # TODO: Binning to be adjusted
-    new_htmiss_ax = hist.Bin('htmiss', r"$H_{T}^{miss}$ (GeV)", 10, 0, 4000)
-    h = h.rebin('htmiss', new_htmiss_ax)
-
     # Plot the distribution for both years
     for year in [2017, 2018]:
         _h = h.integrate('dataset', f'QCD_HT_{year}')
