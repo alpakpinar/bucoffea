@@ -70,8 +70,8 @@ def qcd_regions():
     # For now: Two categories
     # 1. Trk-trk events
     # 2. Others
-    regions['trk_trk'] = ['inclusive', 'trk_trk']
-    regions['not_trk_trk'] = ['inclusive', 'not_trk_trk']
+    regions['trk_trk'] = ['inclusive', 'two_jets', 'trk_trk']
+    regions['not_trk_trk'] = ['inclusive', 'two_jets', 'not_trk_trk']
 
     return regions
 
@@ -117,6 +117,9 @@ class qcdProcessor(processor.ProcessorABC):
         selection.add('trk_trk', trk_trk)
         selection.add('not_trk_trk', ~trk_trk)
 
+        # At least two jets in the event
+        selection.add('two_jets', digenjet.counts>0)
+
         # Fill histograms
         output = self.accumulator.identity()
 
@@ -143,6 +146,16 @@ class qcdProcessor(processor.ProcessorABC):
             ezfill('ak4_phi', jetphi=genjets[mask].phi.flatten(), weight=w_alljets)
 
             w_one_per_event = df['Generator_weight'][mask]
+
+            # Leading jet pair
+            if region != 'inclusive':
+                ezfill('ak4_pt0',  jetpt=digenjet.i0.pt[mask].flatten(),    weight=w_one_per_event)
+                ezfill('ak4_eta0', jeteta=digenjet.i0.eta[mask].flatten(),  weight=w_one_per_event)
+                ezfill('ak4_phi0', jetphi=digenjet.i0.phi[mask].flatten(),  weight=w_one_per_event)
+
+                ezfill('ak4_pt1',  jetpt=digenjet.i1.pt[mask].flatten(),    weight=w_one_per_event)
+                ezfill('ak4_eta1', jeteta=digenjet.i1.eta[mask].flatten(),  weight=w_one_per_event)
+                ezfill('ak4_phi1', jetphi=digenjet.i1.phi[mask].flatten(),  weight=w_one_per_event)
 
             ezfill('genmet_pt',   met=genmet_pt[mask],      weight=w_one_per_event)
             ezfill('genmet_phi',  metphi=genmet_phi[mask],  weight=w_one_per_event)
