@@ -18,9 +18,13 @@ def qcd_accumulator():
     dataset_ax = Cat("dataset", "Primary dataset")
     region_ax = Cat("region", "Selection region")
 
-    met_ax = Bin("met", r"$p_{T}^{miss}$ (GeV)", 40, 0, 2000)
+    met_ax = Bin("met", r"$p_{T}^{miss}$ (GeV)", 75, 0, 1500)
     ht_ax = Bin("ht", r"$H_{T}$ (GeV)", 50, 0, 4000)
-    htmiss_ax = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 50, 0, 4000)
+    htmiss_ax = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 75, 0, 1500)
+
+    # HTmiss coarse binning for 2D histograms
+    htmiss_coarse_binning = list(range(0,400,100)) + list(range(400,1400,200))
+    htmiss_ax_coarse = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", htmiss_coarse_binning)
 
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 50, 0, 1000)
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
@@ -53,8 +57,8 @@ def qcd_accumulator():
     items["gen_htmiss"] = Hist('Counts', dataset_ax, region_ax, htmiss_ax)
 
     # 2D histograms
-    items["htmiss_ht"] = Hist("Counts", dataset_ax, region_ax, htmiss_ax, ht_ax)
-    items["htmiss_met"] = Hist("Counts", dataset_ax, region_ax, htmiss_ax, met_ax)
+    items["htmiss_ht"] = Hist("Counts", dataset_ax, region_ax, htmiss_ax_coarse, ht_ax)
+    items["htmiss_met"] = Hist("Counts", dataset_ax, region_ax, htmiss_ax_coarse, met_ax)
 
     return processor.dict_accumulator(items)
 
