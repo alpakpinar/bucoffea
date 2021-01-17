@@ -23,7 +23,7 @@ def qcd_accumulator():
     htmiss_ax = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 75, 0, 1500)
 
     # HTmiss coarse binning for 2D histograms
-    htmiss_coarse_binning = list(range(0,400,100)) + list(range(400,1400,200))
+    htmiss_coarse_binning = list(range(0,400,100)) + [400,600,800,1600]
     htmiss_ax_coarse = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", htmiss_coarse_binning)
 
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 50, 0, 1000)
