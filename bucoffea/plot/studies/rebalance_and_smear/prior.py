@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import uproot
 import numpy as np
 
 from coffea import hist
@@ -72,7 +73,7 @@ def plot_prior(acc, outtag, distribution, region='inclusive'):
 
         print(f'File saved: {outpath}')
 
-def plot_2d_prior(acc, outtag, distribution):
+def plot_2d_prior(acc, outtag, distribution, outputrootfile=None):
     acc.load(distribution)
     # For 2D distributions, we look at inclusive region by default
     h = preprocess(acc[distribution], acc, region='inclusive')
@@ -116,6 +117,18 @@ def plot_2d_prior(acc, outtag, distribution):
         plt.close(fig)
         print(f'File saved: {outpath}')
 
+        # If an output ROOT file is given, save the histograms into this file
+        if outputrootfile is not None:
+            htmiss_bins = _h.identifiers('htmiss')
+            for htmiss_bin in htmiss_bins:
+                lo_int, high_int = int(htmiss_bin.lo), int(htmiss_bin.hi)
+                bin_label = f'htmiss_{lo_int}_to_{high_int}'
+
+                # Get the values for this HTmiss bin
+                h_int = _h.integrate('htmiss', htmiss_bin)
+                dist_label = f'{distribution.replace("htmiss_", "gen_")}_{bin_label}_{year}'
+                outputrootfile[dist_label] = (h_int.values()[()], h_int.axes()[0].edges())
+
 def main():
     inpath = sys.argv[1]
     acc = dir_archive(inpath)
@@ -135,6 +148,13 @@ def main():
         'not_trk_trk'
     ]
 
+    # Create output ROOT file to save the distributions
+    outdir = f'./output/{outtag}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    outputrootpath = pjoin(outdir, f'rbs_prior_dists.root')
+    outputrootfile = uproot.recreate(outputrootpath)
+
     # 1D priors
     for region in regions:
         for distribution in distributions:
@@ -142,7 +162,7 @@ def main():
 
     # 2D priors
     for distribution in ['htmiss_met', 'htmiss_ht']:
-        plot_2d_prior(acc, outtag, distribution=distribution)
+        plot_2d_prior(acc, outtag, distribution=distribution, outputrootfile=outputrootfile)
 
 
 if  __name__ == '__main__':
