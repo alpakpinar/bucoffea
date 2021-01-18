@@ -83,7 +83,7 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None):
         os.makedirs(outdir)
 
     # Rebin HTmiss axis
-    htmiss_new_binning = list(range(0,400,100)) + [400,600,800,1200]
+    htmiss_new_binning = list(range(0,400,100)) + [400,600,800,1600]
     new_htmiss_ax = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", htmiss_new_binning)
     h = h.rebin('htmiss', new_htmiss_ax)
 
