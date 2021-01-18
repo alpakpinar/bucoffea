@@ -95,7 +95,7 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None):
         # Plot in bins of HTmiss
         hist.plot1d(_h, overlay='htmiss', ax=ax)
         ax.set_yscale('log')
-        ax.set_ylim(1e-2, 1e10)
+        ax.set_ylim(1e-2, 1e14)
 
         ax.text(0., 1., 'QCD MC',
             fontsize=14,
