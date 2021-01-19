@@ -638,6 +638,13 @@ class vbfhinvProcessor(processor.ProcessorABC):
             w_btag = weight_shape(btag[mask], rweight[mask])
             ezfill('ak4_btag', btag=btag[mask].flatten(), weight=w_btag )
 
+            # Get the events where we have negative b-tag weights
+            # Record the b-jet pt and eta for such events
+            w_bjets = weight_shape(bjets[mask].eta, rweight[mask])
+            w_bjets = np.where(w_bjets < 0, 1, 0)
+            ezfill('bjets_pt_negw',     jetpt=bjets[mask].pt.flatten(),      weight=w_bjets)
+            ezfill('bjets_eta_negw',    jeteta=bjets[mask].eta.flatten(),    weight=w_bjets)
+
             # MET
             ezfill('dpfcalo_cr',            dpfcalo=df["dPFCaloCR"][mask],       weight=rweight[mask] )
             ezfill('dpfcalo_sr',            dpfcalo=df["dPFCaloSR"][mask],       weight=rweight[mask] )
