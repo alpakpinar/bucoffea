@@ -82,18 +82,18 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    # Rebin HTmiss axis
-    htmiss_new_binning = list(range(0,400,100)) + [400,600,800,1600]
-    new_htmiss_ax = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", htmiss_new_binning)
-    h = h.rebin('htmiss', new_htmiss_ax)
+    # Rebin HT axis
+    ht_new_binning = list(range(0,800,160)) + list(range(800,4000,640))
+    new_ht_ax = hist.Bin("ht", r"$H_{T}$ (GeV)", ht_new_binning)
+    h = h.rebin('ht', new_ht_ax)
 
     # Plot the distribution for both years
     for year in [2017, 2018]:
         _h = h.integrate('dataset', f'QCD_HT_{year}')
         fig, ax = plt.subplots()
 
-        # Plot in bins of HTmiss
-        hist.plot1d(_h, overlay='htmiss', ax=ax)
+        # Plot HTmiss in bins of HT
+        hist.plot1d(_h, overlay='ht', ax=ax)
         ax.set_yscale('log')
         ax.set_ylim(1e-2, 1e14)
 
@@ -119,14 +119,14 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None):
 
         # If an output ROOT file is given, save the histograms into this file
         if outputrootfile is not None:
-            htmiss_bins = _h.identifiers('htmiss')
-            for htmiss_bin in htmiss_bins:
-                lo_int, high_int = int(htmiss_bin.lo), int(htmiss_bin.hi)
-                bin_label = f'htmiss_{lo_int}_to_{high_int}'
+            ht_bins = _h.identifiers('ht')
+            for ht_bin in ht_bins:
+                lo_int, high_int = int(ht_bin.lo), int(ht_bin.hi)
+                bin_label = f'ht_{lo_int}_to_{high_int}'
 
-                # Get the values for this HTmiss bin
-                h_int = _h.integrate('htmiss', htmiss_bin)
-                dist_label = f'{distribution.replace("htmiss_", "gen_")}_{bin_label}_{year}'
+                # Get the values for this ht bin
+                h_int = _h.integrate('ht', ht_bin)
+                dist_label = f'{distribution.replace("ht_", "gen_")}_{bin_label}_{year}'
                 outputrootfile[dist_label] = (h_int.values()[()], h_int.axes()[0].edges())
 
 def main():
@@ -160,9 +160,8 @@ def main():
         for distribution in distributions:
             plot_prior(acc, outtag, distribution=distribution, region=region)
 
-    # 2D priors
-    for distribution in ['htmiss_met', 'htmiss_ht']:
-        plot_2d_prior(acc, outtag, distribution=distribution, outputrootfile=outputrootfile)
+    # 2D priors: Plot HTmiss in bins of HT
+    plot_2d_prior(acc, outtag, distribution='htmiss_ht', outputrootfile=outputrootfile)
 
 
 if  __name__ == '__main__':
