@@ -638,12 +638,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
             w_btag = weight_shape(btag[mask], rweight[mask])
             ezfill('ak4_btag', btag=btag[mask].flatten(), weight=w_btag )
 
-            # Get the events where we have negative b-tag weights
-            # Record the b-jet pt and eta for such events
-            w_bjets = weight_shape(bjets[mask].eta, rweight[mask])
-            w_bjets = np.where(w_bjets < 0, 1, 0)
-            ezfill('bjets_pt_negw',     jetpt=bjets[mask].pt.flatten(),      weight=w_bjets)
-            ezfill('bjets_eta_negw',    jeteta=bjets[mask].eta.flatten(),    weight=w_bjets)
+            # Get the RECO b-jets where we the matching GEN-jet is of not b or c quark flavor
+            not_matches_to_b_or_c = ~((bjets[mask].hadflav == 4) | (bjets[mask].hadflav == 5))
+
+            ezfill('bjets_pt_fake',         jetpt=bjets[mask][not_matches_to_b_or_c].pt.flatten()          )
+            ezfill('bjets_eta_fake',        jeteta=bjets[mask][not_matches_to_b_or_c].pt.flatten()         )
+            ezfill('bjets_jetflav_fake',    jetflav=bjets[mask][not_matches_to_b_or_c].hadflav.flatten()   )
 
             # MET
             ezfill('dpfcalo_cr',            dpfcalo=df["dPFCaloCR"][mask],       weight=rweight[mask] )

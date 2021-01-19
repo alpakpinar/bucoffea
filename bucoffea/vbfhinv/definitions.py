@@ -36,6 +36,7 @@ def vbfhinv_accumulator(cfg):
     jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
 
     jet_mass_ax = Bin("mass", r"$M_{jet}$ (GeV)", 100,0,300)
+    jet_flav_ax = Bin("jetflav", r'GEN-jet Flavour', 6, 0, 6)
 
     dpfcalo_ax = Bin("dpfcalo", r"$(PFMET-CaloMET) / Recoil$", 20, -1, 1)
     btag_ax = Bin("btag", r"B tag discriminator", 20, 0, 1)
@@ -125,8 +126,9 @@ def vbfhinv_accumulator(cfg):
     items["ak4_phi_nopref"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
     items["ak4_btag"] = Hist("Counts", dataset_ax, region_ax, btag_ax)
 
-    items["bjets_pt_negw"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
-    items["bjets_eta_negw"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
+    items["bjets_pt_fake"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
+    items["bjets_eta_fake"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
+    items["bjets_jetflav_fake"] = Hist("Counts", dataset_ax, region_ax, jet_flav_ax)
 
     items["recoil_mjj"] = Hist("Counts", dataset_ax, region_ax, recoil_ax, mjj_ax)
     items["photon_eta_phi"] = Hist("Counts", dataset_ax, region_ax, eta_ax_coarse, phi_ax_coarse)
