@@ -46,12 +46,15 @@ def plot_bjet_distribution(acc, outtag, distribution, region, dataset):
         os.makedirs(outdir)
 
     for year in [2017, 2018]:
-        _h = h.integrate('dataset', f'{dataset}.*{year}')
+        _h = h.integrate('dataset', re.compile(f'{dataset}.*{year}'))
         fig, ax = plt.subplots()
 
         hist.plot1d(_h, ax=ax)
         ax.set_yscale('log')
         ax.set_ylim(1e-2,1e6)
+        ax.set_xlabel(r'b-jet $p_T \ (GeV)$')
+
+        ax.get_legend().remove()
 
         ax.text(0., 1., get_plot_tag(dataset, region, year),
             fontsize=14,
