@@ -12,6 +12,15 @@ from klepto.archives import dir_archive
 
 pjoin = os.path.join
 
+def get_xlabel(distribution):
+    mapping = {
+        'bjets_pt_fake' : r'GEN-jet $p_T \ (GeV)$',
+        'bjets_eta_fake' : r'Jet $\eta$',
+        'bjets_jetflav_fake' : r'Matched GEN-jet flavor',
+    }
+    
+    return mapping[distribution]
+
 def get_plot_tag(dataset, region, year):
     mapping = {
         'DY.*' : {
@@ -52,7 +61,7 @@ def plot_bjet_distribution(acc, outtag, distribution, region, dataset):
         hist.plot1d(_h, ax=ax)
         ax.set_yscale('log')
         ax.set_ylim(1e-2,1e6)
-        ax.set_xlabel(r'b-jet $p_T \ (GeV)$')
+        ax.set_xlabel(get_xlabel(distribution))
 
         ax.get_legend().remove()
 
@@ -91,8 +100,9 @@ def main():
     }
 
     distributions = [
-        'bjets_pt_negw',
-        'bjets_eta_negw',
+        'bjets_pt_fake',
+        'bjets_eta_fake',
+        'bjets_jetflav_fake',
     ]
 
     for dataset, regions in datasets_regions.items():
