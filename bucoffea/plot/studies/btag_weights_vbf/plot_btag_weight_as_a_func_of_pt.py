@@ -16,7 +16,7 @@ def comb_sf_for_2018(x):
     return 0.909339+(0.00354*(np.log(x+19)*(np.log(x+18)*(3-(0.471623*np.log(x+18))))))
 
 def incl_sf_for_2017(x):
-    return 1.07073+0.000128481*x+6.16477e-07*x**2+-5.65803e-10*x**3
+    return 0.972902+0.000201811*x+3.96396e-08*x**2+-4.53965e-10*x**3
 
 def incl_sf_for_2018(x):
     return 1.6329+-0.00160255*x+1.9899e-06*x**2+-6.72613e-10*x**3
@@ -36,6 +36,9 @@ def plot_btag_as_a_func_of_pt(method='incl'):
     sf_2018_incl = incl_sf_for_2018(x)
 
     fig, ax = plt.subplots()
+
+    ax.axhline(1, xmin=0, xmax=1, color='k', ls='--')
+
     ax.plot(x, sf_2017_comb, label='2017, comb')
     ax.plot(x, sf_2018_comb, label='2018, comb')
 
