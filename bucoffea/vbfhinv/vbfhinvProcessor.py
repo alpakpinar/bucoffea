@@ -642,7 +642,7 @@ class vbfhinvProcessor(processor.ProcessorABC):
             not_matches_to_b_or_c = ~((bjets.hadflav == 4) | (bjets.hadflav == 5))
             
             ezfill('bjets_pt_fake',         jetpt=bjets.pt[not_matches_to_b_or_c][mask].flatten()          )
-            ezfill('bjets_eta_fake',        jeteta=bjets.pt[not_matches_to_b_or_c][mask].flatten()         )
+            ezfill('bjets_eta_fake',        jeteta=bjets.eta[not_matches_to_b_or_c][mask].flatten()         )
             ezfill('bjets_jetflav_fake',    jetflav=bjets.hadflav[not_matches_to_b_or_c][mask].flatten()   )
 
             # MET
