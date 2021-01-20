@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import argparse
 import uproot
 import numpy as np
 
@@ -13,6 +14,13 @@ from klepto.archives import dir_archive
 from pprint import pprint
 
 pjoin = os.path.join
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Path to merged coffea files.')
+    parser.add_argument('--plot_inc', help='Plot inclusive/eta-binned MET/HTmiss distributions.', action='store_true')
+    args = parser.parse_args()
+    return args
 
 def preprocess(h, acc, region):
     h = merge_extensions(h, acc, reweight_pu=False)
@@ -73,7 +81,7 @@ def plot_prior(acc, outtag, distribution, region='inclusive'):
 
         print(f'File saved: {outpath}')
 
-def plot_2d_prior(acc, outtag, distribution, outputrootfile=None):
+def plot_2d_prior(acc, outtag, distribution, outputrootfile=None, ht_binning=None, htmiss_binning=None):
     acc.load(distribution)
     # For 2D distributions, we look at inclusive region by default
     h = preprocess(acc[distribution], acc, region='inclusive')
@@ -82,10 +90,11 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    # Rebin HT axis
-    ht_new_binning = list(range(0,1000,200)) + list(range(1000,4000,1000)) + [5000]
-    new_ht_ax = hist.Bin("ht", r"$H_{T}$ (GeV)", ht_new_binning)
-    h = h.rebin('ht', new_ht_ax)
+    # Rebin HT and HTmiss axes
+    if ht_binning:
+        h = h.rebin('ht', ht_binning)
+    if htmiss_binning:
+        h = h.rebin('htmiss', htmiss_binning)
 
     # Plot the distribution for both years
     for year in [2017, 2018]:
@@ -130,7 +139,9 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None):
                 outputrootfile[dist_label] = (h_int.values()[()], h_int.axes()[0].edges())
 
 def main():
-    inpath = sys.argv[1]
+    args = parse_cli()
+    inpath = args.inpath
+
     acc = dir_archive(inpath)
     acc.load('sumw')
     acc.load('sumw2')
@@ -156,12 +167,20 @@ def main():
     outputrootfile = uproot.recreate(outputrootpath)
 
     # 1D priors
-    for region in regions:
-        for distribution in distributions:
-            plot_prior(acc, outtag, distribution=distribution, region=region)
+    if args.plot_inc:
+        for region in regions:
+            for distribution in distributions:
+                plot_prior(acc, outtag, distribution=distribution, region=region)
 
     # 2D priors: Plot HTmiss in bins of HT
-    plot_2d_prior(acc, outtag, distribution='htmiss_ht', outputrootfile=outputrootfile)
+    ht_binning = hist.Bin("ht", r"$H_{T}$ (GeV)", list(range(0,1000,200)) + [1000,2000,5000])
+    htmiss_binning = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", list(range(0,600,60)) + list(range(600,1100,100)) + [1500])
+    plot_2d_prior(acc, outtag, 
+        distribution='htmiss_ht',
+        outputrootfile=outputrootfile,
+        ht_binning=ht_binning,
+        htmiss_binning=htmiss_binning
+        )
 
 
 if  __name__ == '__main__':
