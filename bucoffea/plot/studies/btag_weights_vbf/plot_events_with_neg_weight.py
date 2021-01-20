@@ -14,7 +14,7 @@ pjoin = os.path.join
 
 def get_xlabel(distribution):
     mapping = {
-        'bjets_pt_fake' : r'GEN-jet $p_T \ (GeV)$',
+        'bjets_pt_fake' : r'Jet $p_T \ (GeV)$',
         'bjets_eta_fake' : r'Jet $\eta$',
         'bjets_jetflav_fake' : r'Matched GEN-jet flavor',
     }
