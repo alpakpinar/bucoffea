@@ -33,6 +33,7 @@ from bucoffea.helpers.dataset import (
                                       )
 from bucoffea.helpers.gen import (
                                   setup_gen_candidates,
+                                  setup_lhe_candidates,
                                   setup_dressed_gen_candidates,
                                   setup_lhe_cleaned_genjets,
                                   fill_gen_v_info
@@ -153,6 +154,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
             dressed = setup_dressed_gen_candidates(df)
             fill_gen_v_info(df, gen, dressed)
             gen_v_pt = df['gen_v_pt_combined']
+
+            # Get LHE-level electrons and muons
+            lhe = setup_lhe_candidates(df)
+            lhe_electrons = lhe[lhe.abspdg==11]
+            lhe_muons = lhe[lhe.abspdg==13]
+
         elif df['is_lo_g']:
             gen = setup_gen_candidates(df)
             all_gen_photons = gen[(gen.pdg==22)]
@@ -241,6 +248,12 @@ class vbfhinvProcessor(processor.ProcessorABC):
         selection.add('at_least_one_tau', taus.counts>0)
         selection.add('mindphijr',df['minDPhiJetRecoil'] > cfg.SELECTION.SIGNAL.MINDPHIJR)
         selection.add('mindphijm',df['minDPhiJetMet'] > cfg.SELECTION.SIGNAL.MINDPHIJR)
+
+        if df['is_lo_z'] or df['is_lo_w']:
+            selection.add('one_lhe_muon',      lhe_muons.counts==1)
+            selection.add('one_lhe_electron',  lhe_electrons.counts==1)
+            selection.add('two_lhe_muons',     lhe_muons.counts==2)
+            selection.add('two_lhe_electrons', lhe_electrons.counts==2)
 
         # B jets are treated using veto weights
         # So accept them in MC, but reject in data

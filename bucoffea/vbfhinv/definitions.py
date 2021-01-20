@@ -263,20 +263,36 @@ def vbfhinv_regions(cfg):
 
     regions['cr_2m_vbf'] = cr_2m_cuts
 
+    # LHE-level dimuon CR
+    cr_2m_lhe_cuts = common_cuts[1:] + ['trig_met', 'dpfcalo_cr', 'two_lhe_muons']
+    regions['cr_2m_lhe_vbf'] = cr_2m_lhe_cuts
+
     # Single muon CR
     cr_1m_cuts = ['trig_met','one_muon', 'at_least_one_tight_mu',  'veto_ele'] + common_cuts[1:] + ['dpfcalo_cr']
     cr_1m_cuts.remove('veto_muo')
     regions['cr_1m_vbf'] = cr_1m_cuts
+
+    # LHE-level single muon CR
+    cr_1m_lhe_cuts = common_cuts[1:] + ['trig_met', 'dpfcalo_cr', 'one_lhe_muon']
+    regions['cr_1m_lhe_vbf'] = cr_1m_lhe_cuts
 
     # Dielectron CR
     cr_2e_cuts = ['trig_ele','two_electrons', 'at_least_one_tight_el', 'dielectron_mass', 'veto_muo', 'dielectron_charge'] + common_cuts[2:] + ['dpfcalo_cr']
     # cr_2e_cuts.remove('veto_ele')
     regions['cr_2e_vbf'] = cr_2e_cuts
 
+    # LHE-level dielectron CR
+    cr_2e_lhe_cuts = common_cuts[2:] + ['dpfcalo_cr', 'two_lhe_electrons']
+    regions['cr_2e_lhe_vbf'] = cr_2e_lhe_cuts
+
     # Single electron CR
     cr_1e_cuts = ['trig_ele','one_electron', 'at_least_one_tight_el', 'veto_muo','met_el'] + common_cuts[1:] + ['dpfcalo_cr', 'no_el_in_hem']
     # cr_1e_cuts.remove('veto_ele')
     regions['cr_1e_vbf'] =  cr_1e_cuts
+
+    # LHE-level single electron CR
+    cr_1e_lhe_cuts = common_cuts[1:] + ['dpfcalo_cr', 'one_lhe_electron']
+    regions['cr_1e_lhe_vbf'] = cr_1e_lhe_cuts
 
     # Photon CR
     cr_g_cuts = ['trig_photon', 'one_photon', 'at_least_one_tight_photon','photon_pt'] + common_cuts + ['dpfcalo_cr']
