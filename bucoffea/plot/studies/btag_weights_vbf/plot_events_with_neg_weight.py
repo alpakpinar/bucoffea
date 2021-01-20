@@ -72,7 +72,7 @@ def plot_bjet_distribution(acc, outtag, distribution, region, dataset):
             transform=ax.transAxes
         )
 
-        ax.text(1., 1., r'Events with $w < 0$',
+        ax.text(1., 1., r'Mismatched b-jets',
             fontsize=14,
             ha='right',
             va='bottom',
