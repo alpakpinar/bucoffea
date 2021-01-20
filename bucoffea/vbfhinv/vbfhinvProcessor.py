@@ -639,11 +639,11 @@ class vbfhinvProcessor(processor.ProcessorABC):
             ezfill('ak4_btag', btag=btag[mask].flatten(), weight=w_btag )
 
             # Get the RECO b-jets where we the matching GEN-jet is of not b or c quark flavor
-            not_matches_to_b_or_c = ~((bjets[mask].hadflav == 4) | (bjets[mask].hadflav == 5))
-
-            ezfill('bjets_pt_fake',         jetpt=bjets[mask][not_matches_to_b_or_c].pt.flatten()          )
-            ezfill('bjets_eta_fake',        jeteta=bjets[mask][not_matches_to_b_or_c].pt.flatten()         )
-            ezfill('bjets_jetflav_fake',    jetflav=bjets[mask][not_matches_to_b_or_c].hadflav.flatten()   )
+            not_matches_to_b_or_c = ~((bjets.hadflav == 4) | (bjets.hadflav == 5))
+            
+            ezfill('bjets_pt_fake',         jetpt=bjets.pt[not_matches_to_b_or_c][mask].flatten()          )
+            ezfill('bjets_eta_fake',        jeteta=bjets.pt[not_matches_to_b_or_c][mask].flatten()         )
+            ezfill('bjets_jetflav_fake',    jetflav=bjets.hadflav[not_matches_to_b_or_c][mask].flatten()   )
 
             # MET
             ezfill('dpfcalo_cr',            dpfcalo=df["dPFCaloCR"][mask],       weight=rweight[mask] )
