@@ -126,7 +126,7 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None):
 
                 # Get the values for this ht bin
                 h_int = _h.integrate('ht', ht_bin)
-                dist_label = f'{distribution.replace("ht_", "gen_")}_{bin_label}_{year}'
+                dist_label = f'gen_htmiss_{bin_label}_{year}'
                 outputrootfile[dist_label] = (h_int.values()[()], h_int.axes()[0].edges())
 
 def main():
