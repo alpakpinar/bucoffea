@@ -102,9 +102,25 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None, ht_binning=Non
         fig, ax = plt.subplots()
 
         # Plot HTmiss in bins of HT
-        hist.plot1d(_h, overlay='ht', ax=ax)
+        for ht_bin in _h.identifiers('ht'):
+            hh = _h.integrate('ht', ht_bin)
+            total_sumw = np.sum(hh.values()[()])
+            hh.scale(1/total_sumw)
+            hist.plot1d(hh, ax=ax, clear=False)
+        
         ax.set_yscale('log')
-        ax.set_ylim(1e-2, 1e14)
+        ax.set_ylim(1e-9, 1e1)
+        ax.set_ylabel('Normalized Counts')
+
+        ax.legend(title=r'$H_T \ (GeV)$', labels=[
+            r'$[0,200)$',
+            r'$[200,400)$',
+            r'$[400,600)$',
+            r'$[600,800)$',
+            r'$[800,1000)$',
+            r'$[1000,2000)$',
+            r'$[2000,5000)$',
+        ])
 
         ax.text(0., 1., 'QCD MC',
             fontsize=14,
@@ -135,6 +151,11 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None, ht_binning=Non
 
                 # Get the values for this ht bin
                 h_int = _h.integrate('ht', ht_bin)
+
+                # Scale by 1/sumw
+                total_sumw = np.sum(h_int.values()[()])
+                h_int.scale(1/total_sumw)
+
                 dist_label = f'gen_htmiss_{bin_label}_{year}'
                 outputrootfile[dist_label] = (h_int.values()[()], h_int.axes()[0].edges())
 
