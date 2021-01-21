@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import uproot
 import numpy as np
 
 from coffea import hist
@@ -43,7 +44,7 @@ def get_plot_tag(channel, year):
     }
     return mapping[channel]
 
-def plot_z_over_w(acc, outtag, channel='electrons'):
+def plot_z_over_w(acc, outtag, channel='electrons', compare_with_root=None):
     '''Plot Z/W ratio, where events are selected using regular jet cuts + LHE-level lepton cuts.'''
     distribution = 'mjj'
     acc.load(distribution)
@@ -70,8 +71,6 @@ def plot_z_over_w(acc, outtag, channel='electrons'):
     for year in [2017, 2018]:
         h_z_lhe = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}')).integrate('region', get_region('DY', channel)['lhe'])
         h_w_lhe = h.integrate('dataset', re.compile(f'WJetsToLNu.*{year}')).integrate('region', get_region('W', channel)['lhe'])
-        h_z_reco = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}')).integrate('region', get_region('DY', channel)['reco'])
-        h_w_reco = h.integrate('dataset', re.compile(f'WJetsToLNu.*{year}')).integrate('region', get_region('W', channel)['reco'])
 
         # Plot the ratio
         fig, ax = plt.subplots()
@@ -82,13 +81,14 @@ def plot_z_over_w(acc, outtag, channel='electrons'):
             error_opts=data_err_opts
             )
 
-        hist.plotratio(h_z_reco, h_w_reco, 
-            ax=ax,
-            unc='num',
-            label='RECO',
-            error_opts=data_err_opts,
-            clear=False
-            )
+
+        # Can compare with the ratio obtained from RECO-level lepton selection
+        # Also without the MET cut so that we're consistent
+        if compare_with_root is not None:
+            r = compare_with_root[f'qcd_z_over_w_electrons_without_met_cut_{year}']
+            centers = 0.5 * np.sum(r.bins, axis=1)
+
+            ax.plot(centers, r.values, ls='', label='RECO', marker='o')
 
         ax.legend(title='Lepton requirement')
 
@@ -101,6 +101,15 @@ def plot_z_over_w(acc, outtag, channel='electrons'):
 
         ax.set_xlim(200,5000)
         ax.set_ylim(0,0.2)
+        ax.set_ylabel('Ratio')
+
+        if channel == 'electrons':
+            ax.text(1., 1., 'No MET cut applied',
+                fontsize=14,
+                ha='right',
+                va='bottom',
+                transform=ax.transAxes
+                )
 
         loc1 = MultipleLocator(0.02)
         loc2 = MultipleLocator(0.01)
@@ -122,8 +131,16 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
+    # Compare the Z/W obtained by LHE requirements to RECO ones (without MET cut)
+    rootpath = './output/merged_2021-01-08_vbfhinv_1e_cr_without_metcut/root/z_over_w_with_without_met_cut.root'
+    rootfile = uproot.open(rootpath)
+
     for channel in ['electrons', 'muons']:
-        plot_z_over_w(acc, outtag, channel=channel)
+        if channel == 'electrons':
+            compare_with_root = rootfile
+        else:
+            compare_with_root = None
+        plot_z_over_w(acc, outtag, channel=channel, compare_with_root=compare_with_root)
 
 if __name__ == '__main__':
     main()
