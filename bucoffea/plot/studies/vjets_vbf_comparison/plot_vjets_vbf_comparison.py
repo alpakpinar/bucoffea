@@ -33,7 +33,7 @@ def rebin(h, distribution):
     
     return h
 
-def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
+def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj', file_format='pdf'):
     '''Plot a comparison of V+jets (QCD and EWK) and signal (VBF and ggH) spectra, in terms of the given distribution.'''
     acc.load(distribution)
     h = acc[distribution]
@@ -103,7 +103,7 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj'):
         ax.legend(labels=labels)
 
         # Save figure
-        outpath = pjoin(outdir, f'signal_bkg_comparison_{distribution}_{year}.pdf')
+        outpath = pjoin(outdir, f'signal_bkg_comparison_{distribution}_{year}.{file_format}')
         fig.savefig(outpath)
         plt.close(fig)
         print(f'File saved: {outpath}')
