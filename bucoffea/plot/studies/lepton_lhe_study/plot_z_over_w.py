@@ -52,8 +52,8 @@ def plot_z_over_w(acc, outtag, channel='electrons'):
     }
     
     for year in [2017, 2018]:
-        h_z = h.integrate('dataset', f'DYJetsToLL.*{year}').integrate('region', get_region('DY', channel))
-        h_w = h.integrate('dataset', f'WJetsToLNu.*{year}').integrate('region', get_region('W', channel))
+        h_z = h.integrate('dataset', re.compile(f'DYJetsToLL.*{year}')).integrate('region', get_region('DY', channel))
+        h_w = h.integrate('dataset', re.compile(f'WJetsToLNu.*{year}')).integrate('region', get_region('W', channel))
 
         # Plot the ratio
         fig, ax = plt.subplots()
@@ -69,6 +69,9 @@ def plot_z_over_w(acc, outtag, channel='electrons'):
             va='bottom',
             transform=ax.transAxes
         )
+
+        ax.set_xlim(200,5000)
+        ax.set_ylim(0,0.2)
 
         # Save figure
         outpath = pjoin(outdir, f'z_over_w_{channel}_from_lhe_{year}.pdf')
