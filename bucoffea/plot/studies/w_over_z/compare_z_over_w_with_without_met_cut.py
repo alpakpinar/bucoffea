@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import argparse
+import uproot
 import numpy as np
 
 from coffea import hist
@@ -35,7 +36,7 @@ def preprocess(h, acc, distribution):
 
     return h
 
-def compare_z_over_w_ratio(acc, outtag, distribution='mjj', proc='qcd'):
+def compare_z_over_w_ratio(acc, outtag, distribution='mjj', proc='qcd', outputrootfile=None):
     '''Compare Z / W ratio for two cases.'''
     acc.load(distribution)
     h = preprocess(acc[distribution], acc, distribution)
@@ -112,6 +113,14 @@ def compare_z_over_w_ratio(acc, outtag, distribution='mjj', proc='qcd'):
         plt.close(fig)
         print(f'File saved: {outpath}')
 
+        # Save ratios to the output root file if one is specified while calling the function
+        if outputrootfile is not None:
+            ratio_normal = h_num.values()[()] / h_den.values()[()]
+            ratio_without_met_cut = h_num.values()[()] / h_den_nometcut.values()[()]
+            edges = h_num.axes()[0].edges()
+            outputrootfile[f'{proc}_z_over_w_electrons_with_met_cut_{year}'] = (ratio_normal, edges) 
+            outputrootfile[f'{proc}_z_over_w_electrons_without_met_cut_{year}'] = (ratio_without_met_cut, edges) 
+
 def main():
     inpath = sys.argv[1]
     acc = dir_archive(inpath)
@@ -120,8 +129,16 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
+    # Save ratios to an output root file
+    outdir = f'./output/{outtag}/root'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    outputrootpath = pjoin(outdir, f'z_over_w_with_without_met_cut.root')
+    outputrootfile = uproot.recreate(outputrootpath)
+
     for proc in ['qcd', 'ewk']:
-        compare_z_over_w_ratio(acc, outtag, proc=proc)
+        compare_z_over_w_ratio(acc, outtag, proc=proc, outputrootfile=outputrootfile)
 
 if __name__ == '__main__':
     main()
