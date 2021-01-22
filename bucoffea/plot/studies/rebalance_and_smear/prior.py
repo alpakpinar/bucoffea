@@ -200,7 +200,7 @@ def main():
 
     # 2D priors: Plot HTmiss in bins of HT
     ht_binning = hist.Bin("ht", r"$H_{T}$ (GeV)", list(range(0,1000,200)) + [1000,2000,5000])
-    htmiss_binning = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", list(range(0,600,60)) + list(range(600,1100,100)) + [1500])
+    htmiss_binning = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 25, 0, 500)
     plot_2d_prior(acc, outtag, 
         distribution='htmiss_ht',
         outputrootfile=outputrootfile,
