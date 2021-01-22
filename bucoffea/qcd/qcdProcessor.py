@@ -19,7 +19,7 @@ def qcd_accumulator():
     region_ax = Cat("region", "Selection region")
 
     met_ax = Bin("met", r"$p_{T}^{miss}$ (GeV)", 75, 0, 1500)
-    ht_ax = Bin("ht", r"$H_{T}$ (GeV)", 25, 0, 5000)
+    ht_ax = Bin("ht", r"$H_{T}$ (GeV)", 50, 0, 5000)
     htmiss_ax = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 100, 0, 500)
 
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 50, 0, 1000)
@@ -59,7 +59,7 @@ def qcd_accumulator():
 
 def qcd_regions():
     regions = {}
-    regions['inclusive'] = ['inclusive']
+    regions['inclusive'] = ['inclusive', 'ht_cut']
 
     # Regions based on the eta of leading dijet
     # For now: Two categories
@@ -114,6 +114,9 @@ class qcdProcessor(processor.ProcessorABC):
 
         # At least two jets in the event
         selection.add('two_jets', digenjet.counts>0)
+
+        # HT > 100 GeV
+        selection.add('ht_cut', ht>100)
 
         # Fill histograms
         output = self.accumulator.identity()
