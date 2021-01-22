@@ -102,25 +102,23 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None, ht_binning=Non
         fig, ax = plt.subplots()
 
         # Plot HTmiss in bins of HT
+        legend_labels = []
         for ht_bin in _h.identifiers('ht'):
             hh = _h.integrate('ht', ht_bin)
             total_sumw = np.sum(hh.values()[()])
             hh.scale(1/total_sumw)
             hist.plot1d(hh, ax=ax, clear=False)
-        
+            lo, hi = int(ht_bin.lo), int(ht_bin.hi)
+
+            legend_labels.append(
+                f'$[{lo}, {hi})$'
+            )
+
         ax.set_yscale('log')
         ax.set_ylim(1e-9, 1e1)
         ax.set_ylabel('Normalized Counts')
 
-        ax.legend(title=r'$H_T \ (GeV)$', labels=[
-            r'$[0,200)$',
-            r'$[200,400)$',
-            r'$[400,600)$',
-            r'$[600,800)$',
-            r'$[800,1000)$',
-            r'$[1000,2000)$',
-            r'$[2000,5000)$',
-        ])
+        ax.legend(title=r'$H_T \ (GeV)$', labels=legend_labels)
 
         ax.text(0., 1., 'QCD MC',
             fontsize=14,
@@ -200,6 +198,7 @@ def main():
 
     # 2D priors: Plot HTmiss in bins of HT
     ht_binning = hist.Bin("ht", r"$H_{T}$ (GeV)", list(range(0,1000,200)) + [1000,2000,5000])
+    # ht_binning = hist.Bin("ht", r"$H_{T}$ (GeV)", list(range(100,900,200)) + [900,1300,2000,5000])
     htmiss_binning = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 25, 0, 500)
     plot_2d_prior(acc, outtag, 
         distribution='htmiss_ht',
