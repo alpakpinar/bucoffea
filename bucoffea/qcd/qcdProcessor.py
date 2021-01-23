@@ -20,7 +20,7 @@ def qcd_accumulator():
 
     met_ax = Bin("met", r"$p_{T}^{miss}$ (GeV)", 75, 0, 1500)
     ht_ax = Bin("ht", r"$H_{T}$ (GeV)", 50, 0, 5000)
-    htmiss_ax = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 100, 0, 500)
+    htmiss_ax = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 250, 0, 500)
 
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 50, 0, 1000)
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
