@@ -89,7 +89,7 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj', file_format='pdf'
         ax.set_ylabel('Normalized Counts')
 
         # CMS label & text
-        hep.cms.label(year=year, paper=True)
+        hep.cms.label(year="", paper=True)
         hep.cms.text()
 
         # Fix legend labels
