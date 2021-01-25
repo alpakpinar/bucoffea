@@ -89,8 +89,11 @@ def plot_z_over_w(infile, outtag, channel='muons', plot='total_bkg'):
 
         ax.yaxis.set_ticks_position('both')
 
-        # Horizontal line at 0.1 (expected ratio?)
-        ax.axhline(0.1, xmin=0, xmax=1, color='black', ls='--')
+        # Horizontal line at the theoretically expected ratios
+        if plot == 'leading_bkg':
+            ax.axhline(0.1, xmin=0, xmax=1, color='black', ls='--')
+        elif plot == 'subleading_ewk_bkg':
+            ax.axhline(0.08, xmin=0, xmax=1, color='black', ls='--')
 
         # Save figure
         outpath = pjoin(outdir, f'z_over_w_{channel}_{plot}_{year}.pdf')
