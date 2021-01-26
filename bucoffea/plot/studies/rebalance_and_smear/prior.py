@@ -157,10 +157,12 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None, ht_binning=Non
 
                 # Workaround here: Multiply each bin content with bin width
                 # Later when these are read by RooHistPdf, they are bin-width divided
-                htmiss_bins = h_int.axis('htmiss').edges()
-                binw = np.diff(htmiss_bins)
+                
+                # NOTE: Do not multiply by bin widhts for now!
+                # htmiss_bins = h_int.axis('htmiss').edges()
+                # binw = np.diff(htmiss_bins)
 
-                outputrootfile[dist_label] = (h_int.values()[()] * binw, h_int.axes()[0].edges())
+                outputrootfile[dist_label] = (h_int.values()[()], h_int.axes()[0].edges())
 
 def main():
     args = parse_cli()
