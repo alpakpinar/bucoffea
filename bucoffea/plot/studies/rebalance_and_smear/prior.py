@@ -152,7 +152,7 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None, ht_binning=Non
 
                 # Scale by 1/sumw
                 total_sumw = np.sum(h_int.values()[()])
-                # h_int.scale(1/total_sumw)
+                h_int.scale(1/total_sumw)
                 dist_label = f'gen_htmiss_{bin_label}_{year}'
 
                 # Workaround here: Multiply each bin content with bin width
