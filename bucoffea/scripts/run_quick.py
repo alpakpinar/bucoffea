@@ -18,8 +18,8 @@ def parse_commandline():
 def main():
 
     fileset = {
-        "JetHT_ver1_2017B" : [
-            "root://cmsxrootd.fnal.gov//store/user/aakpinar/nanopost/jetHT_13Jan21_v2/JetHT/JetHT_ver1_2017B/210113_210117/0000/tree_1.root"
+        "QCD_HT1000to1500-mg_new_pmx_2017" : [
+            "root://cmsxrootd.fnal.gov//store/user/aandreas/nanopost/03Sep20v7/QCD_HT1000to1500_TuneCP5_13TeV-madgraph-pythia8/QCD_HT1000to1500-mg_new_pmx_2017/200925_182728/0000/tree_1.root"
         ]
     }
 
