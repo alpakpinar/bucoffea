@@ -25,7 +25,7 @@ def jetht_accumulator():
     region_ax = Cat("region", "Selection region")
 
     ht_ax = Bin("ht", r"$H_{T}$ (GeV)", 50, 0, 5000)
-    htmiss_ax = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 500, 0, 1500)
+    htmiss_ax = Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 250, 0, 1000)
 
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 50, 0, 1000)
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
@@ -57,6 +57,8 @@ def jetht_regions():
     regions = {}
     regions['inclusive'] = ['inclusive']
     regions['trig_pass'] = ['inclusive', 'jet_trig']
+    regions['high_htmiss_loose'] = ['inclusive', 'jet_trig', 'high_htmiss_loose']
+    regions['high_htmiss_tight'] = ['inclusive', 'jet_trig', 'high_htmiss_tight']
 
     return regions
 
@@ -106,6 +108,9 @@ class jethtProcessor(processor.ProcessorABC):
         selection.add('inclusive', pass_all)
 
         selection = trigger_selection(selection, df)
+
+        selection.add('high_htmiss_loose', htmiss>100)
+        selection.add('high_htmiss_tight', htmiss>200)
 
         # Fill histograms
         output = self.accumulator.identity()
