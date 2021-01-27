@@ -29,13 +29,27 @@ def jetht_accumulator():
 
     jet_pt_ax = Bin("jetpt", r"$p_{T}$ (GeV)", 50, 0, 1000)
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
+    jet_eta_ax_coarse = Bin("jeteta", r"$\eta$", 20, -5, 5)
+    jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
 
     items = {}
     items["htmiss"] = Hist("Counts", dataset_ax, region_ax, htmiss_ax)
     items["ht"] = Hist("Counts", dataset_ax, region_ax, ht_ax)
 
+    items["ak4_pt"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
+    items["ak4_eta"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
+    items["ak4_phi"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
+
+    items["ak4_pt0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
+    items["ak4_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
+    items["ak4_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
+    items["ak4_pt1"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
+    items["ak4_eta1"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
+    items["ak4_phi1"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
+
     # 2D histograms
     items["htmiss_ht"] = Hist("Counts", dataset_ax, region_ax, htmiss_ax, ht_ax)
+    items["ak4_eta_phi"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, jet_phi_ax)
 
     return processor.dict_accumulator(items)
 
@@ -111,6 +125,11 @@ class jethtProcessor(processor.ProcessorABC):
             ezfill('htmiss', htmiss=htmiss[mask])
             ezfill('ht', ht=ht[mask])
 
+            ezfill('ak4_pt',     jetpt=ak4[mask].pt.flatten())
+            ezfill('ak4_eta',    jeteta=ak4[mask].eta.flatten())
+            ezfill('ak4_phi',    jetphi=ak4[mask].phi.flatten())
+
+            ezfill('ak4_eta_phi',  jeteta=ak4[mask].eta.flatten(),   jetphi=ak4[mask].phi.flatten())
             ezfill('htmiss_ht', htmiss=htmiss[mask], ht=ht[mask])
 
         return output
