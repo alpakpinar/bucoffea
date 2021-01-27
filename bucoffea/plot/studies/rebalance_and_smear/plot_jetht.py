@@ -13,23 +13,21 @@ from pprint import pprint
 
 pjoin = os.path.join
 
-def plot_jetht(acc, outtag, distribution='htmiss_ht'):
+def plot_htmiss_in_ht_bins(acc, outtag):
     '''Plot given distribution from JetHT dataset, for events passing the jet trigger.'''
+    distribution='htmiss_ht'
     acc.load(distribution)
     h = acc[distribution]
 
     h = merge_extensions(h, acc, reweight_pu=False)
     h = merge_datasets(h)
 
-    # Rebin HT for the 2D histogram
-    if distribution == 'htmiss_ht':
-        new_ht_ax = hist.Bin("ht", r"$H_{T}$ (GeV)", list(range(100,900,200)) + [900,1300,2000,5000])
-        h = h.rebin('ht', new_ht_ax)
+    # Rebin HT and HTmiss
+    new_ht_ax = hist.Bin("ht", r"$H_{T}$ (GeV)", list(range(100,900,200)) + [900,1300,2000,5000])
+    h = h.rebin('ht', new_ht_ax)
 
-    # Rebin HTmiss
-    if 'htmiss' in distribution:
-        new_htmiss_ax = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", list(range(0,400,20)) + list(range(400,900,100)))
-        h = h.rebin('htmiss', new_htmiss_ax)
+    new_htmiss_ax = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", list(range(0,400,20)) + list(range(400,900,100)))
+    h = h.rebin('htmiss', new_htmiss_ax)
 
     # Get the events passing the jet trigger
     h = h.integrate('region', 'trig_pass')
@@ -66,8 +64,8 @@ def plot_jetht(acc, outtag, distribution='htmiss_ht'):
         plt.close(fig)
         print(f'File saved: {outpath}')
 
-def plot_high_htmiss_events(acc, outtag, distribution='ak4_eta', region='high_htmiss_loose'):
-    '''Plot events from a high HTmiss region.'''
+def plot_distribution_from_region(acc, outtag, distribution='ak4_eta', region='high_htmiss_loose'):
+    '''Plot events from a specified region.'''
     acc.load(distribution)
     h = acc[distribution]
 
@@ -76,7 +74,7 @@ def plot_high_htmiss_events(acc, outtag, distribution='ak4_eta', region='high_ht
 
     h = h.integrate('region', region)
 
-    outdir = f'./output/{outtag}/high_htmiss_plots'
+    outdir = f'./output/{outtag}/distributions'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -90,18 +88,19 @@ def plot_high_htmiss_events(acc, outtag, distribution='ak4_eta', region='high_ht
         fig, ax = plt.subplots()
         hist.plot1d(_h, ax=ax)
 
-        if distribution == 'ak4_pt':
+        if distribution in ['ak4_pt', 'ht']:
             ax.set_yscale('log')
             ax.set_ylim(1e0,1e6)
         
         ax.get_legend().remove()
 
-        ax.text(0., 1., htmisstag[region],
-            fontsize=14,
-            ha='left',
-            va='bottom',
-            transform=ax.transAxes
-        )
+        if region in htmisstag.keys():
+            ax.text(0., 1., htmisstag[region],
+                fontsize=14,
+                ha='left',
+                va='bottom',
+                transform=ax.transAxes
+            )
 
         ax.text(1., 1., year,
             fontsize=14,
@@ -128,11 +127,11 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')    
 
-    plot_jetht(acc, outtag)
+    plot_htmiss_in_ht_bins(acc, outtag)
 
-    for region in ['high_htmiss_loose', 'high_htmiss_tight']:
-        for distribution in ['ak4_pt', 'ak4_eta', 'ak4_phi']:
-            plot_high_htmiss_events(acc, outtag, distribution, region)
+    for region in ['trig_pass', 'high_htmiss_loose', 'high_htmiss_tight']:
+        for distribution in ['ak4_pt', 'ak4_eta', 'ak4_phi', 'ht']:
+            plot_distribution_from_region(acc, outtag, distribution, region)
 
 if __name__ == '__main__':
     main()
