@@ -173,7 +173,7 @@ def plot_btag_variations_for_comb_measurement():
 
     pt_bins = additive_factors_for_comb_eq[2017]['jetFlav1'].keys()
 
-    x = np.linspace(20,1000)
+    x = np.linspace(20,1000,99)
     for year in [2017, 2018]:
         fig, ax = plt.subplots()
         if year == 2017:
