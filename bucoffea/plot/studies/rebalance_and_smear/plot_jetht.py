@@ -148,6 +148,7 @@ def main():
         'ak4_pt0',
         'ak4_eta0',
         'ak4_phi0',
+        'ak4_mult',
         'ht'
     ]
 
