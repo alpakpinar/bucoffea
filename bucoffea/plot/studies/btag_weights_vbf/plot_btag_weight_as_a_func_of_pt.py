@@ -166,6 +166,44 @@ def plot_btag_variations_as_a_func_of_pt(method='incl'):
         plt.close(fig)
         print(f'File saved: {outpath}')
 
+def plot_incl_btag_variations_for_both_years():
+    outdir = './output/btag_weights_from_src'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    x = np.linspace(20,1000)
+    fig, ax = plt.subplots()
+
+    sf_2017 = incl_sf_for_2017(x, var='central')
+    ax.plot(x,sf_2017,label='2017 central')
+
+    sf_2018 = incl_sf_for_2018(x, var='central')
+    ax.plot(x,sf_2018,label='2018 central')
+
+    sf_2017_up = incl_sf_for_2017(x, var='up')
+    sf_2017_down = incl_sf_for_2017(x, var='down')
+    sf_2018_up = incl_sf_for_2018(x, var='up')
+    sf_2018_down = incl_sf_for_2018(x, var='down')
+
+    fill_opts = {
+        'alpha' : 0.4,
+    }
+
+    ax.fill_between(x, sf_2017_up, sf_2017_down, label='2017 unc', **fill_opts)
+    ax.fill_between(x, sf_2018_up, sf_2018_down, label='2018 unc', **fill_opts)
+
+    ax.set_xlabel(r'Jet $p_T \ (GeV)$', fontsize=14)
+    ax.set_ylabel('b-tag SF', fontsize=14)
+
+    ax.set_title('Fake b-tag SF', fontsize=14)
+    ax.legend()
+
+    outpath = pjoin(outdir, f'fake_btag_variations_both_years.pdf')
+    fig.savefig(outpath)
+    plt.close(fig)
+    print(f'File saved: {outpath}')
+
+
 def plot_btag_variations_for_comb_measurement():
     outdir = './output/btag_weights_from_src'
     if not os.path.exists(outdir):
@@ -215,6 +253,8 @@ def main():
     plot_btag_as_a_func_of_pt()
     # Variations of fake SF
     plot_btag_variations_as_a_func_of_pt()
+    # Variations of fake SF, both years plotted on same plot
+    plot_incl_btag_variations_for_both_years()
     # Variations of real SF
     plot_btag_variations_for_comb_measurement()
 
