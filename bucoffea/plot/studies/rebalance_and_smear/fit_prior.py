@@ -48,7 +48,7 @@ def main():
     ]
 
     # For each HT bin, we will fit a falling exponential after a certain x-limit
-    xlimits = [100, 150, 250, 250, 250, 250, 200]
+    xlimits = [70, 150, 250, 250, 250, 250, 200]
 
     for idx, ht_bin in enumerate(ht_bins):
         h = inputrootfile[f'gen_htmiss_{ht_bin}_2017']
