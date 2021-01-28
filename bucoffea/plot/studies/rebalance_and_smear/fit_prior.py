@@ -11,8 +11,8 @@ from scipy.optimize import curve_fit
 
 pjoin = os.path.join
 
-def func(x,a,b,c):
-    return c * x * np.exp(-a*(x-b))
+def falling_exp(x,a,b,c):
+    return a * np.exp(-b*(x-c))
 
 def main():
     inputrootpath = './output/merged_2021-01-23_qcd_prior_study_qcd_18Jan21v7_with_htcut/rbs_prior_dists.root'
@@ -33,7 +33,10 @@ def main():
         'ht_2000_to_5000',
     ]
 
-    for ht_bin in ht_bins:
+    # For each HT bin, we will fit a falling exponential after a certain x-limit
+    xlimits = [100, 150, 250, 250, 250, 250, 200]
+
+    for idx, ht_bin in enumerate(ht_bins):
         h = inputrootfile[f'gen_htmiss_{ht_bin}_2017']
 
         fig, ax = plt.subplots()
@@ -41,12 +44,16 @@ def main():
         hep.histplot(h.values, h.edges, ax=ax, label='Binned prior')
     
         xcenters = 0.5 * np.sum(h.bins, axis=1)
+        # Fit the falling spectrum with an exponential function
+        mask = xcenters > xlimits[idx]
+        xh = xcenters[mask]
+        yh = h.values[mask]
     
         # Fit the prior distribution
-        popt, _ = curve_fit(func, xcenters, h.values)
+        popt, _ = curve_fit(falling_exp, xh, yh, p0=(1e3, 1e-2, 1))
     
-        x = np.linspace(0,500,500)
-        y = func(x, *popt)
+        x = np.linspace(xlimits[idx],500,400)
+        y = falling_exp(x, *popt)
         ax.plot(x, y, label='Fitted prior, $f(x)$')
         
         ax.legend()
@@ -55,6 +62,8 @@ def main():
         ax.set_xlabel(r'$H_T^{miss} \ (GeV)$')
         ax.set_ylabel('Normalized Counts')
     
+        ax.axvline(xlimits[idx], ymin=0, ymax=1, ls='--', color='k')
+
         ht_interval = re.findall('ht_\d+_to_\d+', ht_bin)[0]
         ht_int_split = ht_interval.split('_')
         lo, hi = int(ht_int_split[1]), int(ht_int_split[-1])
@@ -72,15 +81,8 @@ def main():
     
         sgn = '+' if b < 0 else '-'
     
-        ax.text(0.98, 0.75, r'$f(x) = {:.2f}*x*e^{{-{:.2f}(x{}{:.2f})}}$'.format(c,a,sgn,np.abs(b)), 
-            fontsize=14,
-            ha='right',
-            va='bottom',
-            transform=ax.transAxes
-            )
-    
-        ax.text(0.98, 0.65, r'$p_{{max}}$ @ $H_T^{{miss}} = {:.2f} \ GeV$'.format(1/a), 
-            fontsize=14,
+        ax.text(0.98, 0.75, f'Fitting starts at $H_T^{{miss}} = {xlimits[idx]}$ GeV', 
+            fontsize=12,
             ha='right',
             va='bottom',
             transform=ax.transAxes
