@@ -13,6 +13,15 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+mapping = {
+    'ak4_pt0' : r'Leading jet $p_T$ (GeV)',
+    'ak4_eta0': r'Leading jet $\eta$',
+    'ak4_phi0': r'Leading jet $\phi$',
+    'ak4_pt' : r'Jet $p_T$ (GeV)',
+    'ak4_eta': r'Jet $\eta$',
+    'ak4_phi': r'Jet $\phi$',
+}
+
 def plot_htmiss_in_ht_bins(acc, outtag):
     '''Plot given distribution from JetHT dataset, for events passing the jet trigger.'''
     distribution='htmiss_ht'
@@ -43,7 +52,7 @@ def plot_htmiss_in_ht_bins(acc, outtag):
 
         ax.set_yscale('log')
         ax.set_ylim(1e-2,1e6)
-
+        
         ax.text(0., 1., f'JetHT {year}',
             fontsize=14,
             ha='left',
@@ -88,11 +97,14 @@ def plot_distribution_from_region(acc, outtag, distribution='ak4_eta', region='h
         fig, ax = plt.subplots()
         hist.plot1d(_h, ax=ax)
 
-        if distribution in ['ak4_pt', 'ht']:
+        if distribution in ['ak4_pt', 'ak4_pt0', 'ht']:
             ax.set_yscale('log')
             ax.set_ylim(1e0,1e6)
         
         ax.get_legend().remove()
+
+        if distribution in mapping.keys():
+            ax.set_xlabel(mapping[distribution])
 
         if region in htmisstag.keys():
             ax.text(0., 1., htmisstag[region],
@@ -129,9 +141,23 @@ def main():
 
     plot_htmiss_in_ht_bins(acc, outtag)
 
+    distributions = [
+        'ak4_pt',
+        'ak4_eta',
+        'ak4_phi',
+        'ak4_pt0',
+        'ak4_eta0',
+        'ak4_phi0',
+        'ht'
+    ]
+
     for region in ['trig_pass', 'high_htmiss_loose', 'high_htmiss_tight']:
-        for distribution in ['ak4_pt', 'ak4_eta', 'ak4_phi', 'ht']:
-            plot_distribution_from_region(acc, outtag, distribution, region)
+        for distribution in distributions:
+            try:
+                plot_distribution_from_region(acc, outtag, distribution, region)
+            except KeyError:
+                print(f'Could not find distribution: {distribution}, skipping.')
+                continue
 
 if __name__ == '__main__':
     main()
