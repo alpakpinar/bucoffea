@@ -31,6 +31,7 @@ def jetht_accumulator():
     jet_eta_ax = Bin("jeteta", r"$\eta$", 50, -5, 5)
     jet_eta_ax_coarse = Bin("jeteta", r"$\eta$", 20, -5, 5)
     jet_phi_ax = Bin("jetphi", r"$\phi$", 50,-np.pi, np.pi)
+    multiplicity_ax = Bin("multiplicity", r"Jet multiplicity", 10, -0.5, 9.5)
 
     items = {}
     items["htmiss"] = Hist("Counts", dataset_ax, region_ax, htmiss_ax)
@@ -43,13 +44,12 @@ def jetht_accumulator():
     items["ak4_pt0"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
     items["ak4_eta0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
     items["ak4_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
-    items["ak4_pt1"] = Hist("Counts", dataset_ax, region_ax, jet_pt_ax)
-    items["ak4_eta1"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax)
-    items["ak4_phi1"] = Hist("Counts", dataset_ax, region_ax, jet_phi_ax)
+    items["ak4_mult"] = Hist("Counts", dataset_ax, region_ax, multiplicity_ax)
 
     # 2D histograms
     items["htmiss_ht"] = Hist("Counts", dataset_ax, region_ax, htmiss_ax, ht_ax)
     items["ak4_eta_phi"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, jet_phi_ax)
+    items["ak4_eta0_phi0"] = Hist("Counts", dataset_ax, region_ax, jet_eta_ax_coarse, jet_phi_ax)
 
     return processor.dict_accumulator(items)
 
@@ -99,6 +99,9 @@ class jethtProcessor(processor.ProcessorABC):
         
         ak4 = setup_jets(df)
 
+        print(ak4.pt)
+        print(ak4.pt[:,0])
+
         # Calculate HT and HTmiss
         htmiss = ak4[ak4.pt>30].p4.sum().pt
         ht = ak4[ak4.pt>30].pt.sum()
@@ -119,6 +122,13 @@ class jethtProcessor(processor.ProcessorABC):
         for region, cuts in regions.items():
             mask = selection.all(*cuts)
 
+            # Jet multiplicity
+            output['ak4_mult'].fill(
+                dataset=dataset,
+                region=region,
+                multiplicity=ak4[ak4.pt>30][mask].counts
+            )
+
             def ezfill(name, **kwargs):
                 """Helper function to make filling easier."""
                 output[name].fill(
@@ -133,6 +143,12 @@ class jethtProcessor(processor.ProcessorABC):
             ezfill('ak4_pt',     jetpt=ak4[mask].pt.flatten())
             ezfill('ak4_eta',    jeteta=ak4[mask].eta.flatten())
             ezfill('ak4_phi',    jetphi=ak4[mask].phi.flatten())
+
+            if region != 'inclusive':
+                ezfill('ak4_pt0',        jetpt=ak4.pt[mask][:,0])
+                ezfill('ak4_eta0',       jeteta=ak4.eta[mask][:,0])
+                ezfill('ak4_phi0',       jetphi=ak4.phi[mask][:,0])
+                ezfill('ak4_eta0_phi0',  jeteta=ak4.eta[mask][:,0],   jetphi=ak4.phi[mask][:,0])
 
             ezfill('ak4_eta_phi',  jeteta=ak4[mask].eta.flatten(),   jetphi=ak4[mask].phi.flatten())
             ezfill('htmiss_ht', htmiss=htmiss[mask], ht=ht[mask])
