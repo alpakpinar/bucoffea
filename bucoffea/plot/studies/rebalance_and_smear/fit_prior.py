@@ -76,6 +76,7 @@ def main():
 
         ax.legend()
         ax.set_yscale('log')
+        ax.set_xlim(0,1000)
         ax.set_ylim(1e-9,1e1)
         ax.set_xlabel(r'$H_T^{miss} \ (GeV)$')
         ax.set_ylabel('Normalized Counts')
