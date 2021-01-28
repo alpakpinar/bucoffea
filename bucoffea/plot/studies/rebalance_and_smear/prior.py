@@ -107,7 +107,7 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None, ht_binning=Non
             hh = _h.integrate('ht', ht_bin)
             total_sumw = np.sum(hh.values()[()])
             hh.scale(1/total_sumw)
-            hist.plot1d(hh, ax=ax, clear=False)
+            hist.plot1d(hh, ax=ax, clear=False, binwnorm=1)
             lo, hi = int(ht_bin.lo), int(ht_bin.hi)
 
             legend_labels.append(
@@ -115,7 +115,7 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None, ht_binning=Non
             )
 
         ax.set_yscale('log')
-        ax.set_ylim(1e-9, 1e1)
+        ax.set_ylim(1e-10, 1e1)
         ax.set_ylabel('Normalized Counts')
 
         ax.legend(title=r'$H_T \ (GeV)$', labels=legend_labels)
@@ -159,8 +159,8 @@ def plot_2d_prior(acc, outtag, distribution, outputrootfile=None, ht_binning=Non
                 # Later when these are read by RooHistPdf, they are bin-width divided
                 
                 # NOTE: Do not multiply by bin widhts for now!
-                # htmiss_bins = h_int.axis('htmiss').edges()
-                # binw = np.diff(htmiss_bins)
+                htmiss_bins = h_int.axis('htmiss').edges()
+                binw = np.diff(htmiss_bins)
 
                 outputrootfile[dist_label] = (h_int.values()[()], h_int.axes()[0].edges())
 
@@ -201,7 +201,8 @@ def main():
     # 2D priors: Plot HTmiss in bins of HT
     # ht_binning = hist.Bin("ht", r"$H_{T}$ (GeV)", list(range(0,1000,200)) + [1000,2000,5000])
     ht_binning = hist.Bin("ht", r"$H_{T}$ (GeV)", list(range(100,900,200)) + [900,1300,2000,5000])
-    # htmiss_binning = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", 25, 0, 500)
+    # htmiss_binning = hist.Bin("htmiss", r"$H_{T}^{miss}$ (GeV)", list(range(0,90,3)) + list(range(90,180,6)) + [180, 330, 420, 540, 720, 1080])
+
     plot_2d_prior(acc, outtag, 
         distribution='htmiss_ht',
         outputrootfile=outputrootfile,

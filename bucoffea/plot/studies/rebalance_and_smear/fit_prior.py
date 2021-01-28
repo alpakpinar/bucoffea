@@ -14,14 +14,28 @@ pjoin = os.path.join
 def falling_exp(x,a,b,c):
     return a * np.exp(-b*(x-c))
 
+def get_combined_histogram(xedges, xcenters, xlim, y, fitfunc, popt):
+    '''Given the binned prior and the fit function, return a new histogram that is a combination of the two.'''
+    yvals = np.where(
+        xcenters < xlim,
+        y,
+        fitfunc(xcenters, *popt)
+    )
+    
+    return (yvals, xedges, xcenters)
+
 def main():
-    inputrootpath = './output/merged_2021-01-23_qcd_prior_study_qcd_18Jan21v7_with_htcut/rbs_prior_dists.root'
+    inputrootpath = './output/merged_2021-01-26_qcd_prior_study_qcd_18Jan21v7_with_htcut/rbs_prior_dists.root'
     inputrootfile = uproot.open(inputrootpath)
 
-    outtag = 'merged_2021-01-23_qcd_prior_study_qcd_18Jan21v7_with_htcut'
+    outtag = 'merged_2021-01-26_qcd_prior_study_qcd_18Jan21v7_with_htcut'
     outdir = f'./output/{outtag}/prior_fits'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
+
+    # Save the partially fitted prior to new root file
+    outfilepath = pjoin(outdir, 'htmiss_fitted_prior.root')
+    outrootfile = uproot.recreate(outfilepath)
 
     ht_bins = [
         'ht_100_to_300',
@@ -54,8 +68,12 @@ def main():
     
         x = np.linspace(xlimits[idx],500,400)
         y = falling_exp(x, *popt)
-        ax.plot(x, y, label='Fitted prior, $f(x)$')
-        
+        ax.plot(x, y, label='Fitted tail', alpha=0.7)
+
+        # Plot the combined (binned + tail fit) histogram on the same plot
+        combined_y, combined_xedges, combined_xcenters = get_combined_histogram(h.edges, xcenters, xlimits[idx], h.values, falling_exp, popt)
+        ax.plot(combined_xcenters,combined_y, label='Combined', alpha=0.7)
+
         ax.legend()
         ax.set_yscale('log')
         ax.set_ylim(1e-9,1e1)
@@ -81,7 +99,7 @@ def main():
     
         sgn = '+' if b < 0 else '-'
     
-        ax.text(0.98, 0.75, f'Fitting starts at $H_T^{{miss}} = {xlimits[idx]}$ GeV', 
+        ax.text(0.98, 0.65, f'Fitting starts at $H_T^{{miss}} = {xlimits[idx]}$ GeV', 
             fontsize=12,
             ha='right',
             va='bottom',
@@ -93,6 +111,9 @@ def main():
         fig.savefig(outpath)
         plt.close(fig)
         print(f'File saved: {outpath}')
+
+        # Save the combined histogram to the output root file
+        outrootfile[f'gen_htmiss_{ht_bin}'] = (combined_y, combined_xedges)
 
 if __name__ == '__main__':
     main()
