@@ -97,10 +97,13 @@ def plot_distribution_from_region(acc, outtag, distribution='ak4_eta', region='h
         fig, ax = plt.subplots()
         hist.plot1d(_h, ax=ax)
 
-        if distribution in ['ak4_pt', 'ak4_pt0', 'ht']:
+        if distribution in ['ak4_pt', 'ak4_pt0', 'ht', 'htmiss']:
             ax.set_yscale('log')
             ax.set_ylim(1e0,1e6)
         
+        if distribution == 'htmiss':
+            ax.set_xlim(0,400)
+
         ax.get_legend().remove()
 
         if distribution in mapping.keys():
@@ -149,7 +152,8 @@ def main():
         'ak4_eta0',
         'ak4_phi0',
         'ak4_mult',
-        'ht'
+        'ht',
+        'htmiss'
     ]
 
     for region in ['trig_pass', 'high_htmiss_loose', 'high_htmiss_tight']:
