@@ -6,7 +6,7 @@ import numpy as np
 from coffea import hist
 from coffea.analysis_objects import JaggedCandidateArray
 
-from bucoffea.helpers import object_overlap, weight_shape
+from bucoffea.helpers import object_overlap, weight_shape, mask_and
 from bucoffea.helpers.dataset import extract_year, is_data
 from bucoffea.helpers.gen import setup_lhe_cleaned_genjets
 
@@ -18,6 +18,22 @@ def trigger_selection(selection, df):
     '''HLT_PFJet40 requirement.'''
     trigger='HLT_PFJet40'
     selection.add('jet_trig', df[trigger])
+    return selection
+
+def apply_met_filters(selection, df):
+    met_filters_for_data = [
+        'Flag_goodVertices',
+        'Flag_globalSuperTightHalo2016Filter',
+        'Flag_HBHENoiseFilter',
+        'Flag_HBHENoiseIsoFilter',
+        'Flag_EcalDeadCellTriggerPrimitiveFilter',
+        'Flag_BadPFMuonFilter',
+        'Flag_eeBadScFilter',
+        'Flag_ecalBadCalibFilterV2',
+    ]
+
+    selection.add('filt_met', mask_and(df, met_filters_for_data))
+
     return selection
 
 def jetht_accumulator():
@@ -56,9 +72,17 @@ def jetht_accumulator():
 def jetht_regions():
     regions = {}
     regions['inclusive'] = ['inclusive']
-    regions['trig_pass'] = ['inclusive', 'jet_trig']
-    regions['high_htmiss_loose'] = ['inclusive', 'jet_trig', 'high_htmiss_loose']
-    regions['high_htmiss_tight'] = ['inclusive', 'jet_trig', 'high_htmiss_tight']
+
+    common_cuts = [
+        'jet_trig',
+        'filt_met',
+        'leadak4_id',
+        'leadak4_eta',
+    ]
+
+    regions['trig_pass'] = common_cuts
+    regions['high_htmiss_loose'] = common_cuts + ['high_htmiss_loose']
+    regions['high_htmiss_tight'] = common_cuts + ['high_htmiss_tight']
 
     return regions
 
@@ -99,9 +123,6 @@ class jethtProcessor(processor.ProcessorABC):
         
         ak4 = setup_jets(df)
 
-        print(ak4.pt)
-        print(ak4.pt[:,0])
-
         # Calculate HT and HTmiss
         htmiss = ak4[ak4.pt>30].p4.sum().pt
         ht = ak4[ak4.pt>30].pt.sum()
@@ -110,10 +131,16 @@ class jethtProcessor(processor.ProcessorABC):
         pass_all = np.zeros(df.size) == 0
         selection.add('inclusive', pass_all)
 
+        # Trigger selection & MET filters
         selection = trigger_selection(selection, df)
+        selection = apply_met_filters(selection, df)
 
         selection.add('high_htmiss_loose', htmiss>100)
         selection.add('high_htmiss_tight', htmiss>200)
+
+        # Requirements on the leading jet
+        selection.add('leadak4_id', ak4[:,0].tightId)
+        selection.add('leadak4_eta', ak4[:,0].abseta < 4.7)
 
         # Fill histograms
         output = self.accumulator.identity()
