@@ -103,9 +103,17 @@ def setup_jets(df):
         mass=np.zeros_like(df['Jet_pt']),
         looseId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
         tightId=(df['Jet_jetId']&2) == 2, # bitmask: 1 = loose, 2 = tight, 3 = tight + lep veto
+        deepcsv=df['Jet_btagDeepB'],
     )
 
-    return ak4
+    # b-jets: DeepCSV medium WP
+    bjets = ak4[
+        (ak4.pt > 20) \
+        & (ak4.abseta < 2.4) \
+        & (ak4.deepcsv > 0.4941)
+    ]
+
+    return ak4, bjets
 
 class jethtProcessor(processor.ProcessorABC):
     def __init__(self, blind=False):
@@ -121,7 +129,7 @@ class jethtProcessor(processor.ProcessorABC):
         dataset = df['dataset']
         df['is_data'] = is_data(dataset)
         
-        ak4 = setup_jets(df)
+        ak4, bjets = setup_jets(df)
 
         # Calculate HT and HTmiss
         htmiss = ak4[ak4.pt>30].p4.sum().pt
@@ -141,6 +149,8 @@ class jethtProcessor(processor.ProcessorABC):
         # Requirements on the leading jet
         selection.add('leadak4_id', ak4[:,0].tightId)
         selection.add('leadak4_eta', ak4[:,0].abseta < 4.7)
+
+        selection.add('b_veto', bjets.counts==0)
 
         # Fill histograms
         output = self.accumulator.identity()
