@@ -44,7 +44,10 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj', file_format='pdf'
 
     h = rebin(h, distribution)
     # Take the region with no mjj/detajj/dphijj cut applied 
-    h = h.integrate('region', 'sr_vbf_nodijetcut')
+    if distribution != 'ak4_eta1':
+        h = h.integrate('region', 'sr_vbf_nodijetcut')
+    else:
+        h = h.integrate('region', 'sr_vbf')
 
     # Output directory to save plots
     outdir = f'./output/{outtag}'
@@ -80,13 +83,20 @@ def plot_vjets_vbf_comparison(acc, outtag, distribution='mjj', file_format='pdf'
             'mjj' : (1e-7, 1e-1), 
             'detajj' : (1e-5, 1e1), 
             'dphijj' : (1e-3, 1e1), 
+            'ak4_eta1' : (0, 0.4), 
         }
 
         if distribution == 'mjj':
             ax.set_yscale('log')
             ax.set_ylim(ylims[distribution])
         
+        elif distribution == 'ak4_eta1':
+            ax.set_ylim(ylims[distribution])
+
         ax.set_ylabel('Normalized Counts')
+
+        if distribution == 'ak4_eta1':
+            ax.set_xlabel(r'Trailing jet $\eta$')
 
         # CMS label & text
         hep.cms.label(year="", paper=True)
@@ -116,7 +126,7 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
-    for distribution in ['mjj', 'detajj', 'dphijj']:
+    for distribution in ['mjj', 'detajj', 'dphijj', 'ak4_eta1']:
         plot_vjets_vbf_comparison(acc, outtag, distribution=distribution)
 
 if __name__ == '__main__':
