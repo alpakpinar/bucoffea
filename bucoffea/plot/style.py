@@ -39,6 +39,26 @@ def plot_settings():
             'mjj' : {
                 'ylim' : (1e-3,1e5)
             },
+            'detajj' : {
+                'ylim' : (1e-1,1e6)
+            },
+            'dphijj' : {
+                'ylim' : (1e-1,1e6)
+            },
+            'ak4_phi0' : {
+                'ylim' : (1e0,1e7)
+            },
+            'ak4_phi1' : {
+                'ylim' : (1e0,1e7)
+            },
+            'ak4_phi' : {
+                'ylim' : (1e0,1e7)
+            },
+            'dphijm' : {
+                'xlim' : (0,3.2),
+                'ylim' : (1e0,1e6)
+            },
+
         },
         'sr_vbf_noclean' : {
             'ak4_pt0' : {
@@ -56,6 +76,26 @@ def plot_settings():
             'mjj' : {
                 'ylim' : (1e-3,1e5)
             },
+            'detajj' : {
+                'ylim' : (1e-1,1e6)
+            },
+            'dphijj' : {
+                'ylim' : (1e-1,1e6)
+            },
+            'ak4_phi0' : {
+                'ylim' : (1e0,1e7)
+            },
+            'ak4_phi1' : {
+                'ylim' : (1e0,1e7)
+            },
+            'ak4_phi' : {
+                'ylim' : (1e0,1e7)
+            },
+            'dphijm' : {
+                'xlim' : (0,3.2),
+                'ylim' : (1e0,1e6)
+            },
+
         },
         'sr_vbf' : {
             'recoil' : {

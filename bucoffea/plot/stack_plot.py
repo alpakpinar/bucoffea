@@ -373,9 +373,9 @@ def make_plot(acc, region, distribution, year,  data, mc, signal=None, outdir='.
         if rylim:
             rax.set_ylim(*rylim)
         else:
-            rax.set_ylim(0.5,1.5)
-        loc1 = matplotlib.ticker.MultipleLocator(base=0.2)
-        loc2 = matplotlib.ticker.MultipleLocator(base=0.1)
+            rax.set_ylim(0.,2.)
+        loc1 = matplotlib.ticker.MultipleLocator(base=0.5)
+        loc2 = matplotlib.ticker.MultipleLocator(base=0.25)
         rax.yaxis.set_major_locator(loc1)
         rax.yaxis.set_minor_locator(loc2)
         rax.grid(axis='y',which='minor',linestyle='--')
